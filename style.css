@@ -1,0 +1,52 @@
+/* IMPORT JOST FONT */
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;700&display=swap');
+
+/* TRUE BLACK MODE */
+body {
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Jost', sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center; /* Centers everything */
+}
+
+/* NAVIGATION BAR */
+nav {
+    padding-top: 40px;
+    padding-bottom: 60px;
+}
+
+nav a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 700; /* Bold */
+    font-size: 18px;
+    margin: 0 20px;
+    opacity: 0.5;
+    text-transform: uppercase;
+    transition: opacity 0.2s;
+}
+
+nav a:hover {
+    opacity: 1;
+}
+
+/* THE "ACTIVE" PAGE LOOKS BRIGHTER */
+nav a.active {
+    opacity: 1;
+    border-bottom: 2px solid white;
+    padding-bottom: 5px;
+}
+
+/* CONTENT CONTAINER */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: left; /* Text inside is readable */
+}
+
+h1 { font-size: 40px; margin-bottom: 10px; }
+h2 { font-size: 24px; opacity: 0.8; font-weight: 400; margin-bottom: 40px; }
+p { font-size: 18px; line-height: 1.6; opacity: 0.8; margin-bottom: 20px; }
