@@ -3,22 +3,21 @@ site_url: https://sahibvirdee.com
 
 theme:
   name: material
-  custom_dir: overrides
+  # custom_dir: overrides   <-- THIS WAS THE ERROR. DELETE THIS LINE.
   features:
-    - navigation.instant   # This makes it SUPER fast (SPA mode)
-    - navigation.tabs      # Top level tabs
-    - header.autohide      # Cleaner scrolling
+    - navigation.instant
+    - navigation.tabs
+    - header.autohide
   font:
-    text: Jost             # Your requested font
+    text: Jost
     code: Roboto Mono
   palette:
-    scheme: slate          # Dark mode base (we will override to True Black)
+    scheme: slate
 
-# Hide the sidebars to keep it minimalist
 markdown_extensions:
   - toc:
       permalink: false
-plugins: [] # Disables search
+plugins: []
 
 extra_css:
   - stylesheets/extra.css
