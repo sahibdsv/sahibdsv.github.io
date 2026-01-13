@@ -8,21 +8,22 @@
 }
 
 body {
-    background-color: #000000; /* Deep Black Background */
-    color: #ffffff;            /* White Text */
+    background-color: #000000;
+    color: #ffffff;
     font-family: 'Jost', sans-serif;
     line-height: 1.6;
     display: flex;
     flex-direction: column;
-    align-items: center;       /* Centers everything horizontally */
+    align-items: center;
     min-height: 100vh;
 }
 
-/* 2. THE HEADER (Your Name) */
+/* 2. THE HEADER */
 header {
     margin-top: 60px;
     margin-bottom: 20px;
     text-align: center;
+    animation: fadeIn 0.8s ease-in; /* Text fades in */
 }
 
 header h1 {
@@ -35,15 +36,16 @@ header h1 {
 header h2 {
     font-size: 18px;
     font-weight: 400;
-    opacity: 0.6;              /* Grey subtitle */
+    opacity: 0.6;
     margin-top: 10px;
 }
 
-/* 3. THE NAVIGATION */
+/* 3. THE NAVIGATION (Animated) */
 nav {
     display: flex;
-    gap: 30px;                 /* Space between buttons */
+    gap: 30px;
     margin-bottom: 60px;
+    animation: fadeIn 1s ease-in;
 }
 
 nav a {
@@ -51,23 +53,67 @@ nav a {
     text-decoration: none;
     font-size: 18px;
     opacity: 0.5;
-    transition: opacity 0.2s;
+    position: relative; /* Needed for the underline animation */
+    transition: opacity 0.3s;
 }
 
+/* The Hover Effect */
 nav a:hover, nav a.active {
-    opacity: 1;                /* Bright white when hovered/active */
-    border-bottom: 1px solid white;
+    opacity: 1;
 }
 
-/* 4. THE CONTENT CONTAINER (Like a Google Doc page) */
+/* The Moving Underline */
+nav a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 0;
+    background-color: white;
+    transition: width 0.3s ease-in-out;
+}
+
+nav a:hover::after, nav a.active::after {
+    width: 100%; /* Expands to full width on hover */
+}
+
+/* 4. THE CONTENT CONTAINER */
 .content {
     width: 100%;
-    max-width: 800px;          /* readable width, not too wide */
+    max-width: 800px;
     padding: 0 20px;
+    padding-bottom: 100px;
+    animation: fadeIn 1.2s ease-in;
 }
 
 .content p {
     margin-bottom: 20px;
     font-size: 18px;
-    color: #cccccc;            /* Slightly softer white for reading */
+    color: #cccccc;
+}
+
+/* 5. MEDIA HANDLING (The WYSIWYG part) */
+img, video {
+    max-width: 100%;    /* Never wider than the screen */
+    height: auto;       /* Maintain aspect ratio */
+    border-radius: 8px; /* Slight curve on corners */
+    margin: 20px 0;     /* Space above and below */
+    display: block;
+}
+
+/* Caption styling */
+.caption {
+    font-size: 14px;
+    color: #888;
+    text-align: center;
+    margin-top: -15px;  /* Pull closer to image */
+    margin-bottom: 30px;
+    font-style: italic;
+}
+
+/* 6. ANIMATIONS */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
