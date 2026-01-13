@@ -3,34 +3,27 @@ site_url: https://sahibvirdee.com
 
 theme:
   name: material
-  # "Primary: white" makes the header blend in with the page (no heavy colored bar)
-  palette: 
-    scheme: default
-    primary: white
-    accent: black
-  font:
-    text: Jost
-    code: Roboto Mono
-  # We remove 'navigation.sections' to kill the sidebar
+  custom_dir: overrides
   features:
-    - navigation.tabs
-    - navigation.instant
-    - header.autohide  # The header slides away when you scroll down
+    - navigation.instant   # This makes it SUPER fast (SPA mode)
+    - navigation.tabs      # Top level tabs
+    - header.autohide      # Cleaner scrolling
+  font:
+    text: Jost             # Your requested font
+    code: Roboto Mono
+  palette:
+    scheme: slate          # Dark mode base (we will override to True Black)
 
-# This hides the "Table of Contents" on the right side
+# Hide the sidebars to keep it minimalist
 markdown_extensions:
   - toc:
       permalink: false
+plugins: [] # Disables search
 
-# This empties the plugins list, which REMOVES the Search Bar
-plugins: []
-
-# This CSS hides the footer branding
 extra_css:
   - stylesheets/extra.css
 
 nav:
-  - Home: index.md
-  - Professional: professional/index.md
-  - Projects: projects/index.md
   - Personal: personal/index.md
+  - Professional: index.md
+  - Projects: projects/index.md
