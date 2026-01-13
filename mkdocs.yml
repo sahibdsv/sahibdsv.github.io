@@ -1,0 +1,25 @@
+site_name: Sahib Virdee
+site_url: https://sahibvirdee.com
+
+theme:
+  name: material
+  palette: 
+    scheme: default
+    primary: black
+    accent: teal
+  font:
+    text: Jost
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.instant
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Professional: professional/index.md
+  - Projects: projects/index.md
+  - Personal: personal/index.md
