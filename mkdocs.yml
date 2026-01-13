@@ -3,18 +3,29 @@ site_url: https://sahibvirdee.com
 
 theme:
   name: material
+  # "Primary: white" makes the header blend in with the page (no heavy colored bar)
   palette: 
     scheme: default
-    primary: black
-    accent: teal
+    primary: white
+    accent: black
   font:
     text: Jost
     code: Roboto Mono
+  # We remove 'navigation.sections' to kill the sidebar
   features:
     - navigation.tabs
-    - navigation.sections
     - navigation.instant
+    - header.autohide  # The header slides away when you scroll down
 
+# This hides the "Table of Contents" on the right side
+markdown_extensions:
+  - toc:
+      permalink: false
+
+# This empties the plugins list, which REMOVES the Search Bar
+plugins: []
+
+# This CSS hides the footer branding
 extra_css:
   - stylesheets/extra.css
 
