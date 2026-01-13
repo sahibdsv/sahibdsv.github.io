@@ -14,21 +14,74 @@
     </header>
 
     <nav>
-        <a href="/personal/">Personal</a>
-        <a href="/professional/">Professional</a>
-        <a href="/projects/">Projects</a>
+        <a href="/">Home Updates</a>
     </nav>
 
-    <div class="content">
-        <p>
-            Welcome. I am a 5th-year Mechanical Engineering student specializing in 
-            Mechatronics and Manufacturing.
-        </p>
-        <p>
-            This site documents my work in bus manufacturing optimization, 
-            EV systems (SARIT), and my personal engineering projects.
-        </p>
+    <div id="sheet-content">
+        <p style="text-align:center; opacity: 0.5;">Loading latest updates...</p>
     </div>
+
+
+    <script>
+        // --- CONFIGURATION ---
+        // PASTE YOUR GOOGLE SHEETS CSV LINK HERE INSIDE THE QUOTES:
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?output=csv";
+        // ---------------------
+
+
+        const contentDiv = document.getElementById('sheet-content');
+
+        // A simple CSV parser helper function
+        const csvToArray = (str, delimiter = ",") => {
+            const headers = str.slice(0, str.indexOf("\n")).split(delimiter).map(h => h.trim());
+            const rows = str.slice(str.indexOf("\n") + 1).split("\n");
+            return rows.map(row => {
+                const values = row.split(delimiter);
+                const el = headers.reduce((object, header, index) => {
+                    object[header] = values[index] ? values[index].trim() : "";
+                    return object;
+                }, {});
+                return el;
+            });
+        };
+
+        // Fetch and build the site
+        fetch(sheetUrl)
+            .then(response => response.text())
+            .then(csvText => {
+                const data = csvToArray(csvText);
+                contentDiv.innerHTML = ''; // Clear loading message
+
+                // Loop through sheet data backwards (newest first)
+                data.reverse().forEach(row => {
+                    // Skip empty rows
+                    if (!row.Layout || !row.TextContent) return;
+
+                    const postWrapper = document.createElement('div');
+                    postWrapper.className = 'post-row';
+
+                    if (row.Layout === 'text-only') {
+                        postWrapper.classList.add('text-only');
+                        postWrapper.innerHTML = `<p>${row.TextContent}</p>`;
+                    } 
+                    else if (row.Layout === 'side-by-side' && row.ImageURL) {
+                        postWrapper.classList.add('side-by-side');
+                        postWrapper.innerHTML = `
+                            <img src="${row.ImageURL}" alt="Project Update">
+                            <div class="text-block">
+                                <p>${row.TextContent}</p>
+                            </div>
+                        `;
+                    }
+
+                    contentDiv.appendChild(postWrapper);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching sheet:', error);
+                contentDiv.innerHTML = '<p>Error loading content. Please check the connection.</p>';
+            });
+    </script>
 
 </body>
 </html>
