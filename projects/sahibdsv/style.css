@@ -112,8 +112,8 @@ img, video {
     font-style: italic;
 }
 
-/* 6. ANIMATIONS */
+/* 6. ANIMATIONS (Fixed: No movement, just fade) */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
