@@ -15,7 +15,7 @@
     --header-h-default: 90px; 
     --header-h-shrink: 60px; 
     --header-h-expanded: 115px; 
-    --header-h-expanded-shrink: 80px; /* Kept height, but filled better */
+    --header-h-expanded-shrink: 80px;
     
     --ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -33,8 +33,13 @@ body {
 
 body.header-expanded { padding-top: var(--header-h-expanded); }
 
-.no-transition * { transition: none !important; }
-.sk-line, .sk-img, .sk-box { animation-play-state: running !important; }
+/* Disable transitions generally, but allow skeleton animations */
+.no-transition * { 
+    transition: none !important; 
+}
+.sk-line, .sk-img, .sk-box {
+    animation-play-state: running !important;
+}
 
 /* --- GLOBAL ANIMATION --- */
 .fill-anim {
@@ -61,15 +66,14 @@ body.header-expanded { padding-top: var(--header-h-expanded); }
     position: fixed; top: 0; left: 0; width: 100%; background: rgba(5,5,5,0.95); 
     backdrop-filter: blur(12px); z-index: 1000; 
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    padding-top: 15px; /* Base padding */
+    padding-top: 15px; 
     height: var(--header-h-default); 
     transition: height 0.4s var(--ease), padding 0.4s var(--ease); 
     overflow: hidden;
     border-bottom: 1px solid #1a1a1a; 
 }
 
-/* ADJUSTED: Increased padding to center content vertically */
-#main-header.shrink { height: var(--header-h-shrink); padding-top: 10px; } 
+#main-header.shrink { height: var(--header-h-shrink); padding-top: 10px; } /* Balanced Spacing */
 #main-header.expanded { height: var(--header-h-expanded); }
 #main-header.expanded.shrink { height: var(--header-h-expanded-shrink); }
 #main-header.search-mode { height: 90px; }
@@ -81,13 +85,13 @@ body.header-expanded { padding-top: var(--header-h-expanded); }
     --text-base: #666; --text-hover: #fff;
     z-index: 1003; 
 }
-#main-header.shrink #brand-name { font-size: 16px; margin-bottom: 3px; /* Slightly more breathing room */ }
+#main-header.shrink #brand-name { font-size: 16px; margin-bottom: 3px; }
 
 #primary-nav { 
     display: flex; gap: 30px; 
     margin-bottom: 8px; transition: all 0.4s var(--ease); 
 }
-#main-header.shrink #primary-nav { margin-bottom: 4px; gap: 20px; /* Pushes subnav down slightly */ }
+#main-header.shrink #primary-nav { margin-bottom: 4px; gap: 20px; }
 
 .nav-link {
     font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
@@ -123,14 +127,13 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 /* --- SEARCH & ACTIONS --- */
 #search-controls {
     position: absolute; right: 20px; 
-    top: 15px; /* Matches Base Padding */
+    top: 15px; /* Matches Header Padding */
     display: flex; align-items: center; justify-content: center;
     width: 30px; height: 30px; z-index: 1002;
     transition: top 0.4s var(--ease); 
 }
 
-/* ADJUSTED: Matches new shrunk padding */
-#main-header.shrink #search-controls { top: 10px; } 
+#main-header.shrink #search-controls { top: 10px; }
 
 .icon-btn { 
     position: absolute; width: 24px; height: 24px; cursor: pointer; fill: #666; 
@@ -286,12 +289,12 @@ a[target="_blank"]:not(.clickable-block)::after {
 .article-tags { display: flex; gap: 6px; }
 
 .layout-hero { text-align: center; margin: 0 0 10px; position: relative; }
-.layout-hero h1 { font-size: 42px; font-weight: 300; letter-spacing: -1px; margin-bottom: 5px; color: #fff; }
+.layout-hero h1 { font-size: 42px; font-weight: 300; letter-spacing: -1px; margin-bottom: 5px; --text-base: #fff; --text-hover: #aaa; }
 .layout-hero p { font-size: 18px; color: #999; font-weight: 300; max-width: 650px; margin: 0 auto; line-height: 1.4; }
 .hero-meta { margin-bottom: 10px; display: flex; justify-content: center; }
 
 .layout-text { margin-bottom: 15px; }
-.layout-text h2 { font-size: 22px; font-weight: 400; margin-bottom: 8px; margin-top: 10px; color: #fff; }
+.layout-text h2 { font-size: 22px; font-weight: 400; margin-bottom: 8px; margin-top: 10px; --text-base: #fff; --text-hover: #aaa; }
 .layout-text p { margin-bottom: 12px; color: #d4d4d4; font-weight: 300; line-height: 1.5; }
 
 /* INLINE GALLERY */
@@ -304,7 +307,7 @@ a[target="_blank"]:not(.clickable-block)::after {
 .inline-img.zoomable:hover { opacity: 0.9; }
 a .inline-img.zoomable { cursor: pointer; }
 
-/* QUOTE */
+/* QUOTE - 100px LOCKED */
 .layout-quote { 
     padding: 0 20px; 
     text-align: center; position: relative; 
@@ -335,6 +338,35 @@ a .inline-img.zoomable { cursor: pointer; }
 }
 .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg); }
 .layout-quote.loading blockquote, .layout-quote.loading .quote-footer { opacity: 0.3; pointer-events: none; }
+
+/* --- 404 & ARCHIVE --- */
+.layout-404 {
+    text-align: center;
+    padding: 60px 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.layout-404 h1 { font-size: 80px; margin: 0; line-height: 1; color: #333; }
+.layout-404 h2 { font-size: 24px; font-weight: 400; margin: 10px 0 20px; color: #fff; }
+.layout-404 p { color: #888; max-width: 400px; margin-bottom: 30px; }
+
+.btn-primary {
+    display: inline-block; padding: 10px 25px;
+    background: #fff; color: #000; text-decoration: none;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px;
+    border-radius: 4px; transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.8; }
+
+.archive-list { column-count: 2; column-gap: 40px; margin-top: 20px; }
+.archive-group { break-inside: avoid; margin-bottom: 30px; }
+.archive-group h3 { 
+    font-size: 14px; text-transform: uppercase; color: #666; 
+    border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; 
+}
+.archive-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
+.archive-link span { color: #444; font-size: 12px; margin-left: 8px; }
+
+@media (max-width: 600px) { .archive-list { column-count: 1; } }
 
 footer { 
     text-align: center; padding: 15px 0; border-top: 1px solid #1a1a1a; margin-top: 30px;

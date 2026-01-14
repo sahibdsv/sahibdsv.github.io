@@ -2,6 +2,7 @@
 
 let db = [], quotesDb = [], isSearchActive = false;
 
+// Fallback Config
 const FALLBACK_CONFIG = {
     main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
@@ -69,7 +70,7 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
-    // GOATCOUNTER TRACKING FOR SPA
+    // GOATCOUNTER TRACKING
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -182,6 +183,12 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
+    // ARCHIVE PAGE
+    if(h === 'Archive') {
+        renderArchive();
+        return;
+    }
+    
     const shouldCollapse = (h === 'Home' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
@@ -213,21 +220,55 @@ function renderPage(p) {
     if(ex.length > 0) { 
         renderRows(ex, null, true, false, !isMainPage); 
     } 
+    else if(childrenPagesCheck(p)) { /* Do nothing, handled below */ }
+    else {
+        app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
+        return; 
+    }
     
     if(isMainPage) {
         const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
         if(childrenPages.length > 0) {
             const overviewRows = childrenPages.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
             renderRows(overviewRows, null, true, true); 
-        } else if (ex.length === 0) {
-            renderRows([], "Page Empty");
-        }
+        } 
+    }
+}
+
+function childrenPagesCheck(p) {
+    const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
+    return childrenPages.length > 0;
+}
+
+function renderArchive() {
+    const app = document.getElementById('app'); 
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Archive</h1><p>Full system index.</p></div><div class="section archive-list"></div>';
+    
+    const list = app.querySelector('.archive-list');
+    const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
+    
+    const groups = {};
+    pages.forEach(p => {
+        const cat = p.split('/')[0];
+        if(!groups[cat]) groups[cat] = [];
+        groups[cat].push(p);
+    });
+    
+    for(const [cat, items] of Object.entries(groups)) {
+        let html = `<div class="archive-group"><h3>${cat}</h3>`;
+        items.forEach(p => {
+            const row = db.find(r => r.Page === p);
+            const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
+            const title = row ? row.Title : p.split('/').pop();
+            html += `<a href="#${p}" class="archive-link fill-anim">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
+        });
+        html += `</div>`;
+        list.innerHTML += html;
     }
 }
 
 function renderHome() { 
     const hr = db.filter(r => r.Page === 'Home');
-    const fr = db.filter(r => r.isFeatured === 'TRUE' && r.Page !== 'Home'); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
     renderRows(hr, null, true); 
@@ -250,7 +291,10 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
     }
 
-    if(rows.length === 0 && !append) { app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'; return; }
+    if(rows.length === 0 && !append) { 
+        app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`; 
+        return; 
+    }
     
     let gc = app.querySelector('.grid-container');
     if(append) {
@@ -385,6 +429,7 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
+    fd.innerHTML += `<a href="#Archive" class="fill-anim" onclick="closeSearch()">Archive</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
