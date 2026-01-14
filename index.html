@@ -54,9 +54,8 @@
             download: true, header: true, 
             skipEmptyLines: true, 
             complete: (results) => { 
-                // CRITICAL FIX: Remove rows where 'Page' is empty immediately
+                // SAFETY: Filter out rows with no Page immediately
                 db = results.data.filter(row => row.Page && row.Page.trim() !== '');
-                
                 if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
                 initApp(); 
             }
@@ -129,7 +128,6 @@
             const nav = document.getElementById('primary-nav');
             if(!nav) return;
             nav.innerHTML = '';
-            // Safe to map because we filtered db already
             const pages = [...new Set(db.map(row => row.Page.split('/')[0]).filter(p => p))].sort();
             pages.forEach(p => {
                 if (p === 'Home') return;
@@ -193,7 +191,9 @@
 
         function renderHome() {
             const homeRows = db.filter(row => row.Page === 'Home');
-            const featuredRows = db.filter(row => row.Tags && row.Tags.includes('Featured'));
+            
+            // CHECKBOX LOGIC: Look for string 'TRUE'
+            const featuredRows = db.filter(row => row.isFeatured === 'TRUE');
             
             const app = document.getElementById('app');
             app.innerHTML = '';
@@ -224,14 +224,20 @@
             let gridContainer = null;
 
             rows.forEach(row => {
+                if (!row.Page) return; // Double Safety
+
                 const media = row.Media || '';
                 const link = row.LinkURL || '';
                 const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
                 
                 let tagClass = 'meta-tag';
-                if(row.Page.startsWith('Personal')) tagClass += ' tag-personal';
-                else if(row.Page.startsWith('Professional')) tagClass += ' tag-prof';
-                else if(row.Page.startsWith('Projects')) tagClass += ' tag-project';
+                
+                // CRITICAL SAFETY FIX for startsWith error
+                if (row.Page) {
+                    if(row.Page.startsWith('Personal')) tagClass += ' tag-personal';
+                    else if(row.Page.startsWith('Professional')) tagClass += ' tag-prof';
+                    else if(row.Page.startsWith('Projects')) tagClass += ' tag-project';
+                }
 
                 let metaHTML = `<div class="meta-row">`;
                 if(row.Timestamp) metaHTML += `<span class="meta-tag" onclick="window.location.hash='Filter:${row.Timestamp}'; event.stopPropagation();">${row.Timestamp}</span>`;
@@ -241,7 +247,7 @@
                 const isInternal = link.startsWith('#');
                 const target = isInternal ? '' : '_blank';
                 
-                // --- GRID LOGIC ---
+                // GRID
                 if (row.SectionType === 'grid') {
                     if (!gridContainer) { 
                         gridContainer = document.createElement('div'); 
@@ -269,7 +275,6 @@
                     return; 
                 } 
                 
-                // --- STANDARD RENDER ---
                 gridContainer = null;
                 const content = processText(row.Content);
                 let innerHTML = '';
