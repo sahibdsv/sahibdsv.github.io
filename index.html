@@ -23,27 +23,24 @@
     </header>
 
     <div class="content-container" id="app">
-        <p style="text-align:center; padding-top: 80px; color: #444;">Loading...</p>
+        <p style="text-align:center; padding-top: 80px; color: #444;">Loading Portfolio...</p>
     </div>
 
-    <div id="lightbox" onclick="this.classList.remove('active')">
-        <img id="lightbox-img" src="">
-    </div>
+    <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
 
     <script>
-        // --- CONFIG ---
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?output=csv";
-        // --------------
-
         let db = [];
 
         Papa.parse(SHEET_URL, {
             download: true, header: true,
             complete: (results) => { 
                 db = results.data; 
+                console.log("Data loaded:", db.length, "rows"); // Debugging check
                 if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
                 initApp(); 
-            }
+            },
+            error: (err) => { document.getElementById('app').innerHTML = "Error loading sheet."; console.error(err); }
         });
 
         function initApp() {
@@ -52,7 +49,6 @@
             window.addEventListener('hashchange', handleRouting);
             window.addEventListener('scroll', () => document.getElementById('main-header').classList.toggle('shrink', window.scrollY > 50));
             
-            // Global Lightbox Click Handler
             document.getElementById('app').addEventListener('click', (e) => {
                 if(e.target.tagName === 'IMG' && !e.target.closest('a')) {
                     document.getElementById('lightbox-img').src = e.target.src;
@@ -64,7 +60,9 @@
         function buildNav() {
             const nav = document.getElementById('primary-nav');
             nav.innerHTML = '';
+            // Get unique Main Pages (Home, Personal, etc.)
             const pages = [...new Set(db.map(row => row.Page ? row.Page.split('/')[0] : null).filter(p => p))].sort();
+            
             pages.forEach(p => {
                 if (p === 'Home') return;
                 nav.innerHTML += `<a href="#${p}" class="nav-link">${p}</a>`;
@@ -75,21 +73,30 @@
             const nav = document.getElementById('sub-nav');
             nav.innerHTML = '';
             if (activeTopLevel === 'Home') return;
+
             const subPages = [...new Set(db.filter(row => row.Page && row.Page.startsWith(activeTopLevel)).map(row => row.Page))].sort();
             if (subPages.length <= 1) return; 
 
             subPages.forEach(p => {
                 const parts = p.split('/');
                 const name = parts[1] ? parts[1] : 'Overview';
-                const activeClass = (window.location.hash === `#${p}` || (p === activeTopLevel && window.location.hash === `#${p}`)) ? 'active' : '';
-                nav.innerHTML += `<a href="#${p}" class="sub-link ${activeClass}">${name}</a>`;
+                // Active logic: Is the URL exactly this link?
+                const isActive = (window.location.hash === `#${p}` || (p === activeTopLevel && window.location.hash === `#${p}`));
+                nav.innerHTML += `<a href="#${p}" class="sub-link ${isActive ? 'active' : ''}">${name}</a>`;
             });
         }
 
         function handleRouting() {
             const hash = window.location.hash.substring(1) || 'Home';
             const topLevel = hash.split('/')[0];
-            document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.toggle('active', a.innerText === topLevel));
+            
+            // Highlight Primary Nav (Keeps parent highlighted even when in sub-page)
+            document.querySelectorAll('#primary-nav .nav-link').forEach(a => {
+                // Remove href # to compare just text, or use getAttribute
+                const linkPage = a.getAttribute('href').replace('#', '');
+                a.classList.toggle('active', linkPage === topLevel);
+            });
+
             buildSubNav(topLevel);
             renderPage(hash);
             window.scrollTo(0, 0);
@@ -104,18 +111,28 @@
             const app = document.getElementById('app');
             app.innerHTML = '';
             const rows = db.filter(row => row.Page && row.Page.startsWith(pageFilter));
-            if (rows.length === 0) { app.innerHTML = '<div style="text-align:center; margin-top:100px; color:#666;">Page not found.</div>'; return; }
+            
+            if (rows.length === 0) { 
+                app.innerHTML = '<div style="text-align:center; margin-top:100px; color:#666;">Page not found or Sheet is updating (wait 2 mins).</div>'; 
+                return; 
+            }
 
             let gridContainer = null;
 
             rows.forEach(row => {
+                // If column is missing, fail gracefully
+                const media = row.Media || '';
+                const link = row.LinkURL || '';
+
                 if (row.SectionType === 'grid') {
                     if (!gridContainer) { gridContainer = document.createElement('div'); gridContainer.className = 'grid-container section'; app.appendChild(gridContainer); }
+                    
                     const itemContent = `
-                        <img src="${row.Media}" loading="lazy">
+                        <img src="${media}" loading="lazy">
                         <div class="grid-content"><h3>${row.Title}</h3><p>${processText(row.Content)}</p></div>`;
-                    // Wrap in link if LinkURL exists
-                    gridContainer.innerHTML += row.LinkURL ? `<a href="${row.LinkURL}" target="_blank" class="clickable-block layout-grid">${itemContent}</a>` : `<div class="layout-grid">${itemContent}</div>`;
+                    
+                    if (link) gridContainer.innerHTML += `<a href="${link}" target="_blank" class="clickable-block layout-grid">${itemContent}</a>`;
+                    else gridContainer.innerHTML += `<div class="layout-grid">${itemContent}</div>`;
                     return;
                 } 
                 
@@ -128,20 +145,18 @@
                 if (row.SectionType === 'hero') html = `<h1>${row.Title}</h1><p>${content}</p>`;
                 else if (row.SectionType === 'text') html = (row.Title ? `<h2>${row.Title}</h2>` : '') + `<p>${content}</p>`;
                 else if (row.SectionType === 'card') {
-                    html = `${getMediaHTML(row.Media)}<div><h3>${row.Title}</h3><p>${content}</p>${row.Timestamp ? `<div class="timestamp">${row.Timestamp}</div>` : ''}</div>`;
+                    html = `${getMediaHTML(media)}<div><h3>${row.Title}</h3><p>${content}</p>${row.Timestamp ? `<div class="timestamp">${row.Timestamp}</div>` : ''}</div>`;
                 }
                 else if (row.SectionType === 'compact') {
-                    html = `<img src="${row.Media}" loading="lazy"><div><h3>${row.Title}</h3><p>${content}</p></div>`;
+                    html = `<img src="${media}" loading="lazy"><div><h3>${row.Title}</h3><p>${content}</p></div>`;
                 }
 
-                // Wrap entire section in link if LinkURL exists
-                if (row.LinkURL) {
+                if (link) {
                     const wrapper = document.createElement('a');
-                    wrapper.href = row.LinkURL;
-                    wrapper.target = "_blank"; // Open external links in new tab
+                    wrapper.href = link;
+                    wrapper.target = "_blank";
                     wrapper.className = "clickable-block";
                     wrapper.innerHTML = html;
-                    // Move the layout class to the wrapper for hover effects
                     wrapper.querySelector(`.layout-${row.SectionType}`).classList.remove(`layout-${row.SectionType}`);
                     wrapper.classList.add(`layout-${row.SectionType}`);
                     app.appendChild(wrapper);

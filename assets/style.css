@@ -6,15 +6,15 @@ body {
     color: #e0e0e0;
     font-family: 'Jost', sans-serif;
     line-height: 1.6;
-    padding-top: 160px; /* Space for header */
+    padding-top: 160px;
 }
 
 /* --- 1. HEADER & HIERARCHY --- */
 #main-header {
     position: fixed; top: 0; left: 0; width: 100%;
-    background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px);
-    border-bottom: 1px solid #222; z-index: 1000;
-    padding: 15px 0; display: flex; flex-direction: column; align-items: center;
+    background: rgba(5, 5, 5, 0.98); border-bottom: 1px solid #222;
+    z-index: 1000; padding: 15px 0;
+    display: flex; flex-direction: column; align-items: center;
     transition: all 0.3s ease;
 }
 
@@ -24,105 +24,92 @@ body {
 }
 
 /* Row 1: Primary Nav */
-#primary-nav { display: flex; gap: 30px; margin-bottom: 10px; }
+#primary-nav { display: flex; gap: 40px; margin-bottom: 10px; }
 .nav-link {
-    color: #666; /* Faded by default */
-    font-size: 14px; font-weight: 500; text-transform: uppercase;
+    color: #555; /* Dark grey when inactive */
+    font-size: 15px; font-weight: 500; text-transform: uppercase;
     text-decoration: none; letter-spacing: 1px; transition: all 0.2s;
 }
-.nav-link:hover { color: #bbb; }
-/* ACTIVE STATE: Bright White to show hierarchy */
-.nav-link.active { color: #ffffff; font-weight: 700; }
+.nav-link:hover { color: #aaa; }
+
+/* ACTIVE STATES (The Neon Logic) */
+/* Note: We target these by the specific href in the HTML */
+.nav-link[href="#Personal"].active { color: #4dff88; text-shadow: 0 0 15px rgba(77, 255, 136, 0.3); font-weight: 700; }
+.nav-link[href="#Professional"].active { color: #00ffff; text-shadow: 0 0 15px rgba(0, 255, 255, 0.3); font-weight: 700; }
+.nav-link[href="#Projects"].active { color: #ff9933; text-shadow: 0 0 15px rgba(255, 153, 51, 0.3); font-weight: 700; }
+/* Default for others (like Home) */
+.nav-link.active { color: #fff; }
 
 /* Row 2: Sub-Nav */
-#sub-nav { display: flex; gap: 20px; min-height: 20px; font-size: 13px; }
-.sub-link { color: #888; text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
-.sub-link:hover { color: #ccc; }
-/* Highlight color for current sub-page */
-.sub-link.active { color: #4db8ff; }
+#sub-nav { display: flex; gap: 25px; min-height: 20px; font-size: 13px; }
+.sub-link { color: #666; text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
+.sub-link:hover { color: #999; }
+/* Active Sub-Link is WHITE and BOLD */
+.sub-link.active { color: #ffffff; font-weight: 700; border-bottom: 1px solid #fff; }
 
-/* Header Shrink */
+/* Shrink Header */
 #main-header.shrink { padding: 10px 0; }
 #main-header.shrink #brand-name { font-size: 18px; margin-bottom: 5px; }
 #main-header.shrink #primary-nav { margin-bottom: 5px; }
 
-/* --- 2. LINKS & INTERACTIONS --- */
-/* Consistent Dotted Style for in-text links */
-.wiki-link {
-    color: #4db8ff; text-decoration: none;
-    border-bottom: 1px dotted #4db8ff; transition: all 0.2s;
-}
-.wiki-link:hover { background: rgba(77, 184, 255, 0.1); border-bottom-style: solid; }
-
-/* Make entire cards clickable if they have a LinkURL */
-.clickable-block { text-decoration: none; color: inherit; display: block; }
-.clickable-block:hover .layout-card,
-.clickable-block:hover .layout-compact,
-.clickable-block:hover .layout-grid {
-    border-color: #4db8ff; /* Highlight border on hover */
-    transform: translateY(-2px);
-    transition: all 0.2s;
-}
-
-/* Image Zoom Cursor */
-img { cursor: zoom-in; }
-
-/* --- 3. LAYOUTS & SPACING --- */
+/* --- 2. LAYOUTS --- */
 .content-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; min-height: 80vh; }
-/* Tighter section spacing */
 .section { margin-bottom: 40px; opacity: 0; animation: fadeIn 0.5s forwards; }
 
+.clickable-block { text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
+.clickable-block:hover { transform: translateY(-3px); }
+
+/* Hero */
 .layout-hero { text-align: center; margin: 60px 0 80px; }
 .layout-hero h1 { font-size: 48px; color: #fff; margin-bottom: 15px; }
 .layout-hero p { color: #888; font-size: 22px; max-width: 600px; margin: 0 auto; }
 
+/* Standard Text */
 .layout-text { max-width: 700px; margin: 0 auto 40px; }
-.layout-text h2 { color: #fff; font-size: 28px; margin-bottom: 15px; border-left: 3px solid #4db8ff; padding-left: 15px; }
+.layout-text h2 { color: #fff; font-size: 28px; margin-bottom: 15px; border-left: 3px solid #555; padding-left: 15px; }
 
+/* Cards (Side-by-Side) */
 .layout-card {
     display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;
     background: #0f0f0f; border: 1px solid #222; padding: 30px; border-radius: 12px;
     align-items: center;
 }
-.layout-card img, .layout-card iframe, .layout-card video {
-    width: 100%; border-radius: 8px; object-fit: cover; max-height: 300px;
-}
+.layout-card img, .layout-card iframe, .layout-card video { width: 100%; border-radius: 8px; object-fit: cover; max-height: 300px; }
 .layout-card h3 { color: #fff; font-size: 24px; margin-bottom: 10px; }
 
-/* Tighter Compact Layout */
+/* Compact (List View) */
 .layout-compact {
-    display: flex; align-items: center; gap: 15px;
-    border-bottom: 1px solid #1a1a1a; padding: 15px 0; margin-bottom: 0 !important; /* Override section margin */
+    display: flex; align-items: center; gap: 20px;
+    border-bottom: 1px solid #1a1a1a; padding: 15px 0;
 }
-.layout-compact img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+.layout-compact img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid #333; }
 .layout-compact h3 { font-size: 16px; color: #fff; margin: 0; }
-.layout-compact p { font-size: 13px; color: #888; margin: 2px 0 0; }
+.layout-compact p { font-size: 13px; color: #777; margin: 0; }
 
+/* Grid (Gallery) */
 .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-.layout-grid { background: #111; border: 1px solid #222; border-radius: 8px; overflow: hidden; }
+.layout-grid { background: #111; border: 1px solid #222; border-radius: 8px; overflow: hidden; height: 100%; }
 .layout-grid img { width: 100%; height: 180px; object-fit: cover; }
 .layout-grid .grid-content { padding: 15px; }
 .layout-grid h3 { font-size: 16px; color: #fff; margin-bottom: 5px; }
 .layout-grid p { font-size: 13px; color: #999; }
 
-.timestamp { font-size: 11px; color: #555; text-transform: uppercase; margin-top: 15px; letter-spacing: 1px; }
+/* Helpers */
+.timestamp { font-size: 11px; color: #444; text-transform: uppercase; margin-top: 10px; }
+.wiki-link { color: #fff; text-decoration: none; border-bottom: 1px dotted #777; }
+.wiki-link:hover { border-bottom: 1px solid #fff; }
+img { cursor: zoom-in; }
 
-/* --- 4. LIGHTBOX (Image Zoom) --- */
-#lightbox {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9); z-index: 2000;
-    display: none; align-items: center; justify-content: center;
-    cursor: zoom-out; padding: 20px;
-}
-#lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-#lightbox.active { display: flex; animation: fadeIn 0.3s; }
+/* Lightbox */
+#lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+#lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
+#lightbox.active { display: flex; }
 
+/* Mobile */
 @media (max-width: 768px) {
     body { padding-top: 140px; }
-    #primary-nav { gap: 15px; }
-    #sub-nav { flex-wrap: wrap; justify-content: center; padding: 0 10px; }
+    #primary-nav { gap: 20px; }
     .layout-hero h1 { font-size: 36px; }
     .layout-card { grid-template-columns: 1fr; gap: 20px; }
-    .layout-card img { max-height: 200px; }
 }
 @keyframes fadeIn { to { opacity: 1; } }
