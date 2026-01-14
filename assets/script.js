@@ -247,9 +247,15 @@ function renderRows(rows, title, append, forceGrid) {
             }
             if(r.SectionType === 'hero') {
                 const d = document.createElement('div'); d.className = 'section layout-hero';
-                let dateVal = formatDate(r.Timestamp);
-                let dateChip = r.Timestamp ? `<span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span>` : `<span class="chip date" style="cursor:default">NO DATE</span>`;
-                d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1><div class="hero-meta">${dateChip}</div><p>${processText(r.Content)}</p>`;
+                
+                // CONDITIONAL DATE: Only if timestamp exists
+                let dateHtml = '';
+                if(r.Timestamp) {
+                    let dateVal = formatDate(r.Timestamp);
+                    dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
+                }
+                
+                d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                 app.appendChild(d); return;
             }
             if(r.SectionType === 'text') {
@@ -267,6 +273,7 @@ function renderRows(rows, title, append, forceGrid) {
         const imgH = thumb ? `<div class="row-media"><img src="${thumb}" loading="lazy"></div>` : '';
         
         let mh = '';
+        // Only show meta row if there are tags OR a date
         if(r.Timestamp || tags.length > 0) {
              mh = `<div class="meta-row">`;
              if(r.Timestamp) {
@@ -284,7 +291,10 @@ function renderRows(rows, title, append, forceGrid) {
         
         if(gc) gc.appendChild(d);
     });
-    if(window.MathJax) MathJax.typeset();
+    
+    if(window.MathJax && window.MathJax.typeset) {
+        window.MathJax.typeset();
+    }
 }
 
 function renderQuoteCard(c) {
