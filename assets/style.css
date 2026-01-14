@@ -130,27 +130,63 @@ body:not(.header-expanded) #sub-nav {
 }
 .sub-link.active { --text-base: #fff; --text-hover: #fff; font-weight: 700; }
 
-/* Search Overlay & Icon */
+/* --- SEARCH REDESIGN --- */
+
+/* Icon Positioning & Base */
 .icon-btn { 
     position: absolute; right: 20px; top: 18px; 
-    width: 20px; height: 20px; cursor: pointer; fill: #666; transition: all 0.4s var(--ease); z-index: 1002; 
+    width: 20px; height: 20px; cursor: pointer; fill: #666; 
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
+    z-index: 1002; 
+    transform-origin: center;
 }
 #main-header.shrink .icon-btn { top: 8px; width: 16px; height: 16px; }
 .icon-btn:hover { fill: #fff; }
 
+/* Morphing Animation States */
+.search-icon { opacity: 1; transform: rotate(0deg); pointer-events: auto; }
+.close-icon  { opacity: 0; transform: rotate(-90deg); pointer-events: none; }
+
+#main-header.search-mode .search-icon { opacity: 0; transform: rotate(90deg); pointer-events: none; }
+#main-header.search-mode .close-icon  { opacity: 1; transform: rotate(0deg); pointer-events: auto; }
+
+/* Expanding Search Bar */
 #search-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #050505;
-    display: flex; align-items: center; justify-content: center; 
-    visibility: hidden; opacity: 0; 
-    transition: opacity 0.2s;
+    position: absolute;
+    top: 10px; right: 55px; /* Aligns to the left of the icon */
+    height: 40px; width: 0; /* Start Hidden */
+    display: flex; align-items: center; justify-content: flex-end;
+    background: transparent;
     z-index: 1001;
+    overflow: hidden;
+    transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1), top 0.4s;
+    opacity: 0; visibility: hidden;
 }
-#search-overlay.active { visibility: visible; opacity: 1; }
+
+#main-header.shrink #search-overlay { top: 0px; }
+
+/* Active State: Expand bar */
+#search-overlay.active {
+    width: 260px; /* Width of the search bar */
+    max-width: calc(100vw - 80px); /* Ensure it fits on tiny screens */
+    opacity: 1; visibility: visible;
+}
+
 #search-input {
-    background: transparent; border: none; border-bottom: 2px solid #333; color: #fff; font-size: 24px; font-family: 'Jost', sans-serif;
-    width: 80%; padding: 10px 0; outline: none; text-align: left; font-weight: 300;
+    width: 100%; height: 100%;
+    background: transparent; border: none; 
+    border-bottom: 1px solid #444; 
+    color: #fff; font-size: 18px; font-family: 'Jost', sans-serif;
+    padding: 0 10px; outline: none; text-align: left;
 }
-#close-search { position: absolute; right: 20px; top: 18px; cursor: pointer; fill: #666; width: 24px; height: 24px; }
+
+/* Hide other header elements when search is open, BUT leave the icons visible */
+#main-header.search-mode > *:not(#search-overlay):not(#search-controls) {
+    opacity: 0.2; /* Fade out content slightly instead of full hide, or use 0 */
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+#main-header.search-mode > #search-controls { opacity: 1; }
 
 /* --- CONTENT --- */
 .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 30px 20px 0; flex: 1; min-height: 80vh; }
