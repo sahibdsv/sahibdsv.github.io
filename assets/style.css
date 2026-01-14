@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Jost', sans-serif;
+    line-height: 1.6;
+    padding-top: 150px; /* Space for the sticky header */
+}
+
+/* STICKY HEADER */
+#main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.95); /* Mostly opaque black */
+    border-bottom: 1px solid #222;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    padding: 20px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#main-header.shrink { padding: 10px 20px; }
+
+#brand-name {
+    font-size: 28px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: font-size 0.3s ease;
+}
+#main-header.shrink #brand-name { font-size: 20px; }
+
+nav {
+    display: flex;
+    gap: 25px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+nav a {
+    color: #888;
+    text-decoration: none;
+    font-size: 15px;
+    text-transform: uppercase;
+    padding-bottom: 4px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+nav a:hover, nav a.active { color: #fff; border-bottom: 2px solid #fff; }
+
+/* CONTENT CONTAINER */
+.content-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+    min-height: 60vh;
+}
+
+/* SECTIONS & ANIMATION */
+.section { margin-bottom: 50px; opacity: 0; animation: fadeIn 0.6s forwards; }
+
+/* HERO LAYOUT */
+.layout-hero { text-align: center; margin: 40px 0 60px 0; }
+.layout-hero h1 { font-size: 42px; color: #fff; margin-bottom: 15px; }
+.layout-hero p { color: #888; font-size: 20px; }
+
+/* TEXT LAYOUT */
+.layout-text h2 { margin-bottom: 10px; font-size: 24px; color: #eee; }
+.layout-text p { font-size: 18px; color: #ccc; margin-bottom: 15px; }
+
+/* CARD LAYOUT (Supports Images, Video, & YouTube) */
+.layout-card {
+    display: flex;
+    gap: 30px;
+    background: #111;
+    padding: 25px;
+    border-radius: 12px;
+    align-items: flex-start;
+    border: 1px solid #222;
+}
+
+/* Force all media types to share the same size rules */
+.layout-card img, 
+.layout-card iframe, 
+.layout-card video {
+    width: 40%;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.layout-card div { width: 60%; }
+.layout-card h3 { color: #fff; margin-bottom: 10px; font-size: 22px; }
+.layout-card p { color: #bbb; font-size: 16px; margin-bottom: 10px;}
+.timestamp { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+    body { padding-top: 130px; }
+    #brand-name { font-size: 22px; }
+    .layout-hero h1 { font-size: 32px; }
+    
+    /* Stack cards vertically */
+    .layout-card { flex-direction: column; }
+    .layout-card img, 
+    .layout-card iframe, 
+    .layout-card video, 
+    .layout-card div { 
+        width: 100%; 
+    }
+    .layout-card img, 
+    .layout-card iframe, 
+    .layout-card video { 
+        margin-bottom: 15px; 
+    }
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
