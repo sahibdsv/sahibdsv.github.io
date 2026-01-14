@@ -17,145 +17,180 @@
 </head>
 <body>
 
-    <header id="main-header" onclick="window.location.hash=''" style="cursor: pointer;">
-        <div id="brand-name">Sahib Virdee</div>
+    <header id="main-header">
+        <div id="brand-name" onclick="window.location.hash=''" style="cursor: pointer;">Sahib Virdee</div>
         <nav id="dynamic-nav"></nav>
     </header>
 
     <div class="content-container" id="app">
-        <p style="text-align:center; padding-top: 50px; color: #444; animation: fadeIn 1s;">
-            Loading...
-        </p>
+        <p style="text-align:center; padding-top: 50px; color: #444;">Loading...</p>
     </div>
 
     <script>
-        // --- YOUR SHEET ---
+        // --- CONFIG ---
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?output=csv";
-        // ------------------
+        // --------------
 
         let db = [];
 
-        // 1. Fetch
         Papa.parse(SHEET_URL, {
-            download: true,
-            header: true,
-            complete: function(results) {
-                db = results.data;
-                initApp();
-            }
+            download: true, header: true,
+            complete: (results) => { db = results.data; initApp(); }
         });
 
-        // 2. Init
         function initApp() {
             buildNav();
             handleRouting();
             window.addEventListener('hashchange', handleRouting);
+            window.addEventListener('scroll', handleScroll);
         }
 
-        // 3. Nav
+        // 1. NAVIGATION BUILDER (Sorted + Dropdowns)
         function buildNav() {
-            const pages = [...new Set(db.map(row => row.Page).filter(p => p))];
             const nav = document.getElementById('dynamic-nav');
             nav.innerHTML = '';
 
-            pages.forEach(pageName => {
-                const topLevel = pageName.split('/')[0];
-                if (topLevel === 'Home' || nav.innerHTML.includes(`'${topLevel}'`)) return;
+            // Get all unique pages and sort them ALPHABETICALLY
+            const allPages = [...new Set(db.map(row => row.Page).filter(p => p))].sort();
 
+            // Group them: { "Personal": ["Personal", "Personal/Hobbies"], "Projects": ["Projects"] }
+            const groups = {};
+            allPages.forEach(p => {
+                const top = p.split('/')[0];
+                if (!groups[top]) groups[top] = [];
+                groups[top].push(p);
+            });
+
+            // Render Menu
+            Object.keys(groups).forEach(topLevel => {
+                if (topLevel === 'Home') return; // Skip Home button (name is the button)
+
+                const container = document.createElement('div');
+                container.className = 'nav-item';
+
+                // Main Link
                 const link = document.createElement('a');
                 link.innerText = topLevel;
-                link.onclick = (e) => {
-                    e.stopPropagation();
-                    window.location.hash = topLevel;
-                };
+                link.href = `#${topLevel}`;
+                link.className = 'nav-link';
                 
-                if (window.location.hash.includes(topLevel)) link.classList.add('active');
-                nav.appendChild(link);
+                // Dropdown Logic (only if there are sub-pages)
+                const subPages = groups[topLevel].filter(p => p !== topLevel); // Remove duplicate main page
+                if (subPages.length > 0) {
+                    container.classList.add('has-dropdown');
+                    const dropdown = document.createElement('div');
+                    dropdown.className = 'dropdown-menu';
+                    
+                    subPages.forEach(sub => {
+                        const subLink = document.createElement('a');
+                        // text: "Personal/Hobbies" -> "Hobbies"
+                        subLink.innerText = sub.split('/')[1] || sub; 
+                        subLink.href = `#${sub}`;
+                        dropdown.appendChild(subLink);
+                    });
+                    container.appendChild(dropdown);
+                }
+
+                container.prepend(link); // Put main link before dropdown
+                nav.appendChild(container);
             });
         }
 
-        // 4. Routing
+        // 2. ROUTING
         function handleRouting() {
             const hash = window.location.hash.substring(1) || 'Home';
-            document.querySelectorAll('nav a').forEach(a => {
-                a.classList.toggle('active', a.innerText === hash.split('/')[0]);
+            const topLevel = hash.split('/')[0];
+
+            // Update Active State
+            document.querySelectorAll('.nav-link').forEach(a => {
+                a.classList.toggle('active', a.innerText === topLevel);
             });
+
             renderPage(hash);
             window.scrollTo(0, 0);
         }
 
-        // 5. HELPER: Detect Media Type
-        function getMediaHTML(url) {
-            if (!url) return '';
-            
-            // Check for YouTube
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                let videoId = url.split('v=')[1];
-                const ampersandPosition = videoId ? videoId.indexOf('&') : -1;
-                if (ampersandPosition !== -1) {
-                    videoId = videoId.substring(0, ampersandPosition);
-                }
-                return `<iframe width="100%" height="250" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="border-radius:6px; margin-bottom:10px;"></iframe>`;
-            }
-
-            // Check for MP4 Video
-            if (url.endsWith('.mp4') || url.endsWith('.webm')) {
-                return `<video controls playsinline src="${url}" style="width:100%; border-radius:6px; margin-bottom:10px;"></video>`;
-            }
-
-            // Default to Image
-            return `<img src="${url}" loading="lazy">`;
+        // 3. OBSIDIAN LINK PARSER ([[Link]])
+        function processText(text) {
+            if (!text) return '';
+            // Regex: Find [[Anything]], replace with <a href="#Anything">Anything</a>
+            return text.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="internal-link">$1</a>');
         }
 
-        // 6. Render
-        function renderPage(pageName) {
+        // 4. RENDER ENGINE
+        function renderPage(pageFilter) {
             const app = document.getElementById('app');
             app.innerHTML = '';
 
-            const rows = db.filter(row => row.Page && row.Page.startsWith(pageName));
+            // Filter logic: If I click "Personal", show "Personal" AND "Personal/Hobbies"
+            const rows = db.filter(row => row.Page && row.Page.startsWith(pageFilter));
 
             if (rows.length === 0) {
                 app.innerHTML = '<p style="text-align:center; margin-top:50px; color:#666;">Page not found.</p>';
                 return;
             }
 
+            let lastPageName = "";
+
             rows.forEach(row => {
+                // AUTO-HEADER: If the sub-page changes (e.g. from Personal to Personal/Hobbies)
+                // Insert a visual break
+                if (row.Page !== lastPageName && row.Page !== pageFilter && row.Page.includes('/')) {
+                    const subHeader = document.createElement('h3');
+                    subHeader.className = 'section-break';
+                    subHeader.innerText = row.Page.split('/')[1]; // "Hobbies"
+                    app.appendChild(subHeader);
+                }
+                lastPageName = row.Page;
+
+                // Create Content
                 const section = document.createElement('div');
                 section.className = `section layout-${row.SectionType}`;
+                
+                // Process text for Obsidian Links
+                const content = processText(row.Content);
 
                 let html = '';
-                
                 if (row.SectionType === 'hero') {
-                    html = `<h1>${row.Title}</h1><p>${row.Content}</p>`;
+                    html = `<h1>${row.Title}</h1><p>${content}</p>`;
                 } 
                 else if (row.SectionType === 'text') {
                     if (row.Title) html += `<h2>${row.Title}</h2>`;
-                    html += `<p>${row.Content}</p>`;
+                    html += `<p>${content}</p>`;
                 }
                 else if (row.SectionType === 'card') {
-                    const mediaHTML = getMediaHTML(row.Media);
-
+                    const media = getMediaHTML(row.Media);
                     html = `
-                        ${mediaHTML}
+                        ${media}
                         <div>
                             <h3>${row.Title}</h3>
-                            <p>${row.Content}</p>
+                            <p>${content}</p>
                             ${row.Timestamp ? `<div class="timestamp">${row.Timestamp}</div>` : ''}
                         </div>
                     `;
                 }
-
                 section.innerHTML = html;
                 app.appendChild(section);
             });
         }
 
-        // 7. Scroll
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('main-header');
-            if (window.scrollY > 50) header.classList.add('shrink');
-            else header.classList.remove('shrink');
-        });
+        // 5. MEDIA HELPER
+        function getMediaHTML(url) {
+            if (!url) return '';
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                let v = url.split('v=')[1];
+                if (v && v.includes('&')) v = v.split('&')[0];
+                return `<iframe width="100%" height="200" src="https://www.youtube.com/embed/${v}" frameborder="0" allowfullscreen></iframe>`;
+            }
+            if (url.endsWith('.mp4')) return `<video controls src="${url}"></video>`;
+            return `<img src="${url}" loading="lazy">`;
+        }
+
+        // 6. SCROLL HEADER
+        function handleScroll() {
+            const h = document.getElementById('main-header');
+            window.scrollY > 50 ? h.classList.add('shrink') : h.classList.remove('shrink');
+        }
     </script>
 </body>
 </html>
