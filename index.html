@@ -69,8 +69,8 @@
                 const h = document.getElementById('main-header');
                 if(h) {
                     h.classList.toggle('shrink', window.scrollY > 50);
-                    const subNav = document.getElementById('sub-nav');
-                    if (subNav.innerHTML === '') h.classList.add('compact');
+                    // Persistent Compact Mode logic
+                    if(document.body.classList.contains('header-compact')) h.classList.add('compact');
                 }
             });
             
@@ -90,22 +90,15 @@
                 // TAGS
                 if(e.target.classList.contains('meta-tag')) return;
 
-                // CLICKABLE CARDS (Search & Grid)
+                // LINKS
                 const block = e.target.closest('.clickable-block');
                 if(block) {
-                    if(e.target.classList.contains('meta-tag')) return;
-                    
-                    // Priority: Internal Link -> External Link -> Page Nav (for Search)
+                    if(e.target.classList.contains('meta-tag')) return; // Double Safety
                     const link = block.getAttribute('data-link');
                     const target = block.getAttribute('data-target');
-                    
-                    // If card has explicit link
                     if(link) {
                         if(target === '_blank') window.open(link, '_blank');
                         else {
-                            // If it's a search result without a specific link, it usually means 
-                            // we want to go to that Page.
-                            // But wait, the link logic handles that.
                             window.location.href = link;
                             if(isSearchActive) closeSearch();
                         }
@@ -123,7 +116,6 @@
             header.classList.remove('search-mode');
             document.getElementById('search-input').value = '';
             
-            // Only re-route if we were actually filtering
             if(isSearchActive) {
                 isSearchActive = false;
                 handleRouting(); 
@@ -149,6 +141,7 @@
                 (row.Content && row.Content.toLowerCase().includes(term)) ||
                 (row.Tags && row.Tags.toLowerCase().includes(term))
             );
+            // Pass 'true' for forceGrid to get Compact Cards
             renderRows(results, `Search results for "${query}"`, false, true);
         }
 
@@ -166,12 +159,14 @@
         function buildSubNav(activeTopLevel) {
             const nav = document.getElementById('sub-nav');
             const header = document.getElementById('main-header');
+            const body = document.body;
             if(!nav) return;
             
             nav.innerHTML = '';
             
             if (activeTopLevel === 'Home') {
                 header.classList.add('compact');
+                body.classList.add('header-compact');
                 return;
             }
 
@@ -182,16 +177,15 @@
 
             if (subPages.length === 0) {
                 header.classList.add('compact');
+                body.classList.add('header-compact');
                 return; 
             }
 
             header.classList.remove('compact');
-            
-            // NO OVERVIEW BUTTON
+            body.classList.remove('header-compact');
             
             subPages.forEach(p => {
                 const name = p.split('/')[1];
-                // SMART HIGHLIGHTING: If current hash STARTS WITH this path, mark active
                 const currentHash = window.location.hash;
                 const isActive = currentHash === `#${p}` || currentHash.startsWith(`#${p}/`);
                 nav.innerHTML += `<a href="#${p}" class="sub-link ${isActive ? 'active' : ''}" onclick="closeSearch()">${name}</a>`;
@@ -224,6 +218,7 @@
                 (row.Timestamp && row.Timestamp.includes(term)) || 
                 (row.Tags && row.Tags.includes(term))
             );
+            // Render Compact Grid for Tags too
             renderRows(results, `Posts tagged "${term}"`, false, true);
         }
 
@@ -269,13 +264,11 @@
                 if (!row.Page) return;
 
                 const media = row.Media || '';
-                let link = row.LinkURL || ''; // Allow mutation
+                let link = row.LinkURL || ''; 
                 const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
                 
-                // IF SEARCHING: If row has no explicit link, link to the Page it belongs to!
-                if(forceGrid && !link) {
-                    link = `#${row.Page}`;
-                }
+                // FALLBACK LINK FOR SEARCH
+                if(forceGrid && !link) link = `#${row.Page}`;
 
                 let tagClass = 'meta-tag';
                 if(row.Page.startsWith('Personal')) tagClass += ' tag-personal';
@@ -290,6 +283,9 @@
                 const isInternal = link.startsWith('#');
                 const target = isInternal ? '' : '_blank';
                 
+                // DATA ATTRIBUTES
+                const clickClass = link ? 'clickable-block' : '';
+
                 // GRID ITEM
                 if (row.SectionType === 'grid' || forceGrid) {
                     if (!gridContainer && !forceGrid) { 
@@ -298,19 +294,17 @@
                         app.appendChild(gridContainer); 
                     }
                     
-                    // BROKEN IMAGE FIX: If no media, use no-media class
                     const imgHTML = media ? `<img src="${media}" loading="lazy" class="${link ? '' : (forceGrid ? 'zoomable' : '')}">` : '';
                     const noMediaClass = media ? '' : 'no-media';
+                    const compactClass = forceGrid ? 'compact' : '';
 
                     const itemContent = `
                         ${imgHTML}
                         <div class="grid-content"><h3>${row.Title}</h3><p>${processText(row.Content)}</p>${metaHTML}</div>`;
                     
                     const div = document.createElement('div');
-                    div.className = `layout-grid clickable-block ${noMediaClass}`;
-                    
-                    // Always make search results clickable
-                    if(link || forceGrid) {
+                    div.className = `layout-grid ${clickClass} ${noMediaClass} ${compactClass}`;
+                    if(link) {
                         div.setAttribute('data-link', link);
                         div.setAttribute('data-target', target);
                     }
@@ -321,7 +315,7 @@
                     return; 
                 } 
                 
-                // STANDARD LAYOUTS
+                // STANDARD
                 const content = processText(row.Content);
                 let innerHTML = '';
 
@@ -337,7 +331,6 @@
                 }
 
                 const container = document.createElement('div');
-                const clickClass = link ? 'clickable-block' : '';
                 container.className = `section layout-${row.SectionType} ${clickClass}`;
                 if(link) {
                     container.setAttribute('data-link', link);
