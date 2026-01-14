@@ -2,7 +2,6 @@
 
 let db = [], quotesDb = [], isSearchActive = false;
 
-// Fallback Config
 const FALLBACK_CONFIG = {
     main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
@@ -36,7 +35,6 @@ const init = () => {
 };
 
 async function fetchData() {
-    console.log("Fetching fresh data from Google Sheets...");
     let config = FALLBACK_CONFIG;
     try {
         const cfgRes = await fetch('assets/config.json');
@@ -88,8 +86,7 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                // MATCH CSS HEIGHT: 140px
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:140px; width:100%; margin:0 auto;"></div>`;
+                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
                     quoteContainer.classList.remove('loading');
@@ -217,12 +214,18 @@ function renderPage(p) {
 }
 
 function renderHome() { 
+    // Render Home Page Content
     const hr = db.filter(r => r.Page === 'Home');
-    const fr = db.filter(r => r.isFeatured === 'TRUE' && r.Page !== 'Home'); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
     renderRows(hr, null, true); 
-    if(fr.length > 0) { renderRows(fr, null, true); } 
+    
+    // Recent Posts Logic (Top 6 non-Home)
+    const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
+                      .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
+                      .slice(0, 6);
+                      
+    if(recents.length > 0) { renderRows(recents, null, true); } 
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
@@ -251,7 +254,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         else if(pLower.startsWith('professional')) catClass = 'cat-professional';
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
-        // ARTICLE MODE
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
              
@@ -272,12 +274,12 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              }
              metaHtml += '</div></div>';
 
-             d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
+             // No fill-anim on Article Titles (Static Text)
+             d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2>${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
              app.appendChild(d);
              return;
         }
 
-        // CARD MODE
         if(!forceGrid) {
             if(r.SectionType === 'quote') { 
                 const d = document.createElement('div'); d.className = 'layout-quote section'; 
@@ -290,12 +292,13 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
                     let dateVal = formatDate(r.Timestamp);
                     dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
                 }
-                d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
+                // No fill-anim on Hero Title
+                d.innerHTML = `<h1>${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                 app.appendChild(d); return;
             }
             if(r.SectionType === 'text') {
                  const d = document.createElement('div'); d.className = 'section layout-text';
-                 d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+                 d.innerHTML = `${safeHTML(r.Title) ? `<h2>${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
                  app.appendChild(d); return;
             }
         }
@@ -380,14 +383,12 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // Process Collages
     clean = clean.replace(/\[\[(http.*?,.*?)\]\]/g, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy">`).join('');
         return `<div class="inline-gallery">${imgs}</div>`;
     });
 
-    // Process Single Images
     clean = clean.replace(/\[\[(http.*?)\]\]/g, `<img src="$1" class="inline-img zoomable" loading="lazy">`);
 
     return clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>')
@@ -396,6 +397,14 @@ function processText(t) {
 
 function formatDate(s) {
     if(!s) return '';
+    // Handle YYYYMMDD
+    if(s.length === 8 && !isNaN(s)) {
+        const y = s.substring(0, 4);
+        const m = s.substring(4, 6);
+        const d = s.substring(6, 8);
+        const dateObj = new Date(`${y}-${m}-${d}`);
+        return `${dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()} ${y}`;
+    }
     const d = new Date(s);
     if(isNaN(d.getTime())) return s;
     const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
