@@ -10,7 +10,6 @@
     <link rel="shortcut icon" href="/assets/favicon.ico" />
     
     <link rel="stylesheet" href="/assets/style.css">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -34,7 +33,7 @@
     </header>
 
     <div class="content-container" id="app">
-        <p class="loading-text" style="text-align:center; padding-top: 80px;">Loading Portfolio...</p>
+        <p class="loading-text" style="text-align:center; padding-top: 80px;">Loading...</p>
     </div>
 
     <footer>
@@ -48,18 +47,44 @@
     </div>
 
     <script>
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?output=csv";
         let db = [];
+        let quotesDb = [];
         let isSearchActive = false;
 
-        Papa.parse(SHEET_URL, {
-            download: true, header: true, skipEmptyLines: true,
-            complete: (results) => { 
-                db = results.data.filter(row => row.Page && row.Page.trim() !== '');
+        // --- STEP 1: LOAD CONFIG, THEN LOAD DATA ---
+        fetch('assets/config.json')
+            .then(response => {
+                if (!response.ok) throw new Error("Missing config.json");
+                return response.json();
+            })
+            .then(config => {
+                // Fetch both sheets using URLs from config
+                return Promise.all([
+                    fetchCSV(config.main_sheet),
+                    fetchCSV(config.quotes_sheet).catch(() => []) 
+                ]);
+            })
+            .then(([mainData, quotesData]) => {
+                db = mainData.filter(row => row.Page && row.Page.trim() !== '');
+                quotesDb = quotesData;
+                
                 if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
-                initApp(); 
-            }
-        });
+                initApp();
+            })
+            .catch(err => {
+                document.getElementById('app').innerHTML = `<div style="text-align:center; padding-top:50px; color:red;">Error loading site configuration.<br>${err}</div>`;
+                console.error(err);
+            });
+
+        function fetchCSV(url) {
+            return new Promise((resolve, reject) => {
+                Papa.parse(url, {
+                    download: true, header: true, skipEmptyLines: true,
+                    complete: (res) => resolve(res.data),
+                    error: (err) => reject(err)
+                });
+            });
+        }
 
         function initApp() {
             buildNav();
@@ -74,15 +99,11 @@
             });
             
             document.getElementById('app').addEventListener('click', (e) => {
+                if(e.target.closest('.refresh-btn')) { renderQuoteCard(e.target.closest('.layout-quote')); e.stopPropagation(); return; }
                 if(e.target.classList.contains('zoomable')) {
-                    const lb = document.getElementById('lightbox');
-                    const lbImg = document.getElementById('lightbox-img');
-                    if(lb && lbImg) {
-                        lbImg.src = e.target.src;
-                        lb.classList.add('active');
-                    }
-                    e.stopPropagation();
-                    return;
+                    document.getElementById('lightbox-img').src = e.target.src;
+                    document.getElementById('lightbox').classList.add('active');
+                    e.stopPropagation(); return;
                 }
                 if(e.target.classList.contains('meta-tag')) return;
 
@@ -93,38 +114,24 @@
                     const target = block.getAttribute('data-target');
                     if(link) {
                         if(target === '_blank') window.open(link, '_blank');
-                        else {
-                            window.location.href = link;
-                            if(isSearchActive) closeSearch();
-                        }
+                        else { window.location.href = link; if(isSearchActive) closeSearch(); }
                     }
                 }
             });
         }
 
         function resetToHome() { closeSearch(); window.location.hash = ''; }
-
         function closeSearch() {
-            const overlay = document.getElementById('search-overlay');
-            const header = document.getElementById('main-header');
-            overlay.classList.remove('active');
-            header.classList.remove('search-mode');
+            document.getElementById('search-overlay').classList.remove('active');
+            document.getElementById('main-header').classList.remove('search-mode');
             document.getElementById('search-input').value = '';
-            
-            if(isSearchActive) {
-                isSearchActive = false;
-                handleRouting(); 
-            }
+            if(isSearchActive) { isSearchActive = false; handleRouting(); }
             isSearchActive = false;
         }
-
         function toggleSearch() {
-            const overlay = document.getElementById('search-overlay');
-            const header = document.getElementById('main-header');
-            const isActive = overlay.classList.toggle('active');
-            header.classList.toggle('search-mode');
-            if (isActive) document.getElementById('search-input').focus();
-            else closeSearch();
+            const isActive = document.getElementById('search-overlay').classList.toggle('active');
+            document.getElementById('main-header').classList.toggle('search-mode');
+            if (isActive) document.getElementById('search-input').focus(); else closeSearch();
         }
 
         function handleSearch(query) {
@@ -155,13 +162,12 @@
             const header = document.getElementById('main-header');
             const body = document.body;
             if(!nav) return;
-            
             nav.innerHTML = '';
             
+            body.setAttribute('data-page', activeTopLevel);
+
             if (activeTopLevel === 'Home') {
-                header.classList.add('compact');
-                body.classList.add('header-compact');
-                return;
+                header.classList.add('compact'); body.classList.add('header-compact'); return;
             }
 
             const subPages = [...new Set(db
@@ -170,18 +176,14 @@
             )].sort();
 
             if (subPages.length === 0) {
-                header.classList.add('compact');
-                body.classList.add('header-compact');
-                return; 
+                header.classList.add('compact'); body.classList.add('header-compact'); return; 
             }
 
-            header.classList.remove('compact');
-            body.classList.remove('header-compact');
+            header.classList.remove('compact'); body.classList.remove('header-compact');
             
             subPages.forEach(p => {
                 const name = p.split('/')[1];
-                const currentHash = window.location.hash;
-                const isActive = currentHash === `#${p}` || currentHash.startsWith(`#${p}/`);
+                const isActive = window.location.hash === `#${p}` || window.location.hash.startsWith(`#${p}/`);
                 nav.innerHTML += `<a href="#${p}" class="sub-link ${isActive ? 'active' : ''}" onclick="closeSearch()">${name}</a>`;
             });
         }
@@ -193,8 +195,7 @@
 
             if (hash.startsWith('Filter:')) {
                 const term = decodeURIComponent(hash.split(':')[1]);
-                renderFiltered(term);
-                return;
+                renderFiltered(term); return;
             }
 
             const topLevel = hash.split('/')[0];
@@ -208,28 +209,20 @@
         }
 
         function renderFiltered(term) {
-            const results = db.filter(row => 
-                (row.Timestamp && row.Timestamp.includes(term)) || 
-                (row.Tags && row.Tags.includes(term))
-            );
+            const results = db.filter(row => (row.Timestamp && row.Timestamp.includes(term)) || (row.Tags && row.Tags.includes(term)));
             renderRows(results, `Posts tagged "${term}"`, false, true);
         }
 
         function renderPage(pageFilter) {
             if(pageFilter === 'Home') { renderHome(); return; }
             
-            // 1. Try to find rows that exactly match this page
             const exactRows = db.filter(row => row.Page === pageFilter);
-            
-            // 2. If valid content exists, show it
             if(exactRows.length > 0) {
                 renderRows(exactRows);
             } 
-            // 3. AUTO-OVERVIEW: If no exact content, find children!
             else {
                 const children = db.filter(row => row.Page.startsWith(pageFilter + '/'));
                 if(children.length > 0) {
-                    // Turn children into grid cards automatically
                     renderRows(children, `${pageFilter.split('/')[0]} Overview`, false, true);
                 } else {
                     renderRows([], "Page Empty");
@@ -248,7 +241,7 @@
                 featureHeader.innerHTML = "Featured Projects";
                 featureHeader.style.cssText = "text-align:center; color:#fff; margin:60px 0 30px; border-top:1px solid #222; padding-top:40px;";
                 app.appendChild(featureHeader);
-                renderRows(featuredRows, null, true);
+                renderRows(featuredRows, null, true, true);
             }
         }
 
@@ -265,18 +258,24 @@
             let gridContainer = null;
             if(forceGrid) {
                 gridContainer = document.createElement('div');
-                gridContainer.className = 'grid-container section compact-mode';
+                gridContainer.className = 'grid-container section';
                 app.appendChild(gridContainer);
             }
 
             rows.forEach(row => {
                 if (!row.Page) return;
 
+                if (row.SectionType === 'quote') {
+                    const quoteDiv = document.createElement('div');
+                    quoteDiv.className = 'layout-quote section clickable-block';
+                    renderQuoteCard(quoteDiv);
+                    app.appendChild(quoteDiv);
+                    return;
+                }
+
                 const media = row.Media || '';
                 let link = row.LinkURL || ''; 
                 const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
-                
-                // If Auto-Overview or Search, link to the page itself if no external link
                 if(forceGrid && !link) link = `#${row.Page}`;
 
                 let tagClass = 'meta-tag';
@@ -311,27 +310,19 @@
                     
                     const div = document.createElement('div');
                     div.className = `layout-grid ${clickClass} ${noMediaClass} ${compactClass}`;
-                    
-                    if(link || forceGrid) {
-                        div.setAttribute('data-link', link);
-                        div.setAttribute('data-target', target);
-                    }
+                    if(link || forceGrid) { div.setAttribute('data-link', link); div.setAttribute('data-target', target); }
                     div.innerHTML = itemContent;
                     
-                    if(forceGrid) gridContainer.appendChild(div);
-                    else gridContainer.appendChild(div);
+                    if(forceGrid) gridContainer.appendChild(div); else gridContainer.appendChild(div);
                     return; 
                 } 
                 
-                // STANDARD
                 const content = processText(row.Content);
                 let innerHTML = '';
 
-                if (row.SectionType === 'hero') {
-                    innerHTML = `<h1>${row.Title}</h1><p>${content}</p>`;
-                } else if (row.SectionType === 'text') {
-                    innerHTML = (row.Title ? `<h2>${row.Title}</h2>` : '') + `<p>${content}</p>`;
-                } else if (row.SectionType === 'card') {
+                if (row.SectionType === 'hero') innerHTML = `<h1>${row.Title}</h1><p>${content}</p>`;
+                else if (row.SectionType === 'text') innerHTML = (row.Title ? `<h2>${row.Title}</h2>` : '') + `<p>${content}</p>`;
+                else if (row.SectionType === 'card') {
                     const mediaHtml = getMediaHTML(media, false); 
                     innerHTML = `${mediaHtml}<div><h3>${row.Title}</h3><p>${content}</p>${metaHTML}</div>`;
                 } else if (row.SectionType === 'compact') {
@@ -340,10 +331,7 @@
 
                 const container = document.createElement('div');
                 container.className = `section layout-${row.SectionType} ${clickClass}`;
-                if(link) {
-                    container.setAttribute('data-link', link);
-                    container.setAttribute('data-target', target);
-                }
+                if(link) { container.setAttribute('data-link', link); container.setAttribute('data-target', target); }
                 container.innerHTML = innerHTML;
                 app.appendChild(container);
             });
@@ -351,11 +339,28 @@
             if(window.MathJax) MathJax.typeset();
         }
 
+        function renderQuoteCard(container) {
+            if(quotesDb.length === 0) { container.innerHTML = "Quote sheet empty."; return; }
+            const random = quotesDb[Math.floor(Math.random() * quotesDb.length)];
+            
+            let authorHtml = random.Author || 'Unknown';
+            if (random.Source && (random.Source.startsWith('http'))) {
+                authorHtml = `<a href="${random.Source}" target="_blank" style="color:inherit; border:none;">${authorHtml}</a>`;
+            } else if (random.Source) {
+                authorHtml += ` • ${random.Source}`;
+            }
+
+            container.innerHTML = `
+                <blockquote>"${random.Quote}"</blockquote>
+                <div class="author">— ${authorHtml}</div>
+                <div class="refresh-btn">🔄</div>
+            `;
+        }
+
         function getThumbnail(url) {
             if (!url) return null;
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                let v = url.split('v=')[1];
-                if (v && v.includes('&')) v = v.split('&')[0];
+                let v = url.split('v=')[1]; if (v && v.includes('&')) v = v.split('&')[0];
                 if (!v && url.includes('youtu.be')) v = url.split('/').pop();
                 return `https://img.youtube.com/vi/${v}/mqdefault.jpg`;
             }
@@ -371,8 +376,7 @@
         function getMediaHTML(url, isZoomable) {
             if (!url) return '';
             if (url.includes('youtube.com') || url.includes('youtu.be')) { 
-                let v = url.split('v=')[1];
-                if (v && v.includes('&')) v = v.split('&')[0]; 
+                let v = url.split('v=')[1]; if (v && v.includes('&')) v = v.split('&')[0]; 
                 if (!v && url.includes('youtu.be')) v = url.split('/').pop();
                 return `<iframe src="https://www.youtube.com/embed/${v}" frameborder="0" allowfullscreen></iframe>`; 
             }
