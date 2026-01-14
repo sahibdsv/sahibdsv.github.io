@@ -139,23 +139,9 @@
                     const quoteContainer = e.target.closest('.layout-quote');
                     if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                         quoteContainer.classList.add('loading');
+                        // Use the full box skeleton logic
+                        quoteContainer.innerHTML = `<div class="sk-box quote" style="height:140px; width:100%; margin:0 auto;"></div>`;
                         
-                        // Inject Skeleton Text immediately into Blockquote
-                        const bq = quoteContainer.querySelector('blockquote');
-                        if(bq) {
-                            bq.innerHTML = `
-                                <div class="sk-line quote-line"></div>
-                                <div class="sk-line quote-line"></div>
-                                <div class="sk-line quote-line short"></div>
-                            `;
-                        }
-                        
-                        // Replace Author text with Skeleton
-                        const authorContainer = quoteContainer.querySelector('.author');
-                        if(authorContainer) {
-                            authorContainer.innerHTML = `<div class="sk-line quote-line short" style="width:100px; height:12px; margin:0;"></div>`;
-                        }
-
                         setTimeout(() => {
                             renderQuoteCard(quoteContainer);
                             quoteContainer.classList.remove('loading');
@@ -355,13 +341,16 @@
             if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${auth}</a>`; 
             else if(r.Source) auth += ` • ${r.Source}`;
             
-            const len = r.Quote.length;
+            // CLEAN DATA: Remove existing double-quotes
+            const text = r.Quote.trim().replace(/^"|"$/g, '');
+            
+            const len = text.length;
             let sizeClass = 'short';
             if(len > 250) sizeClass = 'xl';
             else if(len > 150) sizeClass = 'long';
             else if(len > 70) sizeClass = 'medium';
             
-            c.innerHTML = `<blockquote class="${sizeClass}">"${r.Quote}"</blockquote>
+            c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
                            <div class="quote-footer"><div class="author">— ${auth}</div></div>
                            <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
         }

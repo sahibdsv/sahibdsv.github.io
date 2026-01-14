@@ -33,7 +33,7 @@ body {
 
 body.header-expanded { padding-top: var(--header-h-expanded); }
 
-/* CRITICAL FIX: Disable transitions generally, BUT ALLOW SKELETON ANIMATIONS */
+/* Prevent transitions during load, but ALLOW skeleton animations */
 .no-transition, .no-transition *:not(.sk-line):not(.sk-img):not(.sk-box):not(.sk-box *):not(.sk-line *) { 
     transition: none !important; 
     animation: none !important; 
@@ -289,28 +289,24 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
 #lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
-/* --- SKELETON (GPU SHIMMER) --- */
+/* --- SKELETON (SHIMMER) --- */
 .sk-line, .sk-img, .sk-box {
-    background: #1a1a1a; 
-    position: relative;
-    overflow: hidden;
+    background: #1a1a1a;
+    background-image: linear-gradient(
+        90deg, 
+        #1a1a1a 0%, 
+        #333 50%, 
+        #1a1a1a 100%
+    );
+    background-size: 200% 100%;
     border-radius: 4px;
-    display: block; /* Force visibility */
-}
-
-/* Pseudo-element shine that sweeps across */
-.sk-line::after, .sk-img::after, .sk-box::after {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-    transform: translateX(-100%);
-    animation: shimmer 1.2s infinite;
-    will-change: transform; /* Hint to browser to use GPU */
+    animation: shimmer 1.5s infinite linear;
+    display: block; /* Ensure visibility */
 }
 
 @keyframes shimmer {
-    100% { transform: translateX(100%); }
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 .sk-line { margin-bottom: 10px; }
@@ -322,10 +318,6 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 15px; border-radius: 4px; }
 .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 12px; }
 .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 8px; }
-
-/* Quote Text Skeleton Lines */
-.sk-line.quote-line { height: 20px; width: 90%; margin: 0 auto 10px; background: #222; }
-.sk-line.quote-line.short { width: 60%; }
 
 @media (max-width: 768px) {
     .grid-container { grid-template-columns: 1fr; }
