@@ -304,3 +304,43 @@ footer .footer-links a { font-size: 13px; font-weight: 400; --text-base: #777; -
 .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 10px; }
 .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 6px; }
 @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } footer { flex-direction: column; gap: 20px; text-align: center; } }
+
+/* --- EMBEDS & IFRAMES --- */
+.embed-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 6px;
+    margin: 20px 0;
+    background: #111;
+    border: 1px solid #222;
+}
+
+/* 16:9 Aspect Ratio (YouTube / Generic Video) */
+.embed-wrapper.video {
+    padding-top: 56.25%; 
+}
+
+/* Tall Container (Docs, Sheets, PDFs) */
+.embed-wrapper.doc {
+    height: 600px;
+}
+
+/* Medium Container (Maps) */
+.embed-wrapper.map {
+    height: 400px;
+}
+
+.embed-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Allow raw iframes to be responsive too if pasted manually */
+iframe {
+    max-width: 100%;
+}
