@@ -37,8 +37,6 @@ body {
 /* New class for non-home pages */
 body.header-expanded { padding-top: var(--header-h-expanded); }
 
-body.header-compact { padding-top: var(--header-h-default); }
-
 /* Prevent transitions during initial load */
 .no-transition, .no-transition * { transition: none !important; animation: none !important; }
 
@@ -81,7 +79,6 @@ body.header-compact { padding-top: var(--header-h-default); }
 #main-header.expanded.shrink { height: var(--header-h-expanded-shrink); }
 
 #main-header.search-mode { height: 90px; }
-/* #main-header.search-mode > *:not(#search-overlay) { opacity: 0; pointer-events: none; } */
 
 /* Brand Name */
 #brand-name {
@@ -317,17 +314,42 @@ footer .footer-links a {
 #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
 #lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
-/* Skeleton */
-.sk-line { background: #111; border-radius: 4px; margin-bottom: 10px; animation: pulse 1.5s infinite ease-in-out; }
-.sk-line.title { height: 36px; width: 50%; margin: 0 auto 15px; }
+/* --- SKELETON (SHIMMER) --- */
+/* Common Shimmer Animation */
+.sk-line, .sk-img, .sk-box {
+    background: #111; /* Fallback */
+    background: linear-gradient(
+        90deg, 
+        #111 0%, 
+        #1a1a1a 50%, 
+        #111 100%
+    );
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: shimmer 2s infinite linear;
+}
+
+/* Specific Shapes */
+.sk-line { margin-bottom: 10px; }
+
+/* Hero Skeleton */
+.sk-line.title { height: 48px; width: 50%; margin: 0 auto 20px; }
 .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
-.sk-line.text { height: 16px; width: 100%; }
+.sk-line.text { height: 18px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
 .sk-line.text.short { width: 60%; }
 
-.layout-grid .sk-img { width: 100%; height: 160px; background: #111; margin-bottom: 15px; animation: pulse 1.5s infinite ease-in-out; }
-.layout-grid .sk-line.title { height: 20px; width: 70%; margin: 0 0 10px; }
+/* Quote Skeleton */
+.sk-box.quote { height: 120px; width: 80%; margin: 0 auto 40px; max-width: 600px; }
 
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+/* Card Skeleton */
+.layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 15px; border-radius: 4px; }
+.layout-grid .sk-line.title { height: 24px; width: 80%; margin: 0 0 12px; }
+.layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 8px; }
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
 
 @media (max-width: 768px) {
     .grid-container { grid-template-columns: 1fr; }
