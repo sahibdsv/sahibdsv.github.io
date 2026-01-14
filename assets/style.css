@@ -1,25 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap');
 
 :root {
-    /* --- 1. COLOR PALETTE --- */
     --bg: #050505;
     --text-main: #e0e0e0;
     --text-dim: #999;
     --border: #222;
-    
-    /* Neon Accents */
     --accent-personal: #4dff88;
     --accent-prof: #00ffff;
     --accent-projects: #ff9933;
     
-    /* --- 2. SPACING GUIDELINES (The "Rhythm") --- */
     --header-height: 160px;
     --header-height-shrink: 90px;
-    
-    --space-xs: 8px;   /* Tight labels */
-    --space-sm: 15px;  /* Inside cards */
-    --space-md: 25px;  /* Between elements */
-    --space-lg: 50px;  /* Between sections */
+    /* When no sub-nav exists, header is shorter */
+    --header-height-compact: 100px; 
     
     --ease: cubic-bezier(0.4, 0.0, 0.2, 1);
 }
@@ -31,51 +24,49 @@ body {
     color: var(--text-main);
     font-family: 'Jost', sans-serif;
     line-height: 1.6;
-    padding-top: var(--header-height); /* Pushes content down */
+    padding-top: var(--header-height);
     display: flex; flex-direction: column; min-height: 100vh;
 }
 
-/* --- 3. HEADER LAYOUT (Fixed Positions) --- */
+/* --- HEADER --- */
 #main-header {
     position: fixed; top: 0; left: 0; width: 100%;
     background: rgba(5, 5, 5, 0.98); border-bottom: 1px solid var(--border);
     z-index: 1000;
-    
-    /* Layout: Stack Vertical, Top Aligned */
     display: flex; flex-direction: column; align-items: center; 
-    padding-top: 15px; /* Name starts here */
-    
+    padding-top: 15px;
     height: var(--header-height);
     transition: height 0.4s var(--ease), padding 0.4s var(--ease);
 }
 
-#main-header.shrink { 
-    height: var(--header-height-shrink); 
-    padding-top: 10px;
-}
+/* 1. Normal Shrink (Scroll) */
+#main-header.shrink { height: var(--header-height-shrink); padding-top: 10px; }
+
+/* 2. Compact Mode (No Sub-Nav) */
+#main-header.compact { height: var(--header-height-compact); }
+#main-header.compact #sub-nav { display: none; opacity: 0; pointer-events: none; }
+#main-header.compact.shrink { height: 70px; } /* Even smaller on scroll */
+
+/* 3. Search Mode */
 #main-header.search-mode { height: 80px; }
 #main-header.search-mode #sub-nav { display: none; opacity: 0; pointer-events: none; }
 #main-header.search-mode .icon-btn { opacity: 0; pointer-events: none; }
 
 #brand-name {
     font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px;
-    color: #fff; cursor: pointer;
-    margin-bottom: 20px; /* Space between Name and Nav */
+    color: #fff; cursor: pointer; margin-bottom: 20px;
     transition: all 0.4s var(--ease);
     user-select: none; -webkit-user-select: none;
 }
-#main-header.shrink #brand-name { 
-    font-size: 18px; 
-    margin-bottom: 5px; /* Shrinks the gap on scroll */
-}
+#main-header.shrink #brand-name { font-size: 18px; margin-bottom: 5px; }
+#main-header.compact #brand-name { margin-bottom: 10px; }
 
-/* Row 1: Primary Nav */
 #primary-nav { 
-    display: flex; gap: 40px; 
-    margin-bottom: 15px; /* GAP CONTROL: Space between Main Nav and Sub Nav */
+    display: flex; gap: 40px; margin-bottom: 15px; 
     transition: all 0.4s var(--ease);
 }
 #main-header.shrink #primary-nav { margin-bottom: 2px; gap: 25px; }
+#main-header.compact #primary-nav { margin-bottom: 0; }
 
 .nav-link {
     color: #666; font-size: 15px; font-weight: 500; text-transform: uppercase;
@@ -87,12 +78,10 @@ body {
 .nav-link:hover { color: #aaa; }
 .nav-link.active { color: #fff; font-weight: 700; }
 
-/* Colors */
 .nav-link[href="#Personal"].active { color: var(--accent-personal); text-shadow: 0 0 10px rgba(77, 255, 136, 0.4); }
 .nav-link[href="#Professional"].active { color: var(--accent-prof); text-shadow: 0 0 10px rgba(0, 255, 255, 0.4); }
 .nav-link[href="#Projects"].active { color: var(--accent-projects); text-shadow: 0 0 10px rgba(255, 153, 51, 0.4); }
 
-/* Row 2: Sub Nav */
 #sub-nav { 
     display: flex; gap: 20px; min-height: 20px; font-size: 13px; 
     transition: all 0.4s var(--ease); opacity: 1;
@@ -103,9 +92,9 @@ body {
 .sub-link:hover { color: #888; }
 .sub-link.active { color: #fff; font-weight: 700; }
 
-/* --- 4. SEARCH UI --- */
+/* SEARCH & ICONS */
 .icon-btn {
-    position: absolute; right: 30px; top: 40px; /* Aligned with Name/Nav area */
+    position: absolute; right: 30px; top: 40px;
     width: 24px; height: 24px; cursor: pointer; fill: #666; transition: all 0.2s; z-index: 1002;
 }
 .icon-btn:hover { fill: #fff; }
@@ -117,7 +106,6 @@ body {
     visibility: hidden; opacity: 0; transition: opacity 0.2s; z-index: 1001;
 }
 #search-overlay.active { visibility: visible; opacity: 1; }
-
 #search-input {
     background: transparent; border: none; border-bottom: 2px solid #333;
     color: #fff; font-size: 24px; font-family: 'Jost', sans-serif;
@@ -127,15 +115,13 @@ body {
     position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
     cursor: pointer; fill: #666; width: 24px; height: 24px;
 }
-#close-search:hover { fill: #fff; }
 
-/* --- 5. CONTENT LAYOUT --- */
+/* CONTENT */
 .content-container { 
     max-width: 1000px; width: 100%; margin: 0 auto; 
-    padding: var(--space-lg) 20px 0; /* Consistent Top Padding */
-    flex: 1; 
+    padding: 50px 20px 0; flex: 1; 
 }
-.section { margin-bottom: var(--space-lg); opacity: 0; animation: fadeIn 0.4s forwards; }
+.section { margin-bottom: 50px; opacity: 0; animation: fadeIn 0.4s forwards; }
 
 a { color: inherit; text-decoration: none; }
 p a, .grid-content p a {
@@ -143,54 +129,49 @@ p a, .grid-content p a {
 }
 p a:hover { color: #fff; text-decoration-color: #fff; }
 
-/* Headers */
 .layout-hero { text-align: center; margin: 20px 0 60px; }
 .layout-hero h1 { font-size: 48px; color: #fff; margin-bottom: 15px; }
 .layout-hero p { color: var(--text-dim); font-size: 22px; max-width: 600px; margin: 0 auto; }
 
-.layout-text { max-width: 700px; margin: 0 auto var(--space-md); }
+.layout-text { max-width: 700px; margin: 0 auto 25px; }
 .layout-text h2 { color: #fff; font-size: 26px; margin-bottom: 10px; }
 
-/* Card Components */
+/* CARD & GRID */
 .layout-card {
     display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px;
     background: #0f0f0f; border: 1px solid var(--border); 
-    padding: var(--space-md); border-radius: 12px;
+    padding: 25px; border-radius: 12px;
     align-items: center; transition: all 0.2s;
 }
 .layout-card img { width: 100%; border-radius: 8px; object-fit: cover; max-height: 280px; }
 .layout-card h3 { color: #fff; font-size: 22px; margin-bottom: 8px; }
 
-/* Compact List */
 .layout-compact {
     display: flex; align-items: center; gap: 20px;
-    border-bottom: 1px solid #1a1a1a; 
-    padding: var(--space-sm) 0; margin-bottom: 0 !important;
+    border-bottom: 1px solid #1a1a1a; padding: 15px 0; margin-bottom: 0 !important;
 }
 .layout-compact img { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; border: 1px solid #333; }
 .layout-compact h3 { font-size: 16px; color: #fff; margin: 0; }
 .layout-compact p { font-size: 14px; color: var(--text-dim); margin: 2px 0 0; line-height: 1.4; }
 
-/* Grid Gallery */
 .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 .layout-grid { 
     background: #111; border: 1px solid var(--border); 
     border-radius: 8px; overflow: hidden; height: 100%; transition: all 0.2s; 
 }
 .layout-grid img { width: 100%; height: 180px; object-fit: cover; }
-.layout-grid .grid-content { padding: var(--space-md); }
+.layout-grid .grid-content { padding: 20px; }
 
-/* Hover States */
-.clickable-block { cursor: pointer; display: block; -webkit-tap-highlight-color: transparent; }
-.clickable-block:hover .layout-card, 
-.clickable-block:hover .layout-grid { 
+/* Click Interaction (Handled via JS now, but CSS handles hover) */
+.clickable-block { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.clickable-block:hover { 
     border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.05); transform: translateY(-2px); 
 }
 
 .zoomable { cursor: zoom-in; }
 .has-link img { pointer-events: none; }
 
-/* Tags */
+/* TAGS */
 .meta-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
 .meta-tag {
     font-size: 11px; font-weight: 600; color: #aaa;
@@ -198,14 +179,15 @@ p a:hover { color: #fff; text-decoration-color: #fff; }
     border-radius: 4px; border: 1px solid #333; 
     cursor: pointer; text-transform: uppercase;
     transition: all 0.2s; letter-spacing: 0.5px;
-    user-select: none; -webkit-user-select: none; -moz-user-select: none; -webkit-tap-highlight-color: transparent;
+    user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+    z-index: 10; position: relative; /* Ensure it floats above card click */
 }
 .meta-tag:hover { color: #fff; border-color: #666; background: #222; }
 .tag-personal { color: #4dff88; border-color: rgba(77, 255, 136, 0.2); }
 .tag-prof { color: #00ffff; border-color: rgba(0, 255, 255, 0.2); }
 .tag-project { color: #ff9933; border-color: rgba(255, 153, 51, 0.2); }
 
-/* Footer */
+/* FOOTER & LIGHTBOX */
 footer {
     text-align: center; padding: 60px 0; color: #555; font-size: 14px; 
     border-top: 1px solid #111; margin-top: 60px;
@@ -213,7 +195,6 @@ footer {
 footer a { color: #888; text-decoration: none; margin: 0 15px; transition: color 0.2s; font-weight: 500; }
 footer a:hover { color: #fff; }
 
-/* Lightbox */
 #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
 #lightbox img { max-width: 90%; max-height: 90%; object-fit: contain; }
 #lightbox.active { display: flex; animation: fadeIn 0.2s; }
