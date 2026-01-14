@@ -84,7 +84,7 @@ body.header-expanded { padding-top: var(--header-h-expanded); }
 
 /* Primary Nav */
 #primary-nav { 
-    display: flex; gap: 30px; /* Adjusted gap for better spacing */
+    display: flex; gap: 30px; 
     margin-bottom: 8px; transition: all 0.4s var(--ease); 
 }
 #main-header.shrink #primary-nav { margin-bottom: 2px; gap: 20px; }
@@ -113,9 +113,6 @@ body.header-expanded { padding-top: var(--header-h-expanded); }
     mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
 }
-/* If content overflows, justify-content center breaks scroll, so we handle in JS or assume enough width. 
-   For purely scrolling with many items, 'flex-start' is safer, but 'center' looks better for few.
-   We will keep centered but ensure flex-shrink doesn't squash them. */
 #sub-nav > * { flex-shrink: 0; }
 
 body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
@@ -175,6 +172,7 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 p a:not(.wiki-link) { --text-base: #fff; --text-hover: #aaa; border-bottom: 1px dotted #666; }
 p a:not(.wiki-link):hover { border-bottom-color: #fff; }
 
+/* Global External Link Icon */
 a[target="_blank"]:not(.clickable-block) { display: inline-flex; align-items: center; gap: 4px; }
 a[target="_blank"]:not(.clickable-block)::after {
     content: ""; display: inline-block; width: 12px; height: 12px;
@@ -209,11 +207,12 @@ body[data-page^="Professional"] .layout-grid h3 { --text-hover: var(--accent-pro
 body[data-page^="Personal"] .layout-grid h3 { --text-hover: var(--accent-personal); }
 body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 
+/* MATCHED EXTERNAL ICON: Now uses the same SVG path as footer links */
 .layout-grid[data-target="_blank"] h3::after {
     content: ""; display: inline-block; width: 12px; height: 12px;
     background-color: currentColor; opacity: 0.7;
-    -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>') no-repeat center;
-    mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>') no-repeat center;
+    -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center;
+    mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center;
 }
 
 .layout-grid p { font-size: 14px; margin: 0; color: var(--text-dim); font-weight: 400; line-height: 1.5; margin-bottom: 2px; }
@@ -240,7 +239,7 @@ body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 /* Quote */
 .layout-quote { 
     padding: 20px; text-align: center; position: relative; margin: 0 auto 40px; 
-    min-height: 200px; /* Fixed minimum height */
+    min-height: 200px; 
     max-width: 800px;
     display: flex; flex-direction: column; justify-content: center; align-items: center; 
 }
@@ -249,7 +248,6 @@ body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
     margin-bottom: 15px; line-height: 1.3; transition: font-size 0.3s; 
 }
 
-/* Adaptive Font Sizes */
 .layout-quote blockquote.short { font-size: 32px; }
 .layout-quote blockquote.medium { font-size: 26px; }
 .layout-quote blockquote.long { font-size: 20px; }
@@ -259,7 +257,6 @@ body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 .layout-quote .author { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
 .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
 
-/* Reload Icon (Absolute Position) */
 .layout-quote .refresh-btn { 
     position: absolute; top: 0; right: 0;
     width: 24px; height: 24px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; 
@@ -276,7 +273,6 @@ footer {
 footer .footer-links { display: flex; gap: 20px; justify-content: center; }
 footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; --text-hover: #fff; }
 
-/* Version Tag Hyperlink Style */
 #version-tag, #version-tag a { 
     font-size: 13px; color: #666; font-family: 'Jost', sans-serif; text-decoration: none; transition: color 0.2s;
 }
@@ -289,10 +285,12 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 /* --- SKELETON (SHIMMER) --- */
 .sk-line, .sk-img, .sk-box {
     background: #111;
-    background: linear-gradient(90deg, #111 0%, #2a2a2a 50%, #111 100%); 
+    /* Brightened center (#333) for visibility against dark bg */
+    background: linear-gradient(90deg, #111 0%, #333 50%, #111 100%); 
     background-size: 200% 100%;
     border-radius: 4px;
-    animation: shimmer 2s infinite linear;
+    /* Faster animation (1s) to feel fast */
+    animation: shimmer 1s infinite linear;
 }
 
 .sk-line { margin-bottom: 10px; }
