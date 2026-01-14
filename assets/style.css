@@ -69,10 +69,10 @@ body.header-compact { padding-top: var(--header-h-compact); }
 }
 #main-header.shrink .nav-link { font-size: 12px; }
 
-/* Active & Hover States */
-.nav-link[href="#Projects"]:hover, .nav-link[href="#Projects"].active { color: var(--accent-projects); text-shadow: 0 0 15px rgba(255, 153, 51, 0.5); }
-.nav-link[href="#Professional"]:hover, .nav-link[href="#Professional"].active { color: var(--accent-prof); text-shadow: 0 0 15px rgba(0, 255, 255, 0.5); }
-.nav-link[href="#Personal"]:hover, .nav-link[href="#Personal"].active { color: var(--accent-personal); text-shadow: 0 0 15px rgba(77, 255, 136, 0.5); }
+/* Active States */
+.nav-link[href="#Projects"]:hover, .nav-link[href="#Projects"].active { color: var(--accent-projects); text-shadow: 0 0 10px rgba(255, 153, 51, 0.4); }
+.nav-link[href="#Professional"]:hover, .nav-link[href="#Professional"].active { color: var(--accent-prof); text-shadow: 0 0 10px rgba(0, 255, 255, 0.4); }
+.nav-link[href="#Personal"]:hover, .nav-link[href="#Personal"].active { color: var(--accent-personal); text-shadow: 0 0 10px rgba(77, 255, 136, 0.4); }
 
 #sub-nav { 
     display: flex; gap: 20px; font-size: 13px; 
@@ -84,15 +84,15 @@ body.header-compact { padding-top: var(--header-h-compact); }
 #main-header.shrink #sub-nav { font-size: 11px; gap: 15px; }
 
 .sub-link { color: #555; text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
-.sub-link:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
-.sub-link.active { color: #fff; font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.8); }
+.sub-link:hover { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+.sub-link.active { color: #fff; font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
 
 .icon-btn {
     position: absolute; right: 20px; top: 18px; 
     width: 20px; height: 20px; cursor: pointer; fill: #666; transition: all 0.4s var(--ease); z-index: 1002;
 }
 #main-header.shrink .icon-btn { top: 8px; width: 16px; height: 16px; }
-.icon-btn:hover { fill: #fff; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+.icon-btn:hover { fill: #fff; }
 
 #search-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -118,19 +118,32 @@ body.header-compact { padding-top: var(--header-h-compact); }
 .section { margin-bottom: 40px; opacity: 0; animation: fadeIn 0.4s forwards; }
 
 a { color: inherit; text-decoration: none; }
-p a, .grid-content p a { 
-    color: #fff; text-decoration: underline; text-decoration-color: #666; font-weight: 500; transition: all 0.2s;
-}
-p a:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.4); text-decoration-color: #fff; }
 
-h2 { color: #888; margin-top: -20px; margin-bottom: 30px; font-size: 18px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+/* SHIMMER LINK EFFECT */
+p a, .grid-content p a { 
+    font-weight: 500;
+    text-decoration: none;
+    background: linear-gradient(90deg, #888, #fff, #888);
+    background-size: 200% auto;
+    background-clip: text; -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #888; /* Fallback */
+    animation: none;
+    border-bottom: 1px solid #444;
+}
+p a:hover { 
+    animation: shine 1.5s linear infinite; 
+    border-bottom-color: #fff;
+}
+
+h2 { color: #888; margin-top: -10px; margin-bottom: 20px; font-size: 18px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
 
 .layout-hero { text-align: center; margin: 0 0 40px; }
 .layout-hero h1 { font-size: 42px; color: #fff; margin-bottom: 10px; }
 .layout-hero p { color: var(--text-dim); font-size: 20px; max-width: 600px; margin: 0 auto; }
 
 .layout-text { max-width: 700px; margin: 0 auto 30px; }
-.layout-text h2 { color: #fff; font-size: 24px; margin-bottom: 10px; }
+.layout-text h2 { color: #fff; font-size: 24px; margin-bottom: 10px; border: none; text-transform: none; letter-spacing: 0; margin-top: 0; }
 
 /* LOADING SHINE */
 .loading-text {
@@ -142,40 +155,73 @@ h2 { color: #888; margin-top: -20px; margin-bottom: 30px; font-size: 18px; font-
 }
 @keyframes shine { to { background-position: 200% center; } }
 
-/* AURA HOVER EFFECT */
-.clickable-block { cursor: pointer; transition: all 0.3s var(--ease); }
+/* --- AURA GLOW (MOVING BORDER) --- */
+/* We simulate a border using a pseudo-element behind the card */
+.clickable-block { position: relative; z-index: 1; border-radius: 8px; transition: transform 0.2s; }
 
-/* Default White Aura */
-.clickable-block:hover .layout-card, 
-.clickable-block:hover .layout-grid,
-.clickable-block:hover .layout-quote { 
-    border-color: #fff !important; 
-    box-shadow: 0 0 25px rgba(255,255,255,0.15); 
-    transform: translateY(-2px);
+.clickable-block:hover { transform: translateY(-3px); }
+
+/* The Moving Gradient */
+.clickable-block::before {
+    content: ""; position: absolute; z-index: -1;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    background: linear-gradient(45deg, #333, #666, #333);
+    background-size: 400%;
+    border-radius: 10px; opacity: 0; transition: opacity 0.3s;
 }
 
-/* Category Specific Aura (Applied via JS class on body/container ideally, but CSS overrides work) */
-body[data-page^="Projects"] .clickable-block:hover .layout-card, 
-body[data-page^="Projects"] .clickable-block:hover .layout-grid { box-shadow: 0 0 25px rgba(255, 153, 51, 0.3); border-color: var(--accent-projects) !important; }
+.clickable-block:hover::before {
+    opacity: 1; animation: borderMove 4s linear infinite;
+}
 
-body[data-page^="Professional"] .clickable-block:hover .layout-card,
-body[data-page^="Professional"] .clickable-block:hover .layout-grid { box-shadow: 0 0 25px rgba(0, 255, 255, 0.3); border-color: var(--accent-prof) !important; }
+/* Category Colors for Aura */
+body[data-page^="Projects"] .clickable-block::before { background: linear-gradient(45deg, var(--accent-projects), #333, var(--accent-projects)); }
+body[data-page^="Professional"] .clickable-block::before { background: linear-gradient(45deg, var(--accent-prof), #333, var(--accent-prof)); }
+body[data-page^="Personal"] .clickable-block::before { background: linear-gradient(45deg, var(--accent-personal), #333, var(--accent-personal)); }
 
-body[data-page^="Personal"] .clickable-block:hover .layout-card,
-body[data-page^="Personal"] .clickable-block:hover .layout-grid { box-shadow: 0 0 25px rgba(77, 255, 136, 0.3); border-color: var(--accent-personal) !important; }
+@keyframes borderMove { 0% { background-position: 0% 50%; } 100% { background-position: 400% 50%; } }
 
+
+/* CARDS (LANDSCAPE IMAGE) */
+.layout-card {
+    display: grid; 
+    /* IMAGE TAKES 60% (1.5), TEXT TAKES 40% (1) */
+    grid-template-columns: 1.5fr 1fr; 
+    gap: 30px;
+    background: #0f0f0f; 
+    /* Use an inner border to separate content from the glowing rim */
+    border: 1px solid var(--border); 
+    padding: 0; /* Remove padding to let image flush? No, user wants compact */
+    padding: 20px;
+    border-radius: 8px;
+    align-items: center; 
+    /* Important: We need a background here so the content covers the glowing ::before element behind it */
+    position: relative; background-clip: padding-box;
+}
+.layout-card img { 
+    width: 100%; 
+    aspect-ratio: 16/9; /* STANDARD LANDSCAPE */
+    border-radius: 4px; object-fit: cover; 
+}
+.layout-card h3 { color: #fff; font-size: 22px; margin-bottom: 6px; }
+
+.layout-compact {
+    display: flex; align-items: center; gap: 20px;
+    border-bottom: 1px solid #1a1a1a; padding: 15px 0; margin-bottom: 0 !important;
+}
+.layout-compact img { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; border: 1px solid #333; }
+.layout-compact h3 { font-size: 16px; color: #fff; margin: 0; }
+.layout-compact p { font-size: 14px; color: var(--text-dim); margin: 2px 0 0; line-height: 1.4; }
 
 /* QUOTE CARD */
 .layout-quote {
-    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    border: 1px solid var(--border); padding: 40px; border-radius: 12px;
-    text-align: center; position: relative;
-    transition: all 0.3s;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border); padding: 40px; border-radius: 8px;
+    text-align: center; position: relative; background-clip: padding-box;
 }
 .layout-quote blockquote {
     font-family: 'Playfair Display', serif; font-size: 28px; font-style: italic;
     color: #fff; margin-bottom: 20px; line-height: 1.4;
-    text-shadow: 0 0 20px rgba(255,255,255,0.2);
 }
 .layout-quote .author { font-size: 14px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; }
 .layout-quote .refresh-btn {
@@ -183,24 +229,19 @@ body[data-page^="Personal"] .clickable-block:hover .layout-grid { box-shadow: 0 
 }
 .layout-quote:hover .refresh-btn { opacity: 1; transform: rotate(90deg); }
 
-/* GRID (2 Columns Forced) */
-.grid-container { 
-    display: grid; 
-    grid-template-columns: repeat(2, 1fr); /* FORCE 2 COLUMNS */
-    gap: 20px; 
-}
-
+/* GRID (2 COLUMNS) */
+.grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .layout-grid { 
     background: #111; border: 1px solid var(--border); 
-    border-radius: 8px; overflow: hidden; height: 100%; transition: all 0.3s; 
-    display: flex; flex-direction: column;
+    border-radius: 8px; overflow: hidden; height: 100%; 
+    display: flex; flex-direction: column; position: relative; background-clip: padding-box;
 }
 .layout-grid img { width: 100%; height: 160px; object-fit: cover; }
 .layout-grid .grid-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
 .layout-grid h3 { font-size: 18px; color: #fff; margin-bottom: 5px; }
 .layout-grid p { font-size: 14px; margin-bottom: 10px; color: #aaa; }
 
-/* COMPACT GRID (Search/Tags) */
+/* COMPACT GRID */
 .layout-grid.compact { flex-direction: row; min-height: 100px; height: 100px; align-items: center; }
 .layout-grid.compact img { width: 100px; height: 100%; border-right: 1px solid #333; }
 .layout-grid.compact .grid-content { padding: 0 20px; justify-content: center; }
@@ -211,24 +252,6 @@ body[data-page^="Personal"] .clickable-block:hover .layout-grid { box-shadow: 0 
     justify-content: center; text-align: center;
     background: #151515; height: 100%; min-height: 140px;
 }
-
-/* OTHER LAYOUTS */
-.layout-card {
-    display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px;
-    background: #0f0f0f; border: 1px solid var(--border); 
-    padding: 25px; border-radius: 8px;
-    align-items: center; transition: all 0.3s;
-}
-.layout-card img { width: 100%; border-radius: 6px; object-fit: cover; max-height: 250px; }
-.layout-card h3 { color: #fff; font-size: 22px; margin-bottom: 6px; }
-
-.layout-compact {
-    display: flex; align-items: center; gap: 20px;
-    border-bottom: 1px solid #1a1a1a; padding: 15px 0; margin-bottom: 0 !important;
-}
-.layout-compact img { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; border: 1px solid #333; }
-.layout-compact h3 { font-size: 16px; color: #fff; margin: 0; }
-.layout-compact p { font-size: 14px; color: var(--text-dim); margin: 2px 0 0; line-height: 1.4; }
 
 .zoomable { cursor: zoom-in; }
 .has-link img { pointer-events: none; }
@@ -256,9 +279,10 @@ footer a:hover { color: #fff; }
 
 @media (max-width: 768px) {
     #primary-nav { gap: 20px; }
+    /* Stack cards on mobile again */
     .layout-card { grid-template-columns: 1fr; gap: 20px; }
+    .grid-container { grid-template-columns: 1fr; }
     .icon-btn { right: 20px; }
     #search-input { width: 80%; font-size: 20px; }
-    .grid-container { grid-template-columns: 1fr; } /* Stack on Mobile */
 }
 @keyframes fadeIn { to { opacity: 1; } }
