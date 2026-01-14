@@ -1,110 +1,131 @@
-@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background-color: #000000;
-    color: #ffffff;
+    background-color: #050505; /* Slightly softer black for less eye strain */
+    color: #e0e0e0;
     font-family: 'Jost', sans-serif;
     line-height: 1.6;
-    padding-top: 150px;
+    padding-top: 160px; /* Space for the 2-row header */
 }
 
-/* --- HEADER & NAV --- */
+/* --- 1. ARCHITECTURAL HEADER (2-Row System) --- */
 #main-header {
     position: fixed; top: 0; left: 0; width: 100%;
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(5, 5, 5, 0.98); /* Blur effect background */
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid #222;
     z-index: 1000;
-    transition: all 0.3s ease;
-    padding: 20px 20px;
+    padding: 15px 0;
     display: flex; flex-direction: column; align-items: center;
+    transition: all 0.3s ease;
 }
-#main-header.shrink { padding: 10px 20px; }
 
 #brand-name {
-    font-size: 28px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
-    transition: font-size 0.3s ease;
-}
-#main-header.shrink #brand-name { font-size: 20px; }
-
-nav {
-    display: flex; gap: 30px; margin-top: 15px;
-    flex-wrap: wrap; justify-content: center;
+    font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px;
+    color: #fff; cursor: pointer; margin-bottom: 15px;
 }
 
-/* NAV ITEMS & DROPDOWNS */
-.nav-item { position: relative; }
-
+/* Row 1: Primary Nav (Personal, Professional, etc.) */
+#primary-nav {
+    display: flex; gap: 30px; margin-bottom: 10px;
+}
 .nav-link {
-    color: #888; text-decoration: none; font-size: 15px;
-    text-transform: uppercase; padding-bottom: 4px; cursor: pointer;
-    border-bottom: 2px solid transparent;
+    color: #777; font-size: 14px; font-weight: 500; text-transform: uppercase;
+    text-decoration: none; letter-spacing: 1px; transition: all 0.2s;
 }
-.nav-link:hover, .nav-link.active { color: #fff; border-bottom: 2px solid #fff; }
+.nav-link:hover { color: #fff; }
+.nav-link.active { color: #fff; border-bottom: 2px solid #fff; padding-bottom: 2px; }
 
-/* The Dropdown Box */
-.dropdown-menu {
-    display: none; /* Hidden by default */
-    position: absolute;
-    top: 100%; left: 50%; transform: translateX(-50%);
-    background: #111; border: 1px solid #333;
-    min-width: 140px; padding: 10px 0;
-    border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    z-index: 2000;
+/* Row 2: Contextual Sub-Nav (Chess, Cooking, etc.) */
+#sub-nav {
+    display: flex; gap: 20px; min-height: 20px; /* Reserve space */
+    font-size: 13px;
 }
-
-/* Show on Hover */
-.nav-item:hover .dropdown-menu { display: block; }
-
-.dropdown-menu a {
-    display: block; color: #ccc; text-decoration: none;
-    padding: 8px 15px; font-size: 14px; text-transform: none; text-align: center;
+.sub-link {
+    color: #555; text-decoration: none; text-transform: uppercase; transition: color 0.2s;
 }
-.dropdown-menu a:hover { background: #222; color: #fff; }
+.sub-link:hover { color: #aaa; }
+.sub-link.active { color: #4db8ff; font-weight: 700; } /* Highlight Color */
 
-/* --- CONTENT --- */
-.content-container { max-width: 900px; margin: 0 auto; padding: 0 20px; min-height: 60vh; }
+/* Header Shrink on Scroll */
+#main-header.shrink { padding: 10px 0; }
+#main-header.shrink #brand-name { font-size: 18px; margin-bottom: 5px; }
+#main-header.shrink #primary-nav { margin-bottom: 5px; }
 
-.section { margin-bottom: 50px; opacity: 0; animation: fadeIn 0.6s forwards; }
+/* --- 2. CONTENT CONTAINER --- */
+.content-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; min-height: 80vh; }
+.section { margin-bottom: 60px; opacity: 0; animation: fadeIn 0.5s forwards; }
 
-/* Section Break (The Sub-header) */
-.section-break {
-    color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;
-    margin: 40px 0 20px 0; border-bottom: 1px solid #222; padding-bottom: 5px;
+/* Wiki Links (Highlighting) */
+.wiki-link {
+    color: #4db8ff; /* Link Blue */
+    text-decoration: none; border-bottom: 1px dashed #4db8ff;
+    transition: all 0.2s; font-weight: 500;
 }
+.wiki-link:hover { background: rgba(77, 184, 255, 0.1); border-bottom-style: solid; }
 
-/* Internal Links ([[Wiki Style]]) */
-.internal-link { color: #fff; text-decoration: underline; text-decoration-color: #555; }
-.internal-link:hover { color: #aaa; }
+/* --- 3. NEW LAYOUTS --- */
 
-/* LAYOUTS */
-.layout-hero { text-align: center; margin: 40px 0 60px 0; }
-.layout-hero h1 { font-size: 42px; color: #fff; margin-bottom: 15px; }
-.layout-hero p { color: #888; font-size: 20px; }
+/* Hero (Centered Big Text) */
+.layout-hero { text-align: center; margin: 60px 0 80px; }
+.layout-hero h1 { font-size: 48px; color: #fff; margin-bottom: 15px; letter-spacing: -1px; }
+.layout-hero p { color: #888; font-size: 22px; max-width: 600px; margin: 0 auto; }
 
-.layout-text h2 { margin-bottom: 10px; font-size: 24px; color: #eee; }
-.layout-text p { font-size: 18px; color: #ccc; margin-bottom: 15px; }
+/* Text (Standard) */
+.layout-text { max-width: 700px; margin: 0 auto 40px; }
+.layout-text h2 { color: #fff; font-size: 28px; margin-bottom: 15px; border-left: 3px solid #4db8ff; padding-left: 15px; }
 
+/* Card (The Standard "Side-by-Side") */
 .layout-card {
-    display: flex; gap: 30px; background: #111; padding: 25px;
-    border-radius: 12px; align-items: flex-start; border: 1px solid #222;
+    display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;
+    background: #0f0f0f; border: 1px solid #222; padding: 30px; border-radius: 12px;
 }
 .layout-card img, .layout-card iframe, .layout-card video {
-    width: 40%; border-radius: 6px; object-fit: cover;
+    width: 100%; height: 100%; object-fit: cover; border-radius: 8px; min-height: 200px;
 }
-.layout-card div { width: 60%; }
-.layout-card h3 { color: #fff; margin-bottom: 10px; font-size: 22px; }
-.layout-card p { color: #bbb; font-size: 16px; margin-bottom: 10px; }
-.timestamp { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+.layout-card h3 { color: #fff; font-size: 24px; margin-bottom: 10px; }
 
+/* Compact (List view for resumes/timelines) */
+.layout-compact {
+    display: flex; align-items: center; gap: 20px;
+    border-bottom: 1px solid #222; padding: 20px 0;
+}
+.layout-compact img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
+.layout-compact h3 { font-size: 18px; color: #fff; margin: 0; }
+.layout-compact p { font-size: 14px; color: #888; margin: 5px 0 0; }
+
+/* Grid (3-Across for Project Galleries) */
+.grid-container {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
+}
+/* Note: The JS will wrap these automatically */
+
+/* Grid Item Styling */
+.layout-grid {
+    background: #111; border: 1px solid #222; border-radius: 8px; overflow: hidden;
+    transition: transform 0.2s;
+}
+.layout-grid:hover { transform: translateY(-5px); border-color: #444; }
+.layout-grid img { width: 100%; height: 200px; object-fit: cover; }
+.layout-grid .grid-content { padding: 20px; }
+.layout-grid h3 { font-size: 18px; color: #fff; margin-bottom: 8px; }
+.layout-grid p { font-size: 14px; color: #999; }
+
+/* Timestamp */
+.timestamp { font-size: 11px; color: #555; text-transform: uppercase; margin-top: 15px; letter-spacing: 1px; }
+
+/* --- MOBILE --- */
 @media (max-width: 768px) {
-    body { padding-top: 130px; }
-    .layout-card { flex-direction: column; }
-    .layout-card img, .layout-card iframe, .layout-card video, .layout-card div { width: 100%; }
-    /* Mobile: Make dropdowns easier to hit? */
-    .dropdown-menu { position: static; transform: none; box-shadow: none; border: none; background: transparent; padding: 5px 0 0 0; }
-    .nav-item:hover .dropdown-menu { border-left: 2px solid #333; padding-left: 10px; margin-top: 5px; }
-    .dropdown-menu a { text-align: left; padding: 5px 0; color: #777; }
+    body { padding-top: 140px; }
+    #primary-nav { gap: 15px; }
+    #sub-nav { flex-wrap: wrap; justify-content: center; padding: 0 10px; }
+    
+    .layout-hero h1 { font-size: 36px; }
+    .layout-card { grid-template-columns: 1fr; gap: 20px; } /* Stack cards */
+    
+    .layout-compact { align-items: flex-start; }
+    .layout-compact img { width: 60px; height: 60px; }
 }
 
 @keyframes fadeIn { to { opacity: 1; } }
