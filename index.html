@@ -18,14 +18,16 @@
 
     <header id="main-header">
         <div id="brand-name" onclick="window.location.hash=''" role="button">SAHIB VIRDEE</div>
-        
         <nav id="primary-nav"></nav>
-        
         <nav id="sub-nav"></nav>
     </header>
 
     <div class="content-container" id="app">
-        <p style="text-align:center; padding-top: 80px; color: #444;">Loading Portfolio...</p>
+        <p style="text-align:center; padding-top: 80px; color: #444;">Loading...</p>
+    </div>
+
+    <div id="lightbox" onclick="this.classList.remove('active')">
+        <img id="lightbox-img" src="">
     </div>
 
     <script>
@@ -35,195 +37,124 @@
 
         let db = [];
 
-        // Fetch Data
         Papa.parse(SHEET_URL, {
             download: true, header: true,
             complete: (results) => { 
                 db = results.data; 
-                cleanURL(); // Fix the ?page mess immediately
+                if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
                 initApp(); 
             }
         });
 
-        function cleanURL() {
-            // If url is ?page=Home#Personal, turn it into /#Personal
-            if (window.location.search) {
-                const clean = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.hash;
-                window.history.replaceState({path: clean}, '', clean);
-            }
-        }
-
         function initApp() {
-            buildNav(); // Build Top Row
-            handleRouting(); // Render Page + Build Sub Row
+            buildNav();
+            handleRouting();
             window.addEventListener('hashchange', handleRouting);
-            window.addEventListener('scroll', () => {
-                document.getElementById('main-header').classList.toggle('shrink', window.scrollY > 50);
+            window.addEventListener('scroll', () => document.getElementById('main-header').classList.toggle('shrink', window.scrollY > 50));
+            
+            // Global Lightbox Click Handler
+            document.getElementById('app').addEventListener('click', (e) => {
+                if(e.target.tagName === 'IMG' && !e.target.closest('a')) {
+                    document.getElementById('lightbox-img').src = e.target.src;
+                    document.getElementById('lightbox').classList.add('active');
+                }
             });
         }
 
-        // 1. BUILD PRIMARY NAV (Row 1)
         function buildNav() {
             const nav = document.getElementById('primary-nav');
             nav.innerHTML = '';
-            
-            // Get unique Top Level Pages (Home, Personal, Projects)
             const pages = [...new Set(db.map(row => row.Page ? row.Page.split('/')[0] : null).filter(p => p))].sort();
-
             pages.forEach(p => {
-                if (p === 'Home') return; // Skip Home button
-                const link = document.createElement('a');
-                link.innerText = p;
-                link.href = `#${p}`;
-                link.className = 'nav-link';
-                nav.appendChild(link);
+                if (p === 'Home') return;
+                nav.innerHTML += `<a href="#${p}" class="nav-link">${p}</a>`;
             });
         }
 
-        // 2. BUILD SUB NAV (Row 2 - Context Aware)
         function buildSubNav(activeTopLevel) {
             const nav = document.getElementById('sub-nav');
             nav.innerHTML = '';
             if (activeTopLevel === 'Home') return;
-
-            // Find all sub-pages for this category (e.g. Personal/Chess)
-            // Logic: Starts with "Personal/" OR is exactly "Personal"
-            const subPages = [...new Set(db
-                .filter(row => row.Page && row.Page.startsWith(activeTopLevel))
-                .map(row => row.Page)
-            )].sort();
-
-            // Only show sub-nav if there are ACTUAL sub-pages (more than 1 item)
+            const subPages = [...new Set(db.filter(row => row.Page && row.Page.startsWith(activeTopLevel)).map(row => row.Page))].sort();
             if (subPages.length <= 1) return; 
 
             subPages.forEach(p => {
-                const link = document.createElement('a');
-                // Name: "Personal/Chess" -> "Chess", "Personal" -> "Overview"
                 const parts = p.split('/');
-                link.innerText = parts[1] ? parts[1] : 'Overview';
-                link.href = `#${p}`;
-                link.className = 'sub-link';
-                
-                // Highlight active sub-link
-                if (window.location.hash === `#${p}` || (p === activeTopLevel && window.location.hash === `#${p}`)) {
-                    link.classList.add('active');
-                }
-                nav.appendChild(link);
+                const name = parts[1] ? parts[1] : 'Overview';
+                const activeClass = (window.location.hash === `#${p}` || (p === activeTopLevel && window.location.hash === `#${p}`)) ? 'active' : '';
+                nav.innerHTML += `<a href="#${p}" class="sub-link ${activeClass}">${name}</a>`;
             });
         }
 
-        // 3. ROUTING & RENDERING
         function handleRouting() {
             const hash = window.location.hash.substring(1) || 'Home';
             const topLevel = hash.split('/')[0];
-
-            // Highlight Primary Nav
-            document.querySelectorAll('#primary-nav .nav-link').forEach(a => {
-                a.classList.toggle('active', a.innerText === topLevel);
-            });
-
-            // Update Sub Nav based on where we are
+            document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.toggle('active', a.innerText === topLevel));
             buildSubNav(topLevel);
-
             renderPage(hash);
             window.scrollTo(0, 0);
         }
 
-        // 4. WIKI LINK PARSER
         function processText(text) {
             if (!text) return '';
-            return text.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
-                // Check if it links to a sub-page or main page
-                return `<a href="#${p1}" class="wiki-link">${p1}</a>`;
-            });
+            return text.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link">$1</a>');
         }
 
-        // 5. RENDER ENGINE (With Grid Support)
         function renderPage(pageFilter) {
             const app = document.getElementById('app');
             app.innerHTML = '';
-
-            // Filter Rows
-            // If I am at "Personal", show "Personal" AND "Personal/Chess"
-            // If I am at "Personal/Chess", show ONLY "Personal/Chess"
             const rows = db.filter(row => row.Page && row.Page.startsWith(pageFilter));
+            if (rows.length === 0) { app.innerHTML = '<div style="text-align:center; margin-top:100px; color:#666;">Page not found.</div>'; return; }
 
-            if (rows.length === 0) {
-                app.innerHTML = '<div style="text-align:center; margin-top:100px; color:#666;">Page not found or empty.</div>';
-                return;
-            }
-
-            // Grid Container Logic
             let gridContainer = null;
 
             rows.forEach(row => {
-                // If we encounter a GRID item, we need a wrapper
                 if (row.SectionType === 'grid') {
-                    if (!gridContainer) {
-                        gridContainer = document.createElement('div');
-                        gridContainer.className = 'grid-container section';
-                        app.appendChild(gridContainer);
-                    }
-                    
-                    const item = document.createElement('div');
-                    item.className = 'layout-grid';
-                    item.innerHTML = `
+                    if (!gridContainer) { gridContainer = document.createElement('div'); gridContainer.className = 'grid-container section'; app.appendChild(gridContainer); }
+                    const itemContent = `
                         <img src="${row.Media}" loading="lazy">
-                        <div class="grid-content">
-                            <h3>${row.Title}</h3>
-                            <p>${processText(row.Content)}</p>
-                        </div>
-                    `;
-                    gridContainer.appendChild(item);
-                    return; // Skip the rest, we handled it
+                        <div class="grid-content"><h3>${row.Title}</h3><p>${processText(row.Content)}</p></div>`;
+                    // Wrap in link if LinkURL exists
+                    gridContainer.innerHTML += row.LinkURL ? `<a href="${row.LinkURL}" target="_blank" class="clickable-block layout-grid">${itemContent}</a>` : `<div class="layout-grid">${itemContent}</div>`;
+                    return;
                 } 
                 
-                // Reset Grid if we hit a non-grid item
                 gridContainer = null;
-
-                // Standard Rendering
                 const section = document.createElement('div');
                 section.className = `section layout-${row.SectionType}`;
                 const content = processText(row.Content);
+                let html = '';
 
-                if (row.SectionType === 'hero') {
-                    section.innerHTML = `<h1>${row.Title}</h1><p>${content}</p>`;
-                } 
-                else if (row.SectionType === 'text') {
-                    if (row.Title) section.innerHTML += `<h2>${row.Title}</h2>`;
-                    section.innerHTML += `<p>${content}</p>`;
-                }
+                if (row.SectionType === 'hero') html = `<h1>${row.Title}</h1><p>${content}</p>`;
+                else if (row.SectionType === 'text') html = (row.Title ? `<h2>${row.Title}</h2>` : '') + `<p>${content}</p>`;
                 else if (row.SectionType === 'card') {
-                    section.innerHTML = `
-                        ${getMediaHTML(row.Media)}
-                        <div>
-                            <h3>${row.Title}</h3>
-                            <p>${content}</p>
-                            ${row.Timestamp ? `<div class="timestamp">${row.Timestamp}</div>` : ''}
-                        </div>
-                    `;
+                    html = `${getMediaHTML(row.Media)}<div><h3>${row.Title}</h3><p>${content}</p>${row.Timestamp ? `<div class="timestamp">${row.Timestamp}</div>` : ''}</div>`;
                 }
                 else if (row.SectionType === 'compact') {
-                    section.innerHTML = `
-                        <img src="${row.Media}" loading="lazy">
-                        <div>
-                            <h3>${row.Title}</h3>
-                            <p>${content}</p>
-                        </div>
-                    `;
+                    html = `<img src="${row.Media}" loading="lazy"><div><h3>${row.Title}</h3><p>${content}</p></div>`;
                 }
 
-                app.appendChild(section);
+                // Wrap entire section in link if LinkURL exists
+                if (row.LinkURL) {
+                    const wrapper = document.createElement('a');
+                    wrapper.href = row.LinkURL;
+                    wrapper.target = "_blank"; // Open external links in new tab
+                    wrapper.className = "clickable-block";
+                    wrapper.innerHTML = html;
+                    // Move the layout class to the wrapper for hover effects
+                    wrapper.querySelector(`.layout-${row.SectionType}`).classList.remove(`layout-${row.SectionType}`);
+                    wrapper.classList.add(`layout-${row.SectionType}`);
+                    app.appendChild(wrapper);
+                } else {
+                    section.innerHTML = html;
+                    app.appendChild(section);
+                }
             });
         }
 
         function getMediaHTML(url) {
             if (!url) return '';
-            if (url.includes('youtu')) {
-                let v = url.split('v=')[1];
-                if (v && v.includes('&')) v = v.split('&')[0];
-                return `<iframe src="https://www.youtube.com/embed/${v}" frameborder="0" allowfullscreen></iframe>`;
-            }
+            if (url.includes('youtu')) { let v = url.split('v=')[1]; if (v && v.includes('&')) v = v.split('&')[0]; return `<iframe src="https://www.youtube.com/embed/${v}" frameborder="0" allowfullscreen></iframe>`; }
             if (url.endsWith('.mp4')) return `<video controls src="${url}"></video>`;
             return `<img src="${url}" loading="lazy">`;
         }

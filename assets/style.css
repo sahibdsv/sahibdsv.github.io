@@ -2,22 +2,19 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background-color: #050505; /* Slightly softer black for less eye strain */
+    background-color: #050505;
     color: #e0e0e0;
     font-family: 'Jost', sans-serif;
     line-height: 1.6;
-    padding-top: 160px; /* Space for the 2-row header */
+    padding-top: 160px; /* Space for header */
 }
 
-/* --- 1. ARCHITECTURAL HEADER (2-Row System) --- */
+/* --- 1. HEADER & HIERARCHY --- */
 #main-header {
     position: fixed; top: 0; left: 0; width: 100%;
-    background: rgba(5, 5, 5, 0.98); /* Blur effect background */
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid #222;
-    z-index: 1000;
-    padding: 15px 0;
-    display: flex; flex-direction: column; align-items: center;
+    background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px);
+    border-bottom: 1px solid #222; z-index: 1000;
+    padding: 15px 0; display: flex; flex-direction: column; align-items: center;
     transition: all 0.3s ease;
 }
 
@@ -26,106 +23,106 @@ body {
     color: #fff; cursor: pointer; margin-bottom: 15px;
 }
 
-/* Row 1: Primary Nav (Personal, Professional, etc.) */
-#primary-nav {
-    display: flex; gap: 30px; margin-bottom: 10px;
-}
+/* Row 1: Primary Nav */
+#primary-nav { display: flex; gap: 30px; margin-bottom: 10px; }
 .nav-link {
-    color: #777; font-size: 14px; font-weight: 500; text-transform: uppercase;
+    color: #666; /* Faded by default */
+    font-size: 14px; font-weight: 500; text-transform: uppercase;
     text-decoration: none; letter-spacing: 1px; transition: all 0.2s;
 }
-.nav-link:hover { color: #fff; }
-.nav-link.active { color: #fff; border-bottom: 2px solid #fff; padding-bottom: 2px; }
+.nav-link:hover { color: #bbb; }
+/* ACTIVE STATE: Bright White to show hierarchy */
+.nav-link.active { color: #ffffff; font-weight: 700; }
 
-/* Row 2: Contextual Sub-Nav (Chess, Cooking, etc.) */
-#sub-nav {
-    display: flex; gap: 20px; min-height: 20px; /* Reserve space */
-    font-size: 13px;
-}
-.sub-link {
-    color: #555; text-decoration: none; text-transform: uppercase; transition: color 0.2s;
-}
-.sub-link:hover { color: #aaa; }
-.sub-link.active { color: #4db8ff; font-weight: 700; } /* Highlight Color */
+/* Row 2: Sub-Nav */
+#sub-nav { display: flex; gap: 20px; min-height: 20px; font-size: 13px; }
+.sub-link { color: #888; text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
+.sub-link:hover { color: #ccc; }
+/* Highlight color for current sub-page */
+.sub-link.active { color: #4db8ff; }
 
-/* Header Shrink on Scroll */
+/* Header Shrink */
 #main-header.shrink { padding: 10px 0; }
 #main-header.shrink #brand-name { font-size: 18px; margin-bottom: 5px; }
 #main-header.shrink #primary-nav { margin-bottom: 5px; }
 
-/* --- 2. CONTENT CONTAINER --- */
-.content-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; min-height: 80vh; }
-.section { margin-bottom: 60px; opacity: 0; animation: fadeIn 0.5s forwards; }
-
-/* Wiki Links (Highlighting) */
+/* --- 2. LINKS & INTERACTIONS --- */
+/* Consistent Dotted Style for in-text links */
 .wiki-link {
-    color: #4db8ff; /* Link Blue */
-    text-decoration: none; border-bottom: 1px dashed #4db8ff;
-    transition: all 0.2s; font-weight: 500;
+    color: #4db8ff; text-decoration: none;
+    border-bottom: 1px dotted #4db8ff; transition: all 0.2s;
 }
 .wiki-link:hover { background: rgba(77, 184, 255, 0.1); border-bottom-style: solid; }
 
-/* --- 3. NEW LAYOUTS --- */
+/* Make entire cards clickable if they have a LinkURL */
+.clickable-block { text-decoration: none; color: inherit; display: block; }
+.clickable-block:hover .layout-card,
+.clickable-block:hover .layout-compact,
+.clickable-block:hover .layout-grid {
+    border-color: #4db8ff; /* Highlight border on hover */
+    transform: translateY(-2px);
+    transition: all 0.2s;
+}
 
-/* Hero (Centered Big Text) */
+/* Image Zoom Cursor */
+img { cursor: zoom-in; }
+
+/* --- 3. LAYOUTS & SPACING --- */
+.content-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; min-height: 80vh; }
+/* Tighter section spacing */
+.section { margin-bottom: 40px; opacity: 0; animation: fadeIn 0.5s forwards; }
+
 .layout-hero { text-align: center; margin: 60px 0 80px; }
-.layout-hero h1 { font-size: 48px; color: #fff; margin-bottom: 15px; letter-spacing: -1px; }
+.layout-hero h1 { font-size: 48px; color: #fff; margin-bottom: 15px; }
 .layout-hero p { color: #888; font-size: 22px; max-width: 600px; margin: 0 auto; }
 
-/* Text (Standard) */
 .layout-text { max-width: 700px; margin: 0 auto 40px; }
 .layout-text h2 { color: #fff; font-size: 28px; margin-bottom: 15px; border-left: 3px solid #4db8ff; padding-left: 15px; }
 
-/* Card (The Standard "Side-by-Side") */
 .layout-card {
     display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;
     background: #0f0f0f; border: 1px solid #222; padding: 30px; border-radius: 12px;
+    align-items: center;
 }
 .layout-card img, .layout-card iframe, .layout-card video {
-    width: 100%; height: 100%; object-fit: cover; border-radius: 8px; min-height: 200px;
+    width: 100%; border-radius: 8px; object-fit: cover; max-height: 300px;
 }
 .layout-card h3 { color: #fff; font-size: 24px; margin-bottom: 10px; }
 
-/* Compact (List view for resumes/timelines) */
+/* Tighter Compact Layout */
 .layout-compact {
-    display: flex; align-items: center; gap: 20px;
-    border-bottom: 1px solid #222; padding: 20px 0;
+    display: flex; align-items: center; gap: 15px;
+    border-bottom: 1px solid #1a1a1a; padding: 15px 0; margin-bottom: 0 !important; /* Override section margin */
 }
-.layout-compact img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
-.layout-compact h3 { font-size: 18px; color: #fff; margin: 0; }
-.layout-compact p { font-size: 14px; color: #888; margin: 5px 0 0; }
+.layout-compact img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+.layout-compact h3 { font-size: 16px; color: #fff; margin: 0; }
+.layout-compact p { font-size: 13px; color: #888; margin: 2px 0 0; }
 
-/* Grid (3-Across for Project Galleries) */
-.grid-container {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
-}
-/* Note: The JS will wrap these automatically */
+.grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.layout-grid { background: #111; border: 1px solid #222; border-radius: 8px; overflow: hidden; }
+.layout-grid img { width: 100%; height: 180px; object-fit: cover; }
+.layout-grid .grid-content { padding: 15px; }
+.layout-grid h3 { font-size: 16px; color: #fff; margin-bottom: 5px; }
+.layout-grid p { font-size: 13px; color: #999; }
 
-/* Grid Item Styling */
-.layout-grid {
-    background: #111; border: 1px solid #222; border-radius: 8px; overflow: hidden;
-    transition: transform 0.2s;
-}
-.layout-grid:hover { transform: translateY(-5px); border-color: #444; }
-.layout-grid img { width: 100%; height: 200px; object-fit: cover; }
-.layout-grid .grid-content { padding: 20px; }
-.layout-grid h3 { font-size: 18px; color: #fff; margin-bottom: 8px; }
-.layout-grid p { font-size: 14px; color: #999; }
-
-/* Timestamp */
 .timestamp { font-size: 11px; color: #555; text-transform: uppercase; margin-top: 15px; letter-spacing: 1px; }
 
-/* --- MOBILE --- */
+/* --- 4. LIGHTBOX (Image Zoom) --- */
+#lightbox {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+    cursor: zoom-out; padding: 20px;
+}
+#lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+#lightbox.active { display: flex; animation: fadeIn 0.3s; }
+
 @media (max-width: 768px) {
     body { padding-top: 140px; }
     #primary-nav { gap: 15px; }
     #sub-nav { flex-wrap: wrap; justify-content: center; padding: 0 10px; }
-    
     .layout-hero h1 { font-size: 36px; }
-    .layout-card { grid-template-columns: 1fr; gap: 20px; } /* Stack cards */
-    
-    .layout-compact { align-items: flex-start; }
-    .layout-compact img { width: 60px; height: 60px; }
+    .layout-card { grid-template-columns: 1fr; gap: 20px; }
+    .layout-card img { max-height: 200px; }
 }
-
 @keyframes fadeIn { to { opacity: 1; } }
