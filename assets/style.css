@@ -11,12 +11,14 @@
     --accent-prof: #00ffff;
     --accent-projects: #ff9933;
     
-    /* Header Variables */
-    /* Reduced height to 115px to fix spacing below subheadings */
-    --header-h-default: 115px; 
-    --header-h-shrink: 80px; 
-    --header-h-compact: 90px; 
-    --header-h-compact-shrink: 60px;
+    /* Header Variables - UPDATED DEFAULTS */
+    /* Default is now the "Compact" size (90px) for Homepage */
+    --header-h-default: 90px; 
+    --header-h-shrink: 60px; 
+    
+    /* Expanded size for sub-pages */
+    --header-h-expanded: 115px; 
+    --header-h-expanded-shrink: 80px;
     
     --ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -32,7 +34,8 @@ body {
     display: flex; flex-direction: column; min-height: 100vh;
 }
 
-body.header-compact { padding-top: var(--header-h-compact); }
+/* New class for non-home pages */
+body.header-expanded { padding-top: var(--header-h-expanded); }
 
 /* Prevent transitions during initial load */
 .no-transition, .no-transition * { transition: none !important; animation: none !important; }
@@ -62,7 +65,8 @@ body.header-compact { padding-top: var(--header-h-compact); }
     position: fixed; top: 0; left: 0; width: 100%; background: rgba(5,5,5,0.95); 
     backdrop-filter: blur(12px); z-index: 1000; 
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    padding-top: 15px; height: var(--header-h-default); 
+    padding-top: 15px; 
+    height: var(--header-h-default); /* Default is now compact */
     transition: height 0.4s var(--ease), padding 0.4s var(--ease); 
     overflow: hidden;
     border-bottom: 1px solid #1a1a1a; 
@@ -70,8 +74,9 @@ body.header-compact { padding-top: var(--header-h-compact); }
 
 #main-header.shrink { height: var(--header-h-shrink); padding-top: 5px; }
 
-#main-header.compact { height: var(--header-h-compact); }
-#main-header.compact.shrink { height: var(--header-h-compact-shrink); }
+/* Expanded states for sub-pages */
+#main-header.expanded { height: var(--header-h-expanded); }
+#main-header.expanded.shrink { height: var(--header-h-expanded-shrink); }
 
 #main-header.search-mode { height: 90px; }
 #main-header.search-mode > *:not(#search-overlay) { opacity: 0; pointer-events: none; }
@@ -113,7 +118,8 @@ body.header-compact { padding-top: var(--header-h-compact); }
     height: 25px; 
 }
 
-#main-header.compact #sub-nav {
+/* Default (Home) hides sub-nav */
+body:not(.header-expanded) #sub-nav {
     height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none;
 }
 
@@ -272,10 +278,17 @@ footer .footer-links a {
 #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
 #lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
-/* Skeleton */
-.sk-row { display: flex; gap: 25px; margin-bottom: 20px; padding: 20px; }
-.sk-block { background: #111; border-radius: 4px; animation: pulse 2s infinite ease-in-out; }
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+/* --- SKELETON (Static) --- */
+.sk-line { background: #111; border-radius: 4px; margin-bottom: 10px; animation: pulse 1.5s infinite ease-in-out; }
+.sk-line.title { height: 36px; width: 50%; margin: 0 auto 15px; }
+.sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
+.sk-line.text { height: 16px; width: 100%; }
+.sk-line.text.short { width: 60%; }
+
+.layout-grid .sk-img { width: 100%; height: 160px; background: #111; margin-bottom: 15px; animation: pulse 1.5s infinite ease-in-out; }
+.layout-grid .sk-line.title { height: 20px; width: 70%; margin: 0 0 10px; }
+
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
 @media (max-width: 768px) {
     .grid-container { grid-template-columns: 1fr; }

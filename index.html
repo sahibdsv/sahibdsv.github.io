@@ -9,7 +9,6 @@
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
     <link rel="shortcut icon" href="/assets/favicon.ico" />
     
-    <!-- Link to External Stylesheet -->
     <link rel="stylesheet" href="assets/style.css">
     
     <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
@@ -26,11 +25,45 @@
         
         <div id="search-overlay">
             <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
-            <svg id="close-search" onclick="toggleSearch()" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            <svg id="close-search" onclick="toggleSearch()" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 17.59 13.41 12z"/></svg>
         </div>
     </header>
 
-    <div class="content-container" id="app"></div>
+    <div class="content-container" id="app">
+        <div class="section layout-hero" style="text-align:center;">
+            <div class="sk-line title"></div>
+            <div class="sk-line meta"></div>
+            <div class="sk-line text" style="max-width: 600px; margin: 0 auto 10px;"></div>
+            <div class="sk-line text short" style="max-width: 400px; margin: 0 auto;"></div>
+        </div>
+        
+        <div class="grid-container section">
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <div class="footer-links" id="footer-links"></div>
@@ -40,19 +73,10 @@
     <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
 
     <script>
-        // Pre-flight check to set header state before visual paint
-        (function() {
-            const h = window.location.hash;
-            if (!h || h === '#Home') {
-                document.body.classList.add('header-compact');
-                document.getElementById('main-header').classList.add('compact');
-            }
-        })();
-
         let db = [], quotesDb = [], isSearchActive = false;
 
         const init = () => {
-            renderSkeleton(); 
+            // Skeleton is now static HTML, so we don't need renderSkeleton()
             
             // Fetch Config First
             fetch('assets/config.json')
@@ -84,24 +108,6 @@
 
         function fetchCSV(u) { return new Promise((res, rej) => Papa.parse(u, { download: true, header: true, skipEmptyLines: true, complete: (r) => res(r.data), error: (e) => rej(e) })); }
 
-        function renderSkeleton() {
-            const app = document.getElementById('app');
-            let html = `
-            <div class="section layout-hero" style="text-align:center; margin: 0 0 40px; padding-bottom: 30px;">
-                <div class="sk-block" style="width:40%; height:60px; margin: 0 auto 20px; background:#111;"></div>
-                <div class="sk-block" style="width:300px; height:24px; margin: 0 auto; background:#111;"></div>
-            </div>
-            <div class="section layout-quote" style="margin: 0 auto 40px; max-width:800px;">
-                <div class="sk-block" style="width:100%; height:140px; background:#111;"></div>
-            </div>
-            <div class="grid-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:25px;">`;
-            for(let i=0; i<4; i++) {
-                html += `<div class="sk-block" style="height:280px;"></div>`;
-            }
-            html += '</div>';
-            app.innerHTML = html;
-        }
-
         function initApp() {
             buildNav(); handleRouting();
             window.addEventListener('hashchange', handleRouting);
@@ -109,7 +115,7 @@
                 const h=document.getElementById('main-header'); 
                 if(h) { 
                     h.classList.toggle('shrink', window.scrollY > 50); 
-                    if(document.body.classList.contains('header-compact')) h.classList.add('compact');
+                    // No need to check for compact class manually anymore as it's default
                 } 
             });
             document.getElementById('app').addEventListener('click', (e) => {
@@ -170,13 +176,9 @@
         function buildSubNav(top) {
             const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
             
-            if(top === 'Home') { h.classList.add('compact'); b.classList.add('header-compact'); return; }
-            
+            // Note: Styles now control visibility via .header-expanded class
             const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
             
-            if(subs.length === 0) { h.classList.add('compact'); b.classList.add('header-compact'); return; }
-            
-            h.classList.remove('compact'); b.classList.remove('header-compact');
             subs.forEach(x => { const name = x.split('/')[1], active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${name}</a>`; });
         }
 
@@ -184,6 +186,11 @@
             if(isSearchActive) return; 
             window.scrollTo(0, 0); 
             let h = window.location.hash.substring(1) || 'Home'; 
+            
+            // HEADER LOGIC: Default is "Compact" (Home). If not home, expand.
+            const isHome = (h === 'Home');
+            document.body.classList.toggle('header-expanded', !isHome);
+            document.getElementById('main-header').classList.toggle('expanded', !isHome);
             
             const top = h.split('/')[0]; 
             document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
