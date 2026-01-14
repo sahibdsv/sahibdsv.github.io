@@ -134,12 +134,10 @@
                 } 
             });
 
-            // NEW: Click Outside to Close Search
+            // Click Outside to Close Search
             document.addEventListener('click', (e) => {
                 const overlay = document.getElementById('search-overlay');
                 const controls = document.getElementById('search-controls');
-                
-                // If search is active AND click is NOT inside overlay AND NOT inside controls
                 if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
                     closeSearch();
                 }
@@ -147,24 +145,11 @@
 
             document.getElementById('app').addEventListener('click', (e) => {
                 if(e.target.closest('.refresh-btn')) { 
-                    // Quote Refresh Animation Logic
                     const quoteContainer = e.target.closest('.layout-quote');
                     if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                         quoteContainer.classList.add('loading');
-                        
-                        const bq = quoteContainer.querySelector('blockquote');
-                        if(bq) {
-                            bq.innerHTML = `
-                                <div class="sk-line quote-line"></div>
-                                <div class="sk-line quote-line"></div>
-                                <div class="sk-line quote-line short"></div>
-                            `;
-                        }
-                        
-                        const authorContainer = quoteContainer.querySelector('.author');
-                        if(authorContainer) {
-                            authorContainer.innerHTML = `<div class="sk-line quote-line short" style="width:100px; height:12px; margin:0;"></div>`;
-                        }
+                        // Use FULL BOX skeleton again
+                        quoteContainer.innerHTML = `<div class="sk-box quote" style="height:140px; width:100%; margin:0 auto;"></div>`;
 
                         setTimeout(() => {
                             renderQuoteCard(quoteContainer);
@@ -311,6 +296,12 @@
             rows.forEach(r => {
                 if(!r.Page || r.Page === 'Footer') return; 
                 
+                // INJECT CATEGORY CLASS
+                let catClass = '';
+                if(r.Page.toLowerCase().startsWith('projects')) catClass = 'cat-projects';
+                else if(r.Page.toLowerCase().startsWith('professional')) catClass = 'cat-professional';
+                else if(r.Page.toLowerCase().startsWith('personal')) catClass = 'cat-personal';
+
                 if(!forceGrid) {
                     if(r.SectionType === 'quote') { 
                         const d = document.createElement('div'); d.className = 'layout-quote section'; 
@@ -348,7 +339,8 @@
                      mh += `</div>`;
                 }
 
-                const d = document.createElement('div'); d.className = `layout-grid clickable-block`;
+                // Apply Category Class Here
+                const d = document.createElement('div'); d.className = `layout-grid clickable-block ${catClass}`;
                 d.setAttribute('data-link', l); d.setAttribute('data-target', target);
                 
                 d.innerHTML = `${imgH}<h3 class="fill-anim">${r.Title}</h3><p>${processText(r.Content)}</p>${mh}`;
