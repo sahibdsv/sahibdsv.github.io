@@ -108,7 +108,17 @@
                                 document.getElementById('main-header').classList.remove('no-transition');
                             }, 50);
                         });
+                    })
+                    .catch(e => {
+                        console.error("Data Load Error:", e);
+                        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
+                            <h2>Unable to load content</h2>
+                            <p style="color:#666">Please check your internet connection or configuration.</p>
+                        </div>`;
                     });
+                })
+                .catch(() => {
+                    document.getElementById('app').innerHTML = "Error loading config.";
                 });
         };
 
@@ -187,7 +197,7 @@
             document.getElementById('main-header').classList.remove('expanded');
 
             const t = q.toLowerCase(), res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
-            // FIXED: false, false (don't append, force grid)
+            // Don't append, force grid
             renderRows(res, `Search results for "${q}"`, false, true); 
         }
 
@@ -260,14 +270,13 @@
         function renderRows(rows, title, append, forceGrid) {
             const app = document.getElementById('app'); if(!app) return; 
             
-            // DEFAULT SORT: Always Descending (Newest First)
+            // DEFAULT SORT: Descending (Newest First)
             rows.sort((a, b) => {
                 const da = new Date(a.Timestamp || 0);
                 const db = new Date(b.Timestamp || 0);
                 return db - da; 
             });
 
-            // FIXED: If !append, clear content first
             if(!append) {
                 app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
             }
@@ -382,4 +391,12 @@
             if(!s) return '';
             const d = new Date(s);
             if(isNaN(d.getTime())) return s;
-      
+            const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+            const yr = d.getFullYear();
+            return `${mo} ${yr}`;
+        }
+        
+        init();
+    </script>
+</body>
+</html>
