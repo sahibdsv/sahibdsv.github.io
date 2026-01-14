@@ -15,14 +15,19 @@
 <body>
 
     <header id="main-header">
-        <div id="brand-name" onclick="window.location.hash=''" role="button">SAHIB VIRDEE</div>
+        <div id="brand-name" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
         <nav id="primary-nav"></nav>
         <nav id="sub-nav"></nav>
 
-        <div id="search-trigger" onclick="toggleSearch()">🔍</div>
+        <svg class="icon-btn" onclick="toggleSearch()" viewBox="0 0 24 24">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+
         <div id="search-overlay">
             <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
-            <div id="close-search" onclick="toggleSearch()">✕</div>
+            <svg id="close-search" onclick="toggleSearch()" viewBox="0 0 24 24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
         </div>
     </header>
 
@@ -62,8 +67,8 @@
                 const h = document.getElementById('main-header');
                 if(h) h.classList.toggle('shrink', window.scrollY > 50);
             });
-
-            // Lightbox Logic (Only zoom if class contains 'zoomable')
+            
+            // Lightbox Logic
             document.getElementById('app').addEventListener('click', (e) => {
                 if(e.target.classList.contains('zoomable')) {
                     const lb = document.getElementById('lightbox');
@@ -72,12 +77,50 @@
                         lbImg.src = e.target.src;
                         lb.classList.add('active');
                     }
-                    e.stopPropagation(); // Prevent card click if zoomed
                 }
             });
         }
 
-        // --- NAVIGATION ---
+        // Reset to home safely
+        function resetToHome() {
+            closeSearch();
+            window.location.hash = '';
+        }
+
+        function closeSearch() {
+            document.getElementById('search-overlay').classList.remove('active');
+            document.getElementById('main-header').classList.remove('search-mode');
+            document.getElementById('search-input').value = '';
+            isSearchActive = false;
+        }
+
+        function toggleSearch() {
+            const overlay = document.getElementById('search-overlay');
+            const header = document.getElementById('main-header');
+            
+            overlay.classList.toggle('active');
+            header.classList.toggle('search-mode'); // Collapse header
+
+            if (overlay.classList.contains('active')) {
+                document.getElementById('search-input').focus();
+            } else {
+                closeSearch();
+                handleRouting(); 
+            }
+        }
+
+        function handleSearch(query) {
+            if (!query) return;
+            isSearchActive = true;
+            const term = query.toLowerCase();
+            const results = db.filter(row => 
+                (row.Title && row.Title.toLowerCase().includes(term)) || 
+                (row.Content && row.Content.toLowerCase().includes(term)) ||
+                (row.Tags && row.Tags.toLowerCase().includes(term))
+            );
+            renderRows(results, `Search results for "${query}"`);
+        }
+
         function buildNav() {
             const nav = document.getElementById('primary-nav');
             if(!nav) return;
@@ -85,7 +128,8 @@
             const pages = [...new Set(db.map(row => row.Page ? row.Page.split('/')[0] : null).filter(p => p))].sort();
             pages.forEach(p => {
                 if (p === 'Home') return;
-                nav.innerHTML += `<a href="#${p}" class="nav-link">${p}</a>`;
+                // Add onclick to ensure search closes when navigating
+                nav.innerHTML += `<a href="#${p}" class="nav-link" onclick="closeSearch()">${p}</a>`;
             });
         }
 
@@ -102,16 +146,21 @@
                 const parts = p.split('/');
                 const name = parts[1] ? parts[1] : 'Overview';
                 const isActive = (window.location.hash === `#${p}` || (p === activeTopLevel && window.location.hash === `#${p}`));
-                nav.innerHTML += `<a href="#${p}" class="sub-link ${isActive ? 'active' : ''}">${name}</a>`;
+                nav.innerHTML += `<a href="#${p}" class="sub-link ${isActive ? 'active' : ''}" onclick="closeSearch()">${name}</a>`;
             });
         }
 
-        // --- ROUTING & FILTERING ---
         function handleRouting() {
-            if (isSearchActive) return; // Don't reroute if searching
+            if (isSearchActive) return;
             const hash = window.location.hash.substring(1) || 'Home';
             
-            // Highlight Nav
+            // If hash is Filter, don't update nav highlighting
+            if (hash.startsWith('Filter:')) {
+                const term = decodeURIComponent(hash.split(':')[1]);
+                renderFiltered(term);
+                return;
+            }
+
             const topLevel = hash.split('/')[0];
             document.querySelectorAll('#primary-nav .nav-link').forEach(a => {
                 const href = a.getAttribute('href');
@@ -119,42 +168,10 @@
             });
             
             buildSubNav(topLevel);
-            
-            // Check if this is a "Filter View" (e.g., #Filter:Dec 2025)
-            if (hash.startsWith('Filter:')) {
-                const term = decodeURIComponent(hash.split(':')[1]);
-                renderFiltered(term);
-            } else {
-                renderPage(hash);
-            }
-        }
-
-        function toggleSearch() {
-            const overlay = document.getElementById('search-overlay');
-            overlay.classList.toggle('active');
-            if (overlay.classList.contains('active')) {
-                document.getElementById('search-input').focus();
-            } else {
-                document.getElementById('search-input').value = '';
-                isSearchActive = false;
-                handleRouting(); // Reset to normal view
-            }
-        }
-
-        function handleSearch(query) {
-            if (!query) return;
-            isSearchActive = true;
-            const term = query.toLowerCase();
-            const results = db.filter(row => 
-                (row.Title && row.Title.toLowerCase().includes(term)) || 
-                (row.Content && row.Content.toLowerCase().includes(term)) ||
-                (row.Tags && row.Tags.toLowerCase().includes(term))
-            );
-            renderRows(results, `Search results for "${query}"`);
+            renderPage(hash);
         }
 
         function renderFiltered(term) {
-            // Filter by Date or Tag
             const results = db.filter(row => 
                 (row.Timestamp && row.Timestamp.includes(term)) || 
                 (row.Tags && row.Tags.includes(term))
@@ -162,7 +179,6 @@
             renderRows(results, `Posts tagged "${term}"`);
         }
 
-        // --- RENDER LOGIC ---
         function renderPage(pageFilter) {
             const rows = db.filter(row => row.Page && row.Page.startsWith(pageFilter));
             renderRows(rows);
@@ -185,17 +201,20 @@
                 const link = row.LinkURL || '';
                 const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
                 
-                // Determine Category Color for Tags
                 let tagClass = 'meta-tag';
                 if(row.Page.startsWith('Personal')) tagClass += ' tag-personal';
                 else if(row.Page.startsWith('Professional')) tagClass += ' tag-prof';
                 else if(row.Page.startsWith('Projects')) tagClass += ' tag-project';
 
-                // Build Meta HTML (Date + Tags)
                 let metaHTML = `<div class="meta-row">`;
                 if(row.Timestamp) metaHTML += `<span class="meta-tag" onclick="window.location.hash='Filter:${row.Timestamp}'; event.stopPropagation();">${row.Timestamp}</span>`;
                 tags.forEach(t => metaHTML += `<span class="${tagClass}" onclick="window.location.hash='Filter:${t}'; event.stopPropagation();">#${t}</span>`);
                 metaHTML += `</div>`;
+
+                // Logic for Link vs Zoom
+                const isInternal = link.startsWith('#');
+                const target = isInternal ? '' : '_blank';
+                const wrapperClass = `clickable-block has-link layout-${row.SectionType}`;
 
                 // GRID
                 if (row.SectionType === 'grid') {
@@ -208,7 +227,7 @@
                         <img src="${media}" loading="lazy" class="${link ? '' : 'zoomable'}">
                         <div class="grid-content"><h3>${row.Title}</h3><p>${processText(row.Content)}</p>${metaHTML}</div>`;
                     
-                    if (link) gridContainer.innerHTML += `<a href="${link}" target="_blank" class="clickable-block layout-grid has-link">${itemContent}</a>`;
+                    if (link) gridContainer.innerHTML += `<a href="${link}" target="${target}" class="clickable-block layout-grid has-link">${itemContent}</a>`;
                     else gridContainer.innerHTML += `<div class="layout-grid">${itemContent}</div>`;
                     return;
                 } 
@@ -216,13 +235,13 @@
                 gridContainer = null;
                 const section = document.createElement('div');
                 section.className = `section layout-${row.SectionType}`;
+                
                 const content = processText(row.Content);
                 let html = '';
 
                 if (row.SectionType === 'hero') html = `<h1>${row.Title}</h1><p>${content}</p>`;
                 else if (row.SectionType === 'text') html = (row.Title ? `<h2>${row.Title}</h2>` : '') + `<p>${content}</p>`;
                 else if (row.SectionType === 'card') {
-                    // Logic: If link exists, NO zoom. If no link, Image is Zoomable.
                     const mediaHtml = getMediaHTML(media, !link); 
                     html = `${mediaHtml}<div><h3>${row.Title}</h3><p>${content}</p>${metaHTML}</div>`;
                 }
@@ -233,7 +252,7 @@
                 if (link) {
                     const wrapper = document.createElement('a');
                     wrapper.href = link;
-                    wrapper.target = "_blank";
+                    wrapper.target = target;
                     wrapper.className = "clickable-block has-link";
                     wrapper.innerHTML = html;
                     wrapper.querySelector(`.layout-${row.SectionType}`).classList.remove(`layout-${row.SectionType}`);
