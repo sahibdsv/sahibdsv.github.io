@@ -11,9 +11,7 @@
     
     <link rel="stylesheet" href="/assets/style.css">
     
-    <script>
-        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
-    </script>
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
@@ -41,9 +39,9 @@
     </div>
 
     <footer>
-        <a href="https://github.com/sahibdsv" target="_blank">GITHUB</a>
-        <a href="https://grabcad.com/library" target="_blank">GRABCAD</a>
-        <a href="mailto:sahibdsv@gmail.com">EMAIL</a>
+        <div class="footer-links" id="footer-links"></div>
+        <div>Made by Sahib Virdee</div>
+        <span id="version-tag"></span>
     </footer>
 
     <div id="lightbox" onclick="this.classList.remove('active')">
@@ -64,8 +62,11 @@
                 ]).then(([mainData, quotesData]) => {
                     db = mainData.filter(row => row.Page && row.Page.trim() !== '');
                     quotesDb = quotesData;
+                    
                     if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
                     initApp();
+                    renderFooter();
+                    fetchGitHubStats();
                 });
             });
 
@@ -143,7 +144,7 @@
             const nav = document.getElementById('primary-nav');
             if(!nav) return;
             nav.innerHTML = '';
-            const pages = [...new Set(db.map(row => row.Page.split('/')[0]).filter(p => p))].sort();
+            const pages = [...new Set(db.filter(row => row.Page !== 'Footer').map(row => row.Page.split('/')[0]).filter(p => p))].sort();
             pages.forEach(p => {
                 if (p === 'Home') return;
                 nav.innerHTML += `<a href="#${p}" class="nav-link" onclick="closeSearch()">${p}</a>`;
@@ -211,10 +212,10 @@
             if(exactRows.length > 0) {
                 renderRows(exactRows);
             } else {
-                // Auto-Overview: Find children
+                // Auto-Overview
                 const children = db.filter(row => row.Page.startsWith(pageFilter + '/'));
                 if(children.length > 0) {
-                    renderRows(children, `${pageFilter.split('/')[0]} Overview`, false, true);
+                    renderRows(children, `${pageFilter.split('/')[0]} Overview`, false, true); // true = forceGrid
                 } else {
                     renderRows([], "Page Empty");
                 }
@@ -258,7 +259,7 @@
 
                 if (row.SectionType === 'quote') {
                     const quoteDiv = document.createElement('div');
-                    quoteDiv.className = 'layout-quote section';
+                    quoteDiv.className = 'layout-quote section'; // Not clickable block
                     renderQuoteCard(quoteDiv);
                     app.appendChild(quoteDiv);
                     return;
@@ -336,7 +337,7 @@
             
             let authorHtml = random.Author || 'Unknown';
             if (random.Source && (random.Source.startsWith('http'))) {
-                authorHtml = `<a href="${random.Source}" target="_blank" style="color:inherit; border-bottom:1px dotted #888;">${authorHtml}</a>`;
+                authorHtml = `<a href="${random.Source}" target="_blank">${authorHtml}</a>`;
             } else if (random.Source) {
                 authorHtml += ` • ${random.Source}`;
             }
@@ -346,6 +347,30 @@
                 <div class="author">— ${authorHtml}</div>
                 <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
             `;
+        }
+
+        function renderFooter() {
+            const footerDiv = document.getElementById('footer-links');
+            const footerRows = db.filter(row => row.Page === 'Footer');
+            
+            footerRows.forEach(row => {
+                if(row.LinkURL) {
+                    footerDiv.innerHTML += `<a href="${row.LinkURL}" target="_blank">${row.Title}</a>`;
+                }
+            });
+        }
+
+        function fetchGitHubStats() {
+            // Replace with your actual repo: user/repo
+            const repo = "sahibdsv/sahibdsv.github.io"; 
+            fetch(`https://api.github.com/repos/${repo}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.pushed_at) {
+                        const date = new Date(data.pushed_at).toLocaleDateString();
+                        document.getElementById('version-tag').innerText = `Last Updated: ${date}`;
+                    }
+                }).catch(() => {});
         }
 
         function getThumbnail(url) {
