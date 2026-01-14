@@ -50,37 +50,63 @@
         let db = [];
         let isSearchActive = false;
 
+        console.log("🚀 Engine Starting...");
+
         Papa.parse(SHEET_URL, {
-            download: true, header: true, 
-            skipEmptyLines: true, 
+            download: true, header: true, skipEmptyLines: true,
             complete: (results) => { 
-                // SAFETY: Filter out rows with no Page immediately
+                console.log("✅ CSV Downloaded.");
+                console.log("📊 Headers Detected:", results.meta.fields);
+                
+                // SAFETY: Filter bad rows
                 db = results.data.filter(row => row.Page && row.Page.trim() !== '');
+                console.log(`📚 Valid Rows Loaded: ${db.length}`);
+
+                if (db.length === 0) {
+                    showError("CRITICAL: 0 valid rows found. Check Google Sheet Headers.");
+                    return;
+                }
+
+                // URL Cleanup
                 if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
+                
                 initApp(); 
+            },
+            error: (err) => {
+                showError("FAILED to download Google Sheet. Check internet or CSV URL.");
+                console.error(err);
             }
         });
 
+        function showError(msg) {
+            document.getElementById('app').innerHTML = `<div style="color: red; text-align: center; margin-top: 50px; border: 1px solid red; padding: 20px;"><strong>DEBUG ERROR:</strong><br>${msg}</div>`;
+        }
+
         function initApp() {
-            buildNav();
-            handleRouting();
-            window.addEventListener('hashchange', handleRouting);
-            window.addEventListener('scroll', () => {
-                const h = document.getElementById('main-header');
-                if(h) h.classList.toggle('shrink', window.scrollY > 50);
-            });
-            
-            document.getElementById('app').addEventListener('click', (e) => {
-                if(e.target.classList.contains('zoomable')) {
-                    const lb = document.getElementById('lightbox');
-                    const lbImg = document.getElementById('lightbox-img');
-                    if(lb && lbImg) {
-                        lbImg.src = e.target.src;
-                        lb.classList.add('active');
+            try {
+                buildNav();
+                handleRouting();
+                window.addEventListener('hashchange', handleRouting);
+                window.addEventListener('scroll', () => {
+                    const h = document.getElementById('main-header');
+                    if(h) h.classList.toggle('shrink', window.scrollY > 50);
+                });
+                
+                document.getElementById('app').addEventListener('click', (e) => {
+                    if(e.target.classList.contains('zoomable')) {
+                        const lb = document.getElementById('lightbox');
+                        const lbImg = document.getElementById('lightbox-img');
+                        if(lb && lbImg) {
+                            lbImg.src = e.target.src;
+                            lb.classList.add('active');
+                        }
+                        e.stopPropagation();
                     }
-                    e.stopPropagation();
-                }
-            });
+                });
+            } catch (e) {
+                showError("Javascript Crash in initApp: " + e.message);
+                console.error(e);
+            }
         }
 
         function resetToHome() {
@@ -89,10 +115,8 @@
         }
 
         function closeSearch() {
-            const overlay = document.getElementById('search-overlay');
-            const header = document.getElementById('main-header');
-            overlay.classList.remove('active');
-            header.classList.remove('search-mode');
+            document.getElementById('search-overlay').classList.remove('active');
+            document.getElementById('main-header').classList.remove('search-mode');
             document.getElementById('search-input').value = '';
             isSearchActive = false;
         }
@@ -129,6 +153,9 @@
             if(!nav) return;
             nav.innerHTML = '';
             const pages = [...new Set(db.map(row => row.Page.split('/')[0]).filter(p => p))].sort();
+            
+            console.log("🧭 Building Nav for pages:", pages);
+            
             pages.forEach(p => {
                 if (p === 'Home') return;
                 nav.innerHTML += `<a href="#${p}" class="nav-link" onclick="closeSearch()">${p}</a>`;
@@ -154,7 +181,17 @@
 
         function handleRouting() {
             if (isSearchActive) return;
-            const hash = window.location.hash.substring(1) || 'Home';
+            
+            // 1. Get Hash
+            let hash = window.location.hash.substring(1);
+            
+            // 2. Default to Home if empty
+            if (!hash) {
+                console.log("🏠 No Hash detected. Defaulting to Home.");
+                hash = 'Home';
+            } else {
+                console.log(`📍 Routing to: ${hash}`);
+            }
             
             if (hash.startsWith('Filter:')) {
                 const term = decodeURIComponent(hash.split(':')[1]);
@@ -191,10 +228,10 @@
 
         function renderHome() {
             const homeRows = db.filter(row => row.Page === 'Home');
+            const featuredRows = db.filter(row => row.isFeatured === 'TRUE'); // CHECKBOX LOGIC
             
-            // CHECKBOX LOGIC: Look for string 'TRUE'
-            const featuredRows = db.filter(row => row.isFeatured === 'TRUE');
-            
+            console.log(`🏠 Rendering Home: ${homeRows.length} hero rows, ${featuredRows.length} featured.`);
+
             const app = document.getElementById('app');
             app.innerHTML = '';
             renderRows(homeRows, null, true);
@@ -217,6 +254,7 @@
             }
 
             if (rows.length === 0 && !append) {
+                console.warn("⚠️ Render called, but 0 rows match this filter.");
                 app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>';
                 return;
             }
@@ -224,15 +262,13 @@
             let gridContainer = null;
 
             rows.forEach(row => {
-                if (!row.Page) return; // Double Safety
+                if (!row.Page) return;
 
                 const media = row.Media || '';
                 const link = row.LinkURL || '';
                 const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
                 
                 let tagClass = 'meta-tag';
-                
-                // CRITICAL SAFETY FIX for startsWith error
                 if (row.Page) {
                     if(row.Page.startsWith('Personal')) tagClass += ' tag-personal';
                     else if(row.Page.startsWith('Professional')) tagClass += ' tag-prof';
@@ -275,6 +311,7 @@
                     return; 
                 } 
                 
+                // STANDARD
                 gridContainer = null;
                 const content = processText(row.Content);
                 let innerHTML = '';
