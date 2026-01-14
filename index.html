@@ -135,9 +135,12 @@
             });
             document.getElementById('app').addEventListener('click', (e) => {
                 if(e.target.closest('.refresh-btn')) { 
+                    // Quote Refresh Animation Logic
                     const quoteContainer = e.target.closest('.layout-quote');
                     if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                         quoteContainer.classList.add('loading');
+                        
+                        // Inject Skeleton Text immediately into Blockquote
                         const bq = quoteContainer.querySelector('blockquote');
                         if(bq) {
                             bq.innerHTML = `
@@ -146,10 +149,17 @@
                                 <div class="sk-line quote-line short"></div>
                             `;
                         }
+                        
+                        // Replace Author text with Skeleton
+                        const authorContainer = quoteContainer.querySelector('.author');
+                        if(authorContainer) {
+                            authorContainer.innerHTML = `<div class="sk-line quote-line short" style="width:100px; height:12px; margin:0;"></div>`;
+                        }
+
                         setTimeout(() => {
                             renderQuoteCard(quoteContainer);
                             quoteContainer.classList.remove('loading');
-                        }, 600);
+                        }, 600); 
                     }
                     e.stopPropagation(); return; 
                 }
