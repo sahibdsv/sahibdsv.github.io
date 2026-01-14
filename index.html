@@ -43,17 +43,6 @@
     </header>
 
     <div class="content-container" id="app">
-        <div id="toolbar" class="hidden">
-            <svg class="sort-btn" onclick="toggleSort()" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
-        </div>
-
-        <div class="section layout-hero skeleton-visible" style="text-align:center;">
-            <div class="sk-line title"></div>
-            <div class="sk-line meta"></div>
-            <div class="sk-line text"></div>
-            <div class="sk-line text short"></div>
-        </div>
-        
         <div class="section layout-quote skeleton-visible">
             <div class="sk-box quote"></div>
         </div>
@@ -94,7 +83,7 @@
     <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
 
     <script>
-        let db = [], quotesDb = [], isSearchActive = false, isDesc = true;
+        let db = [], quotesDb = [], isSearchActive = false;
 
         const init = () => {
             fetch('assets/config.json')
@@ -119,7 +108,17 @@
                                 document.getElementById('main-header').classList.remove('no-transition');
                             }, 50);
                         });
+                    })
+                    .catch(e => {
+                        console.error("Data Load Error:", e);
+                        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
+                            <h2>Unable to load content</h2>
+                            <p style="color:#666">Please check your internet connection or configuration.</p>
+                        </div>`;
                     });
+                })
+                .catch(() => {
+                    document.getElementById('app').innerHTML = "Error loading config.";
                 });
         };
 
@@ -136,13 +135,31 @@
             });
             document.getElementById('app').addEventListener('click', (e) => {
                 if(e.target.closest('.refresh-btn')) { 
+                    // Quote Refresh Animation Logic
                     const quoteContainer = e.target.closest('.layout-quote');
-                    if(quoteContainer) {
+                    if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                         quoteContainer.classList.add('loading');
+                        
+                        // Inject Skeleton Text immediately into Blockquote
+                        const bq = quoteContainer.querySelector('blockquote');
+                        if(bq) {
+                            bq.innerHTML = `
+                                <div class="sk-line quote-line"></div>
+                                <div class="sk-line quote-line"></div>
+                                <div class="sk-line quote-line short"></div>
+                            `;
+                        }
+                        
+                        // Replace Author text with Skeleton
+                        const authorContainer = quoteContainer.querySelector('.author');
+                        if(authorContainer) {
+                            authorContainer.innerHTML = `<div class="sk-line quote-line short" style="width:100px; height:12px; margin:0;"></div>`;
+                        }
+
                         setTimeout(() => {
                             renderQuoteCard(quoteContainer);
                             quoteContainer.classList.remove('loading');
-                        }, 400);
+                        }, 600); 
                     }
                     e.stopPropagation(); return; 
                 }
@@ -162,18 +179,15 @@
                 const block = e.target.closest('.clickable-block');
                 if(block && !e.target.classList.contains('chip')) {
                     const link = block.getAttribute('data-link'), target = block.getAttribute('data-target');
-                    if(link) { if(target === '_blank') window.open(link, '_blank'); else { window.location.href = link; if(isSearchActive) closeSearch(); } }
+                    if(link) { 
+                        if(target === '_blank') window.open(link, '_blank'); 
+                        else { 
+                            window.location.href = link; 
+                            if(isSearchActive) closeSearch(); 
+                        } 
+                    }
                 }
             });
-        }
-
-        function toggleSort() {
-            isDesc = !isDesc;
-            // Update Icon
-            const btn = document.querySelector('.sort-btn');
-            if(btn) btn.classList.toggle('asc', !isDesc);
-            // Re-render current view logic
-            handleRouting();
         }
 
         function resetToHome() { closeSearch(); window.location.hash = ''; }
@@ -190,10 +204,8 @@
             if(!q) return; 
             isSearchActive = true; 
             
-            // Force header to collapse when searching
             document.body.classList.remove('header-expanded');
             document.getElementById('main-header').classList.remove('expanded');
-            document.getElementById('toolbar').classList.add('hidden'); // Hide sort on search
 
             const t = q.toLowerCase(), res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
             renderRows(res, `Search results for "${q}"`, false, true); 
@@ -218,16 +230,10 @@
             window.scrollTo(0, 0); 
             let h = window.location.hash.substring(1) || 'Home'; 
             
-            // COLLAPSE LOGIC: Collapse if Home OR Filter OR SearchActive
             const shouldCollapse = (h === 'Home' || h.startsWith('Filter:'));
             document.body.classList.toggle('header-expanded', !shouldCollapse);
             document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
             
-            // Sort Button Visibility: Only show on non-filtered pages
-            const tb = document.getElementById('toolbar');
-            if(h.startsWith('Filter:') || isSearchActive) tb.classList.add('hidden');
-            else tb.classList.remove('hidden');
-
             const top = h.split('/')[0]; 
             document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
             
@@ -238,7 +244,6 @@
         }
 
         function renderFiltered(t) { 
-            // Filter using treated date
             const res = db.filter(r => {
                 const dateStr = formatDate(r.Timestamp);
                 return (dateStr === t) || (r.Tags && r.Tags.includes(t));
@@ -249,16 +254,7 @@
         function renderPage(p) { 
             if(p === 'Home') { renderHome(); return; } 
             const ex = db.filter(r => r.Page === p); 
-            
-            const app = document.getElementById('app');
-            // Keep toolbar if we are just emptying content
-            const toolbar = document.getElementById('toolbar');
-            
-            // Don't nuke app.innerHTML directly or we lose toolbar. 
-            // Clear content siblings of toolbar.
-            while(app.lastChild && app.lastChild.id !== 'toolbar') {
-                app.removeChild(app.lastChild);
-            }
+            const app = document.getElementById('app'); app.innerHTML = ''; 
             
             if(ex.length > 0) { renderRows(ex, null, true); } 
             
@@ -275,9 +271,7 @@
         function renderHome() { 
             const hr = db.filter(r => r.Page === 'Home');
             const fr = db.filter(r => r.isFeatured === 'TRUE' && r.Page !== 'Home'); 
-            
-            const app = document.getElementById('app'); 
-            while(app.lastChild && app.lastChild.id !== 'toolbar') { app.removeChild(app.lastChild); }
+            const app = document.getElementById('app'); app.innerHTML = ''; 
             
             renderRows(hr, null, true); 
             if(fr.length > 0) { renderRows(fr, null, true); } 
@@ -286,15 +280,16 @@
         function renderRows(rows, title, append, forceGrid) {
             const app = document.getElementById('app'); if(!app) return; 
             
-            // SORTING using raw timestamp for accuracy
             rows.sort((a, b) => {
                 const da = new Date(a.Timestamp || 0);
                 const db = new Date(b.Timestamp || 0);
-                return isDesc ? db - da : da - db;
+                return db - da; 
             });
 
-            if(!append) app.insertAdjacentHTML('beforeend', title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '');
-            if(rows.length === 0 && !append) { app.insertAdjacentHTML('beforeend', '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'); return; }
+            if(!append) {
+                app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
+            }
+            if(rows.length === 0 && !append) { app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'; return; }
             
             let gc = app.querySelector('.grid-container');
             const hasGridItems = forceGrid || rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text');
@@ -337,7 +332,6 @@
                      mh = `<div class="meta-row">`;
                      if(r.Timestamp) {
                          let dateVal = formatDate(r.Timestamp);
-                         // Chip now filters by treated date "JAN 2025"
                          mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
                      }
                      tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${t}</span>`); 
