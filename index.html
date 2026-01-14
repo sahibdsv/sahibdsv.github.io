@@ -10,8 +10,12 @@
     <link rel="shortcut icon" href="/assets/favicon.ico" />
     
     <link rel="stylesheet" href="/assets/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <script>
+        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body>
 
@@ -33,7 +37,7 @@
     </header>
 
     <div class="content-container" id="app">
-        <p class="loading-text" style="text-align:center; padding-top: 80px;">Loading...</p>
+        <p class="loading-text" style="text-align:center; padding-top: 80px;">LOADING</p>
     </div>
 
     <footer>
@@ -51,29 +55,18 @@
         let quotesDb = [];
         let isSearchActive = false;
 
-        // --- STEP 1: LOAD CONFIG, THEN LOAD DATA ---
         fetch('assets/config.json')
-            .then(response => {
-                if (!response.ok) throw new Error("Missing config.json");
-                return response.json();
-            })
+            .then(res => res.json())
             .then(config => {
-                // Fetch both sheets using URLs from config
-                return Promise.all([
+                Promise.all([
                     fetchCSV(config.main_sheet),
                     fetchCSV(config.quotes_sheet).catch(() => []) 
-                ]);
-            })
-            .then(([mainData, quotesData]) => {
-                db = mainData.filter(row => row.Page && row.Page.trim() !== '');
-                quotesDb = quotesData;
-                
-                if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
-                initApp();
-            })
-            .catch(err => {
-                document.getElementById('app').innerHTML = `<div style="text-align:center; padding-top:50px; color:red;">Error loading site configuration.<br>${err}</div>`;
-                console.error(err);
+                ]).then(([mainData, quotesData]) => {
+                    db = mainData.filter(row => row.Page && row.Page.trim() !== '');
+                    quotesDb = quotesData;
+                    if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
+                    initApp();
+                });
             });
 
         function fetchCSV(url) {
@@ -180,7 +173,6 @@
             }
 
             header.classList.remove('compact'); body.classList.remove('header-compact');
-            
             subPages.forEach(p => {
                 const name = p.split('/')[1];
                 const isActive = window.location.hash === `#${p}` || window.location.hash.startsWith(`#${p}/`);
@@ -203,7 +195,6 @@
                 const href = a.getAttribute('href');
                 if(href) a.classList.toggle('active', href.replace('#', '') === topLevel);
             });
-            
             buildSubNav(topLevel);
             renderPage(hash);
         }
@@ -219,8 +210,8 @@
             const exactRows = db.filter(row => row.Page === pageFilter);
             if(exactRows.length > 0) {
                 renderRows(exactRows);
-            } 
-            else {
+            } else {
+                // Auto-Overview: Find children
                 const children = db.filter(row => row.Page.startsWith(pageFilter + '/'));
                 if(children.length > 0) {
                     renderRows(children, `${pageFilter.split('/')[0]} Overview`, false, true);
@@ -258,7 +249,7 @@
             let gridContainer = null;
             if(forceGrid) {
                 gridContainer = document.createElement('div');
-                gridContainer.className = 'grid-container section';
+                gridContainer.className = 'grid-container section compact-mode';
                 app.appendChild(gridContainer);
             }
 
@@ -267,7 +258,7 @@
 
                 if (row.SectionType === 'quote') {
                     const quoteDiv = document.createElement('div');
-                    quoteDiv.className = 'layout-quote section clickable-block';
+                    quoteDiv.className = 'layout-quote section';
                     renderQuoteCard(quoteDiv);
                     app.appendChild(quoteDiv);
                     return;
@@ -345,7 +336,7 @@
             
             let authorHtml = random.Author || 'Unknown';
             if (random.Source && (random.Source.startsWith('http'))) {
-                authorHtml = `<a href="${random.Source}" target="_blank" style="color:inherit; border:none;">${authorHtml}</a>`;
+                authorHtml = `<a href="${random.Source}" target="_blank" style="color:inherit; border-bottom:1px dotted #888;">${authorHtml}</a>`;
             } else if (random.Source) {
                 authorHtml += ` • ${random.Source}`;
             }
@@ -353,7 +344,7 @@
             container.innerHTML = `
                 <blockquote>"${random.Quote}"</blockquote>
                 <div class="author">— ${authorHtml}</div>
-                <div class="refresh-btn">🔄</div>
+                <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
             `;
         }
 

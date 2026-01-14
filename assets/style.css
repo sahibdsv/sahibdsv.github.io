@@ -34,8 +34,8 @@ body.header-compact { padding-top: var(--header-h-compact); }
 /* --- HEADER --- */
 #main-header {
     position: fixed; top: 0; left: 0; width: 100%;
-    background: rgba(5, 5, 5, 0.95); border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(10px); z-index: 1000;
+    background: #050505; border-bottom: 1px solid var(--border);
+    z-index: 1000;
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     padding-top: 15px; 
     height: var(--header-h-default);
@@ -84,8 +84,8 @@ body.header-compact { padding-top: var(--header-h-compact); }
 #main-header.shrink #sub-nav { font-size: 11px; gap: 15px; }
 
 .sub-link { color: #555; text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
-.sub-link:hover { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
-.sub-link.active { color: #fff; font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+.sub-link:hover { color: #fff; }
+.sub-link.active { color: #fff; font-weight: 700; }
 
 .icon-btn {
     position: absolute; right: 20px; top: 18px; 
@@ -119,137 +119,121 @@ body.header-compact { padding-top: var(--header-h-compact); }
 
 a { color: inherit; text-decoration: none; }
 
-/* SHIMMER LINK EFFECT */
+/* REGULAR TEXT HIGHLIGHT (Standard underline) */
 p a, .grid-content p a { 
-    font-weight: 500;
-    text-decoration: none;
-    background: linear-gradient(90deg, #888, #fff, #888);
-    background-size: 200% auto;
-    background-clip: text; -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: #888; /* Fallback */
-    animation: none;
-    border-bottom: 1px solid #444;
+    color: #fff; border-bottom: 1px solid #666; transition: all 0.2s;
 }
-p a:hover { 
-    animation: shine 1.5s linear infinite; 
-    border-bottom-color: #fff;
-}
+p a:hover { border-bottom-color: #fff; }
 
-h2 { color: #888; margin-top: -10px; margin-bottom: 20px; font-size: 18px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+h2 { color: #888; margin-top: -20px; margin-bottom: 30px; font-size: 18px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
 
 .layout-hero { text-align: center; margin: 0 0 40px; }
 .layout-hero h1 { font-size: 42px; color: #fff; margin-bottom: 10px; }
 .layout-hero p { color: var(--text-dim); font-size: 20px; max-width: 600px; margin: 0 auto; }
 
 .layout-text { max-width: 700px; margin: 0 auto 30px; }
-.layout-text h2 { color: #fff; font-size: 24px; margin-bottom: 10px; border: none; text-transform: none; letter-spacing: 0; margin-top: 0; }
+.layout-text h2 { color: #fff; font-size: 24px; margin-bottom: 10px; text-transform: none; border: none; letter-spacing: 0; }
 
-/* LOADING SHINE */
+/* LOADING SHINE (Forward Direction) */
 .loading-text {
     font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
     background: linear-gradient(90deg, #444 0%, #fff 50%, #444 100%);
     background-size: 200% auto;
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    animation: shine 2s linear infinite;
+    animation: shine 2s linear infinite reverse; /* REVERSE makes it go forward */
 }
 @keyframes shine { to { background-position: 200% center; } }
 
-/* --- AURA GLOW (MOVING BORDER) --- */
-/* We simulate a border using a pseudo-element behind the card */
-.clickable-block { position: relative; z-index: 1; border-radius: 8px; transition: transform 0.2s; }
+/* --- AURA GLOW (BACKLIT) --- */
+.clickable-block { 
+    position: relative; z-index: 1; border-radius: 8px; transition: transform 0.2s; 
+    background: #0f0f0f; /* Opaque Background is critical */
+}
+
+/* The Glow Layer (Behind) */
+.clickable-block::after {
+    content: ""; position: absolute; z-index: -1;
+    top: -1px; left: -1px; right: -1px; bottom: -1px;
+    background: linear-gradient(45deg, #333, #555, #333);
+    background-size: 400%;
+    border-radius: 9px; opacity: 0; transition: opacity 0.3s;
+}
 
 .clickable-block:hover { transform: translateY(-3px); }
-
-/* The Moving Gradient */
-.clickable-block::before {
-    content: ""; position: absolute; z-index: -1;
-    top: -2px; left: -2px; right: -2px; bottom: -2px;
-    background: linear-gradient(45deg, #333, #666, #333);
-    background-size: 400%;
-    border-radius: 10px; opacity: 0; transition: opacity 0.3s;
+.clickable-block:hover::after {
+    opacity: 1; animation: borderMove 3s linear infinite;
 }
 
-.clickable-block:hover::before {
-    opacity: 1; animation: borderMove 4s linear infinite;
-}
-
-/* Category Colors for Aura */
-body[data-page^="Projects"] .clickable-block::before { background: linear-gradient(45deg, var(--accent-projects), #333, var(--accent-projects)); }
-body[data-page^="Professional"] .clickable-block::before { background: linear-gradient(45deg, var(--accent-prof), #333, var(--accent-prof)); }
-body[data-page^="Personal"] .clickable-block::before { background: linear-gradient(45deg, var(--accent-personal), #333, var(--accent-personal)); }
+/* Category Colors */
+body[data-page^="Projects"] .clickable-block:hover::after { background: linear-gradient(45deg, var(--accent-projects), #000, var(--accent-projects)); }
+body[data-page^="Professional"] .clickable-block:hover::after { background: linear-gradient(45deg, var(--accent-prof), #000, var(--accent-prof)); }
+body[data-page^="Personal"] .clickable-block:hover::after { background: linear-gradient(45deg, var(--accent-personal), #000, var(--accent-personal)); }
 
 @keyframes borderMove { 0% { background-position: 0% 50%; } 100% { background-position: 400% 50%; } }
 
-
-/* CARDS (LANDSCAPE IMAGE) */
+/* CARDS */
 .layout-card {
-    display: grid; 
-    /* IMAGE TAKES 60% (1.5), TEXT TAKES 40% (1) */
-    grid-template-columns: 1.5fr 1fr; 
-    gap: 30px;
-    background: #0f0f0f; 
-    /* Use an inner border to separate content from the glowing rim */
-    border: 1px solid var(--border); 
-    padding: 0; /* Remove padding to let image flush? No, user wants compact */
-    padding: 20px;
-    border-radius: 8px;
-    align-items: center; 
-    /* Important: We need a background here so the content covers the glowing ::before element behind it */
-    position: relative; background-clip: padding-box;
+    display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px;
+    border: 1px solid var(--border); padding: 20px; border-radius: 8px;
+    align-items: center; background: #0f0f0f; /* Ensure opaque */
 }
-.layout-card img { 
-    width: 100%; 
-    aspect-ratio: 16/9; /* STANDARD LANDSCAPE */
-    border-radius: 4px; object-fit: cover; 
-}
-.layout-card h3 { color: #fff; font-size: 22px; margin-bottom: 6px; }
+.layout-card img { width: 100%; aspect-ratio: 16/9; border-radius: 6px; object-fit: cover; }
+.layout-card h3 { color: #fff; font-size: 20px; margin-bottom: 6px; }
 
 .layout-compact {
-    display: flex; align-items: center; gap: 20px;
-    border-bottom: 1px solid #1a1a1a; padding: 15px 0; margin-bottom: 0 !important;
+    display: flex; align-items: center; gap: 15px;
+    border-bottom: 1px solid #1a1a1a; padding: 12px 0; margin-bottom: 0 !important;
 }
-.layout-compact img { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; border: 1px solid #333; }
+.layout-compact img { width: 45px; height: 45px; border-radius: 4px; object-fit: cover; border: 1px solid #333; }
 .layout-compact h3 { font-size: 16px; color: #fff; margin: 0; }
 .layout-compact p { font-size: 14px; color: var(--text-dim); margin: 2px 0 0; line-height: 1.4; }
 
-/* QUOTE CARD */
+/* QUOTE CARD (Static, no hover glow) */
 .layout-quote {
-    background: rgba(255,255,255,0.02);
     border: 1px solid var(--border); padding: 40px; border-radius: 8px;
-    text-align: center; position: relative; background-clip: padding-box;
+    text-align: center; position: relative; background: #0f0f0f; margin-bottom: 40px;
 }
 .layout-quote blockquote {
     font-family: 'Playfair Display', serif; font-size: 28px; font-style: italic;
     color: #fff; margin-bottom: 20px; line-height: 1.4;
 }
 .layout-quote .author { font-size: 14px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; }
+.layout-quote .author a { border-bottom: 1px dotted #666; color: #fff; }
 .layout-quote .refresh-btn {
-    position: absolute; bottom: 15px; right: 15px; opacity: 0.3; cursor: pointer; transition: all 0.3s;
+    position: absolute; bottom: 15px; right: 15px; width: 20px; height: 20px;
+    opacity: 0.3; cursor: pointer; transition: all 0.3s; fill: #fff;
 }
-.layout-quote:hover .refresh-btn { opacity: 1; transform: rotate(90deg); }
+.layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(90deg); }
 
 /* GRID (2 COLUMNS) */
 .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .layout-grid { 
-    background: #111; border: 1px solid var(--border); 
-    border-radius: 8px; overflow: hidden; height: 100%; 
-    display: flex; flex-direction: column; position: relative; background-clip: padding-box;
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden; height: 100%; 
+    display: flex; flex-direction: column; background: #0f0f0f; /* Opaque */
 }
 .layout-grid img { width: 100%; height: 160px; object-fit: cover; }
 .layout-grid .grid-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
 .layout-grid h3 { font-size: 18px; color: #fff; margin-bottom: 5px; }
 .layout-grid p { font-size: 14px; margin-bottom: 10px; color: #aaa; }
 
-/* COMPACT GRID */
-.layout-grid.compact { flex-direction: row; min-height: 100px; height: 100px; align-items: center; }
-.layout-grid.compact img { width: 100px; height: 100%; border-right: 1px solid #333; }
-.layout-grid.compact .grid-content { padding: 0 20px; justify-content: center; }
+/* COMPACT GRID (Search/Tags - LANDSCAPE) */
+.layout-grid.compact { 
+    flex-direction: row; min-height: 100px; height: 100px; align-items: center; 
+}
+.layout-grid.compact img { 
+    width: 40%; /* 40% Image */
+    height: 100%; border-right: 1px solid #333; 
+    object-fit: cover;
+}
+.layout-grid.compact .grid-content { 
+    width: 60%; /* 60% Text */
+    padding: 0 20px; justify-content: center; 
+}
 .layout-grid.compact h3 { margin: 0; font-size: 16px; }
 .layout-grid.compact p { display: none; }
 
 .layout-grid.no-media .grid-content { 
-    justify-content: center; text-align: center;
+    width: 100%; justify-content: center; text-align: center;
     background: #151515; height: 100%; min-height: 140px;
 }
 
@@ -279,7 +263,6 @@ footer a:hover { color: #fff; }
 
 @media (max-width: 768px) {
     #primary-nav { gap: 20px; }
-    /* Stack cards on mobile again */
     .layout-card { grid-template-columns: 1fr; gap: 20px; }
     .grid-container { grid-template-columns: 1fr; }
     .icon-btn { right: 20px; }
