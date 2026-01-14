@@ -131,15 +131,12 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 }
 .icon-btn:hover { fill: #fff; }
 
-/* Default State */
 .search-icon { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
 .close-icon  { opacity: 0; transform: rotate(-90deg) scale(0.5); pointer-events: none; }
 
-/* Active State */
 #main-header.search-mode .search-icon { opacity: 0; transform: rotate(90deg) scale(0.5); pointer-events: none; }
 #main-header.search-mode .close-icon  { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
 
-/* Force white color when search is active (mobile fix) */
 #main-header.search-mode .icon-btn { fill: #fff; }
 
 #search-overlay {
@@ -168,9 +165,7 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 
 .section { margin-bottom: 40px; opacity: 0; animation: fadeIn 0.4s forwards; position: relative; } 
 @keyframes fadeIn { to { opacity: 1; } }
-
-/* Fix: Only override opacity, DO NOT disable animation */
-.skeleton-visible { opacity: 1 !important; }
+.skeleton-visible { opacity: 1 !important; animation: none !important; }
 
 /* Links */
 p a:not(.wiki-link) { --text-base: #fff; --text-hover: #aaa; border-bottom: 1px dotted #666; }
@@ -290,17 +285,24 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
 #lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
-/* --- SKELETON (RELIABLE PULSE) --- */
+/* --- SKELETON (RELIABLE ANIMATION) --- */
+/* Standard background movement method - universally supported */
 .sk-line, .sk-img, .sk-box {
-    background-color: #111;
+    background: #1a1a1a;
+    background-image: linear-gradient(
+        90deg, 
+        #1a1a1a 0%, 
+        #333 50%, 
+        #1a1a1a 100%
+    );
+    background-size: 200% 100%;
     border-radius: 4px;
-    /* Fast Pulse Animation - 100% Reliable */
-    animation: pulse 0.8s infinite alternate ease-in-out;
+    animation: shimmer 1.5s infinite linear;
 }
 
-@keyframes pulse {
-    0% { background-color: #111; }
-    100% { background-color: #262626; } /* High contrast gray */
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 .sk-line { margin-bottom: 10px; }
@@ -308,13 +310,13 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
 .sk-line.text { height: 20px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
 .sk-line.text.short { width: 60%; }
-.sk-box.quote { height: 200px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
+.sk-box.quote { height: 200px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; display: block; }
 .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 15px; border-radius: 4px; }
 .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 12px; }
 .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 8px; }
 
 /* Quote Text Skeleton Lines */
-.sk-line.quote-line { height: 20px; width: 90%; margin: 0 auto 10px; }
+.sk-line.quote-line { height: 20px; width: 90%; margin: 0 auto 10px; opacity: 0.5; }
 .sk-line.quote-line.short { width: 60%; }
 
 @media (max-width: 768px) {
