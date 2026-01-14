@@ -133,15 +133,39 @@
                     h.classList.toggle('shrink', window.scrollY > 50); 
                 } 
             });
+
+            // NEW: Click Outside to Close Search
+            document.addEventListener('click', (e) => {
+                const overlay = document.getElementById('search-overlay');
+                const controls = document.getElementById('search-controls');
+                
+                // If search is active AND click is NOT inside overlay AND NOT inside controls
+                if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
+                    closeSearch();
+                }
+            });
+
             document.getElementById('app').addEventListener('click', (e) => {
                 if(e.target.closest('.refresh-btn')) { 
                     // Quote Refresh Animation Logic
                     const quoteContainer = e.target.closest('.layout-quote');
                     if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                         quoteContainer.classList.add('loading');
-                        // Use the full box skeleton logic
-                        quoteContainer.innerHTML = `<div class="sk-box quote" style="height:140px; width:100%; margin:0 auto;"></div>`;
                         
+                        const bq = quoteContainer.querySelector('blockquote');
+                        if(bq) {
+                            bq.innerHTML = `
+                                <div class="sk-line quote-line"></div>
+                                <div class="sk-line quote-line"></div>
+                                <div class="sk-line quote-line short"></div>
+                            `;
+                        }
+                        
+                        const authorContainer = quoteContainer.querySelector('.author');
+                        if(authorContainer) {
+                            authorContainer.innerHTML = `<div class="sk-line quote-line short" style="width:100px; height:12px; margin:0;"></div>`;
+                        }
+
                         setTimeout(() => {
                             renderQuoteCard(quoteContainer);
                             quoteContainer.classList.remove('loading');
