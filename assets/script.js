@@ -2,7 +2,7 @@
 
 let db = [], quotesDb = [], isSearchActive = false;
 
-// Fallback Config (In case config.json fails)
+// Fallback Config
 const FALLBACK_CONFIG = {
     main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
@@ -88,7 +88,6 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                // Use FULL BOX skeleton matched to CSS height
                 quoteContainer.innerHTML = `<div class="sk-box quote" style="height:130px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
@@ -285,10 +284,7 @@ function renderRows(rows, title, append, forceGrid) {
         
         if(gc) gc.appendChild(d);
     });
-    
-    if(window.MathJax && window.MathJax.typeset) {
-        window.MathJax.typeset();
-    }
+    if(window.MathJax) MathJax.typeset();
 }
 
 function renderQuoteCard(c) {
@@ -329,7 +325,7 @@ function fetchGitHubStats() {
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
             const dateStr = new Date(d.pushed_at).toLocaleDateString();
-            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank">Last Updated: ${dateStr}</a>`;
+            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last Updated: ${dateStr}</a>`;
         } 
     }).catch(()=>{}); 
 }
