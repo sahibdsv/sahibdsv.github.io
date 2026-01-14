@@ -106,8 +106,8 @@ body.header-expanded { padding-top: var(--header-h-expanded); }
 #sub-nav { 
     display: flex; gap: 25px; font-size: 13px; transition: all 0.4s var(--ease); opacity: 1;
     overflow-x: auto; white-space: nowrap; 
-    width: 100%; max-width: 900px; /* Contain width */
-    justify-content: center; /* Center items if few */
+    width: 100%; max-width: 900px;
+    justify-content: center;
     padding-bottom: 5px; scrollbar-width: none;
     height: 25px; 
     mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
@@ -172,7 +172,6 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 p a:not(.wiki-link) { --text-base: #fff; --text-hover: #aaa; border-bottom: 1px dotted #666; }
 p a:not(.wiki-link):hover { border-bottom-color: #fff; }
 
-/* Global External Link Icon */
 a[target="_blank"]:not(.clickable-block) { display: inline-flex; align-items: center; gap: 4px; }
 a[target="_blank"]:not(.clickable-block)::after {
     content: ""; display: inline-block; width: 12px; height: 12px;
@@ -207,7 +206,6 @@ body[data-page^="Professional"] .layout-grid h3 { --text-hover: var(--accent-pro
 body[data-page^="Personal"] .layout-grid h3 { --text-hover: var(--accent-personal); }
 body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 
-/* MATCHED EXTERNAL ICON */
 .layout-grid[data-target="_blank"] h3::after {
     content: ""; display: inline-block; width: 12px; height: 12px;
     background-color: currentColor; opacity: 0.7;
@@ -239,7 +237,7 @@ body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 /* Quote */
 .layout-quote { 
     padding: 20px; text-align: center; position: relative; 
-    margin: 0 auto 10px; /* Reduced from 40px to 10px to minimize space */
+    margin: 0 auto 10px; /* Reduced gap to Featured section */
     min-height: 200px; 
     max-width: 800px;
     display: flex; flex-direction: column; justify-content: center; align-items: center; 
@@ -260,7 +258,7 @@ body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 
 /* Reload Icon (Bottom Right) */
 .layout-quote .refresh-btn { 
-    position: absolute; bottom: 10px; right: 10px; /* Moved to bottom right */
+    position: absolute; bottom: 10px; right: 10px; 
     width: 24px; height: 24px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; 
     padding: 2px;
 }
@@ -284,33 +282,48 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
 #lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
-/* --- SKELETON (SHIMMER) --- */
+/* --- SKELETON (HIGH CONTRAST SHIMMER) --- */
 .sk-line, .sk-img, .sk-box {
-    background: #111;
-    /* High contrast shimmer: #444 is much brighter */
-    background: linear-gradient(90deg, #111 0%, #444 50%, #111 100%); 
-    background-size: 200% 100%;
+    background: #111; /* Fallback */
+    position: relative;
+    overflow: hidden;
     border-radius: 4px;
-    /* Fast animation */
-    animation: shimmer 1s infinite linear;
+}
+
+/* Pseudo-element for the moving shine to guarantee visibility */
+.sk-line::after, .sk-img::after, .sk-box::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    /* High contrast gradient: #111 -> #333 -> #111 */
+    background: linear-gradient(
+        90deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.08) 50%, /* 8% white opacity is roughly #222 on black */
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-100%);
+    animation: shimmer 1s infinite;
 }
 
 .sk-line { margin-bottom: 10px; }
 
-.sk-line.title { height: 48px; width: 50%; margin: 0 auto 20px; }
+/* Hero Skeletons - Matches real typography */
+.sk-line.title { height: 48px; width: 50%; margin: 0 auto 20px; } /* Matches h1 */
 .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
-.sk-line.text { height: 18px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
+.sk-line.text { height: 20px; width: 100%; max-width: 600px; margin: 0 auto 12px; } /* Matches p size */
 .sk-line.text.short { width: 60%; }
 
-.sk-box.quote { height: 200px; width: 100%; margin: 0 auto 40px; max-width: 800px; opacity: 0.5; }
+/* Quote Box Skeleton */
+.sk-box.quote { height: 200px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 0.5; }
 
+/* Grid Card Skeletons */
 .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 15px; border-radius: 4px; }
-.layout-grid .sk-line.title { height: 24px; width: 80%; margin: 0 0 12px; }
+.layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 12px; } /* Matches h3 */
 .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 8px; }
 
 @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    100% { transform: translateX(100%); }
 }
 
 @media (max-width: 768px) {
