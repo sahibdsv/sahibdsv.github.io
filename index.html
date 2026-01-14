@@ -52,9 +52,11 @@
 
         Papa.parse(SHEET_URL, {
             download: true, header: true, 
-            skipEmptyLines: true, // Auto-skip completely empty rows
+            skipEmptyLines: true, 
             complete: (results) => { 
-                db = results.data;
+                // CRITICAL FIX: Remove rows where 'Page' is empty immediately
+                db = results.data.filter(row => row.Page && row.Page.trim() !== '');
+                
                 if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
                 initApp(); 
             }
@@ -127,7 +129,8 @@
             const nav = document.getElementById('primary-nav');
             if(!nav) return;
             nav.innerHTML = '';
-            const pages = [...new Set(db.map(row => row.Page ? row.Page.split('/')[0] : null).filter(p => p))].sort();
+            // Safe to map because we filtered db already
+            const pages = [...new Set(db.map(row => row.Page.split('/')[0]).filter(p => p))].sort();
             pages.forEach(p => {
                 if (p === 'Home') return;
                 nav.innerHTML += `<a href="#${p}" class="nav-link" onclick="closeSearch()">${p}</a>`;
@@ -140,7 +143,7 @@
             nav.innerHTML = '';
             if (activeTopLevel === 'Home') return;
 
-            const subPages = [...new Set(db.filter(row => row.Page && row.Page.startsWith(activeTopLevel)).map(row => row.Page))].sort();
+            const subPages = [...new Set(db.filter(row => row.Page.startsWith(activeTopLevel)).map(row => row.Page))].sort();
             if (subPages.length <= 1) return; 
 
             subPages.forEach(p => {
@@ -184,7 +187,7 @@
                 renderHome();
                 return;
             }
-            const rows = db.filter(row => row.Page && row.Page.startsWith(pageFilter));
+            const rows = db.filter(row => row.Page.startsWith(pageFilter));
             renderRows(rows);
         }
 
@@ -221,15 +224,11 @@
             let gridContainer = null;
 
             rows.forEach(row => {
-                // SAFETY CHECK: If Page is missing, skip this row
-                if (!row.Page) return;
-
                 const media = row.Media || '';
                 const link = row.LinkURL || '';
                 const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
                 
                 let tagClass = 'meta-tag';
-                // Safe check using startsWith only if Page exists
                 if(row.Page.startsWith('Personal')) tagClass += ' tag-personal';
                 else if(row.Page.startsWith('Professional')) tagClass += ' tag-prof';
                 else if(row.Page.startsWith('Projects')) tagClass += ' tag-project';
