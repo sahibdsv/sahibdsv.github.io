@@ -207,7 +207,7 @@ body[data-page^="Professional"] .layout-grid h3 { --text-hover: var(--accent-pro
 body[data-page^="Personal"] .layout-grid h3 { --text-hover: var(--accent-personal); }
 body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 
-/* MATCHED EXTERNAL ICON: Now uses the same SVG path as footer links */
+/* MATCHED EXTERNAL ICON */
 .layout-grid[data-target="_blank"] h3::after {
     content: ""; display: inline-block; width: 12px; height: 12px;
     background-color: currentColor; opacity: 0.7;
@@ -238,7 +238,8 @@ body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 
 /* Quote */
 .layout-quote { 
-    padding: 20px; text-align: center; position: relative; margin: 0 auto 40px; 
+    padding: 20px; text-align: center; position: relative; 
+    margin: 0 auto 10px; /* Reduced from 40px to 10px to minimize space */
     min-height: 200px; 
     max-width: 800px;
     display: flex; flex-direction: column; justify-content: center; align-items: center; 
@@ -257,8 +258,9 @@ body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 .layout-quote .author { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
 .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
 
+/* Reload Icon (Bottom Right) */
 .layout-quote .refresh-btn { 
-    position: absolute; top: 0; right: 0;
+    position: absolute; bottom: 10px; right: 10px; /* Moved to bottom right */
     width: 24px; height: 24px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; 
     padding: 2px;
 }
@@ -285,11 +287,11 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 /* --- SKELETON (SHIMMER) --- */
 .sk-line, .sk-img, .sk-box {
     background: #111;
-    /* Brightened center (#333) for visibility against dark bg */
-    background: linear-gradient(90deg, #111 0%, #333 50%, #111 100%); 
+    /* High contrast shimmer: #444 is much brighter */
+    background: linear-gradient(90deg, #111 0%, #444 50%, #111 100%); 
     background-size: 200% 100%;
     border-radius: 4px;
-    /* Faster animation (1s) to feel fast */
+    /* Fast animation */
     animation: shimmer 1s infinite linear;
 }
 
