@@ -214,18 +214,18 @@ function renderPage(p) {
 }
 
 function renderHome() { 
-    // Render Home Page Content
     const hr = db.filter(r => r.Page === 'Home');
+    const fr = db.filter(r => r.isFeatured === 'TRUE' && r.Page !== 'Home'); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
     renderRows(hr, null, true); 
     
-    // Recent Posts Logic (Top 6 non-Home)
+    // RECENT POSTS
     const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                       .slice(0, 6);
                       
-    if(recents.length > 0) { renderRows(recents, null, true); } 
+    if(recents.length > 0) { renderRows(recents, "Recent", true); } 
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
@@ -235,14 +235,21 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
 
     if(!append) {
         app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
+    } else if(title) {
+        app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
     }
+
     if(rows.length === 0 && !append) { app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'; return; }
     
     let gc = app.querySelector('.grid-container');
-    const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
-    
-    if(hasGridItems && (!gc || !append)) {
+    // If appending (Recent posts), force creation of a new grid container if one doesn't exist at the end
+    if(append) {
         gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
+    } else {
+        const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
+        if(hasGridItems && !gc) {
+            gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
+        }
     }
     
     rows.forEach(r => {
@@ -261,20 +268,24 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              const thumb = getThumbnail(r.Media);
              if(thumb) imgHtml = `<div class="row-media article-mode"><img src="${thumb}" class="inline-img zoomable" loading="lazy"></div>`;
              
-             let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a><div class="article-tags">';
+             let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
              
+             // External Link Icon
+             if(r.LinkURL) {
+                 metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+             }
+
+             metaHtml += '<div class="article-tags">';
              if(r.Timestamp) {
                  const dateVal = formatDate(r.Timestamp);
                  metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
              }
-             
              if(r.Tags) {
                  const tags = r.Tags.split(',').map(x => x.trim());
                  tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
              }
              metaHtml += '</div></div>';
 
-             // No fill-anim on Article Titles (Static Text)
              d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2>${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
              app.appendChild(d);
              return;
@@ -292,8 +303,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
                     let dateVal = formatDate(r.Timestamp);
                     dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
                 }
-                // No fill-anim on Hero Title
-                d.innerHTML = `<h1>${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
+                d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                 app.appendChild(d); return;
             }
             if(r.SectionType === 'text') {
