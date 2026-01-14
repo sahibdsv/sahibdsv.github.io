@@ -127,11 +127,19 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 .icon-btn { 
     position: absolute; width: 28px; height: 28px; cursor: pointer; fill: #666; 
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: center;
+    -webkit-tap-highlight-color: transparent; /* Fix mobile tap flicker */
 }
 .icon-btn:hover { fill: #fff; }
 
 .search-icon { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
 .close-icon  { opacity: 0; transform: rotate(-90deg) scale(0.5); pointer-events: none; }
+
+/* STATE: Search Mode Active */
+#main-header.search-mode .search-icon { opacity: 0; transform: rotate(90deg) scale(0.5); pointer-events: none; }
+#main-header.search-mode .close-icon  { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
+
+/* FORCE WHITE COLOR ON MOBILE WHEN ACTIVE */
+#main-header.search-mode .icon-btn { fill: #fff; }
 
 /* Opaque background to hide header on mobile */
 #search-overlay {
@@ -281,31 +289,24 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
 #lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
-/* --- SKELETON (SHIMMER) --- */
+/* --- SKELETON (HIGH CONTRAST SHIMMER) --- */
 .sk-line, .sk-img, .sk-box {
-    background: #111;
-    /* High contrast shimmer: #444 is much brighter */
-    background-image: linear-gradient(
-        to right,
-        #111 0%,
-        #333 50%,
-        #111 100%
-    );
-    background-size: 200% 100%;
-    background-repeat: no-repeat;
+    background: #111; 
+    position: relative;
+    overflow: hidden;
     border-radius: 4px;
-    animation: shimmer 1s infinite linear;
 }
-
+.sk-line::after, .sk-img::after, .sk-box::after {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: translateX(-100%); animation: shimmer 1s infinite;
+}
 .sk-line { margin-bottom: 10px; }
-
 .sk-line.title { height: 48px; width: 50%; margin: 0 auto 20px; }
 .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
-.sk-line.text { height: 18px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
+.sk-line.text { height: 20px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
 .sk-line.text.short { width: 60%; }
-
 .sk-box.quote { height: 200px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 0.5; }
-
 .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 15px; border-radius: 4px; }
 .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 12px; }
 .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 8px; }
@@ -314,10 +315,7 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 .sk-line.quote-line { height: 20px; width: 90%; margin: 0 auto 10px; opacity: 0.3; }
 .sk-line.quote-line.short { width: 60%; }
 
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}
+@keyframes shimmer { 100% { transform: translateX(100%); } }
 
 @media (max-width: 768px) {
     .grid-container { grid-template-columns: 1fr; }
