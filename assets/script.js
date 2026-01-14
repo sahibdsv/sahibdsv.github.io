@@ -88,7 +88,8 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
+                // Use FULL BOX skeleton matching CSS height (200px)
+                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:200px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
                     quoteContainer.classList.remove('loading');
@@ -190,7 +191,8 @@ function renderFiltered(t) {
         const dateStr = formatDate(r.Timestamp);
         return (dateStr === t) || (r.Tags && r.Tags.includes(t));
     });
-    renderRows(res, `Posts tagged "${safeHTML(t)}"`); 
+    // FORCE GRID = TRUE for filters
+    renderRows(res, `Posts tagged "${safeHTML(t)}"`, false, true); 
 }
 
 function renderPage(p) { 
@@ -261,7 +263,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              if(thumb) imgHtml = `<div class="row-media article-mode"><img src="${thumb}" class="inline-img zoomable" loading="lazy"></div>`;
              
              // Meta Row: Author + Chips
-             let metaHtml = '<div class="article-meta-row"><a href="#About" class="author-link fill-anim">SAHIB VIRDEE</a><div class="article-tags">';
+             let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a><div class="article-tags">';
              
              // Add Date Chip
              if(r.Timestamp) {
