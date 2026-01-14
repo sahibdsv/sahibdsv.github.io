@@ -69,7 +69,6 @@
                 const h = document.getElementById('main-header');
                 if(h) {
                     h.classList.toggle('shrink', window.scrollY > 50);
-                    // Persistent Compact Mode logic
                     if(document.body.classList.contains('header-compact')) h.classList.add('compact');
                 }
             });
@@ -90,10 +89,10 @@
                 // TAGS
                 if(e.target.classList.contains('meta-tag')) return;
 
-                // LINKS
+                // CLICKABLE BLOCKS
                 const block = e.target.closest('.clickable-block');
                 if(block) {
-                    if(e.target.classList.contains('meta-tag')) return; // Double Safety
+                    if(e.target.classList.contains('meta-tag')) return; 
                     const link = block.getAttribute('data-link');
                     const target = block.getAttribute('data-target');
                     if(link) {
@@ -141,7 +140,7 @@
                 (row.Content && row.Content.toLowerCase().includes(term)) ||
                 (row.Tags && row.Tags.toLowerCase().includes(term))
             );
-            // Pass 'true' for forceGrid to get Compact Cards
+            // forceGrid=true for Search
             renderRows(results, `Search results for "${query}"`, false, true);
         }
 
@@ -218,7 +217,6 @@
                 (row.Timestamp && row.Timestamp.includes(term)) || 
                 (row.Tags && row.Tags.includes(term))
             );
-            // Render Compact Grid for Tags too
             renderRows(results, `Posts tagged "${term}"`, false, true);
         }
 
@@ -256,7 +254,7 @@
             let gridContainer = null;
             if(forceGrid) {
                 gridContainer = document.createElement('div');
-                gridContainer.className = 'grid-container section';
+                gridContainer.className = 'grid-container section compact-mode'; // Added compact-mode class
                 app.appendChild(gridContainer);
             }
 
@@ -267,7 +265,6 @@
                 let link = row.LinkURL || ''; 
                 const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
                 
-                // FALLBACK LINK FOR SEARCH
                 if(forceGrid && !link) link = `#${row.Page}`;
 
                 let tagClass = 'meta-tag';
@@ -282,8 +279,6 @@
 
                 const isInternal = link.startsWith('#');
                 const target = isInternal ? '' : '_blank';
-                
-                // DATA ATTRIBUTES
                 const clickClass = link ? 'clickable-block' : '';
 
                 // GRID ITEM
@@ -294,8 +289,9 @@
                         app.appendChild(gridContainer); 
                     }
                     
-                    const imgHTML = media ? `<img src="${media}" loading="lazy" class="${link ? '' : (forceGrid ? 'zoomable' : '')}">` : '';
-                    const noMediaClass = media ? '' : 'no-media';
+                    const thumbnail = getThumbnail(media);
+                    const imgHTML = thumbnail ? `<img src="${thumbnail}" loading="lazy" class="${link ? '' : (forceGrid ? 'zoomable' : '')}">` : '';
+                    const noMediaClass = thumbnail ? '' : 'no-media';
                     const compactClass = forceGrid ? 'compact' : '';
 
                     const itemContent = `
@@ -304,7 +300,8 @@
                     
                     const div = document.createElement('div');
                     div.className = `layout-grid ${clickClass} ${noMediaClass} ${compactClass}`;
-                    if(link) {
+                    
+                    if(link || forceGrid) {
                         div.setAttribute('data-link', link);
                         div.setAttribute('data-target', target);
                     }
@@ -343,6 +340,18 @@
             if(window.MathJax) MathJax.typeset();
         }
 
+        function getThumbnail(url) {
+            if (!url) return null;
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                let v = url.split('v=')[1];
+                if (v && v.includes('&')) v = v.split('&')[0];
+                if (!v && url.includes('youtu.be')) v = url.split('/').pop();
+                return `https://img.youtube.com/vi/${v}/mqdefault.jpg`;
+            }
+            if (url.endsWith('.mp4')) return null; // No auto-thumb for raw mp4
+            return url;
+        }
+
         function processText(text) {
             if (!text) return '';
             return text.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link">$1</a>');
@@ -350,7 +359,12 @@
 
         function getMediaHTML(url, isZoomable) {
             if (!url) return '';
-            if (url.includes('youtu')) { let v = url.split('v=')[1]; if (v && v.includes('&')) v = v.split('&')[0]; return `<iframe src="https://www.youtube.com/embed/${v}" frameborder="0" allowfullscreen></iframe>`; }
+            if (url.includes('youtube.com') || url.includes('youtu.be')) { 
+                let v = url.split('v=')[1];
+                if (v && v.includes('&')) v = v.split('&')[0]; 
+                if (!v && url.includes('youtu.be')) v = url.split('/').pop();
+                return `<iframe src="https://www.youtube.com/embed/${v}" frameborder="0" allowfullscreen></iframe>`; 
+            }
             if (url.endsWith('.mp4')) return `<video controls src="${url}"></video>`;
             return `<img src="${url}" loading="lazy" class="${isZoomable ? 'zoomable' : ''}">`;
         }
