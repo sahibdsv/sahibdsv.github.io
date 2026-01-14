@@ -34,7 +34,8 @@ body.header-compact { padding-top: var(--header-h-compact); }
 /* --- HEADER --- */
 #main-header {
     position: fixed; top: 0; left: 0; width: 100%;
-    background: rgba(5, 5, 5, 0.98); border-bottom: 1px solid var(--border);
+    background: rgba(5, 5, 5, 0.95); border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px); /* Glass effect */
     z-index: 1000;
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     padding-top: 15px; 
@@ -72,26 +73,32 @@ body.header-compact { padding-top: var(--header-h-compact); }
 #main-header.shrink .nav-link { font-size: 12px; }
 
 /* Active States */
-.nav-link[href="#Projects"]:hover, .nav-link[href="#Projects"].active { color: var(--accent-projects); text-shadow: 0 0 10px rgba(255, 153, 51, 0.4); }
-.nav-link[href="#Professional"]:hover, .nav-link[href="#Professional"].active { color: var(--accent-prof); text-shadow: 0 0 10px rgba(0, 255, 255, 0.4); }
-.nav-link[href="#Personal"]:hover, .nav-link[href="#Personal"].active { color: var(--accent-personal); text-shadow: 0 0 10px rgba(77, 255, 136, 0.4); }
+.nav-link[href="#Projects"]:hover, .nav-link[href="#Projects"].active { color: var(--accent-projects); text-shadow: 0 0 15px rgba(255, 153, 51, 0.6); }
+.nav-link[href="#Professional"]:hover, .nav-link[href="#Professional"].active { color: var(--accent-prof); text-shadow: 0 0 15px rgba(0, 255, 255, 0.6); }
+.nav-link[href="#Personal"]:hover, .nav-link[href="#Personal"].active { color: var(--accent-personal); text-shadow: 0 0 15px rgba(77, 255, 136, 0.6); }
 
+/* SUB NAV - SCROLLABLE */
 #sub-nav { 
     display: flex; gap: 20px; font-size: 13px; 
     transition: all 0.4s var(--ease); opacity: 1;
+    overflow-x: auto; white-space: nowrap; /* Horizontal Scroll */
+    max-width: 90%; padding-bottom: 5px; /* Space for scrollbar hide */
+    scrollbar-width: none; /* Firefox hide */
 }
+#sub-nav::-webkit-scrollbar { display: none; } /* Chrome hide */
 #main-header.shrink #sub-nav { font-size: 11px; gap: 15px; }
 
 .sub-link { color: #555; text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
-.sub-link:hover { color: #fff; }
-.sub-link.active { color: #fff; font-weight: 700; }
+.sub-link:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
+.sub-link.active { color: #fff; font-weight: 700; text-shadow: 0 0 10px rgba(255,255,255,0.8); }
 
+/* SEARCH ICONS */
 .icon-btn {
     position: absolute; right: 20px; top: 18px; 
     width: 20px; height: 20px; cursor: pointer; fill: #666; transition: all 0.4s var(--ease); z-index: 1002;
 }
 #main-header.shrink .icon-btn { top: 8px; width: 16px; height: 16px; }
-.icon-btn:hover { fill: #fff; }
+.icon-btn:hover { fill: #fff; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
 
 #search-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -117,8 +124,11 @@ body.header-compact { padding-top: var(--header-h-compact); }
 .section { margin-bottom: 40px; opacity: 0; animation: fadeIn 0.4s forwards; }
 
 a { color: inherit; text-decoration: none; }
-p a, .grid-content p a { color: #fff; text-decoration: underline; text-decoration-color: #666; font-weight: 500; }
-p a:hover { color: #fff; text-decoration-color: #fff; }
+p a, .grid-content p a { 
+    color: #fff; text-decoration: underline; text-decoration-color: #666; font-weight: 500;
+    transition: all 0.2s;
+}
+p a:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.4); text-decoration-color: #fff; }
 
 h2 { color: #888; margin-top: -20px; margin-bottom: 30px; font-size: 18px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
 
@@ -129,12 +139,36 @@ h2 { color: #888; margin-top: -20px; margin-bottom: 30px; font-size: 18px; font-
 .layout-text { max-width: 700px; margin: 0 auto 30px; }
 .layout-text h2 { color: #fff; font-size: 24px; margin-bottom: 10px; }
 
+/* SHINE LOADING ANIMATION */
+.loading-text {
+    font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+    background: linear-gradient(90deg, #333 0%, #fff 50%, #333 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    animation: shine 2s linear infinite;
+}
+@keyframes shine { to { background-position: 200% center; } }
+
+/* AURA GLOW MIXIN */
+.clickable-block { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.3s var(--ease); }
+
+/* Default Glow (White) */
+.clickable-block:hover .layout-card, 
+.clickable-block:hover .layout-grid { 
+    border-color: #fff !important; 
+    box-shadow: 0 0 20px rgba(255,255,255,0.15); /* The Aura */
+    transform: translateY(-2px);
+}
+
+/* Category Specific Glows (Using attribute selectors logic in JS would be ideal, but CSS simple approach:) */
+/* We will inject style in JS for specific category colors, but default white aura is clean */
+
 /* CARDS */
 .layout-card {
     display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px;
     background: #0f0f0f; border: 1px solid var(--border); 
     padding: 20px; border-radius: 8px;
-    align-items: center; transition: border-color 0.1s;
+    align-items: center; transition: all 0.3s;
 }
 .layout-card img { width: 100%; border-radius: 6px; object-fit: cover; max-height: 250px; }
 .layout-card h3 { color: #fff; font-size: 20px; margin-bottom: 6px; }
@@ -151,7 +185,7 @@ h2 { color: #888; margin-top: -20px; margin-bottom: 30px; font-size: 18px; font-
 .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
 .layout-grid { 
     background: #111; border: 1px solid var(--border); 
-    border-radius: 8px; overflow: hidden; height: 100%; transition: border-color 0.1s, transform 0.2s; 
+    border-radius: 8px; overflow: hidden; height: 100%; transition: all 0.3s; 
     display: flex; flex-direction: column;
 }
 .layout-grid img { width: 100%; height: 150px; object-fit: cover; }
@@ -159,31 +193,25 @@ h2 { color: #888; margin-top: -20px; margin-bottom: 30px; font-size: 18px; font-
 .layout-grid h3 { font-size: 17px; color: #fff; margin-bottom: 5px; }
 .layout-grid p { font-size: 14px; margin-bottom: 10px; color: #aaa; }
 
-/* SEARCH/TAG GRID (Micro-Rows) */
-.grid-container.compact-mode { grid-template-columns: 1fr; gap: 10px; } /* One column stack */
+/* SEARCH/TAG GRID (2 Columns) */
+.grid-container.compact-mode { 
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Wider for 2 cols */
+    gap: 15px; 
+} 
 
 .layout-grid.compact { 
-    flex-direction: row; /* Horizontal Layout */
-    min-height: 80px; height: 80px;
-    align-items: center;
+    flex-direction: row; min-height: 80px; height: 80px; align-items: center;
 }
-.layout-grid.compact img { 
-    width: 80px; height: 100%; 
-    border-right: 1px solid #333; 
-}
+.layout-grid.compact img { width: 80px; height: 100%; border-right: 1px solid #333; }
 .layout-grid.compact .grid-content { 
-    padding: 0 20px; justify-content: center;
-    flex-direction: row; align-items: center; justify-content: space-between; width: 100%;
+    padding: 0 20px; justify-content: space-between; flex-direction: row; align-items: center; width: 100%;
 }
 .layout-grid.compact h3 { margin: 0; font-size: 16px; }
-.layout-grid.compact p { display: none; } /* Hide description in micro view */
+.layout-grid.compact p { display: none; }
 
-/* CLICKABLE HOVER - FIXED */
-/* Target the element that HAS both classes */
-.clickable-block.layout-card:hover, 
-.clickable-block.layout-grid:hover { 
-    border-color: #fff !important; 
-    box-shadow: 0 0 10px rgba(255,255,255,0.1); 
+.layout-grid.no-media .grid-content { 
+    justify-content: center; text-align: center;
+    background: #151515; height: 100%; min-height: 140px;
 }
 
 .zoomable { cursor: zoom-in; }
@@ -197,7 +225,7 @@ h2 { color: #888; margin-top: -20px; margin-bottom: 30px; font-size: 18px; font-
     cursor: pointer; text-transform: uppercase;
     transition: all 0.2s; user-select: none; z-index: 10;
 }
-.meta-tag:hover { color: #fff; border-color: #fff; background: #333; }
+.meta-tag:hover { color: #fff; border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.2); background: #333; }
 .tag-personal { color: #4dff88; border-color: rgba(77, 255, 136, 0.2); }
 .tag-prof { color: #00ffff; border-color: rgba(0, 255, 255, 0.2); }
 .tag-project { color: #ff9933; border-color: rgba(255, 153, 51, 0.2); }
@@ -207,7 +235,7 @@ footer {
     border-top: 1px solid #111; margin-top: 60px;
 }
 footer a { color: #888; text-decoration: none; margin: 0 15px; transition: color 0.2s; font-weight: 500; }
-footer a:hover { color: #fff; }
+footer a:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.3); }
 
 #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
 #lightbox img { max-width: 90%; max-height: 90%; object-fit: contain; }
@@ -218,5 +246,7 @@ footer a:hover { color: #fff; }
     .layout-card { grid-template-columns: 1fr; gap: 20px; }
     .icon-btn { right: 20px; }
     #search-input { width: 80%; font-size: 20px; }
+    /* Stack search results on mobile if needed */
+    .grid-container.compact-mode { grid-template-columns: 1fr; } 
 }
 @keyframes fadeIn { to { opacity: 1; } }

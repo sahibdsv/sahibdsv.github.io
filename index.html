@@ -34,7 +34,7 @@
     </header>
 
     <div class="content-container" id="app">
-        <p style="text-align:center; padding-top: 80px; color: #444;">Loading Portfolio...</p>
+        <p class="loading-text" style="text-align:center; padding-top: 80px;">Loading Portfolio...</p>
     </div>
 
     <footer>
@@ -74,7 +74,6 @@
             });
             
             document.getElementById('app').addEventListener('click', (e) => {
-                // LIGHTBOX
                 if(e.target.classList.contains('zoomable')) {
                     const lb = document.getElementById('lightbox');
                     const lbImg = document.getElementById('lightbox-img');
@@ -85,14 +84,11 @@
                     e.stopPropagation();
                     return;
                 }
-
-                // TAGS
                 if(e.target.classList.contains('meta-tag')) return;
 
-                // CLICKABLE BLOCKS
                 const block = e.target.closest('.clickable-block');
                 if(block) {
-                    if(e.target.classList.contains('meta-tag')) return; 
+                    if(e.target.classList.contains('meta-tag')) return;
                     const link = block.getAttribute('data-link');
                     const target = block.getAttribute('data-target');
                     if(link) {
@@ -140,7 +136,6 @@
                 (row.Content && row.Content.toLowerCase().includes(term)) ||
                 (row.Tags && row.Tags.toLowerCase().includes(term))
             );
-            // forceGrid=true for Search
             renderRows(results, `Search results for "${query}"`, false, true);
         }
 
@@ -222,8 +217,24 @@
 
         function renderPage(pageFilter) {
             if(pageFilter === 'Home') { renderHome(); return; }
+            
+            // 1. Try to find rows that exactly match this page
             const exactRows = db.filter(row => row.Page === pageFilter);
-            renderRows(exactRows);
+            
+            // 2. If valid content exists, show it
+            if(exactRows.length > 0) {
+                renderRows(exactRows);
+            } 
+            // 3. AUTO-OVERVIEW: If no exact content, find children!
+            else {
+                const children = db.filter(row => row.Page.startsWith(pageFilter + '/'));
+                if(children.length > 0) {
+                    // Turn children into grid cards automatically
+                    renderRows(children, `${pageFilter.split('/')[0]} Overview`, false, true);
+                } else {
+                    renderRows([], "Page Empty");
+                }
+            }
         }
 
         function renderHome() {
@@ -254,7 +265,7 @@
             let gridContainer = null;
             if(forceGrid) {
                 gridContainer = document.createElement('div');
-                gridContainer.className = 'grid-container section compact-mode'; // Added compact-mode class
+                gridContainer.className = 'grid-container section compact-mode';
                 app.appendChild(gridContainer);
             }
 
@@ -265,6 +276,7 @@
                 let link = row.LinkURL || ''; 
                 const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
                 
+                // If Auto-Overview or Search, link to the page itself if no external link
                 if(forceGrid && !link) link = `#${row.Page}`;
 
                 let tagClass = 'meta-tag';
@@ -281,7 +293,6 @@
                 const target = isInternal ? '' : '_blank';
                 const clickClass = link ? 'clickable-block' : '';
 
-                // GRID ITEM
                 if (row.SectionType === 'grid' || forceGrid) {
                     if (!gridContainer && !forceGrid) { 
                         gridContainer = document.createElement('div'); 
@@ -348,7 +359,7 @@
                 if (!v && url.includes('youtu.be')) v = url.split('/').pop();
                 return `https://img.youtube.com/vi/${v}/mqdefault.jpg`;
             }
-            if (url.endsWith('.mp4')) return null; // No auto-thumb for raw mp4
+            if (url.endsWith('.mp4')) return null; 
             return url;
         }
 
