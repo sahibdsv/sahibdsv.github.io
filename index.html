@@ -51,7 +51,8 @@
         let isSearchActive = false;
 
         Papa.parse(SHEET_URL, {
-            download: true, header: true,
+            download: true, header: true, 
+            skipEmptyLines: true, // Auto-skip completely empty rows
             complete: (results) => { 
                 db = results.data;
                 if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
@@ -220,11 +221,15 @@
             let gridContainer = null;
 
             rows.forEach(row => {
+                // SAFETY CHECK: If Page is missing, skip this row
+                if (!row.Page) return;
+
                 const media = row.Media || '';
                 const link = row.LinkURL || '';
                 const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
                 
                 let tagClass = 'meta-tag';
+                // Safe check using startsWith only if Page exists
                 if(row.Page.startsWith('Personal')) tagClass += ' tag-personal';
                 else if(row.Page.startsWith('Professional')) tagClass += ' tag-prof';
                 else if(row.Page.startsWith('Projects')) tagClass += ' tag-project';
@@ -250,7 +255,6 @@
                         <div class="grid-content"><h3>${row.Title}</h3><p>${processText(row.Content)}</p>${metaHTML}</div>`;
                     
                     if (link) {
-                        // Create Link Wrapper directly
                         const a = document.createElement('a');
                         a.href = link;
                         a.target = target;
@@ -271,7 +275,6 @@
                 const content = processText(row.Content);
                 let innerHTML = '';
 
-                // Build the inner HTML string first
                 if (row.SectionType === 'hero') {
                     innerHTML = `<h1>${row.Title}</h1><p>${content}</p>`;
                 } else if (row.SectionType === 'text') {
@@ -283,7 +286,6 @@
                     innerHTML = `<img src="${media}" loading="lazy"><div><h3>${row.Title}</h3><p>${content}</p></div>`;
                 }
 
-                // Create the container element (Div or Link)
                 let container;
                 if (link) {
                     container = document.createElement('a');
