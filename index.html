@@ -40,8 +40,7 @@
 
     <footer>
         <div class="footer-links" id="footer-links"></div>
-        <div>Made by Sahib Virdee</div>
-        <span id="version-tag"></span>
+        <div id="version-tag"></div>
     </footer>
 
     <div id="lightbox" onclick="this.classList.remove('active')">
@@ -99,7 +98,12 @@
                     document.getElementById('lightbox').classList.add('active');
                     e.stopPropagation(); return;
                 }
-                if(e.target.classList.contains('meta-tag')) return;
+                
+                // TAG CLICK - CLOSE SEARCH
+                if(e.target.classList.contains('meta-tag')) {
+                    if(isSearchActive) closeSearch();
+                    return;
+                }
 
                 const block = e.target.closest('.clickable-block');
                 if(block) {
@@ -207,18 +211,12 @@
 
         function renderPage(pageFilter) {
             if(pageFilter === 'Home') { renderHome(); return; }
-            
             const exactRows = db.filter(row => row.Page === pageFilter);
-            if(exactRows.length > 0) {
-                renderRows(exactRows);
-            } else {
-                // Auto-Overview
+            if(exactRows.length > 0) renderRows(exactRows);
+            else {
                 const children = db.filter(row => row.Page.startsWith(pageFilter + '/'));
-                if(children.length > 0) {
-                    renderRows(children, `${pageFilter.split('/')[0]} Overview`, false, true); // true = forceGrid
-                } else {
-                    renderRows([], "Page Empty");
-                }
+                if(children.length > 0) renderRows(children, `${pageFilter.split('/')[0]} Overview`, false, true);
+                else renderRows([], "Page Empty");
             }
         }
 
@@ -255,11 +253,11 @@
             }
 
             rows.forEach(row => {
-                if (!row.Page) return;
+                if (!row.Page || row.Page === 'Footer') return; // Skip Footer rows in content
 
                 if (row.SectionType === 'quote') {
                     const quoteDiv = document.createElement('div');
-                    quoteDiv.className = 'layout-quote section'; // Not clickable block
+                    quoteDiv.className = 'layout-quote section'; 
                     renderQuoteCard(quoteDiv);
                     app.appendChild(quoteDiv);
                     return;
@@ -337,7 +335,7 @@
             
             let authorHtml = random.Author || 'Unknown';
             if (random.Source && (random.Source.startsWith('http'))) {
-                authorHtml = `<a href="${random.Source}" target="_blank">${authorHtml}</a>`;
+                authorHtml = `<a href="${random.Source}" target="_blank" style="color:inherit; border-bottom:1px dotted #888;">${authorHtml}</a>`;
             } else if (random.Source) {
                 authorHtml += ` • ${random.Source}`;
             }
@@ -352,7 +350,7 @@
         function renderFooter() {
             const footerDiv = document.getElementById('footer-links');
             const footerRows = db.filter(row => row.Page === 'Footer');
-            
+            footerDiv.innerHTML = '';
             footerRows.forEach(row => {
                 if(row.LinkURL) {
                     footerDiv.innerHTML += `<a href="${row.LinkURL}" target="_blank">${row.Title}</a>`;
@@ -361,7 +359,6 @@
         }
 
         function fetchGitHubStats() {
-            // Replace with your actual repo: user/repo
             const repo = "sahibdsv/sahibdsv.github.io"; 
             fetch(`https://api.github.com/repos/${repo}`)
                 .then(res => res.json())
