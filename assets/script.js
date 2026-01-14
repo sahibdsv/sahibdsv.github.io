@@ -2,6 +2,7 @@
 
 let db = [], quotesDb = [], isSearchActive = false;
 
+// Fallback Config
 const FALLBACK_CONFIG = {
     main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
@@ -35,6 +36,7 @@ const init = () => {
 };
 
 async function fetchData() {
+    console.log("Fetching fresh data from Google Sheets...");
     let config = FALLBACK_CONFIG;
     try {
         const cfgRes = await fetch('assets/config.json');
@@ -220,7 +222,6 @@ function renderHome() {
     
     renderRows(hr, null, true); 
     
-    // RECENT POSTS
     const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                       .slice(0, 6);
@@ -242,7 +243,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     if(rows.length === 0 && !append) { app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'; return; }
     
     let gc = app.querySelector('.grid-container');
-    // If appending (Recent posts), force creation of a new grid container if one doesn't exist at the end
     if(append) {
         gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
     } else {
@@ -270,7 +270,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
              
-             // External Link Icon
              if(r.LinkURL) {
                  metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
              }
@@ -303,7 +302,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
                     let dateVal = formatDate(r.Timestamp);
                     dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
                 }
-                d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
+                d.innerHTML = `<h1>${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                 app.appendChild(d); return;
             }
             if(r.SectionType === 'text') {
@@ -375,6 +374,9 @@ function renderFooter() {
         }
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
+    
+    // Add Analytics
+    fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
 function fetchGitHubStats() { 
