@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sahib Virdee</title>
     
-    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Sahib">
+
+    <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="shortcut icon" href="/assets/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
 
     <link rel="stylesheet" href="/assets/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -82,7 +84,7 @@
             window.scrollTo(0, 0);
         }
 
-        // 5. HELPER: Detect Media Type (Image vs Video vs YouTube)
+        // 5. HELPER: Detect Media Type
         function getMediaHTML(url) {
             if (!url) return '';
             
@@ -131,7 +133,6 @@
                     html += `<p>${row.Content}</p>`;
                 }
                 else if (row.SectionType === 'card') {
-                    // Use the new helper function here
                     const mediaHTML = getMediaHTML(row.Media);
 
                     html = `
