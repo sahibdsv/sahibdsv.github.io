@@ -9,393 +9,323 @@
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
     <link rel="shortcut icon" href="/assets/favicon.ico" />
     
-    <link rel="stylesheet" href="/assets/style.css">
+    <!-- Link to External Stylesheet -->
+    <link rel="stylesheet" href="assets/style.css">
     
     <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
-<body>
-
-    <header id="main-header">
-        <div id="brand-name" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
+<body class="no-transition">
+    <header id="main-header" class="no-transition">
+        <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
         <nav id="primary-nav"></nav>
         <nav id="sub-nav"></nav>
-
-        <svg class="icon-btn" onclick="toggleSearch()" viewBox="0 0 24 24">
-            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-        </svg>
-
+        
+        <svg id="search-trigger" class="icon-btn" onclick="toggleSearch()" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        
         <div id="search-overlay">
             <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
-            <svg id="close-search" onclick="toggleSearch()" viewBox="0 0 24 24">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
+            <svg id="close-search" onclick="toggleSearch()" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </div>
     </header>
 
-    <div class="content-container" id="app">
-        <p class="loading-text" style="text-align:center; padding-top: 80px;">LOADING</p>
-    </div>
+    <div class="content-container" id="app"></div>
 
     <footer>
         <div class="footer-links" id="footer-links"></div>
         <div id="version-tag"></div>
     </footer>
 
-    <div id="lightbox" onclick="this.classList.remove('active')">
-        <img id="lightbox-img" src="">
-    </div>
+    <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
 
     <script>
-        let db = [];
-        let quotesDb = [];
-        let isSearchActive = false;
+        // Pre-flight check to set header state before visual paint
+        (function() {
+            const h = window.location.hash;
+            if (!h || h === '#Home') {
+                document.body.classList.add('header-compact');
+                document.getElementById('main-header').classList.add('compact');
+            }
+        })();
 
-        fetch('assets/config.json')
-            .then(res => res.json())
-            .then(config => {
-                Promise.all([
-                    fetchCSV(config.main_sheet),
-                    fetchCSV(config.quotes_sheet).catch(() => []) 
-                ]).then(([mainData, quotesData]) => {
-                    db = mainData.filter(row => row.Page && row.Page.trim() !== '');
-                    quotesDb = quotesData;
-                    
-                    if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
-                    initApp();
-                    renderFooter();
-                    fetchGitHubStats();
-                });
-            });
+        let db = [], quotesDb = [], isSearchActive = false;
 
-        function fetchCSV(url) {
-            return new Promise((resolve, reject) => {
-                Papa.parse(url, {
-                    download: true, header: true, skipEmptyLines: true,
-                    complete: (res) => resolve(res.data),
-                    error: (err) => reject(err)
+        const init = () => {
+            renderSkeleton(); 
+            
+            // Fetch Config First
+            fetch('assets/config.json')
+                .then(res => res.json())
+                .then(config => {
+                    Promise.all([
+                        fetchCSV(config.main_sheet), 
+                        fetchCSV(config.quotes_sheet).catch(()=>[])
+                    ]).then(([m,q]) => {
+                        db = m.filter(r => r.Title); 
+                        quotesDb = q;
+                        
+                        if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
+                        
+                        initApp(); 
+                        renderFooter(); 
+                        fetchGitHubStats();
+                        
+                        // Remove transitions block after paint
+                        requestAnimationFrame(() => {
+                            setTimeout(() => {
+                                document.body.classList.remove('no-transition');
+                                document.getElementById('main-header').classList.remove('no-transition');
+                            }, 50);
+                        });
+                    });
                 });
-            });
+        };
+
+        function fetchCSV(u) { return new Promise((res, rej) => Papa.parse(u, { download: true, header: true, skipEmptyLines: true, complete: (r) => res(r.data), error: (e) => rej(e) })); }
+
+        function renderSkeleton() {
+            const app = document.getElementById('app');
+            let html = `
+            <div class="section layout-hero" style="text-align:center; margin: 0 0 40px; padding-bottom: 30px;">
+                <div class="sk-block" style="width:40%; height:60px; margin: 0 auto 20px; background:#111;"></div>
+                <div class="sk-block" style="width:300px; height:24px; margin: 0 auto; background:#111;"></div>
+            </div>
+            <div class="section layout-quote" style="margin: 0 auto 40px; max-width:800px;">
+                <div class="sk-block" style="width:100%; height:140px; background:#111;"></div>
+            </div>
+            <div class="grid-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:25px;">`;
+            for(let i=0; i<4; i++) {
+                html += `<div class="sk-block" style="height:280px;"></div>`;
+            }
+            html += '</div>';
+            app.innerHTML = html;
         }
 
         function initApp() {
-            buildNav();
-            handleRouting();
+            buildNav(); handleRouting();
             window.addEventListener('hashchange', handleRouting);
-            window.addEventListener('scroll', () => {
-                const h = document.getElementById('main-header');
-                if(h) {
-                    h.classList.toggle('shrink', window.scrollY > 50);
+            window.addEventListener('scroll', () => { 
+                const h=document.getElementById('main-header'); 
+                if(h) { 
+                    h.classList.toggle('shrink', window.scrollY > 50); 
                     if(document.body.classList.contains('header-compact')) h.classList.add('compact');
-                }
+                } 
             });
-            
             document.getElementById('app').addEventListener('click', (e) => {
-                if(e.target.closest('.refresh-btn')) { renderQuoteCard(e.target.closest('.layout-quote')); e.stopPropagation(); return; }
-                if(e.target.classList.contains('zoomable')) {
-                    document.getElementById('lightbox-img').src = e.target.src;
-                    document.getElementById('lightbox').classList.add('active');
-                    e.stopPropagation(); return;
+                if(e.target.closest('.refresh-btn')) { 
+                    const quoteContainer = e.target.closest('.layout-quote');
+                    if(quoteContainer) {
+                        quoteContainer.classList.add('loading');
+                        setTimeout(() => {
+                            renderQuoteCard(quoteContainer);
+                            quoteContainer.classList.remove('loading');
+                        }, 400);
+                    }
+                    e.stopPropagation(); return; 
+                }
+                if(e.target.classList.contains('zoomable')) { document.getElementById('lightbox-img').src = e.target.src; document.getElementById('lightbox').classList.add('active'); e.stopPropagation(); return; }
+                
+                if(e.target.classList.contains('chip')) { 
+                    e.stopPropagation();
+                    if(isSearchActive) closeSearch(); 
+                    const tag = e.target.getAttribute('data-tag');
+                    const date = e.target.getAttribute('data-date');
+                    if(date) window.location.hash = 'Filter:' + date;
+                    else if(tag) window.location.hash = 'Filter:' + tag;
+                    return; 
                 }
                 
-                // TAG CLICK - CLOSE SEARCH
-                if(e.target.classList.contains('meta-tag')) {
-                    if(isSearchActive) closeSearch();
-                    return;
-                }
-
                 const block = e.target.closest('.clickable-block');
-                if(block) {
-                    if(e.target.classList.contains('meta-tag')) return;
-                    const link = block.getAttribute('data-link');
-                    const target = block.getAttribute('data-target');
-                    if(link) {
-                        if(target === '_blank') window.open(link, '_blank');
-                        else { window.location.href = link; if(isSearchActive) closeSearch(); }
-                    }
+                if(block && !e.target.classList.contains('chip')) {
+                    const link = block.getAttribute('data-link'), target = block.getAttribute('data-target');
+                    if(link) { if(target === '_blank') window.open(link, '_blank'); else { window.location.href = link; if(isSearchActive) closeSearch(); } }
                 }
             });
         }
 
         function resetToHome() { closeSearch(); window.location.hash = ''; }
-        function closeSearch() {
-            document.getElementById('search-overlay').classList.remove('active');
-            document.getElementById('main-header').classList.remove('search-mode');
-            document.getElementById('search-input').value = '';
-            if(isSearchActive) { isSearchActive = false; handleRouting(); }
-            isSearchActive = false;
+        function closeSearch() { document.getElementById('search-overlay').classList.remove('active'); document.getElementById('main-header').classList.remove('search-mode'); document.getElementById('search-input').value = ''; if(isSearchActive) { isSearchActive = false; handleRouting(); } isSearchActive = false; }
+        
+        function toggleSearch() { 
+            const a = document.getElementById('search-overlay').classList.toggle('active'); 
+            document.getElementById('main-header').classList.toggle('search-mode'); 
+            if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
+            else closeSearch(); 
         }
-        function toggleSearch() {
-            const isActive = document.getElementById('search-overlay').classList.toggle('active');
-            document.getElementById('main-header').classList.toggle('search-mode');
-            if (isActive) document.getElementById('search-input').focus(); else closeSearch();
-        }
-
-        function handleSearch(query) {
-            if (!query) return;
-            isSearchActive = true;
-            const term = query.toLowerCase();
-            const results = db.filter(row => 
-                (row.Title && row.Title.toLowerCase().includes(term)) || 
-                (row.Content && row.Content.toLowerCase().includes(term)) ||
-                (row.Tags && row.Tags.toLowerCase().includes(term))
-            );
-            renderRows(results, `Search results for "${query}"`, false, true);
+        
+        function handleSearch(q) { 
+            if(!q) return; 
+            isSearchActive = true; 
+            const t = q.toLowerCase(), res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
+            renderRows(res, `Search results for "${q}"`, false, true); 
         }
 
-        function buildNav() {
-            const nav = document.getElementById('primary-nav');
-            if(!nav) return;
-            nav.innerHTML = '';
-            const pages = [...new Set(db.filter(row => row.Page !== 'Footer').map(row => row.Page.split('/')[0]).filter(p => p))].sort();
-            pages.forEach(p => {
-                if (p === 'Home') return;
-                nav.innerHTML += `<a href="#${p}" class="nav-link" onclick="closeSearch()">${p}</a>`;
-            });
+        function buildNav() { 
+            const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
+            const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
+            p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${x}</a>`; }); 
         }
 
-        function buildSubNav(activeTopLevel) {
-            const nav = document.getElementById('sub-nav');
-            const header = document.getElementById('main-header');
-            const body = document.body;
-            if(!nav) return;
-            nav.innerHTML = '';
+        function buildSubNav(top) {
+            const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
             
-            body.setAttribute('data-page', activeTopLevel);
-
-            if (activeTopLevel === 'Home') {
-                header.classList.add('compact'); body.classList.add('header-compact'); return;
-            }
-
-            const subPages = [...new Set(db
-                .filter(row => row.Page.startsWith(activeTopLevel + '/'))
-                .map(row => row.Page.split('/').slice(0, 2).join('/')) 
-            )].sort();
-
-            if (subPages.length === 0) {
-                header.classList.add('compact'); body.classList.add('header-compact'); return; 
-            }
-
-            header.classList.remove('compact'); body.classList.remove('header-compact');
-            subPages.forEach(p => {
-                const name = p.split('/')[1];
-                const isActive = window.location.hash === `#${p}` || window.location.hash.startsWith(`#${p}/`);
-                nav.innerHTML += `<a href="#${p}" class="sub-link ${isActive ? 'active' : ''}" onclick="closeSearch()">${name}</a>`;
-            });
+            if(top === 'Home') { h.classList.add('compact'); b.classList.add('header-compact'); return; }
+            
+            const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
+            
+            if(subs.length === 0) { h.classList.add('compact'); b.classList.add('header-compact'); return; }
+            
+            h.classList.remove('compact'); b.classList.remove('header-compact');
+            subs.forEach(x => { const name = x.split('/')[1], active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${name}</a>`; });
         }
 
-        function handleRouting() {
-            if (isSearchActive) return;
-            let hash = window.location.hash.substring(1) || 'Home';
-            window.scrollTo(0, 0);
-
-            if (hash.startsWith('Filter:')) {
-                const term = decodeURIComponent(hash.split(':')[1]);
-                renderFiltered(term); return;
-            }
-
-            const topLevel = hash.split('/')[0];
-            document.querySelectorAll('#primary-nav .nav-link').forEach(a => {
-                const href = a.getAttribute('href');
-                if(href) a.classList.toggle('active', href.replace('#', '') === topLevel);
-            });
-            buildSubNav(topLevel);
-            renderPage(hash);
+        function handleRouting() { 
+            if(isSearchActive) return; 
+            window.scrollTo(0, 0); 
+            let h = window.location.hash.substring(1) || 'Home'; 
+            
+            const top = h.split('/')[0]; 
+            document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+            
+            buildSubNav(top); 
+            
+            if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
+            else { renderPage(h); }
         }
 
-        function renderFiltered(term) {
-            const results = db.filter(row => (row.Timestamp && row.Timestamp.includes(term)) || (row.Tags && row.Tags.includes(term)));
-            renderRows(results, `Posts tagged "${term}"`, false, true);
-        }
+        function renderFiltered(t) { const res = db.filter(r => (r.Timestamp && r.Timestamp.includes(t)) || (r.Tags && r.Tags.includes(t))); renderRows(res, `Posts tagged "${t}"`); }
 
-        function renderPage(pageFilter) {
-            if(pageFilter === 'Home') { renderHome(); return; }
-            const exactRows = db.filter(row => row.Page === pageFilter);
-            if(exactRows.length > 0) renderRows(exactRows);
-            else {
-                const children = db.filter(row => row.Page.startsWith(pageFilter + '/'));
-                if(children.length > 0) renderRows(children, `${pageFilter.split('/')[0]} Overview`, false, true);
-                else renderRows([], "Page Empty");
-            }
-        }
-
-        function renderHome() {
-            const homeRows = db.filter(row => row.Page === 'Home');
-            const featuredRows = db.filter(row => row.isFeatured === 'TRUE');
+        function renderPage(p) { 
+            if(p === 'Home') { renderHome(); return; } 
+            const ex = db.filter(r => r.Page === p); 
+            
             const app = document.getElementById('app');
-            app.innerHTML = '';
-            renderRows(homeRows, null, true);
-            if(featuredRows.length > 0) {
-                const featureHeader = document.createElement('h2');
-                featureHeader.innerHTML = "Featured Projects";
-                featureHeader.style.cssText = "text-align:center; color:#fff; margin:60px 0 30px; border-top:1px solid #222; padding-top:40px;";
-                app.appendChild(featureHeader);
-                renderRows(featuredRows, null, true, true);
+            app.innerHTML = ''; 
+            if(ex.length > 0) { renderRows(ex, null, true); } 
+            
+            const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
+            
+            if(childrenPages.length > 0) {
+                const overviewRows = childrenPages.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
+                renderRows(overviewRows, null, true, true); 
+            } else if (ex.length === 0) {
+                renderRows([], "Page Empty");
             }
         }
 
-        function renderRows(rows, titleOverride = null, append = false, forceGrid = false) {
-            const app = document.getElementById('app');
-            if(!app) return;
-            if(!append) app.innerHTML = titleOverride ? `<h2 style="text-align:center; color:#888; margin-bottom:40px;">${titleOverride}</h2>` : '';
+        function renderHome() { 
+            const hr = db.filter(r => r.Page === 'Home');
+            const fr = db.filter(r => r.isFeatured === 'TRUE' && r.Page !== 'Home'); 
+            const app = document.getElementById('app'); app.innerHTML = ''; 
+            
+            renderRows(hr, null, true); 
+            if(fr.length > 0) { renderRows(fr, null, true); } 
+        }
 
-            if (rows.length === 0 && !append) {
-                app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>';
-                return;
+        function renderRows(rows, title, append, forceGrid) {
+            const app = document.getElementById('app'); if(!app) return; 
+            
+            if(!append) app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
+            if(rows.length === 0 && !append) { app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'; return; }
+            
+            let gc = app.querySelector('.grid-container');
+            const hasGridItems = forceGrid || rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text');
+            
+            if(hasGridItems && (!gc || !append)) {
+                gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
             }
-
-            let gridContainer = null;
-            if(forceGrid) {
-                gridContainer = document.createElement('div');
-                gridContainer.className = 'grid-container section compact-mode';
-                app.appendChild(gridContainer);
-            }
-
-            rows.forEach(row => {
-                if (!row.Page || row.Page === 'Footer') return; // Skip Footer rows in content
-
-                if (row.SectionType === 'quote') {
-                    const quoteDiv = document.createElement('div');
-                    quoteDiv.className = 'layout-quote section'; 
-                    renderQuoteCard(quoteDiv);
-                    app.appendChild(quoteDiv);
-                    return;
-                }
-
-                const media = row.Media || '';
-                let link = row.LinkURL || ''; 
-                const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
-                if(forceGrid && !link) link = `#${row.Page}`;
-
-                let tagClass = 'meta-tag';
-                if(row.Page.startsWith('Personal')) tagClass += ' tag-personal';
-                else if(row.Page.startsWith('Professional')) tagClass += ' tag-prof';
-                else if(row.Page.startsWith('Projects')) tagClass += ' tag-project';
-
-                let metaHTML = `<div class="meta-row">`;
-                if(row.Timestamp) metaHTML += `<span class="meta-tag" onclick="event.stopPropagation(); window.location.hash='Filter:${row.Timestamp}';">${row.Timestamp}</span>`;
-                tags.forEach(t => metaHTML += `<span class="${tagClass}" onclick="event.stopPropagation(); window.location.hash='Filter:${t}';">#${t}</span>`);
-                metaHTML += `</div>`;
-
-                const isInternal = link.startsWith('#');
-                const target = isInternal ? '' : '_blank';
-                const clickClass = link ? 'clickable-block' : '';
-
-                if (row.SectionType === 'grid' || forceGrid) {
-                    if (!gridContainer && !forceGrid) { 
-                        gridContainer = document.createElement('div'); 
-                        gridContainer.className = 'grid-container section'; 
-                        app.appendChild(gridContainer); 
-                    }
-                    
-                    const thumbnail = getThumbnail(media);
-                    const imgHTML = thumbnail ? `<img src="${thumbnail}" loading="lazy" class="${link ? '' : (forceGrid ? 'zoomable' : '')}">` : '';
-                    const noMediaClass = thumbnail ? '' : 'no-media';
-                    const compactClass = forceGrid ? 'compact' : '';
-
-                    const itemContent = `
-                        ${imgHTML}
-                        <div class="grid-content"><h3>${row.Title}</h3><p>${processText(row.Content)}</p>${metaHTML}</div>`;
-                    
-                    const div = document.createElement('div');
-                    div.className = `layout-grid ${clickClass} ${noMediaClass} ${compactClass}`;
-                    if(link || forceGrid) { div.setAttribute('data-link', link); div.setAttribute('data-target', target); }
-                    div.innerHTML = itemContent;
-                    
-                    if(forceGrid) gridContainer.appendChild(div); else gridContainer.appendChild(div);
-                    return; 
-                } 
+            
+            rows.forEach(r => {
+                if(!r.Page || r.Page === 'Footer') return; 
                 
-                const content = processText(row.Content);
-                let innerHTML = '';
-
-                if (row.SectionType === 'hero') innerHTML = `<h1>${row.Title}</h1><p>${content}</p>`;
-                else if (row.SectionType === 'text') innerHTML = (row.Title ? `<h2>${row.Title}</h2>` : '') + `<p>${content}</p>`;
-                else if (row.SectionType === 'card') {
-                    const mediaHtml = getMediaHTML(media, false); 
-                    innerHTML = `${mediaHtml}<div><h3>${row.Title}</h3><p>${content}</p>${metaHTML}</div>`;
-                } else if (row.SectionType === 'compact') {
-                    innerHTML = `<img src="${media}" loading="lazy"><div><h3>${row.Title}</h3><p>${content}</p></div>`;
+                if(!forceGrid) {
+                    if(r.SectionType === 'quote') { 
+                        const d = document.createElement('div'); d.className = 'layout-quote section'; 
+                        renderQuoteCard(d); app.appendChild(d); return; 
+                    }
+                    if(r.SectionType === 'hero') {
+                        const d = document.createElement('div'); d.className = 'section layout-hero';
+                        let dateChip = r.Timestamp ? `<span class="chip date" data-val="${r.Timestamp}" onclick="event.stopPropagation(); window.location.hash='Filter:${r.Timestamp}'">${formatDate(r.Timestamp)}</span>` : `<span class="chip date" style="cursor:default">NO DATE</span>`;
+                        d.innerHTML = `<h1 class="fill-anim">${r.Title}</h1><div class="hero-meta">${dateChip}</div><p>${processText(r.Content)}</p>`;
+                        app.appendChild(d); return;
+                    }
+                    if(r.SectionType === 'text') {
+                         const d = document.createElement('div'); d.className = 'section layout-text';
+                         d.innerHTML = `${r.Title ? `<h2 class="fill-anim">${r.Title}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+                         app.appendChild(d); return;
+                    }
                 }
 
-                const container = document.createElement('div');
-                container.className = `section layout-${row.SectionType} ${clickClass}`;
-                if(link) { container.setAttribute('data-link', link); container.setAttribute('data-target', target); }
-                container.innerHTML = innerHTML;
-                app.appendChild(container);
+                const media = r.Media || '', link = r.LinkURL || '', tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
+                let l = link; if(!l) l = `#${r.Page}`; 
+                const internal = l.startsWith('#'), target = internal ? '' : '_blank';
+                
+                const thumb = getThumbnail(media);
+                const imgH = thumb ? `<div class="row-media"><img src="${thumb}" loading="lazy"></div>` : '';
+                
+                let mh = '';
+                if(r.Timestamp || tags.length > 0) {
+                     mh = `<div class="meta-row">`;
+                     if(r.Timestamp) mh += `<span class="chip date" data-date="${r.Timestamp}" data-val="${r.Timestamp}">${formatDate(r.Timestamp)}</span>`; 
+                     tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${t}</span>`); 
+                     mh += `</div>`;
+                }
+
+                const d = document.createElement('div'); d.className = `layout-grid clickable-block`;
+                d.setAttribute('data-link', l); d.setAttribute('data-target', target);
+                
+                d.innerHTML = `${imgH}<h3 class="fill-anim">${r.Title}</h3><p>${processText(r.Content)}</p>${mh}`;
+                
+                if(gc) gc.appendChild(d);
             });
-            
             if(window.MathJax) MathJax.typeset();
         }
 
-        function renderQuoteCard(container) {
-            if(quotesDb.length === 0) { container.innerHTML = "Quote sheet empty."; return; }
-            const random = quotesDb[Math.floor(Math.random() * quotesDb.length)];
+        function renderQuoteCard(c) {
+            if(quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
+            const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
+            let auth = r.Author || 'Unknown'; 
+            if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${auth}</a>`; 
+            else if(r.Source) auth += ` • ${r.Source}`;
             
-            let authorHtml = random.Author || 'Unknown';
-            if (random.Source && (random.Source.startsWith('http'))) {
-                authorHtml = `<a href="${random.Source}" target="_blank" style="color:inherit; border-bottom:1px dotted #888;">${authorHtml}</a>`;
-            } else if (random.Source) {
-                authorHtml += ` • ${random.Source}`;
-            }
-
-            container.innerHTML = `
-                <blockquote>"${random.Quote}"</blockquote>
-                <div class="author">— ${authorHtml}</div>
-                <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-            `;
+            const isLong = r.Quote.length > 150;
+            const sizeClass = isLong ? 'long' : '';
+            
+            c.innerHTML = `<blockquote class="${sizeClass}">"${r.Quote}"</blockquote><div class="quote-footer"><div class="author">— ${auth}</div><svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></div>`;
         }
 
-        function renderFooter() {
-            const footerDiv = document.getElementById('footer-links');
-            const footerRows = db.filter(row => row.Page === 'Footer');
-            footerDiv.innerHTML = '';
-            footerRows.forEach(row => {
-                if(row.LinkURL) {
-                    footerDiv.innerHTML += `<a href="${row.LinkURL}" target="_blank">${row.Title}</a>`;
+        function renderFooter() { 
+            const fd = document.getElementById('footer-links');
+            const fr = db.filter(r => r.Page === 'Footer' || r.Title === 'LinkedIn' || r.Title === 'Contact'); 
+            fd.innerHTML = ''; 
+            fr.forEach(r => { 
+                let link = r.LinkURL;
+                if(r.Title === 'Contact') {
+                    link = 'mailto:sahibdsv+site@gmail.com';
                 }
-            });
+                if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${r.Title}</a>`; 
+            }); 
         }
-
-        function fetchGitHubStats() {
-            const repo = "sahibdsv/sahibdsv.github.io"; 
-            fetch(`https://api.github.com/repos/${repo}`)
-                .then(res => res.json())
-                .then(data => {
-                    if(data.pushed_at) {
-                        const date = new Date(data.pushed_at).toLocaleDateString();
-                        document.getElementById('version-tag').innerText = `Last Updated: ${date}`;
-                    }
-                }).catch(() => {});
+        
+        function fetchGitHubStats() { const r = "sahibdsv/sahibdsv.github.io"; fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { if(d.pushed_at) document.getElementById('version-tag').innerText = `Last Updated: ${new Date(d.pushed_at).toLocaleDateString()}`; }).catch(()=>{}); }
+        function getThumbnail(u) { if(!u) return null; if(u.includes('youtube.com')||u.includes('youtu.be')) { let v = u.split('v=')[1]; if(v&&v.includes('&')) v=v.split('&')[0]; if(!v&&u.includes('youtu.be')) v=u.split('/').pop(); return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; } if(u.endsWith('.mp4')) return null; return u; }
+        function processText(t) { 
+            if(!t) return ''; 
+            return t.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>')
+                    .replace(/<a /g, '<a class="fill-anim" '); 
         }
-
-        function getThumbnail(url) {
-            if (!url) return null;
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                let v = url.split('v=')[1]; if (v && v.includes('&')) v = v.split('&')[0];
-                if (!v && url.includes('youtu.be')) v = url.split('/').pop();
-                return `https://img.youtube.com/vi/${v}/mqdefault.jpg`;
-            }
-            if (url.endsWith('.mp4')) return null; 
-            return url;
+        
+        function formatDate(s) {
+            if(!s) return '';
+            const d = new Date(s);
+            if(isNaN(d.getTime())) return s;
+            const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+            const yr = d.getFullYear();
+            return `${mo} ${yr}`;
         }
-
-        function processText(text) {
-            if (!text) return '';
-            return text.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link">$1</a>');
-        }
-
-        function getMediaHTML(url, isZoomable) {
-            if (!url) return '';
-            if (url.includes('youtube.com') || url.includes('youtu.be')) { 
-                let v = url.split('v=')[1]; if (v && v.includes('&')) v = v.split('&')[0]; 
-                if (!v && url.includes('youtu.be')) v = url.split('/').pop();
-                return `<iframe src="https://www.youtube.com/embed/${v}" frameborder="0" allowfullscreen></iframe>`; 
-            }
-            if (url.endsWith('.mp4')) return `<video controls src="${url}"></video>`;
-            return `<img src="${url}" loading="lazy" class="${isZoomable ? 'zoomable' : ''}">`;
-        }
+        
+        init();
     </script>
 </body>
 </html>
