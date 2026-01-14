@@ -1,8 +1,14 @@
 /* assets/script.js */
 
 let db = [], quotesDb = [], isSearchActive = false;
-const CACHE_KEY = 'sahib_site_data';
-const CACHE_DURATION = 3600000; // 1 Hour in milliseconds
+const CACHE_KEY = 'sahib_site_data_v1';
+const CACHE_DURATION = 3600000; // 1 Hour
+
+// Fallback Config (In case config.json fails)
+const FALLBACK_CONFIG = {
+    main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
+    quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
+};
 
 const init = () => {
     loadData().then(([m, q]) => {
@@ -15,7 +21,6 @@ const init = () => {
         renderFooter(); 
         fetchGitHubStats();
         
-        // Unblock transitions once loaded
         requestAnimationFrame(() => {
             setTimeout(() => {
                 document.body.classList.remove('no-transition');
@@ -26,56 +31,65 @@ const init = () => {
         console.error("Data Load Error:", e);
         document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
             <h2>Unable to load content</h2>
-            <p style="color:#666">Please check your internet connection or try again later.</p>
+            <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px;">${e.message}</p>
+            <p style="color:#666; margin-top:20px;">Please check your internet connection.</p>
         </div>`;
     });
 };
 
-// CACHING LOGIC
 async function loadData() {
-    // 1. Check Local Storage
+    // 1. Try Cache
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
         try {
             const parsed = JSON.parse(cached);
-            const age = Date.now() - parsed.timestamp;
-            if (age < CACHE_DURATION) {
+            if (Date.now() - parsed.timestamp < CACHE_DURATION) {
                 console.log("Loading from Cache");
                 return [parsed.main, parsed.quotes];
             }
-        } catch (e) {
-            console.warn("Cache parse failed, fetching fresh data.");
-        }
+        } catch (e) { localStorage.removeItem(CACHE_KEY); }
     }
 
-    // 2. Fetch Fresh Data if Cache invalid/missing
+    // 2. Fetch Fresh (With Fallback)
     console.log("Fetching from Google Sheets");
-    const config = await fetch('assets/config.json').then(res => res.json());
+    let config = FALLBACK_CONFIG;
+    try {
+        const cfgRes = await fetch('assets/config.json');
+        if (cfgRes.ok) config = await cfgRes.json();
+    } catch (e) { console.warn("Config fetch failed, using fallback."); }
+
     const [main, quotes] = await Promise.all([
         fetchCSV(config.main_sheet), 
         fetchCSV(config.quotes_sheet).catch(()=>[])
     ]);
 
-    // 3. Save to Cache
+    // 3. Save Cache
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify({
             timestamp: Date.now(),
             main: main,
             quotes: quotes
         }));
-    } catch (e) { console.warn("Quota exceeded for localStorage"); }
+    } catch (e) {}
 
     return [main, quotes];
 }
 
 function fetchCSV(u) { 
-    return new Promise((res, rej) => Papa.parse(u, { 
-        download: true, 
-        header: true, 
-        skipEmptyLines: true, 
-        complete: (r) => res(r.data), 
-        error: (e) => rej(e) 
-    })); 
+    return new Promise((res, rej) => {
+        if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded"));
+        Papa.parse(u, { 
+            download: true, header: true, skipEmptyLines: true, 
+            complete: (r) => res(r.data), 
+            error: (e) => rej(new Error("CSV Error: " + e.message)) 
+        });
+    });
+}
+
+// Safer Sanitization
+function safeHTML(html) {
+    if(typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(html);
+    return html; // Fallback if library missing
 }
 
 function initApp() {
@@ -86,7 +100,7 @@ function initApp() {
         if(h) h.classList.toggle('shrink', window.scrollY > 50); 
     });
 
-    // Click Outside to Close Search
+    // Close search on outside click
     document.addEventListener('click', (e) => {
         const overlay = document.getElementById('search-overlay');
         const controls = document.getElementById('search-controls');
@@ -100,10 +114,8 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                
-                // Show Skeleton Box
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:140px; width:100%; margin:0 auto;"></div>`;
-
+                // Use FULL BOX skeleton
+                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:200px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
                     quoteContainer.classList.remove('loading');
@@ -160,13 +172,13 @@ function handleSearch(q) {
 
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
-    renderRows(res, `Search results for "${DOMPurify.sanitize(q)}"`, false, true); 
+    renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
 }
 
 function buildNav() { 
     const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
     const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
-    p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${DOMPurify.sanitize(x)}</a>`; }); 
+    p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
 }
 
 function buildSubNav(top) {
@@ -177,7 +189,7 @@ function buildSubNav(top) {
     subs.forEach(x => { 
         const name = x.split('/')[1];
         const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
-        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${DOMPurify.sanitize(name)}</a>`; 
+        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 }
 
@@ -204,7 +216,7 @@ function renderFiltered(t) {
         const dateStr = formatDate(r.Timestamp);
         return (dateStr === t) || (r.Tags && r.Tags.includes(t));
     });
-    renderRows(res, `Posts tagged "${DOMPurify.sanitize(t)}"`); 
+    renderRows(res, `Posts tagged "${safeHTML(t)}"`); 
 }
 
 function renderPage(p) { 
@@ -236,6 +248,7 @@ function renderHome() {
 function renderRows(rows, title, append, forceGrid) {
     const app = document.getElementById('app'); if(!app) return; 
     
+    // Default Sort: Newest First
     rows.sort((a, b) => {
         const da = new Date(a.Timestamp || 0);
         const db = new Date(b.Timestamp || 0);
@@ -258,9 +271,10 @@ function renderRows(rows, title, append, forceGrid) {
         if(!r.Page || r.Page === 'Footer') return; 
         
         let catClass = '';
-        if(r.Page.toLowerCase().startsWith('projects')) catClass = 'cat-projects';
-        else if(r.Page.toLowerCase().startsWith('professional')) catClass = 'cat-professional';
-        else if(r.Page.toLowerCase().startsWith('personal')) catClass = 'cat-personal';
+        const pLower = r.Page.toLowerCase();
+        if(pLower.startsWith('projects')) catClass = 'cat-projects';
+        else if(pLower.startsWith('professional')) catClass = 'cat-professional';
+        else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
         if(!forceGrid) {
             if(r.SectionType === 'quote') { 
@@ -271,12 +285,12 @@ function renderRows(rows, title, append, forceGrid) {
                 const d = document.createElement('div'); d.className = 'section layout-hero';
                 let dateVal = formatDate(r.Timestamp);
                 let dateChip = r.Timestamp ? `<span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span>` : `<span class="chip date" style="cursor:default">NO DATE</span>`;
-                d.innerHTML = `<h1 class="fill-anim">${DOMPurify.sanitize(r.Title)}</h1><div class="hero-meta">${dateChip}</div><p>${processText(r.Content)}</p>`;
+                d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1><div class="hero-meta">${dateChip}</div><p>${processText(r.Content)}</p>`;
                 app.appendChild(d); return;
             }
             if(r.SectionType === 'text') {
                  const d = document.createElement('div'); d.className = 'section layout-text';
-                 d.innerHTML = `${r.Title ? `<h2 class="fill-anim">${DOMPurify.sanitize(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+                 d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
                  app.appendChild(d); return;
             }
         }
@@ -295,14 +309,14 @@ function renderRows(rows, title, append, forceGrid) {
                  let dateVal = formatDate(r.Timestamp);
                  mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
              }
-             tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${DOMPurify.sanitize(t)}</span>`); 
+             tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
              mh += `</div>`;
         }
 
         const d = document.createElement('div'); d.className = `layout-grid clickable-block ${catClass}`;
         d.setAttribute('data-link', l); d.setAttribute('data-target', target);
         
-        d.innerHTML = `${imgH}<h3 class="fill-anim">${DOMPurify.sanitize(r.Title)}</h3><p>${processText(r.Content)}</p>${mh}`;
+        d.innerHTML = `${imgH}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${processText(r.Content)}</p>${mh}`;
         
         if(gc) gc.appendChild(d);
     });
@@ -313,19 +327,19 @@ function renderQuoteCard(c) {
     if(quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
     const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
     let auth = r.Author || 'Unknown'; 
-    if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${DOMPurify.sanitize(auth)}</a>`; 
-    else if(r.Source) auth += ` • ${DOMPurify.sanitize(r.Source)}`;
+    if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`; 
+    else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
     
-    // SECURITY: Sanitize & Trim Quotes
-    const safeQuote = DOMPurify.sanitize(r.Quote).trim().replace(/^"|"$/g, '');
+    // Remove wrapping quotes and sanitize
+    const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
     
-    const len = safeQuote.length;
+    const len = text.length;
     let sizeClass = 'short';
     if(len > 250) sizeClass = 'xl';
     else if(len > 150) sizeClass = 'long';
     else if(len > 70) sizeClass = 'medium';
     
-    c.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
+    c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
                    <div class="quote-footer"><div class="author">— ${auth}</div></div>
                    <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
 }
@@ -339,7 +353,7 @@ function renderFooter() {
         if(r.Title === 'Contact') {
             link = 'mailto:sahibdsv+site@gmail.com';
         }
-        if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${DOMPurify.sanitize(r.Title)}</a>`; 
+        if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
 }
 
@@ -357,8 +371,7 @@ function getThumbnail(u) { if(!u) return null; if(u.includes('youtube.com')||u.i
 
 function processText(t) { 
     if(!t) return ''; 
-    // Security: Sanitize first
-    let clean = DOMPurify.sanitize(t);
+    let clean = safeHTML(t);
     return clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>')
             .replace(/<a /g, '<a class="fill-anim" '); 
 }
