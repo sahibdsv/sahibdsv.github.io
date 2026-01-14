@@ -43,6 +43,10 @@
     </header>
 
     <div class="content-container" id="app">
+        <div id="toolbar" class="hidden">
+            <svg class="sort-btn" onclick="toggleSort()" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+        </div>
+
         <div class="section layout-hero skeleton-visible" style="text-align:center;">
             <div class="sk-line title"></div>
             <div class="sk-line meta"></div>
@@ -143,12 +147,6 @@
                     e.stopPropagation(); return; 
                 }
                 
-                // Sort Toggle
-                if(e.target.closest('.sort-btn')) {
-                    toggleSort();
-                    e.stopPropagation(); return;
-                }
-
                 if(e.target.classList.contains('zoomable')) { document.getElementById('lightbox-img').src = e.target.src; document.getElementById('lightbox').classList.add('active'); e.stopPropagation(); return; }
                 
                 if(e.target.classList.contains('chip')) { 
@@ -171,6 +169,10 @@
 
         function toggleSort() {
             isDesc = !isDesc;
+            // Update Icon
+            const btn = document.querySelector('.sort-btn');
+            if(btn) btn.classList.toggle('asc', !isDesc);
+            // Re-render current view logic
             handleRouting();
         }
 
@@ -187,6 +189,12 @@
         function handleSearch(q) { 
             if(!q) return; 
             isSearchActive = true; 
+            
+            // Force header to collapse when searching
+            document.body.classList.remove('header-expanded');
+            document.getElementById('main-header').classList.remove('expanded');
+            document.getElementById('toolbar').classList.add('hidden'); // Hide sort on search
+
             const t = q.toLowerCase(), res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
             renderRows(res, `Search results for "${q}"`, false, true); 
         }
@@ -210,10 +218,16 @@
             window.scrollTo(0, 0); 
             let h = window.location.hash.substring(1) || 'Home'; 
             
-            const isHome = (h === 'Home');
-            document.body.classList.toggle('header-expanded', !isHome);
-            document.getElementById('main-header').classList.toggle('expanded', !isHome);
+            // COLLAPSE LOGIC: Collapse if Home OR Filter OR SearchActive
+            const shouldCollapse = (h === 'Home' || h.startsWith('Filter:'));
+            document.body.classList.toggle('header-expanded', !shouldCollapse);
+            document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
             
+            // Sort Button Visibility: Only show on non-filtered pages
+            const tb = document.getElementById('toolbar');
+            if(h.startsWith('Filter:') || isSearchActive) tb.classList.add('hidden');
+            else tb.classList.remove('hidden');
+
             const top = h.split('/')[0]; 
             document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
             
@@ -224,11 +238,11 @@
         }
 
         function renderFiltered(t) { 
-            // Filter by treated date or tags
+            // Filter using treated date
             const res = db.filter(r => {
-                const treatedDate = formatDate(r.Timestamp);
-                return (treatedDate === t) || (r.Tags && r.Tags.includes(t));
-            }); 
+                const dateStr = formatDate(r.Timestamp);
+                return (dateStr === t) || (r.Tags && r.Tags.includes(t));
+            });
             renderRows(res, `Posts tagged "${t}"`); 
         }
 
@@ -237,7 +251,15 @@
             const ex = db.filter(r => r.Page === p); 
             
             const app = document.getElementById('app');
-            app.innerHTML = ''; 
+            // Keep toolbar if we are just emptying content
+            const toolbar = document.getElementById('toolbar');
+            
+            // Don't nuke app.innerHTML directly or we lose toolbar. 
+            // Clear content siblings of toolbar.
+            while(app.lastChild && app.lastChild.id !== 'toolbar') {
+                app.removeChild(app.lastChild);
+            }
+            
             if(ex.length > 0) { renderRows(ex, null, true); } 
             
             const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
@@ -253,7 +275,9 @@
         function renderHome() { 
             const hr = db.filter(r => r.Page === 'Home');
             const fr = db.filter(r => r.isFeatured === 'TRUE' && r.Page !== 'Home'); 
-            const app = document.getElementById('app'); app.innerHTML = ''; 
+            
+            const app = document.getElementById('app'); 
+            while(app.lastChild && app.lastChild.id !== 'toolbar') { app.removeChild(app.lastChild); }
             
             renderRows(hr, null, true); 
             if(fr.length > 0) { renderRows(fr, null, true); } 
@@ -262,36 +286,21 @@
         function renderRows(rows, title, append, forceGrid) {
             const app = document.getElementById('app'); if(!app) return; 
             
-            // SORTING
+            // SORTING using raw timestamp for accuracy
             rows.sort((a, b) => {
                 const da = new Date(a.Timestamp || 0);
                 const db = new Date(b.Timestamp || 0);
                 return isDesc ? db - da : da - db;
             });
 
-            // Sort Button HTML
-            const sortBtn = `
-                <div class="sort-btn-container">
-                    <svg class="sort-btn ${isDesc ? '' : 'asc'}" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
-                </div>`;
-
-            if(!append) {
-                // If title is present (filtered view), add sort button next to it?
-                // Or just add it to the first section?
-                app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff; position:relative;">${title}${sortBtn}</h2>` : '';
-            }
-            if(rows.length === 0 && !append) { app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'; return; }
+            if(!append) app.insertAdjacentHTML('beforeend', title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '');
+            if(rows.length === 0 && !append) { app.insertAdjacentHTML('beforeend', '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'); return; }
             
             let gc = app.querySelector('.grid-container');
             const hasGridItems = forceGrid || rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text');
             
             if(hasGridItems && (!gc || !append)) {
                 gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
-                // If this is the first section (e.g. Home), inject Sort Button here if not already done
-                 if(!title && app.children.length === 1) { 
-                     // Check if Hero exists, if so add to hero, else add to grid
-                     // Actually, simplified: add sortBtn to Hero if it exists
-                 }
             }
             
             rows.forEach(r => {
@@ -304,13 +313,9 @@
                     }
                     if(r.SectionType === 'hero') {
                         const d = document.createElement('div'); d.className = 'section layout-hero';
-                        // Inject Sort Button into Hero
-                        d.innerHTML = `${sortBtn}<h1 class="fill-anim">${r.Title}</h1>`;
-                        
                         let dateVal = formatDate(r.Timestamp);
                         let dateChip = r.Timestamp ? `<span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span>` : `<span class="chip date" style="cursor:default">NO DATE</span>`;
-                        
-                        d.innerHTML += `<div class="hero-meta">${dateChip}</div><p>${processText(r.Content)}</p>`;
+                        d.innerHTML = `<h1 class="fill-anim">${r.Title}</h1><div class="hero-meta">${dateChip}</div><p>${processText(r.Content)}</p>`;
                         app.appendChild(d); return;
                     }
                     if(r.SectionType === 'text') {
@@ -332,6 +337,7 @@
                      mh = `<div class="meta-row">`;
                      if(r.Timestamp) {
                          let dateVal = formatDate(r.Timestamp);
+                         // Chip now filters by treated date "JAN 2025"
                          mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
                      }
                      tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${t}</span>`); 

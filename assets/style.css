@@ -133,9 +133,6 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 .search-icon { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
 .close-icon  { opacity: 0; transform: rotate(-90deg) scale(0.5); pointer-events: none; }
 
-#main-header.search-mode .search-icon { opacity: 0; transform: rotate(90deg) scale(0.5); pointer-events: none; }
-#main-header.search-mode .close-icon  { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
-
 /* Opaque background to hide header on mobile */
 #search-overlay {
     position: absolute; top: 50%; transform: translateY(-50%); right: 70px;
@@ -165,16 +162,21 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 @keyframes fadeIn { to { opacity: 1; } }
 .skeleton-visible { opacity: 1 !important; animation: none !important; }
 
-/* Sort Button (Uniform Corner Positioning) */
-.sort-btn-container {
-    position: absolute; top: 0; right: 0; z-index: 10;
+/* --- TOOLBAR --- */
+#toolbar {
+    width: 100%; display: flex; justify-content: flex-end; align-items: center;
+    padding: 0 0 10px; margin-bottom: 10px; min-height: 30px;
 }
+/* Only visible when content is present */
+#toolbar.hidden { display: none; }
+
 .sort-btn {
-    width: 24px; height: 24px; fill: #555; cursor: pointer; transition: all 0.4s var(--ease);
+    width: 20px; height: 20px; fill: #555; cursor: pointer; transition: all 0.4s var(--ease);
 }
 .sort-btn:hover { fill: #fff; }
-.sort-btn.asc { transform: rotate(180deg); } /* Animation for toggle */
+.sort-btn.asc { transform: rotate(180deg); }
 
+/* Links */
 p a:not(.wiki-link) { --text-base: #fff; --text-hover: #aaa; border-bottom: 1px dotted #666; }
 p a:not(.wiki-link):hover { border-bottom-color: #fff; }
 
@@ -231,11 +233,10 @@ body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
 .chip {
     font-size: 10px; font-weight: 600; color: #777; background: #1a1a1a; 
     padding: 4px 10px; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
-    transition: all 0.2s; user-select: none; display: inline-flex; align-items: center;
+    transition: all 0.2s; user-select: none; display: inline-flex; align-items: center; justify-content: center;
 }
 .chip:hover { color: #fff; background: #333; }
-.chip.date { background: transparent; padding-left: 0; color: #666; font-weight: 500; border: 1px solid transparent; }
-/* Fixed: Removed padding-left transition to stop "animating from left" */
+.chip.date { background: transparent; color: #666; font-weight: 500; border: 1px solid transparent; }
 .chip.date:hover { color: #fff; background: #1a1a1a; border-color: #333; } 
 
 .layout-hero { text-align: center; margin: 0 0 40px; position: relative; }
