@@ -19,7 +19,6 @@ const init = () => {
         renderFooter(); 
         fetchGitHubStats();
         
-        // Unblock transitions once loaded
         requestAnimationFrame(() => {
             setTimeout(() => {
                 document.body.classList.remove('no-transition');
@@ -28,22 +27,17 @@ const init = () => {
         });
     }).catch(e => {
         console.error("Data Load Error:", e);
-        const app = document.getElementById('app');
-        if(app) {
-            app.innerHTML = `<div style="text-align:center; padding:50px;">
-                <h2>Unable to load content</h2>
-                <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px; margin-top:20px;">${e.message}</p>
-                <p style="color:#666; margin-top:20px;">Please check your internet connection.</p>
-            </div>`;
-        }
+        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
+            <h2>Unable to load content</h2>
+            <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px; margin-top:20px;">${e.message}</p>
+            <p style="color:#666; margin-top:20px;">Please check your internet connection.</p>
+        </div>`;
     });
 };
 
 async function fetchData() {
     console.log("Fetching fresh data from Google Sheets...");
     let config = FALLBACK_CONFIG;
-    
-    // Try to load config.json, but don't fail if it's missing
     try {
         const cfgRes = await fetch('assets/config.json');
         if (cfgRes.ok) config = await cfgRes.json();
@@ -68,10 +62,9 @@ function fetchCSV(u) {
     });
 }
 
-// Safer Sanitization
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(html);
-    return html; // Fallback if library missing
+    return html; 
 }
 
 function initApp() {
@@ -82,7 +75,6 @@ function initApp() {
         if(h) h.classList.toggle('shrink', window.scrollY > 50); 
     });
 
-    // Close search on outside click
     document.addEventListener('click', (e) => {
         const overlay = document.getElementById('search-overlay');
         const controls = document.getElementById('search-controls');
@@ -96,8 +88,8 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                // Use FULL BOX skeleton
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:200px; width:100%; margin:0 auto;"></div>`;
+                // Use FULL BOX skeleton matched to CSS height
+                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:130px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
                     quoteContainer.classList.remove('loading');
@@ -106,11 +98,7 @@ function initApp() {
             e.stopPropagation(); return; 
         }
         
-        if(e.target.classList.contains('zoomable')) { 
-            document.getElementById('lightbox-img').src = e.target.src; 
-            document.getElementById('lightbox').classList.add('active'); 
-            e.stopPropagation(); return; 
-        }
+        if(e.target.classList.contains('zoomable')) { document.getElementById('lightbox-img').src = e.target.src; document.getElementById('lightbox').classList.add('active'); e.stopPropagation(); return; }
         
         if(e.target.classList.contains('chip')) { 
             e.stopPropagation();
@@ -230,7 +218,6 @@ function renderHome() {
 function renderRows(rows, title, append, forceGrid) {
     const app = document.getElementById('app'); if(!app) return; 
     
-    // Default Sort: Newest First
     rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
 
     if(!append) {
@@ -299,7 +286,6 @@ function renderRows(rows, title, append, forceGrid) {
         if(gc) gc.appendChild(d);
     });
     
-    // SAFE MATHJAX CALL
     if(window.MathJax && window.MathJax.typeset) {
         window.MathJax.typeset();
     }
@@ -312,7 +298,6 @@ function renderQuoteCard(c) {
     if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`; 
     else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
     
-    // Remove wrapping quotes and sanitize
     const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
     
     const len = text.length;

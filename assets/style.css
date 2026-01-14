@@ -33,7 +33,7 @@ body {
 
 body.header-expanded { padding-top: var(--header-h-expanded); }
 
-/* Fix: Disable transitions generally, but explicitly allow animations on skeleton classes */
+/* Disable transitions generally, but allow skeleton animations */
 .no-transition * { 
     transition: none !important; 
 }
@@ -122,11 +122,7 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 #main-header.shrink #sub-nav { font-size: 11px; gap: 15px; }
 
 .sub-link { text-transform: uppercase; --text-base: #555; --text-hover: #fff; font-weight: 500; }
-
-/* FIX: Removed text-shadow (glow) to fix squinting issues */
-.sub-link.active { 
-    --text-base: #fff; --text-hover: #fff; 
-}
+.sub-link.active { --text-base: #fff; --text-hover: #fff; }
 
 /* --- SEARCH & ACTIONS --- */
 #search-controls {
@@ -216,7 +212,6 @@ a[target="_blank"]:not(.clickable-block)::after {
 .layout-grid.clickable-block { cursor: pointer; }
 .layout-grid:hover { background: var(--card-bg-hover); }
 
-/* Explicit Category Hover Colors */
 .layout-grid.cat-projects h3 { --text-hover: var(--accent-projects); }
 .layout-grid.cat-professional h3 { --text-hover: var(--accent-prof); }
 .layout-grid.cat-personal h3 { --text-hover: var(--accent-personal); }
@@ -329,7 +324,7 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
 .sk-line.text { height: 20px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
 .sk-line.text.short { width: 60%; }
-.sk-box.quote { height: 200px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
+.sk-box.quote { height: 130px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
 .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 15px; border-radius: 4px; }
 .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 12px; }
 .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 8px; }
