@@ -88,7 +88,6 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                // Height matches CSS min-height to prevent snap
                 quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
@@ -99,9 +98,7 @@ function initApp() {
         }
         
         if(e.target.classList.contains('zoomable')) { 
-            // Check if parent is a link, if so, don't zoom
             if(e.target.parentElement.tagName === 'A') return;
-            
             document.getElementById('lightbox-img').src = e.target.src; 
             document.getElementById('lightbox').classList.add('active'); 
             e.stopPropagation(); return; 
@@ -201,9 +198,13 @@ function renderPage(p) {
     const ex = db.filter(r => r.Page === p); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
-    // Render current page content (isArticleMode = !isMainPage)
+    // Check if it's a MAIN Page (no slashes)
     const isMainPage = !p.includes('/');
-    if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
+    
+    // Render Content (isArticleMode = TRUE if not main page)
+    if(ex.length > 0) { 
+        renderRows(ex, null, true, false, !isMainPage); 
+    } 
     
     if(isMainPage) {
         const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
@@ -251,28 +252,36 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         else if(pLower.startsWith('professional')) catClass = 'cat-professional';
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
-        // ARTICLE MODE: Render content as Text Blocks with Images, not Cards
+        // ARTICLE MODE: Render as Article Header/Body
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
              
              let imgHtml = '';
              const thumb = getThumbnail(r.Media);
-             // Use "row-media article-mode" to restrict size
              if(thumb) imgHtml = `<div class="row-media article-mode"><img src="${thumb}" class="inline-img zoomable" loading="lazy"></div>`;
              
-             // Meta Line (Date/Author)
-             let metaHtml = '';
+             // Meta Row: Author + Chips
+             let metaHtml = '<div class="article-meta-row"><a href="#About" class="author-link fill-anim">SAHIB VIRDEE</a><div class="article-tags">';
+             
+             // Add Date Chip
              if(r.Timestamp) {
                  const dateVal = formatDate(r.Timestamp);
-                 metaHtml = `<div class="article-meta">BY SAHIB VIRDEE • ${dateVal}</div>`;
+                 metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
              }
+             
+             // Add Other Tags
+             if(r.Tags) {
+                 const tags = r.Tags.split(',').map(x => x.trim());
+                 tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
+             }
+             metaHtml += '</div></div>'; // Close row
 
              d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
              app.appendChild(d);
              return;
         }
 
-        // GRID/CARD MODE
+        // CARD MODE
         if(!forceGrid) {
             if(r.SectionType === 'quote') { 
                 const d = document.createElement('div'); d.className = 'layout-quote section'; 
@@ -283,7 +292,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
                 let dateHtml = '';
                 if(r.Timestamp) {
                     let dateVal = formatDate(r.Timestamp);
-                    // Collapsed date chip logic
                     dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
                 }
                 d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
