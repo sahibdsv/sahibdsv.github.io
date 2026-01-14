@@ -37,6 +37,8 @@ body {
 /* New class for non-home pages */
 body.header-expanded { padding-top: var(--header-h-expanded); }
 
+body.header-compact { padding-top: var(--header-h-default); }
+
 /* Prevent transitions during initial load */
 .no-transition, .no-transition * { transition: none !important; animation: none !important; }
 
@@ -79,7 +81,7 @@ body.header-expanded { padding-top: var(--header-h-expanded); }
 #main-header.expanded.shrink { height: var(--header-h-expanded-shrink); }
 
 #main-header.search-mode { height: 90px; }
-#main-header.search-mode > *:not(#search-overlay) { opacity: 0; pointer-events: none; }
+/* #main-header.search-mode > *:not(#search-overlay) { opacity: 0; pointer-events: none; } */
 
 /* Brand Name */
 #brand-name {
@@ -118,7 +120,7 @@ body.header-expanded { padding-top: var(--header-h-expanded); }
     height: 25px; 
 }
 
-/* Default (Home) hides sub-nav */
+/* Default (Home) hides sub-nav via not having header-expanded */
 body:not(.header-expanded) #sub-nav {
     height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none;
 }
@@ -182,11 +184,12 @@ body:not(.header-expanded) #sub-nav {
 
 /* Hide other header elements when search is open, BUT leave the icons visible */
 #main-header.search-mode > *:not(#search-overlay):not(#search-controls) {
-    opacity: 0.2; /* Fade out content slightly instead of full hide, or use 0 */
+    opacity: 0.2; /* Fade out content slightly instead of full hide */
     pointer-events: none;
     transition: opacity 0.3s;
 }
 #main-header.search-mode > #search-controls { opacity: 1; }
+
 
 /* --- CONTENT --- */
 .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 30px 20px 0; flex: 1; min-height: 80vh; }
@@ -314,7 +317,7 @@ footer .footer-links a {
 #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
 #lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
-/* --- SKELETON (Static) --- */
+/* Skeleton */
 .sk-line { background: #111; border-radius: 4px; margin-bottom: 10px; animation: pulse 1.5s infinite ease-in-out; }
 .sk-line.title { height: 36px; width: 50%; margin: 0 auto 15px; }
 .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
@@ -324,7 +327,7 @@ footer .footer-links a {
 .layout-grid .sk-img { width: 100%; height: 160px; background: #111; margin-bottom: 15px; animation: pulse 1.5s infinite ease-in-out; }
 .layout-grid .sk-line.title { height: 20px; width: 70%; margin: 0 0 10px; }
 
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
 @media (max-width: 768px) {
     .grid-container { grid-template-columns: 1fr; }
