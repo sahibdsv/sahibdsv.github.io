@@ -133,11 +133,13 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 .search-icon { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
 .close-icon  { opacity: 0; transform: rotate(-90deg) scale(0.5); pointer-events: none; }
 
-/* Opaque background to hide header on mobile */
+#main-header.search-mode .search-icon { opacity: 0; transform: rotate(90deg) scale(0.5); pointer-events: none; }
+#main-header.search-mode .close-icon  { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
+
 #search-overlay {
     position: absolute; top: 50%; transform: translateY(-50%); right: 70px;
     height: 40px; width: 0; display: flex; align-items: center; justify-content: flex-end;
-    background-color: var(--bg); /* Opaque background */
+    background-color: var(--bg);
     z-index: 1001; overflow: hidden;
     transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1); opacity: 0; visibility: hidden;
 }
@@ -150,8 +152,9 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
     font-family: 'Jost', sans-serif; padding: 0 10px; outline: none; text-align: left;
 }
 
+/* Hide everything else in header when search is open */
 #main-header.search-mode > *:not(#search-overlay):not(#search-controls) {
-    opacity: 0.2; pointer-events: none; transition: opacity 0.3s;
+    opacity: 0; visibility: hidden; transition: opacity 0.2s;
 }
 #main-header.search-mode > #search-controls { opacity: 1; }
 
@@ -161,20 +164,6 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 .section { margin-bottom: 40px; opacity: 0; animation: fadeIn 0.4s forwards; position: relative; } 
 @keyframes fadeIn { to { opacity: 1; } }
 .skeleton-visible { opacity: 1 !important; animation: none !important; }
-
-/* --- TOOLBAR --- */
-#toolbar {
-    width: 100%; display: flex; justify-content: flex-end; align-items: center;
-    padding: 0 0 10px; margin-bottom: 10px; min-height: 30px;
-}
-/* Only visible when content is present */
-#toolbar.hidden { display: none; }
-
-.sort-btn {
-    width: 20px; height: 20px; fill: #555; cursor: pointer; transition: all 0.4s var(--ease);
-}
-.sort-btn:hover { fill: #fff; }
-.sort-btn.asc { transform: rotate(180deg); }
 
 /* Links */
 p a:not(.wiki-link) { --text-base: #fff; --text-hover: #aaa; border-bottom: 1px dotted #666; }
@@ -193,7 +182,7 @@ a[target="_blank"]:not(.clickable-block)::after {
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
     column-gap: 25px; 
-    row-gap: 15px; /* Reduced vertical space */
+    row-gap: 15px;
     margin-bottom: 20px; 
 }
 
@@ -275,7 +264,7 @@ body[data-page="Home"] .layout-grid h3 { --text-hover: var(--accent-projects); }
     padding: 2px;
 }
 .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg); }
-.layout-quote.loading blockquote, .layout-quote.loading .quote-footer { opacity: 0.3; pointer-events: none; }
+.layout-quote.loading blockquote, .layout-quote.loading .quote-footer { opacity: 0; pointer-events: none; }
 
 footer { 
     text-align: center; padding: 20px 0; border-top: 1px solid #1a1a1a; margin-top: 60px;
@@ -294,7 +283,7 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
 #lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
-/* --- SKELETON (HIGH CONTRAST SHIMMER) --- */
+/* --- SKELETON --- */
 .sk-line, .sk-img, .sk-box {
     background: #111; 
     position: relative;
@@ -316,9 +305,14 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
 .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 12px; }
 .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 8px; }
 
+/* Quote Text Skeleton Lines */
+.sk-line.quote-line { height: 20px; width: 90%; margin: 0 auto 10px; }
+.sk-line.quote-line.short { width: 60%; }
+
 @keyframes shimmer { 100% { transform: translateX(100%); } }
 
 @media (max-width: 768px) {
     .grid-container { grid-template-columns: 1fr; }
     footer { flex-direction: column; gap: 20px; text-align: center; }
-}
+    }
+                                                                       
