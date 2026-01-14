@@ -1,8 +1,6 @@
 /* assets/script.js */
 
 let db = [], quotesDb = [], isSearchActive = false;
-const CACHE_KEY = 'sahib_site_data_v1';
-const CACHE_DURATION = 3600000; // 1 Hour
 
 // Fallback Config (In case config.json fails)
 const FALLBACK_CONFIG = {
@@ -11,7 +9,7 @@ const FALLBACK_CONFIG = {
 };
 
 const init = () => {
-    loadData().then(([m, q]) => {
+    fetchData().then(([m, q]) => {
         db = m.filter(r => r.Title); 
         quotesDb = q;
         
@@ -21,6 +19,7 @@ const init = () => {
         renderFooter(); 
         fetchGitHubStats();
         
+        // Unblock transitions once loaded
         requestAnimationFrame(() => {
             setTimeout(() => {
                 document.body.classList.remove('no-transition');
@@ -29,55 +28,38 @@ const init = () => {
         });
     }).catch(e => {
         console.error("Data Load Error:", e);
-        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
-            <h2>Unable to load content</h2>
-            <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px;">${e.message}</p>
-            <p style="color:#666; margin-top:20px;">Please check your internet connection.</p>
-        </div>`;
+        const app = document.getElementById('app');
+        if(app) {
+            app.innerHTML = `<div style="text-align:center; padding:50px;">
+                <h2>Unable to load content</h2>
+                <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px; margin-top:20px;">${e.message}</p>
+                <p style="color:#666; margin-top:20px;">Please check your internet connection.</p>
+            </div>`;
+        }
     });
 };
 
-async function loadData() {
-    // 1. Try Cache
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-        try {
-            const parsed = JSON.parse(cached);
-            if (Date.now() - parsed.timestamp < CACHE_DURATION) {
-                console.log("Loading from Cache");
-                return [parsed.main, parsed.quotes];
-            }
-        } catch (e) { localStorage.removeItem(CACHE_KEY); }
-    }
-
-    // 2. Fetch Fresh (With Fallback)
-    console.log("Fetching from Google Sheets");
+async function fetchData() {
+    console.log("Fetching fresh data from Google Sheets...");
     let config = FALLBACK_CONFIG;
+    
+    // Try to load config.json, but don't fail if it's missing
     try {
         const cfgRes = await fetch('assets/config.json');
         if (cfgRes.ok) config = await cfgRes.json();
-    } catch (e) { console.warn("Config fetch failed, using fallback."); }
+    } catch (e) { console.warn("Config fetch failed, using fallback URLs."); }
 
     const [main, quotes] = await Promise.all([
         fetchCSV(config.main_sheet), 
         fetchCSV(config.quotes_sheet).catch(()=>[])
     ]);
 
-    // 3. Save Cache
-    try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-            timestamp: Date.now(),
-            main: main,
-            quotes: quotes
-        }));
-    } catch (e) {}
-
     return [main, quotes];
 }
 
 function fetchCSV(u) { 
     return new Promise((res, rej) => {
-        if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded"));
+        if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded. Check your internet connection."));
         Papa.parse(u, { 
             download: true, header: true, skipEmptyLines: true, 
             complete: (r) => res(r.data), 
@@ -249,11 +231,7 @@ function renderRows(rows, title, append, forceGrid) {
     const app = document.getElementById('app'); if(!app) return; 
     
     // Default Sort: Newest First
-    rows.sort((a, b) => {
-        const da = new Date(a.Timestamp || 0);
-        const db = new Date(b.Timestamp || 0);
-        return db - da; 
-    });
+    rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
 
     if(!append) {
         app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
@@ -320,7 +298,11 @@ function renderRows(rows, title, append, forceGrid) {
         
         if(gc) gc.appendChild(d);
     });
-    if(window.MathJax) MathJax.typeset();
+    
+    // SAFE MATHJAX CALL
+    if(window.MathJax && window.MathJax.typeset) {
+        window.MathJax.typeset();
+    }
 }
 
 function renderQuoteCard(c) {
