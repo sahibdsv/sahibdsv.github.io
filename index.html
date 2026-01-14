@@ -16,6 +16,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body class="no-transition">
+    
+    <script>
+        if (history.scrollRestoration) {
+            history.scrollRestoration = 'manual';
+        }
+    </script>
+
     <header id="main-header" class="no-transition">
         <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
         <nav id="primary-nav"></nav>
@@ -36,18 +43,18 @@
     </header>
 
     <div class="content-container" id="app">
-        <div class="section layout-hero" style="text-align:center;">
+        <div class="section layout-hero skeleton-visible" style="text-align:center;">
             <div class="sk-line title"></div>
             <div class="sk-line meta"></div>
             <div class="sk-line text"></div>
             <div class="sk-line text short"></div>
         </div>
         
-        <div class="section layout-quote">
+        <div class="section layout-quote skeleton-visible">
             <div class="sk-box quote"></div>
         </div>
         
-        <div class="grid-container section">
+        <div class="grid-container section skeleton-visible">
             <div class="layout-grid">
                 <div class="sk-img"></div>
                 <div class="sk-line title"></div>
@@ -299,10 +306,16 @@
             if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${auth}</a>`; 
             else if(r.Source) auth += ` • ${r.Source}`;
             
-            const isLong = r.Quote.length > 150;
-            const sizeClass = isLong ? 'long' : '';
+            // Adaptive Length Logic
+            const len = r.Quote.length;
+            let sizeClass = 'short';
+            if(len > 250) sizeClass = 'xl';
+            else if(len > 150) sizeClass = 'long';
+            else if(len > 70) sizeClass = 'medium';
             
-            c.innerHTML = `<blockquote class="${sizeClass}">"${r.Quote}"</blockquote><div class="quote-footer"><div class="author">— ${auth}</div><svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></div>`;
+            c.innerHTML = `<svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                           <blockquote class="${sizeClass}">"${r.Quote}"</blockquote>
+                           <div class="quote-footer"><div class="author">— ${auth}</div></div>`;
         }
 
         function renderFooter() { 
@@ -318,7 +331,16 @@
             }); 
         }
         
-        function fetchGitHubStats() { const r = "sahibdsv/sahibdsv.github.io"; fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { if(d.pushed_at) document.getElementById('version-tag').innerText = `Last Updated: ${new Date(d.pushed_at).toLocaleDateString()}`; }).catch(()=>{}); }
+        function fetchGitHubStats() { 
+            const r = "sahibdsv/sahibdsv.github.io"; 
+            fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
+                if(d.pushed_at) {
+                    const dateStr = new Date(d.pushed_at).toLocaleDateString();
+                    document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank">Last Updated: ${dateStr}</a>`;
+                } 
+            }).catch(()=>{}); 
+        }
+        
         function getThumbnail(u) { if(!u) return null; if(u.includes('youtube.com')||u.includes('youtu.be')) { let v = u.split('v=')[1]; if(v&&v.includes('&')) v=v.split('&')[0]; if(!v&&u.includes('youtu.be')) v=u.split('/').pop(); return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; } if(u.endsWith('.mp4')) return null; return u; }
         function processText(t) { 
             if(!t) return ''; 
