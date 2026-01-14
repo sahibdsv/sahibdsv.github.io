@@ -2,7 +2,6 @@
 
 let db = [], quotesDb = [], isSearchActive = false;
 
-// Fallback Config
 const FALLBACK_CONFIG = {
     main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
@@ -183,11 +182,7 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // ARCHIVE PAGE
-    if(h === 'Archive') {
-        renderArchive();
-        return;
-    }
+    if(h === 'Archive') { renderArchive(); return; }
     
     const shouldCollapse = (h === 'Home' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
@@ -217,10 +212,8 @@ function renderPage(p) {
     
     const isMainPage = !p.includes('/');
     
-    if(ex.length > 0) { 
-        renderRows(ex, null, true, false, !isMainPage); 
-    } 
-    else if(childrenPagesCheck(p)) { /* Do nothing, handled below */ }
+    if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
+    else if(childrenPagesCheck(p)) { }
     else {
         app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
         return; 
@@ -270,13 +263,11 @@ function renderArchive() {
 function renderHome() { 
     const hr = db.filter(r => r.Page === 'Home');
     const app = document.getElementById('app'); app.innerHTML = ''; 
-    
     renderRows(hr, null, true); 
     
     const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                       .slice(0, 6);
-                      
     if(recents.length > 0) { renderRows(recents, "Recent", true); } 
 }
 
