@@ -18,16 +18,22 @@
         <div id="brand-name" onclick="window.location.hash=''" role="button">SAHIB VIRDEE</div>
         <nav id="primary-nav"></nav>
         <nav id="sub-nav"></nav>
+
+        <div id="search-trigger" onclick="toggleSearch()">🔍</div>
+        <div id="search-overlay">
+            <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
+            <div id="close-search" onclick="toggleSearch()">✕</div>
+        </div>
     </header>
 
     <div class="content-container" id="app">
-        <p style="text-align:center; padding-top: 80px; color: #444;">Loading...</p>
+        <p style="text-align:center; padding-top: 80px; color: #444;">Loading Portfolio...</p>
     </div>
 
     <footer>
-        <a href="https://github.com/sahibdsv" target="_blank">GitHub</a> • 
-        <a href="https://grabcad.com/library" target="_blank">GrabCAD</a> • 
-        <a href="mailto:sahibdsv@gmail.com">Contact</a>
+        <a href="https://github.com/sahibdsv" target="_blank">GITHUB</a>
+        <a href="https://grabcad.com/library" target="_blank">GRABCAD</a>
+        <a href="mailto:sahibdsv@gmail.com">EMAIL</a>
     </footer>
 
     <div id="lightbox" onclick="this.classList.remove('active')">
@@ -37,13 +43,12 @@
     <script>
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?output=csv";
         let db = [];
-        let lastRenderedHash = null;
+        let isSearchActive = false;
 
         Papa.parse(SHEET_URL, {
             download: true, header: true,
             complete: (results) => { 
-                db = results.data; 
-                // Remove Query Params cleanly
+                db = results.data;
                 if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
                 initApp(); 
             }
@@ -57,25 +62,26 @@
                 const h = document.getElementById('main-header');
                 if(h) h.classList.toggle('shrink', window.scrollY > 50);
             });
-            
-            // Lightbox Logic
+
+            // Lightbox Logic (Only zoom if class contains 'zoomable')
             document.getElementById('app').addEventListener('click', (e) => {
-                if(e.target.tagName === 'IMG' && !e.target.closest('a')) {
+                if(e.target.classList.contains('zoomable')) {
                     const lb = document.getElementById('lightbox');
                     const lbImg = document.getElementById('lightbox-img');
                     if(lb && lbImg) {
                         lbImg.src = e.target.src;
                         lb.classList.add('active');
                     }
+                    e.stopPropagation(); // Prevent card click if zoomed
                 }
             });
         }
 
+        // --- NAVIGATION ---
         function buildNav() {
             const nav = document.getElementById('primary-nav');
             if(!nav) return;
             nav.innerHTML = '';
-            
             const pages = [...new Set(db.map(row => row.Page ? row.Page.split('/')[0] : null).filter(p => p))].sort();
             pages.forEach(p => {
                 if (p === 'Home') return;
@@ -100,37 +106,76 @@
             });
         }
 
+        // --- ROUTING & FILTERING ---
         function handleRouting() {
+            if (isSearchActive) return; // Don't reroute if searching
             const hash = window.location.hash.substring(1) || 'Home';
-            const topLevel = hash.split('/')[0];
             
-            // Highlight Primary Nav safely
+            // Highlight Nav
+            const topLevel = hash.split('/')[0];
             document.querySelectorAll('#primary-nav .nav-link').forEach(a => {
                 const href = a.getAttribute('href');
-                if(href) {
-                    const linkPage = href.replace('#', '');
-                    a.classList.toggle('active', linkPage === topLevel);
-                }
+                if(href) a.classList.toggle('active', href.replace('#', '') === topLevel);
             });
-
-            buildSubNav(topLevel);
-            renderPage(hash);
             
-            // Only scroll to top if actually changing pages
-            if(hash !== lastRenderedHash) window.scrollTo(0, 0);
-            lastRenderedHash = hash;
+            buildSubNav(topLevel);
+            
+            // Check if this is a "Filter View" (e.g., #Filter:Dec 2025)
+            if (hash.startsWith('Filter:')) {
+                const term = decodeURIComponent(hash.split(':')[1]);
+                renderFiltered(term);
+            } else {
+                renderPage(hash);
+            }
         }
 
+        function toggleSearch() {
+            const overlay = document.getElementById('search-overlay');
+            overlay.classList.toggle('active');
+            if (overlay.classList.contains('active')) {
+                document.getElementById('search-input').focus();
+            } else {
+                document.getElementById('search-input').value = '';
+                isSearchActive = false;
+                handleRouting(); // Reset to normal view
+            }
+        }
+
+        function handleSearch(query) {
+            if (!query) return;
+            isSearchActive = true;
+            const term = query.toLowerCase();
+            const results = db.filter(row => 
+                (row.Title && row.Title.toLowerCase().includes(term)) || 
+                (row.Content && row.Content.toLowerCase().includes(term)) ||
+                (row.Tags && row.Tags.toLowerCase().includes(term))
+            );
+            renderRows(results, `Search results for "${query}"`);
+        }
+
+        function renderFiltered(term) {
+            // Filter by Date or Tag
+            const results = db.filter(row => 
+                (row.Timestamp && row.Timestamp.includes(term)) || 
+                (row.Tags && row.Tags.includes(term))
+            );
+            renderRows(results, `Posts tagged "${term}"`);
+        }
+
+        // --- RENDER LOGIC ---
         function renderPage(pageFilter) {
+            const rows = db.filter(row => row.Page && row.Page.startsWith(pageFilter));
+            renderRows(rows);
+        }
+
+        function renderRows(rows, titleOverride = null) {
             const app = document.getElementById('app');
             if(!app) return;
-            
-            app.innerHTML = ''; // Reset content
-            const rows = db.filter(row => row.Page && row.Page.startsWith(pageFilter));
-            
-            if (rows.length === 0) { 
-                app.innerHTML = '<div style="text-align:center; margin-top:100px; color:#666;">Page not found.</div>'; 
-                return; 
+            app.innerHTML = titleOverride ? `<h2 style="text-align:center; color:#888; margin-bottom:40px;">${titleOverride}</h2>` : '';
+
+            if (rows.length === 0) {
+                app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>';
+                return;
             }
 
             let gridContainer = null;
@@ -138,8 +183,21 @@
             rows.forEach(row => {
                 const media = row.Media || '';
                 const link = row.LinkURL || '';
+                const tags = row.Tags ? row.Tags.split(',').map(t => t.trim()) : [];
+                
+                // Determine Category Color for Tags
+                let tagClass = 'meta-tag';
+                if(row.Page.startsWith('Personal')) tagClass += ' tag-personal';
+                else if(row.Page.startsWith('Professional')) tagClass += ' tag-prof';
+                else if(row.Page.startsWith('Projects')) tagClass += ' tag-project';
 
-                // GRID LOGIC
+                // Build Meta HTML (Date + Tags)
+                let metaHTML = `<div class="meta-row">`;
+                if(row.Timestamp) metaHTML += `<span class="meta-tag" onclick="window.location.hash='Filter:${row.Timestamp}'; event.stopPropagation();">${row.Timestamp}</span>`;
+                tags.forEach(t => metaHTML += `<span class="${tagClass}" onclick="window.location.hash='Filter:${t}'; event.stopPropagation();">#${t}</span>`);
+                metaHTML += `</div>`;
+
+                // GRID
                 if (row.SectionType === 'grid') {
                     if (!gridContainer) { 
                         gridContainer = document.createElement('div'); 
@@ -147,10 +205,10 @@
                         app.appendChild(gridContainer); 
                     }
                     const itemContent = `
-                        <img src="${media}" loading="lazy">
-                        <div class="grid-content"><h3>${row.Title}</h3><p>${processText(row.Content)}</p></div>`;
+                        <img src="${media}" loading="lazy" class="${link ? '' : 'zoomable'}">
+                        <div class="grid-content"><h3>${row.Title}</h3><p>${processText(row.Content)}</p>${metaHTML}</div>`;
                     
-                    if (link) gridContainer.innerHTML += `<a href="${link}" target="_blank" class="clickable-block layout-grid">${itemContent}</a>`;
+                    if (link) gridContainer.innerHTML += `<a href="${link}" target="_blank" class="clickable-block layout-grid has-link">${itemContent}</a>`;
                     else gridContainer.innerHTML += `<div class="layout-grid">${itemContent}</div>`;
                     return;
                 } 
@@ -158,14 +216,15 @@
                 gridContainer = null;
                 const section = document.createElement('div');
                 section.className = `section layout-${row.SectionType}`;
-                
                 const content = processText(row.Content);
                 let html = '';
 
                 if (row.SectionType === 'hero') html = `<h1>${row.Title}</h1><p>${content}</p>`;
                 else if (row.SectionType === 'text') html = (row.Title ? `<h2>${row.Title}</h2>` : '') + `<p>${content}</p>`;
                 else if (row.SectionType === 'card') {
-                    html = `${getMediaHTML(media)}<div><h3>${row.Title}</h3><p>${content}</p>${row.Timestamp ? `<div class="timestamp">${row.Timestamp}</div>` : ''}</div>`;
+                    // Logic: If link exists, NO zoom. If no link, Image is Zoomable.
+                    const mediaHtml = getMediaHTML(media, !link); 
+                    html = `${mediaHtml}<div><h3>${row.Title}</h3><p>${content}</p>${metaHTML}</div>`;
                 }
                 else if (row.SectionType === 'compact') {
                     html = `<img src="${media}" loading="lazy"><div><h3>${row.Title}</h3><p>${content}</p></div>`;
@@ -175,9 +234,8 @@
                     const wrapper = document.createElement('a');
                     wrapper.href = link;
                     wrapper.target = "_blank";
-                    wrapper.className = "clickable-block";
+                    wrapper.className = "clickable-block has-link";
                     wrapper.innerHTML = html;
-                    // Move styling class to wrapper
                     wrapper.querySelector(`.layout-${row.SectionType}`).classList.remove(`layout-${row.SectionType}`);
                     wrapper.classList.add(`layout-${row.SectionType}`);
                     app.appendChild(wrapper);
@@ -193,11 +251,11 @@
             return text.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link">$1</a>');
         }
 
-        function getMediaHTML(url) {
+        function getMediaHTML(url, isZoomable) {
             if (!url) return '';
             if (url.includes('youtu')) { let v = url.split('v=')[1]; if (v && v.includes('&')) v = v.split('&')[0]; return `<iframe src="https://www.youtube.com/embed/${v}" frameborder="0" allowfullscreen></iframe>`; }
             if (url.endsWith('.mp4')) return `<video controls src="${url}"></video>`;
-            return `<img src="${url}" loading="lazy">`;
+            return `<img src="${url}" loading="lazy" class="${isZoomable ? 'zoomable' : ''}">`;
         }
     </script>
 </body>
