@@ -135,12 +135,9 @@
             });
             document.getElementById('app').addEventListener('click', (e) => {
                 if(e.target.closest('.refresh-btn')) { 
-                    // Quote Refresh Animation Logic
                     const quoteContainer = e.target.closest('.layout-quote');
                     if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                         quoteContainer.classList.add('loading');
-                        
-                        // Inject Skeleton Text immediately
                         const bq = quoteContainer.querySelector('blockquote');
                         if(bq) {
                             bq.innerHTML = `
@@ -149,11 +146,10 @@
                                 <div class="sk-line quote-line short"></div>
                             `;
                         }
-
                         setTimeout(() => {
                             renderQuoteCard(quoteContainer);
                             quoteContainer.classList.remove('loading');
-                        }, 600); // Fast 600ms load feel
+                        }, 600);
                     }
                     e.stopPropagation(); return; 
                 }
@@ -173,7 +169,13 @@
                 const block = e.target.closest('.clickable-block');
                 if(block && !e.target.classList.contains('chip')) {
                     const link = block.getAttribute('data-link'), target = block.getAttribute('data-target');
-                    if(link) { if(target === '_blank') window.open(link, '_blank'); else { window.location.href = link; if(isSearchActive) closeSearch(); } }
+                    if(link) { 
+                        if(target === '_blank') window.open(link, '_blank'); 
+                        else { 
+                            window.location.href = link; 
+                            if(isSearchActive) closeSearch(); 
+                        } 
+                    }
                 }
             });
         }
@@ -192,12 +194,10 @@
             if(!q) return; 
             isSearchActive = true; 
             
-            // Force Header Collapse during search
             document.body.classList.remove('header-expanded');
             document.getElementById('main-header').classList.remove('expanded');
 
             const t = q.toLowerCase(), res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
-            // Don't append, force grid
             renderRows(res, `Search results for "${q}"`, false, true); 
         }
 
@@ -270,7 +270,6 @@
         function renderRows(rows, title, append, forceGrid) {
             const app = document.getElementById('app'); if(!app) return; 
             
-            // DEFAULT SORT: Descending (Newest First)
             rows.sort((a, b) => {
                 const da = new Date(a.Timestamp || 0);
                 const db = new Date(b.Timestamp || 0);
