@@ -88,8 +88,8 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                // Use FULL BOX skeleton matching CSS height (120px)
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:120px; width:100%; margin:0 auto;"></div>`;
+                // Height matches CSS min-height to prevent snap
+                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
                     quoteContainer.classList.remove('loading');
@@ -98,7 +98,14 @@ function initApp() {
             e.stopPropagation(); return; 
         }
         
-        if(e.target.classList.contains('zoomable')) { document.getElementById('lightbox-img').src = e.target.src; document.getElementById('lightbox').classList.add('active'); e.stopPropagation(); return; }
+        if(e.target.classList.contains('zoomable')) { 
+            // Check if parent is a link, if so, don't zoom
+            if(e.target.parentElement.tagName === 'A') return;
+            
+            document.getElementById('lightbox-img').src = e.target.src; 
+            document.getElementById('lightbox').classList.add('active'); 
+            e.stopPropagation(); return; 
+        }
         
         if(e.target.classList.contains('chip')) { 
             e.stopPropagation();
@@ -194,16 +201,11 @@ function renderPage(p) {
     const ex = db.filter(r => r.Page === p); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
-    // Check if it's a MAIN Page (no slashes)
+    // Render current page content (isArticleMode = !isMainPage)
     const isMainPage = !p.includes('/');
-    
-    if(ex.length > 0) { 
-        // Pass !isMainPage as "isArticleMode" to handle rows differently
-        renderRows(ex, null, true, false, !isMainPage); 
-    } 
+    if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
     
     if(isMainPage) {
-        // Only look for children on Main Pages
         const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
         if(childrenPages.length > 0) {
             const overviewRows = childrenPages.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
@@ -249,20 +251,28 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         else if(pLower.startsWith('professional')) catClass = 'cat-professional';
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
-        // ARTICLE MODE: If we are on a subpage, render generic rows as text/layout items, NOT cards
+        // ARTICLE MODE: Render content as Text Blocks with Images, not Cards
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
-             // Render as Text/Hero style item instead of Grid Card
              const d = document.createElement('div'); d.className = 'section layout-text';
-             // If there's an image, add it above
+             
              let imgHtml = '';
              const thumb = getThumbnail(r.Media);
-             if(thumb) imgHtml = `<img src="${thumb}" class="inline-img zoomable" loading="lazy" style="margin-bottom:15px; width:100%;">`;
+             // Use "row-media article-mode" to restrict size
+             if(thumb) imgHtml = `<div class="row-media article-mode"><img src="${thumb}" class="inline-img zoomable" loading="lazy"></div>`;
              
-             d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+             // Meta Line (Date/Author)
+             let metaHtml = '';
+             if(r.Timestamp) {
+                 const dateVal = formatDate(r.Timestamp);
+                 metaHtml = `<div class="article-meta">BY SAHIB VIRDEE • ${dateVal}</div>`;
+             }
+
+             d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
              app.appendChild(d);
              return;
         }
 
+        // GRID/CARD MODE
         if(!forceGrid) {
             if(r.SectionType === 'quote') { 
                 const d = document.createElement('div'); d.className = 'layout-quote section'; 
@@ -273,6 +283,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
                 let dateHtml = '';
                 if(r.Timestamp) {
                     let dateVal = formatDate(r.Timestamp);
+                    // Collapsed date chip logic
                     dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
                 }
                 d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
