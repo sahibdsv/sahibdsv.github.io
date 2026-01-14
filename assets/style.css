@@ -6,108 +6,118 @@ body {
     color: #e0e0e0;
     font-family: 'Jost', sans-serif;
     line-height: 1.6;
-    padding-top: 160px;
+    display: flex; flex-direction: column; min-height: 100vh;
+    padding-top: 140px; /* Space for fixed header */
 }
 
-/* --- 1. HEADER & HIERARCHY --- */
+/* --- 1. SMOOTH HEADER --- */
 #main-header {
     position: fixed; top: 0; left: 0; width: 100%;
     background: rgba(5, 5, 5, 0.98); border-bottom: 1px solid #222;
     z-index: 1000; padding: 15px 0;
     display: flex; flex-direction: column; align-items: center;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, padding 0.3s ease; /* GPU Safe */
 }
 
 #brand-name {
     font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px;
-    color: #fff; cursor: pointer; margin-bottom: 15px;
+    color: #fff; cursor: pointer; margin-bottom: 10px;
+    transition: transform 0.3s ease;
 }
 
-/* Row 1: Primary Nav */
-#primary-nav { display: flex; gap: 40px; margin-bottom: 10px; }
+#primary-nav { display: flex; gap: 40px; margin-bottom: 5px; }
 .nav-link {
-    color: #555; /* Dark grey when inactive */
-    font-size: 15px; font-weight: 500; text-transform: uppercase;
-    text-decoration: none; letter-spacing: 1px; transition: all 0.2s;
+    color: #666; font-size: 15px; font-weight: 500; text-transform: uppercase;
+    text-decoration: none; letter-spacing: 1px; transition: color 0.2s;
 }
 .nav-link:hover { color: #aaa; }
 
-/* ACTIVE STATES (The Neon Logic) */
-/* Note: We target these by the specific href in the HTML */
-.nav-link[href="#Personal"].active { color: #4dff88; text-shadow: 0 0 15px rgba(77, 255, 136, 0.3); font-weight: 700; }
-.nav-link[href="#Professional"].active { color: #00ffff; text-shadow: 0 0 15px rgba(0, 255, 255, 0.3); font-weight: 700; }
-.nav-link[href="#Projects"].active { color: #ff9933; text-shadow: 0 0 15px rgba(255, 153, 51, 0.3); font-weight: 700; }
-/* Default for others (like Home) */
-.nav-link.active { color: #fff; }
+/* ACTIVE COLORS (No Size Jump) */
+.nav-link[href="#Personal"].active { color: #4dff88; text-shadow: 0 0 10px rgba(77, 255, 136, 0.4); }
+.nav-link[href="#Professional"].active { color: #00ffff; text-shadow: 0 0 10px rgba(0, 255, 255, 0.4); }
+.nav-link[href="#Projects"].active { color: #ff9933; text-shadow: 0 0 10px rgba(255, 153, 51, 0.4); }
+.nav-link.active { color: #fff; font-weight: 700; }
 
-/* Row 2: Sub-Nav */
+/* Sub-Nav */
 #sub-nav { display: flex; gap: 25px; min-height: 20px; font-size: 13px; }
-.sub-link { color: #666; text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
-.sub-link:hover { color: #999; }
-/* Active Sub-Link is WHITE and BOLD */
-.sub-link.active { color: #ffffff; font-weight: 700; border-bottom: 1px solid #fff; }
+.sub-link { color: #555; text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
+.sub-link:hover { color: #888; }
+.sub-link.active { color: #fff; font-weight: 700; border-bottom: 1px solid #fff; }
 
-/* Shrink Header */
+/* SHRINK STATE (Smooth) */
 #main-header.shrink { padding: 10px 0; }
-#main-header.shrink #brand-name { font-size: 18px; margin-bottom: 5px; }
-#main-header.shrink #primary-nav { margin-bottom: 5px; }
+#main-header.shrink #brand-name { transform: scale(0.85); margin-bottom: 5px; }
 
-/* --- 2. LAYOUTS --- */
-.content-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; min-height: 80vh; }
-.section { margin-bottom: 40px; opacity: 0; animation: fadeIn 0.5s forwards; }
-
-.clickable-block { text-decoration: none; color: inherit; display: block; transition: transform 0.2s; }
-.clickable-block:hover { transform: translateY(-3px); }
+/* --- 2. CONTENT --- */
+.content-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; width: 100%; flex: 1; }
+.section { margin-bottom: 50px; opacity: 0; animation: fadeIn 0.4s forwards; }
 
 /* Hero */
 .layout-hero { text-align: center; margin: 60px 0 80px; }
 .layout-hero h1 { font-size: 48px; color: #fff; margin-bottom: 15px; }
 .layout-hero p { color: #888; font-size: 22px; max-width: 600px; margin: 0 auto; }
 
-/* Standard Text */
+/* Text (Clean, No Side Line) */
 .layout-text { max-width: 700px; margin: 0 auto 40px; }
-.layout-text h2 { color: #fff; font-size: 28px; margin-bottom: 15px; border-left: 3px solid #555; padding-left: 15px; }
+.layout-text h2 { color: #fff; font-size: 28px; margin-bottom: 15px; } /* Removed border-left */
 
-/* Cards (Side-by-Side) */
+/* Cards */
 .layout-card {
     display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;
     background: #0f0f0f; border: 1px solid #222; padding: 30px; border-radius: 12px;
-    align-items: center;
+    align-items: center; transition: transform 0.2s;
 }
-.layout-card img, .layout-card iframe, .layout-card video { width: 100%; border-radius: 8px; object-fit: cover; max-height: 300px; }
+.layout-card:hover { border-color: #333; }
+.layout-card img { width: 100%; border-radius: 8px; object-fit: cover; max-height: 300px; cursor: zoom-in; }
 .layout-card h3 { color: #fff; font-size: 24px; margin-bottom: 10px; }
 
-/* Compact (List View) */
+/* Compact (Tighter Spacing) */
 .layout-compact {
-    display: flex; align-items: center; gap: 20px;
-    border-bottom: 1px solid #1a1a1a; padding: 15px 0;
+    display: flex; align-items: center; gap: 15px;
+    border-bottom: 1px solid #1a1a1a; padding: 10px 0; /* Reduced padding */
+    margin-bottom: 0 !important;
 }
-.layout-compact img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid #333; }
-.layout-compact h3 { font-size: 16px; color: #fff; margin: 0; }
+.layout-compact img { width: 50px; height: 50px; border-radius: 4px; object-fit: cover; border: 1px solid #333; }
+.layout-compact h3 { font-size: 15px; color: #fff; margin: 0; }
 .layout-compact p { font-size: 13px; color: #777; margin: 0; }
 
-/* Grid (Gallery) */
+/* Grid */
 .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 .layout-grid { background: #111; border: 1px solid #222; border-radius: 8px; overflow: hidden; height: 100%; }
-.layout-grid img { width: 100%; height: 180px; object-fit: cover; }
+.layout-grid img { width: 100%; height: 180px; object-fit: cover; cursor: zoom-in; }
 .layout-grid .grid-content { padding: 15px; }
 .layout-grid h3 { font-size: 16px; color: #fff; margin-bottom: 5px; }
 .layout-grid p { font-size: 13px; color: #999; }
 
-/* Helpers */
-.timestamp { font-size: 11px; color: #444; text-transform: uppercase; margin-top: 10px; }
-.wiki-link { color: #fff; text-decoration: none; border-bottom: 1px dotted #777; }
-.wiki-link:hover { border-bottom: 1px solid #fff; }
-img { cursor: zoom-in; }
+/* --- 3. HELPERS --- */
+/* Visible Dates */
+.timestamp {
+    display: inline-block;
+    font-size: 12px; font-weight: 600; color: #888;
+    background: #1a1a1a; padding: 2px 8px; border-radius: 4px;
+    margin-top: 12px; border: 1px solid #333;
+}
+
+/* Links */
+.wiki-link { color: #fff; text-decoration: none; border-bottom: 1px dotted #777; transition: all 0.2s; }
+.wiki-link:hover { border-bottom: 1px solid #fff; color: #fff; }
+.clickable-block { text-decoration: none; color: inherit; display: block; }
+
+/* Footer */
+footer {
+    text-align: center; padding: 40px 0; color: #444; font-size: 13px; border-top: 1px solid #111; margin-top: 40px;
+}
+footer a { color: #666; text-decoration: none; margin: 0 10px; transition: color 0.2s; }
+footer a:hover { color: #fff; }
 
 /* Lightbox */
 #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
 #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
-#lightbox.active { display: flex; }
+#lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
 /* Mobile */
 @media (max-width: 768px) {
-    body { padding-top: 140px; }
+    body { padding-top: 130px; }
     #primary-nav { gap: 20px; }
     .layout-hero h1 { font-size: 36px; }
     .layout-card { grid-template-columns: 1fr; gap: 20px; }
