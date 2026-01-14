@@ -285,7 +285,8 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              }
              metaHtml += '</div></div>';
 
-             d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2>${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
+             // ADDED .fill-anim TO ARTICLE H2
+             d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
              app.appendChild(d);
              return;
         }
@@ -302,12 +303,14 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
                     let dateVal = formatDate(r.Timestamp);
                     dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
                 }
-                d.innerHTML = `<h1>${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
+                // ADDED .fill-anim TO HERO H1
+                d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                 app.appendChild(d); return;
             }
             if(r.SectionType === 'text') {
                  const d = document.createElement('div'); d.className = 'section layout-text';
-                 d.innerHTML = `${safeHTML(r.Title) ? `<h2>${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+                 // ADDED .fill-anim TO TEXT H2
+                 d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
                  app.appendChild(d); return;
             }
         }
