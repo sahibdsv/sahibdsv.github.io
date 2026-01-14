@@ -88,8 +88,8 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                // Use FULL BOX skeleton matching CSS height (200px)
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:200px; width:100%; margin:0 auto;"></div>`;
+                // MATCH CSS HEIGHT: 140px
+                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:140px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
                     quoteContainer.classList.remove('loading');
@@ -191,7 +191,6 @@ function renderFiltered(t) {
         const dateStr = formatDate(r.Timestamp);
         return (dateStr === t) || (r.Tags && r.Tags.includes(t));
     });
-    // FORCE GRID = TRUE for filters
     renderRows(res, `Posts tagged "${safeHTML(t)}"`, false, true); 
 }
 
@@ -200,10 +199,8 @@ function renderPage(p) {
     const ex = db.filter(r => r.Page === p); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
-    // Check if it's a MAIN Page (no slashes)
     const isMainPage = !p.includes('/');
     
-    // Render Content (isArticleMode = TRUE if not main page)
     if(ex.length > 0) { 
         renderRows(ex, null, true, false, !isMainPage); 
     } 
@@ -254,7 +251,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         else if(pLower.startsWith('professional')) catClass = 'cat-professional';
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
-        // ARTICLE MODE: Render as Article Header/Body
+        // ARTICLE MODE
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
              
@@ -262,21 +259,18 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              const thumb = getThumbnail(r.Media);
              if(thumb) imgHtml = `<div class="row-media article-mode"><img src="${thumb}" class="inline-img zoomable" loading="lazy"></div>`;
              
-             // Meta Row: Author + Chips
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a><div class="article-tags">';
              
-             // Add Date Chip
              if(r.Timestamp) {
                  const dateVal = formatDate(r.Timestamp);
                  metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
              }
              
-             // Add Other Tags
              if(r.Tags) {
                  const tags = r.Tags.split(',').map(x => x.trim());
                  tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
              }
-             metaHtml += '</div></div>'; // Close row
+             metaHtml += '</div></div>';
 
              d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
              app.appendChild(d);

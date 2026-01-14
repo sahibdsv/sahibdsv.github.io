@@ -263,15 +263,14 @@ a[target="_blank"]:not(.clickable-block)::after {
 /* DATE CHIP */
 .chip.date { 
     background: transparent; color: #666; font-weight: 500; border: 1px solid #333; 
-    padding: 3px 8px; /* Standardized padding */
+    padding: 3px 8px; 
 }
 .chip.date:hover { color: #fff; background: #1a1a1a; border-color: #555; } 
 
 /* ARTICLE META ROW (Compact) */
 .article-meta-row {
     display: flex; align-items: center; flex-wrap: wrap; gap: 15px;
-    margin-bottom: 10px; /* Reduced space */
-    /* No border-bottom */
+    margin-bottom: 10px; 
 }
 .author-link {
     font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
@@ -299,32 +298,34 @@ a[target="_blank"]:not(.clickable-block)::after {
 .inline-img.zoomable:hover { opacity: 0.9; }
 a .inline-img.zoomable { cursor: pointer; }
 
-/* QUOTE - FIXED HEIGHT */
+/* QUOTE - COMPACT FIXED SIZE */
 .layout-quote { 
-    padding: 15px; text-align: center; position: relative; 
+    padding: 0 20px; /* Horizontal only */
+    text-align: center; position: relative; 
     margin: 0 auto 10px; 
-    height: 200px; /* Fixed height to prevent jump */
+    height: 140px; /* FIXED HEIGHT: Compact */
     width: 100%; max-width: 800px;
     display: flex; flex-direction: column; justify-content: center; align-items: center; 
-    overflow: hidden; /* Ensure no spillover */
+    overflow: hidden; 
 }
 .layout-quote blockquote { 
     font-family: 'Playfair Display', serif; font-style: italic; color: #eee; 
-    margin-bottom: 10px; line-height: 1.3; transition: font-size 0.3s; 
+    margin-bottom: 5px; line-height: 1.2; transition: font-size 0.3s; 
 }
 
-.layout-quote blockquote.short { font-size: 28px; }
-.layout-quote blockquote.medium { font-size: 24px; }
-.layout-quote blockquote.long { font-size: 18px; }
-.layout-quote blockquote.xl { font-size: 16px; }
+/* Reduced Font Sizes for Compact Box */
+.layout-quote blockquote.short { font-size: 24px; }
+.layout-quote blockquote.medium { font-size: 20px; }
+.layout-quote blockquote.long { font-size: 16px; }
+.layout-quote blockquote.xl { font-size: 14px; }
 
-.quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
-.layout-quote .author { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
+.quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; }
+.layout-quote .author { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
 .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
 
 .layout-quote .refresh-btn { 
     position: absolute; bottom: 5px; right: 5px; 
-    width: 20px; height: 20px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; 
+    width: 18px; height: 18px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; 
     padding: 2px;
 }
 .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg); }
@@ -365,7 +366,7 @@ footer .footer-links a { font-size: 13px; font-weight: 400; --text-base: #777; -
 .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
 .sk-line.text { height: 20px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
 .sk-line.text.short { width: 60%; }
-.sk-box.quote { height: 200px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
+.sk-box.quote { height: 140px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
 .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 10px; border-radius: 4px; }
 .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 10px; }
 .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 6px; }
