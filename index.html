@@ -91,6 +91,7 @@
 
     <script>
         let db = [], quotesDb = [], isSearchActive = false;
+        let isSortDesc = true; // Default to Newest First
 
         const init = () => {
             fetch('assets/config.json')
@@ -142,6 +143,11 @@
                     }
                     e.stopPropagation(); return; 
                 }
+                if(e.target.closest('.sort-btn')) {
+                    toggleSort();
+                    e.stopPropagation(); return;
+                }
+                
                 if(e.target.classList.contains('zoomable')) { document.getElementById('lightbox-img').src = e.target.src; document.getElementById('lightbox').classList.add('active'); e.stopPropagation(); return; }
                 
                 if(e.target.classList.contains('chip')) { 
@@ -171,6 +177,11 @@
             if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
             else closeSearch(); 
         }
+
+        function toggleSort() {
+            isSortDesc = !isSortDesc;
+            handleRouting(); // Re-render current view
+        }
         
         function handleSearch(q) { 
             if(!q) return; 
@@ -195,7 +206,7 @@
 
         function handleRouting() { 
             if(isSearchActive) return; 
-            window.scrollTo(0, 0); 
+            // window.scrollTo(0, 0); // Removed to prevent jarring jump on re-sort, or keep if preferred.
             let h = window.location.hash.substring(1) || 'Home'; 
             
             const isHome = (h === 'Home');
@@ -211,7 +222,14 @@
             else { renderPage(h); }
         }
 
-        function renderFiltered(t) { const res = db.filter(r => (r.Timestamp && r.Timestamp.includes(t)) || (r.Tags && r.Tags.includes(t))); renderRows(res, `Posts tagged "${t}"`); }
+        function renderFiltered(t) { 
+            // FILTER USING FORMATTED DATE
+            const res = db.filter(r => {
+                const fDate = formatDate(r.Timestamp);
+                return (fDate === t) || (r.Tags && r.Tags.includes(t));
+            }); 
+            renderRows(res, `Posts tagged "${t}"`); 
+        }
 
         function renderPage(p) { 
             if(p === 'Home') { renderHome(); return; } 
@@ -243,7 +261,23 @@
         function renderRows(rows, title, append, forceGrid) {
             const app = document.getElementById('app'); if(!app) return; 
             
-            if(!append) app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
+            // SORTING LOGIC
+            rows.sort((a, b) => {
+                const da = a.Timestamp ? new Date(a.Timestamp) : new Date(0);
+                const db_ = b.Timestamp ? new Date(b.Timestamp) : new Date(0);
+                return isSortDesc ? db_ - da : da - db_;
+            });
+
+            if(!append) {
+                if(title) {
+                    const sortClass = isSortDesc ? '' : 'asc';
+                    // Sort button only if it's not search results
+                    const sortBtn = title.includes('Search') ? '' : `<svg class="sort-btn ${sortClass}" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>`;
+                    app.innerHTML = `<div class="page-header"><h2 class="fill-anim">${title}</h2>${sortBtn}</div>`;
+                } else {
+                    app.innerHTML = '';
+                }
+            }
             if(rows.length === 0 && !append) { app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'; return; }
             
             let gc = app.querySelector('.grid-container');
@@ -263,7 +297,9 @@
                     }
                     if(r.SectionType === 'hero') {
                         const d = document.createElement('div'); d.className = 'section layout-hero';
-                        let dateChip = r.Timestamp ? `<span class="chip date" data-val="${r.Timestamp}" onclick="event.stopPropagation(); window.location.hash='Filter:${r.Timestamp}'">${formatDate(r.Timestamp)}</span>` : `<span class="chip date" style="cursor:default">NO DATE</span>`;
+                        // Pass formatted date to chip for filtering
+                        const dateStr = formatDate(r.Timestamp);
+                        let dateChip = r.Timestamp ? `<span class="chip date" data-date="${dateStr}">${dateStr}</span>` : `<span class="chip date" style="cursor:default">NO DATE</span>`;
                         d.innerHTML = `<h1 class="fill-anim">${r.Title}</h1><div class="hero-meta">${dateChip}</div><p>${processText(r.Content)}</p>`;
                         app.appendChild(d); return;
                     }
@@ -284,7 +320,10 @@
                 let mh = '';
                 if(r.Timestamp || tags.length > 0) {
                      mh = `<div class="meta-row">`;
-                     if(r.Timestamp) mh += `<span class="chip date" data-date="${r.Timestamp}" data-val="${r.Timestamp}">${formatDate(r.Timestamp)}</span>`; 
+                     if(r.Timestamp) {
+                        const dateStr = formatDate(r.Timestamp);
+                        mh += `<span class="chip date" data-date="${dateStr}">${dateStr}</span>`; 
+                     }
                      tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${t}</span>`); 
                      mh += `</div>`;
                 }
@@ -306,7 +345,6 @@
             if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${auth}</a>`; 
             else if(r.Source) auth += ` • ${r.Source}`;
             
-            // Adaptive Length Logic
             const len = r.Quote.length;
             let sizeClass = 'short';
             if(len > 250) sizeClass = 'xl';
