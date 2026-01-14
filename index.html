@@ -4,27 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sahib Virdee</title>
+    
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
     <link rel="stylesheet" href="/projects/sahibdsv/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body>
 
-    <header id="main-header">
+    <header id="main-header" onclick="window.location.hash=''" style="cursor: pointer;">
         <div id="brand-name">Sahib Virdee</div>
         <nav id="dynamic-nav">
             </nav>
     </header>
 
     <div class="content-container" id="app">
-        <p style="text-align:center; padding-top: 50px; color: #444;">Loading...</p>
+        <p style="text-align:center; padding-top: 50px; color: #444; animation: fadeIn 1s;">
+            Loading...
+        </p>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
+        // --- YOUR SHEET ---
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?output=csv";
-        // ---------------------
+        // ------------------
 
-        let db = []; // Will hold the sheet data
+        let db = [];
 
         // 1. Fetch Data
         Papa.parse(SHEET_URL, {
@@ -39,68 +47,69 @@
         // 2. Initialize
         function initApp() {
             buildNav();
-            
-            // Get current page from URL (?page=X) or default to 'Home'
-            const params = new URLSearchParams(window.location.search);
-            const currentPage = params.get('page') || 'Home';
-            
-            renderPage(currentPage);
+            handleRouting();
+            window.addEventListener('hashchange', handleRouting);
         }
 
-        // 3. Build Navigation (Smart)
+        // 3. Build Navigation
         function buildNav() {
-            // Find all unique values in "Page" column
+            // Get unique pages from column A
             const pages = [...new Set(db.map(row => row.Page).filter(p => p))];
-            
             const nav = document.getElementById('dynamic-nav');
             nav.innerHTML = '';
 
             pages.forEach(pageName => {
-                // If pageName contains a slash (Personal/Family), it's a subpage.
-                // For simplicity, we only show Top Level items in main nav
                 const topLevel = pageName.split('/')[0];
-                
-                // Avoid duplicates in Nav
-                if (!nav.innerHTML.includes(`?page=${topLevel}`)) {
-                    const link = document.createElement('a');
-                    link.innerText = topLevel;
-                    link.href = `?page=${topLevel}`;
-                    
-                    // Highlight active
-                    const params = new URLSearchParams(window.location.search);
-                    const current = params.get('page') || 'Home';
-                    if (current.startsWith(topLevel)) link.classList.add('active');
 
-                    nav.appendChild(link);
-                }
+                // Skip "Home" and duplicates
+                if (topLevel === 'Home' || nav.innerHTML.includes(`'${topLevel}'`)) return;
+
+                const link = document.createElement('a');
+                link.innerText = topLevel;
+                link.onclick = (e) => {
+                    e.stopPropagation(); // Stop header click
+                    window.location.hash = topLevel;
+                };
+                
+                // Highlight active
+                if (window.location.hash.includes(topLevel)) link.classList.add('active');
+
+                nav.appendChild(link);
             });
         }
 
-        // 4. Render the Content
+        // 4. Handle #Hash Routing
+        function handleRouting() {
+            const hash = window.location.hash.substring(1) || 'Home';
+            
+            // Highlight Nav
+            document.querySelectorAll('nav a').forEach(a => {
+                a.classList.toggle('active', a.innerText === hash.split('/')[0]);
+            });
+
+            renderPage(hash);
+            window.scrollTo(0, 0); // Scroll to top
+        }
+
+        // 5. Render Page
         function renderPage(pageName) {
             const app = document.getElementById('app');
             app.innerHTML = '';
 
-            // Filter rows that match the requested page
-            // Logic: If I ask for "Personal", show "Personal" AND "Personal/Family"?
-            // User requested: "Personal - Family should be a subpage".
-            // Implementation: We show everything starting with that path.
-            
+            // Filter rows (e.g., "Personal" shows "Personal" and "Personal/Family")
             const rows = db.filter(row => row.Page && row.Page.startsWith(pageName));
 
             if (rows.length === 0) {
-                app.innerHTML = '<p style="text-align:center; margin-top:50px;">Page not found (or empty).</p>';
+                app.innerHTML = '<p style="text-align:center; margin-top:50px; color:#666;">Page not found.</p>';
                 return;
             }
 
-            // Loop through rows and build HTML based on "SectionType"
             rows.forEach(row => {
                 const section = document.createElement('div');
                 section.className = `section layout-${row.SectionType}`;
 
                 let html = '';
-
-                // --- TEMPLATE LOGIC ---
+                
                 if (row.SectionType === 'hero') {
                     html = `<h1>${row.Title}</h1><p>${row.Content}</p>`;
                 } 
@@ -110,32 +119,26 @@
                 }
                 else if (row.SectionType === 'card') {
                     html = `
-                        ${row.Media ? `<img src="${row.Media}">` : ''}
+                        ${row.Media ? `<img src="${row.Media}" loading="lazy">` : ''}
                         <div>
                             <h3>${row.Title}</h3>
                             <p>${row.Content}</p>
-                            ${row.Timestamp ? `<div class="timestamp">Updated: ${row.Timestamp}</div>` : ''}
+                            ${row.Timestamp ? `<div class="timestamp">${row.Timestamp}</div>` : ''}
                         </div>
                     `;
                 }
-                else if (row.SectionType === 'image') {
-                     html = `<img src="${row.Media}" style="width:100%; border-radius:8px;">
-                             ${row.Content ? `<p style="text-align:center; font-size:14px; margin-top:5px; color:#666;">${row.Content}</p>` : ''}`;
-                }
-                // ----------------------
 
                 section.innerHTML = html;
                 app.appendChild(section);
             });
         }
 
-        // 5. Shrink Header on Scroll
+        // 6. Sticky Header Effect
         window.addEventListener('scroll', () => {
             const header = document.getElementById('main-header');
             if (window.scrollY > 50) header.classList.add('shrink');
             else header.classList.remove('shrink');
         });
     </script>
-
 </body>
 </html>
