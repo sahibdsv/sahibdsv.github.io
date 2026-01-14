@@ -234,12 +234,14 @@ function renderRows(rows, title, append, forceGrid) {
     rows.forEach(r => {
         if(!r.Page || r.Page === 'Footer') return; 
         
+        // Category Coloring
         let catClass = '';
         const pLower = r.Page.toLowerCase();
         if(pLower.startsWith('projects')) catClass = 'cat-projects';
         else if(pLower.startsWith('professional')) catClass = 'cat-professional';
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
+        // 1. Direct Page Render (Subpages)
         if(!forceGrid) {
             if(r.SectionType === 'quote') { 
                 const d = document.createElement('div'); d.className = 'layout-quote section'; 
@@ -247,14 +249,11 @@ function renderRows(rows, title, append, forceGrid) {
             }
             if(r.SectionType === 'hero') {
                 const d = document.createElement('div'); d.className = 'section layout-hero';
-                
-                // CONDITIONAL DATE: Only if timestamp exists
                 let dateHtml = '';
                 if(r.Timestamp) {
                     let dateVal = formatDate(r.Timestamp);
                     dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
                 }
-                
                 d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                 app.appendChild(d); return;
             }
@@ -263,8 +262,21 @@ function renderRows(rows, title, append, forceGrid) {
                  d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
                  app.appendChild(d); return;
             }
+
+            // NEW: Media Block Fallback (Instead of Card)
+            // If we are here, it's a content row that isn't hero/text/quote.
+            // Render as full-width content block.
+            const d = document.createElement('div'); d.className = 'layout-media section';
+            
+            const thumb = getThumbnail(r.Media);
+            const imgH = thumb ? `<img src="${thumb}" loading="lazy" class="zoomable">` : '';
+            
+            d.innerHTML = `${imgH}${r.Title ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+            app.appendChild(d);
+            return; 
         }
 
+        // 2. Grid Render (Main Pages / Search / Tags)
         const media = r.Media || '', link = r.LinkURL || '', tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
         let l = link; if(!l) l = `#${r.Page}`; 
         const internal = l.startsWith('#'), target = internal ? '' : '_blank';
@@ -273,7 +285,6 @@ function renderRows(rows, title, append, forceGrid) {
         const imgH = thumb ? `<div class="row-media"><img src="${thumb}" loading="lazy"></div>` : '';
         
         let mh = '';
-        // Only show meta row if there are tags OR a date
         if(r.Timestamp || tags.length > 0) {
              mh = `<div class="meta-row">`;
              if(r.Timestamp) {
