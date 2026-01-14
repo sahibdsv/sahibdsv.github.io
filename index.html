@@ -10,7 +10,6 @@
     <link rel="shortcut icon" href="/assets/favicon.ico" />
     
     <link rel="stylesheet" href="/assets/style.css">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -69,15 +68,13 @@
                 const h = document.getElementById('main-header');
                 if(h) {
                     h.classList.toggle('shrink', window.scrollY > 50);
-                    // Ensure compact mode persists if applied
                     const subNav = document.getElementById('sub-nav');
                     if (subNav.innerHTML === '') h.classList.add('compact');
                 }
             });
             
-            // GLOBAL CLICK HANDLER (Replaces <a> wrappers)
             document.getElementById('app').addEventListener('click', (e) => {
-                // 1. Handle Lightbox
+                // LIGHTBOX
                 if(e.target.classList.contains('zoomable')) {
                     const lb = document.getElementById('lightbox');
                     const lbImg = document.getElementById('lightbox-img');
@@ -89,19 +86,13 @@
                     return;
                 }
 
-                // 2. Handle Tags (Prioritize Tag Click over Card Click)
-                if(e.target.classList.contains('meta-tag')) {
-                    // Let the inline onclick handler do its job, just stop propagation
-                    // e.stopPropagation() is handled in the HTML inline attribute
-                    return; 
-                }
+                // TAGS
+                if(e.target.classList.contains('meta-tag')) return;
 
-                // 3. Handle Card Navigation
-                // Find the closest parent that is a "clickable-block"
+                // LINKS
                 const block = e.target.closest('.clickable-block');
                 if(block) {
-                    // Check if we clicked a tag inside it (double check)
-                    if(e.target.classList.contains('meta-tag')) return;
+                    if(e.target.classList.contains('meta-tag')) return; // Safety
 
                     const link = block.getAttribute('data-link');
                     const target = block.getAttribute('data-target');
@@ -142,7 +133,8 @@
                 (row.Content && row.Content.toLowerCase().includes(term)) ||
                 (row.Tags && row.Tags.toLowerCase().includes(term))
             );
-            renderRows(results, `Search results for "${query}"`);
+            // FORCE GRID LAYOUT FOR SEARCH
+            renderRows(results, `Search results for "${query}"`, false, true);
         }
 
         function buildNav() {
@@ -168,7 +160,6 @@
                 return;
             }
 
-            // Logic: Get immediate sub-pages
             const subPages = [...new Set(db
                 .filter(row => row.Page.startsWith(activeTopLevel + '/'))
                 .map(row => row.Page.split('/').slice(0, 2).join('/')) 
@@ -180,7 +171,6 @@
             }
 
             header.classList.remove('compact');
-            // Add "Overview" link
             const isActiveOverview = (window.location.hash === `#${activeTopLevel}`);
             nav.innerHTML += `<a href="#${activeTopLevel}" class="sub-link ${isActiveOverview ? 'active' : ''}" onclick="closeSearch()">Overview</a>`;
 
@@ -195,7 +185,6 @@
             if (isSearchActive) return;
             let hash = window.location.hash.substring(1) || 'Home';
             
-            // Scroll to top on every route change
             window.scrollTo(0, 0);
 
             if (hash.startsWith('Filter:')) {
@@ -219,7 +208,6 @@
                 (row.Timestamp && row.Timestamp.includes(term)) || 
                 (row.Tags && row.Tags.includes(term))
             );
-            // Render filtered results in a GRID to save space
             renderRows(results, `Posts tagged "${term}"`, false, true);
         }
 
@@ -228,13 +216,8 @@
                 renderHome();
                 return;
             }
-            // Show Exact Page Match AND its children?
-            // Usually we just want to show rows that MATCH the filter
-            const rows = db.filter(row => row.Page === pageFilter || row.Page.startsWith(pageFilter + '/'));
-            // Actually, let's keep it simple: Show rows belonging to this page.
-            // If I am at "Projects", I show "Projects". 
-            // If I have "Projects/Aerospace", that row belongs to "Projects/Aerospace", not "Projects".
-            
+            // Strict equality ensures "Projects" page only shows "Projects" rows,
+            // not "Projects/Aerospace" rows.
             const exactRows = db.filter(row => row.Page === pageFilter);
             renderRows(exactRows);
         }
@@ -270,8 +253,6 @@
             }
 
             let gridContainer = null;
-            
-            // If forceGrid (for search/tags), create one container for ALL items
             if(forceGrid) {
                 gridContainer = document.createElement('div');
                 gridContainer.className = 'grid-container section';
@@ -298,11 +279,10 @@
                 const isInternal = link.startsWith('#');
                 const target = isInternal ? '' : '_blank';
                 
-                // DATA ATTRIBUTES FOR JS CLICK HANDLER
-                const clickAttrs = link ? `data-link="${link}" data-target="${target}"` : '';
+                // DATA ATTRIBUTES
                 const clickClass = link ? 'clickable-block' : '';
 
-                // --- GRID LOGIC ---
+                // GRID RENDER (Used for Search/Filter/Grid)
                 if (row.SectionType === 'grid' || forceGrid) {
                     if (!gridContainer && !forceGrid) { 
                         gridContainer = document.createElement('div'); 
@@ -310,8 +290,13 @@
                         app.appendChild(gridContainer); 
                     }
                     
+                    // CARD IMAGE LOGIC: No link? No zoom (per user request for Cards). 
+                    // But for Grid items, we usually allow zoom if no link. 
+                    // User said "All cards should take me to a page... no zoomable images on cards."
+                    // So we disable zoom on the image if it's acting as a card.
+                    
                     const itemContent = `
-                        <img src="${media}" loading="lazy" class="${link ? '' : 'zoomable'}">
+                        <img src="${media}" loading="lazy" class="${link ? '' : (forceGrid ? 'zoomable' : '')}">
                         <div class="grid-content"><h3>${row.Title}</h3><p>${processText(row.Content)}</p>${metaHTML}</div>`;
                     
                     const div = document.createElement('div');
@@ -322,14 +307,12 @@
                     }
                     div.innerHTML = itemContent;
                     
-                    // If forced grid, always append to the single container
                     if(forceGrid) gridContainer.appendChild(div);
                     else gridContainer.appendChild(div);
-                    
                     return; 
                 } 
                 
-                // --- STANDARD RENDER ---
+                // STANDARD RENDER
                 gridContainer = null;
                 const content = processText(row.Content);
                 let innerHTML = '';
@@ -339,7 +322,9 @@
                 } else if (row.SectionType === 'text') {
                     innerHTML = (row.Title ? `<h2>${row.Title}</h2>` : '') + `<p>${content}</p>`;
                 } else if (row.SectionType === 'card') {
-                    const mediaHtml = getMediaHTML(media, !link); 
+                    // Card Logic: Image is static unless Card has Link.
+                    // No zoom class added here.
+                    const mediaHtml = getMediaHTML(media, false); 
                     innerHTML = `${mediaHtml}<div><h3>${row.Title}</h3><p>${content}</p>${metaHTML}</div>`;
                 } else if (row.SectionType === 'compact') {
                     innerHTML = `<img src="${media}" loading="lazy"><div><h3>${row.Title}</h3><p>${content}</p></div>`;
@@ -355,7 +340,6 @@
                 app.appendChild(container);
             });
             
-            // Trigger MathJax after render
             if(window.MathJax) MathJax.typeset();
         }
 
