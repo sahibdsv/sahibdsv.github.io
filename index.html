@@ -90,8 +90,7 @@
     <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
 
     <script>
-        let db = [], quotesDb = [], isSearchActive = false;
-        let isSortDesc = true; // Default to Newest First
+        let db = [], quotesDb = [], isSearchActive = false, isDesc = true;
 
         const init = () => {
             fetch('assets/config.json')
@@ -143,11 +142,13 @@
                     }
                     e.stopPropagation(); return; 
                 }
+                
+                // Sort Toggle
                 if(e.target.closest('.sort-btn')) {
                     toggleSort();
                     e.stopPropagation(); return;
                 }
-                
+
                 if(e.target.classList.contains('zoomable')) { document.getElementById('lightbox-img').src = e.target.src; document.getElementById('lightbox').classList.add('active'); e.stopPropagation(); return; }
                 
                 if(e.target.classList.contains('chip')) { 
@@ -168,6 +169,11 @@
             });
         }
 
+        function toggleSort() {
+            isDesc = !isDesc;
+            handleRouting();
+        }
+
         function resetToHome() { closeSearch(); window.location.hash = ''; }
         function closeSearch() { document.getElementById('search-overlay').classList.remove('active'); document.getElementById('main-header').classList.remove('search-mode'); document.getElementById('search-input').value = ''; if(isSearchActive) { isSearchActive = false; handleRouting(); } isSearchActive = false; }
         
@@ -176,11 +182,6 @@
             document.getElementById('main-header').classList.toggle('search-mode'); 
             if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
             else closeSearch(); 
-        }
-
-        function toggleSort() {
-            isSortDesc = !isSortDesc;
-            handleRouting(); // Re-render current view
         }
         
         function handleSearch(q) { 
@@ -206,7 +207,7 @@
 
         function handleRouting() { 
             if(isSearchActive) return; 
-            // window.scrollTo(0, 0); // Removed to prevent jarring jump on re-sort, or keep if preferred.
+            window.scrollTo(0, 0); 
             let h = window.location.hash.substring(1) || 'Home'; 
             
             const isHome = (h === 'Home');
@@ -223,10 +224,10 @@
         }
 
         function renderFiltered(t) { 
-            // FILTER USING FORMATTED DATE
+            // Filter by treated date or tags
             const res = db.filter(r => {
-                const fDate = formatDate(r.Timestamp);
-                return (fDate === t) || (r.Tags && r.Tags.includes(t));
+                const treatedDate = formatDate(r.Timestamp);
+                return (treatedDate === t) || (r.Tags && r.Tags.includes(t));
             }); 
             renderRows(res, `Posts tagged "${t}"`); 
         }
@@ -261,22 +262,23 @@
         function renderRows(rows, title, append, forceGrid) {
             const app = document.getElementById('app'); if(!app) return; 
             
-            // SORTING LOGIC
+            // SORTING
             rows.sort((a, b) => {
-                const da = a.Timestamp ? new Date(a.Timestamp) : new Date(0);
-                const db_ = b.Timestamp ? new Date(b.Timestamp) : new Date(0);
-                return isSortDesc ? db_ - da : da - db_;
+                const da = new Date(a.Timestamp || 0);
+                const db = new Date(b.Timestamp || 0);
+                return isDesc ? db - da : da - db;
             });
 
+            // Sort Button HTML
+            const sortBtn = `
+                <div class="sort-btn-container">
+                    <svg class="sort-btn ${isDesc ? '' : 'asc'}" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+                </div>`;
+
             if(!append) {
-                if(title) {
-                    const sortClass = isSortDesc ? '' : 'asc';
-                    // Sort button only if it's not search results
-                    const sortBtn = title.includes('Search') ? '' : `<svg class="sort-btn ${sortClass}" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>`;
-                    app.innerHTML = `<div class="page-header"><h2 class="fill-anim">${title}</h2>${sortBtn}</div>`;
-                } else {
-                    app.innerHTML = '';
-                }
+                // If title is present (filtered view), add sort button next to it?
+                // Or just add it to the first section?
+                app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff; position:relative;">${title}${sortBtn}</h2>` : '';
             }
             if(rows.length === 0 && !append) { app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'; return; }
             
@@ -285,6 +287,11 @@
             
             if(hasGridItems && (!gc || !append)) {
                 gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
+                // If this is the first section (e.g. Home), inject Sort Button here if not already done
+                 if(!title && app.children.length === 1) { 
+                     // Check if Hero exists, if so add to hero, else add to grid
+                     // Actually, simplified: add sortBtn to Hero if it exists
+                 }
             }
             
             rows.forEach(r => {
@@ -297,10 +304,13 @@
                     }
                     if(r.SectionType === 'hero') {
                         const d = document.createElement('div'); d.className = 'section layout-hero';
-                        // Pass formatted date to chip for filtering
-                        const dateStr = formatDate(r.Timestamp);
-                        let dateChip = r.Timestamp ? `<span class="chip date" data-date="${dateStr}">${dateStr}</span>` : `<span class="chip date" style="cursor:default">NO DATE</span>`;
-                        d.innerHTML = `<h1 class="fill-anim">${r.Title}</h1><div class="hero-meta">${dateChip}</div><p>${processText(r.Content)}</p>`;
+                        // Inject Sort Button into Hero
+                        d.innerHTML = `${sortBtn}<h1 class="fill-anim">${r.Title}</h1>`;
+                        
+                        let dateVal = formatDate(r.Timestamp);
+                        let dateChip = r.Timestamp ? `<span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span>` : `<span class="chip date" style="cursor:default">NO DATE</span>`;
+                        
+                        d.innerHTML += `<div class="hero-meta">${dateChip}</div><p>${processText(r.Content)}</p>`;
                         app.appendChild(d); return;
                     }
                     if(r.SectionType === 'text') {
@@ -321,8 +331,8 @@
                 if(r.Timestamp || tags.length > 0) {
                      mh = `<div class="meta-row">`;
                      if(r.Timestamp) {
-                        const dateStr = formatDate(r.Timestamp);
-                        mh += `<span class="chip date" data-date="${dateStr}">${dateStr}</span>`; 
+                         let dateVal = formatDate(r.Timestamp);
+                         mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
                      }
                      tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${t}</span>`); 
                      mh += `</div>`;
@@ -351,9 +361,9 @@
             else if(len > 150) sizeClass = 'long';
             else if(len > 70) sizeClass = 'medium';
             
-            c.innerHTML = `<svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-                           <blockquote class="${sizeClass}">"${r.Quote}"</blockquote>
-                           <div class="quote-footer"><div class="author">— ${auth}</div></div>`;
+            c.innerHTML = `<blockquote class="${sizeClass}">"${r.Quote}"</blockquote>
+                           <div class="quote-footer"><div class="author">— ${auth}</div></div>
+                           <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
         }
 
         function renderFooter() { 
