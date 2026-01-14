@@ -177,7 +177,7 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 /* --- CONTENT --- */
 .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 20px 20px 0; flex: 1; min-height: 80vh; position: relative; }
 
-/* TIGHTER MARGINS */
+/* TIGHT SPACING */
 .section { margin-bottom: 20px; opacity: 0; animation: fadeIn 0.4s forwards; position: relative; } 
 @keyframes fadeIn { to { opacity: 1; } }
 .skeleton-visible { opacity: 1 !important; animation: none !important; }
@@ -199,13 +199,13 @@ a[target="_blank"]:not(.clickable-block)::after {
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
     column-gap: 25px; 
-    row-gap: 12px; /* Tightened from 15px */
+    row-gap: 12px;
     margin-bottom: 15px; 
 }
 
 .layout-grid { 
-    display: flex; flex-direction: column; gap: 3px; /* Tightened */
-    padding: 15px; /* Tightened padding */
+    display: flex; flex-direction: column; gap: 3px;
+    padding: 15px; 
     border-radius: 6px; 
     transition: background 0.2s; border: none; 
     height: 100%; position: relative;
@@ -263,10 +263,11 @@ a[target="_blank"]:not(.clickable-block)::after {
 .inline-img.zoomable { cursor: zoom-in; transition: transform 0.2s; }
 .inline-img.zoomable:hover { opacity: 0.9; }
 
+/* QUOTE */
 .layout-quote { 
     padding: 15px; text-align: center; position: relative; 
     margin: 0 auto 10px; 
-    min-height: 150px; 
+    min-height: 120px; /* Locked height to prevent jump */
     max-width: 800px;
     display: flex; flex-direction: column; justify-content: center; align-items: center; 
 }
@@ -336,7 +337,7 @@ footer .footer-links a { font-size: 13px; font-weight: 400; --text-base: #777; -
 .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
 .sk-line.text { height: 20px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
 .sk-line.text.short { width: 60%; }
-.sk-box.quote { height: 130px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
+.sk-box.quote { height: 120px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
 .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 10px; border-radius: 4px; }
 .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 10px; }
 .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 6px; }

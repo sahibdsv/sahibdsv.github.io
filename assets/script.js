@@ -36,7 +36,7 @@ const init = () => {
 };
 
 async function fetchData() {
-    console.log("Fetching fresh data...");
+    console.log("Fetching fresh data from Google Sheets...");
     let config = FALLBACK_CONFIG;
     try {
         const cfgRes = await fetch('assets/config.json');
@@ -88,7 +88,8 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:130px; width:100%; margin:0 auto;"></div>`;
+                // Use FULL BOX skeleton matching CSS height (120px)
+                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:120px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
                     quoteContainer.classList.remove('loading');
@@ -97,11 +98,7 @@ function initApp() {
             e.stopPropagation(); return; 
         }
         
-        if(e.target.classList.contains('zoomable')) { 
-            document.getElementById('lightbox-img').src = e.target.src; 
-            document.getElementById('lightbox').classList.add('active'); 
-            e.stopPropagation(); return; 
-        }
+        if(e.target.classList.contains('zoomable')) { document.getElementById('lightbox-img').src = e.target.src; document.getElementById('lightbox').classList.add('active'); e.stopPropagation(); return; }
         
         if(e.target.classList.contains('chip')) { 
             e.stopPropagation();
@@ -197,11 +194,13 @@ function renderPage(p) {
     const ex = db.filter(r => r.Page === p); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
-    // Render current page content
-    if(ex.length > 0) { renderRows(ex, null, true); } 
-    
     // Check if it's a MAIN Page (no slashes)
     const isMainPage = !p.includes('/');
+    
+    if(ex.length > 0) { 
+        // Pass !isMainPage as "isArticleMode" to handle rows differently
+        renderRows(ex, null, true, false, !isMainPage); 
+    } 
     
     if(isMainPage) {
         // Only look for children on Main Pages
@@ -224,7 +223,7 @@ function renderHome() {
     if(fr.length > 0) { renderRows(fr, null, true); } 
 }
 
-function renderRows(rows, title, append, forceGrid) {
+function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     const app = document.getElementById('app'); if(!app) return; 
     
     rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
@@ -235,7 +234,7 @@ function renderRows(rows, title, append, forceGrid) {
     if(rows.length === 0 && !append) { app.innerHTML += '<div style="text-align:center; margin-top:50px; color:#666;">Nothing found here.</div>'; return; }
     
     let gc = app.querySelector('.grid-container');
-    const hasGridItems = forceGrid || rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text');
+    const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
     
     if(hasGridItems && (!gc || !append)) {
         gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
@@ -249,6 +248,20 @@ function renderRows(rows, title, append, forceGrid) {
         if(pLower.startsWith('projects')) catClass = 'cat-projects';
         else if(pLower.startsWith('professional')) catClass = 'cat-professional';
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
+
+        // ARTICLE MODE: If we are on a subpage, render generic rows as text/layout items, NOT cards
+        if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
+             // Render as Text/Hero style item instead of Grid Card
+             const d = document.createElement('div'); d.className = 'section layout-text';
+             // If there's an image, add it above
+             let imgHtml = '';
+             const thumb = getThumbnail(r.Media);
+             if(thumb) imgHtml = `<img src="${thumb}" class="inline-img zoomable" loading="lazy" style="margin-bottom:15px; width:100%;">`;
+             
+             d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+             app.appendChild(d);
+             return;
+        }
 
         if(!forceGrid) {
             if(r.SectionType === 'quote') { 
@@ -280,7 +293,6 @@ function renderRows(rows, title, append, forceGrid) {
         const imgH = thumb ? `<div class="row-media"><img src="${thumb}" loading="lazy"></div>` : '';
         
         let mh = '';
-        // Only create meta row if needed
         if(r.Timestamp || tags.length > 0) {
              mh = `<div class="meta-row">`;
              if(r.Timestamp) {
@@ -353,14 +365,14 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // Process Collages: [[img1, img2]]
+    // Process Collages
     clean = clean.replace(/\[\[(http.*?,.*?)\]\]/g, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy">`).join('');
         return `<div class="inline-gallery">${imgs}</div>`;
     });
 
-    // Process Single Images: [[http://img.jpg]]
+    // Process Single Images
     clean = clean.replace(/\[\[(http.*?)\]\]/g, `<img src="$1" class="inline-img zoomable" loading="lazy">`);
 
     return clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>')
