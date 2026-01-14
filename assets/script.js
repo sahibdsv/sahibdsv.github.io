@@ -2,7 +2,6 @@
 
 let db = [], quotesDb = [], isSearchActive = false;
 
-// Fallback Config
 const FALLBACK_CONFIG = {
     main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
@@ -36,7 +35,6 @@ const init = () => {
 };
 
 async function fetchData() {
-    console.log("Fetching fresh data from Google Sheets...");
     let config = FALLBACK_CONFIG;
     try {
         const cfgRes = await fetch('assets/config.json');
@@ -70,6 +68,18 @@ function safeHTML(html) {
 function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
+    
+    // GOATCOUNTER TRACKING FOR SPA
+    window.addEventListener('hashchange', function(e) {
+        if (window.goatcounter && window.goatcounter.count) {
+            window.goatcounter.count({
+                path: location.pathname + location.search + location.hash,
+                title: location.hash.substring(1) || 'Home',
+                event: false,
+            });
+        }
+    });
+
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         if(h) h.classList.toggle('shrink', window.scrollY > 50); 
@@ -285,7 +295,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              }
              metaHtml += '</div></div>';
 
-             // ADDED .fill-anim TO ARTICLE H2
              d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
              app.appendChild(d);
              return;
@@ -303,13 +312,11 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
                     let dateVal = formatDate(r.Timestamp);
                     dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
                 }
-                // ADDED .fill-anim TO HERO H1
                 d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                 app.appendChild(d); return;
             }
             if(r.SectionType === 'text') {
                  const d = document.createElement('div'); d.className = 'section layout-text';
-                 // ADDED .fill-anim TO TEXT H2
                  d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
                  app.appendChild(d); return;
             }
@@ -378,7 +385,6 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    // Add Analytics
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
@@ -412,7 +418,6 @@ function processText(t) {
 
 function formatDate(s) {
     if(!s) return '';
-    // Handle YYYYMMDD
     if(s.length === 8 && !isNaN(s)) {
         const y = s.substring(0, 4);
         const m = s.substring(4, 6);
