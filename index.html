@@ -140,7 +140,7 @@
                     if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                         quoteContainer.classList.add('loading');
                         
-                        // Inject Skeleton Text immediately into Blockquote
+                        // Inject Skeleton Text
                         const bq = quoteContainer.querySelector('blockquote');
                         if(bq) {
                             bq.innerHTML = `
@@ -150,7 +150,7 @@
                             `;
                         }
                         
-                        // Replace Author text with Skeleton
+                        // Inject Skeleton Author
                         const authorContainer = quoteContainer.querySelector('.author');
                         if(authorContainer) {
                             authorContainer.innerHTML = `<div class="sk-line quote-line short" style="width:100px; height:12px; margin:0;"></div>`;
