@@ -76,7 +76,6 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
-    // GOATCOUNTER TRACKING
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -87,7 +86,6 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -107,7 +105,7 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:160px; width:100%; margin:0 auto;"></div>`;
+                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
                     quoteContainer.classList.remove('loading');
@@ -185,22 +183,18 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // Center ONLY when the sub-nav is first built (Navigation event)
     setTimeout(() => centerSubNav(true), 100);
 }
 
-// SMART CENTERING LOGIC
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
     const activeLink = n.querySelector('.active');
     
     if (activeLink) {
-        // If Active: Lock to center
         const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
         n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     } else if (forceMiddleIfNone) {
-        // If Main Page Load: Scroll to MIDDLE to hint content
         const middle = (n.scrollWidth - n.clientWidth) / 2;
         n.scrollTo({ left: middle, behavior: 'smooth' });
     }
@@ -211,27 +205,26 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
+    // RENAME: Handle #Index
     if(h === 'Index') { renderIndex(); return; }
     
-    // Header Logic: Collapse if Home, Index, or Filter
+    // HEADER LOGIC: Collapse for Index as well
     const shouldCollapse = (h === 'Home' || h === 'Index' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
-    // Clear Active Nav if Index, otherwise Highlight Active
+    // INDEX LOGIC: Clear active state if on Index
+    if (h === 'Index') {
+        document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+    }
+
     const top = h.split('/')[0]; 
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
-        const href = a.getAttribute('href'); 
-        if(href) {
-            if(h === 'Index') a.classList.remove('active');
-            else a.classList.toggle('active', href.replace('#', '') === top); 
-        }
-    }); 
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
     
     buildSubNav(top); 
     
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
-    else if(h !== 'Index') { renderPage(h); }
+    else { renderPage(h); }
 }
 
 function renderFiltered(t) { 
@@ -270,9 +263,16 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
+// RENAME: renderArchive -> renderIndex
 function renderIndex() {
+    // Logic for Index state: Close search/filters if active
+    if(isSearchActive) closeSearch();
+    document.body.classList.remove('header-expanded');
+    document.getElementById('main-header').classList.remove('expanded');
+
     const app = document.getElementById('app'); 
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1><p>Full system index.</p></div><div class="section archive-list"></div>';
+    // Removed "Full system inventory" text as requested
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
     
     const list = app.querySelector('.archive-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
@@ -285,13 +285,13 @@ function renderIndex() {
     });
     
     for(const [cat, items] of Object.entries(groups)) {
-        // Colorize Headers based on Category Name
-        let colorStyle = '';
-        if(cat === 'Projects') colorStyle = 'style="color: var(--accent-projects);"';
-        else if(cat === 'Professional') colorStyle = 'style="color: var(--accent-prof);"';
-        else if(cat === 'Personal') colorStyle = 'style="color: var(--accent-personal);"';
+        // COLOR LOGIC: Add class based on category
+        let colorClass = '';
+        if (cat === 'Projects') colorClass = 'cat-projects';
+        else if (cat === 'Professional') colorClass = 'cat-professional';
+        else if (cat === 'Personal') colorClass = 'cat-personal';
 
-        let html = `<div class="archive-group"><h3 ${colorStyle}>${cat}</h3>`;
+        let html = `<div class="archive-group"><h3 class="${colorClass}">${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
@@ -448,7 +448,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
-    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
@@ -486,31 +485,33 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
+    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`; // UPDATED
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
-function timeAgo(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now - date) / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (seconds < 60) return "just now";
-    if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
-    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
-    return date.toLocaleDateString(); 
+// RELATIVE TIME FUNCTION
+function timeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return "just now";
 }
 
 function fetchGitHubStats() { 
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
-            const relTime = timeAgo(d.pushed_at);
-            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Updated ${relTime}</a>`;
+            const date = new Date(d.pushed_at);
+            const timeString = timeAgo(date); // Use relative time
+            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last Updated: ${timeString}</a>`;
         } 
     }).catch(()=>{}); 
 }
@@ -521,26 +522,22 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
 
-    // Embed Shortcodes
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
     clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
 
-    // Collages
     clean = clean.replace(/\[\[(http.*?,.*?)\]\]/g, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy">`).join('');
         return `<div class="inline-gallery">${imgs}</div>`;
     });
 
-    // Single Images
     clean = clean.replace(/\[\[(http.*?)\]\]/g, `<img src="$1" class="inline-img zoomable" loading="lazy">`);
 
     return clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>')
@@ -563,7 +560,6 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
-// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
     
@@ -576,7 +572,6 @@ function init3DViewers() {
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
         
-        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
@@ -593,7 +588,6 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
-                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -616,7 +610,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.physicallyCorrectLights = true;
@@ -657,7 +650,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); // Fade in canvas
+        container.classList.add('ready');
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
@@ -687,10 +680,8 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
-        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
-            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
             
             controls.update();
