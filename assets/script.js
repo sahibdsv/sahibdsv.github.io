@@ -88,18 +88,12 @@ function initApp() {
     });
 
     // SMART SCROLL HEADER
+    // UX FIX: We removed the centerSubNav call here. 
+    // Now scrolling vertically NEVER affects horizontal nav position.
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
-        const wasShrunk = h.classList.contains('shrink');
         const shouldShrink = window.scrollY > 50;
-        
         h.classList.toggle('shrink', shouldShrink);
-
-        // TRIGGER: If header just Expanded (scrolled to top), fix the nav.
-        // false = "Do NOT force center if nothing is active" (Passive Mode)
-        if (wasShrunk && !shouldShrink) {
-            centerSubNav(false);
-        }
     });
 
     document.addEventListener('click', (e) => {
@@ -193,28 +187,26 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // On PAGE LOAD: forceMiddle = true (Show off the scrollability)
+    // Center ONLY when the sub-nav is first built (Navigation event)
     setTimeout(() => centerSubNav(true), 100);
 }
 
-// --- NEW SMART SCROLL LOGIC ---
+// SMART CENTERING LOGIC
+// forceMiddleIfNone: true = Main Page Reset. false = Passive Mode.
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
     const activeLink = n.querySelector('.active');
     
     if (activeLink) {
-        // RULE 1: If there is an active link, LOCK it to the center.
-        // We use explicit math because scrollIntoView is flaky during CSS transitions.
+        // If Active: Lock to center
         const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
         n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     } else if (forceMiddleIfNone) {
-        // RULE 2A (Load): No active link? Scroll to MIDDLE to hint there is more content.
+        // If Main Page Load: Scroll to MIDDLE to hint content
         const middle = (n.scrollWidth - n.clientWidth) / 2;
         n.scrollTo({ left: middle, behavior: 'smooth' });
     }
-    // RULE 2B (Scroll): If forceMiddleIfNone is FALSE, we do NOTHING.
-    // This stops the "Jump to Middle" glitch when scrolling up on a main page.
 }
 
 function handleRouting() { 
@@ -340,7 +332,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     rows.forEach(r => {
         if(!r.Page || r.Page === 'Footer') return; 
         
-        // 1. Process Content & Extract 3D Models
         let contentHtml = processText(r.Content);
         let mediaHtml = '';
         let hasPlaceholder = false;
@@ -446,7 +437,8 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
-    setTimeout(init3DViewers, 50);
+    // JITTER FIX: Wait 500ms (after CSS transition) before loading 3D
+    setTimeout(init3DViewers, 500);
 }
 
 function renderQuoteCard(c) {
@@ -644,7 +636,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         }
 
         const size = box.getSize(new THREE.Vector3()).length();
-        // Multiply by 0.6 to Zoom In closer immediately
         const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
         
         camera.position.set(dist, dist * 0.4, dist * 0.8); 
