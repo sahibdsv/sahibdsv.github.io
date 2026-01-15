@@ -233,6 +233,9 @@ function renderPage(p) {
             renderRows(overviewRows, null, true, true); 
         } 
     }
+
+    // Initialize 3D Viewers if present
+    setTimeout(init3DViewers, 100);
 }
 
 function childrenPagesCheck(p) {
@@ -276,6 +279,8 @@ function renderHome() {
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                       .slice(0, 6);
     if(recents.length > 0) { renderRows(recents, "Recent", true); } 
+    
+    setTimeout(init3DViewers, 100);
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
@@ -451,6 +456,9 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
+    // 3D STL Viewer Shortcode
+    clean = clean.replace(/\{\{STL: (.*?)\}\}/g, '<div class="embed-wrapper stl" data-src="$1"></div>');
+
     // Embed Shortcodes
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
@@ -485,6 +493,111 @@ function formatDate(s) {
     const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
     const yr = d.getFullYear();
     return `${mo} ${yr}`;
+}
+
+// 3D VIEWER LOGIC
+function init3DViewers() {
+    const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
+    
+    if(containers.length === 0) return;
+
+    // Dynamic import of Three.js modules
+    import('three').then((THREE) => {
+        import('three/addons/loaders/STLLoader.js').then(({ STLLoader }) => {
+            import('three/addons/controls/OrbitControls.js').then(({ OrbitControls }) => {
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            loadSTL(entry.target, THREE, STLLoader, OrbitControls);
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { rootMargin: "200px" });
+
+                containers.forEach(c => observer.observe(c));
+            });
+        });
+    });
+}
+
+function loadSTL(container, THREE, STLLoader, OrbitControls) {
+    container.classList.add('loaded');
+    const url = container.getAttribute('data-src');
+    
+    // Scene
+    const scene = new THREE.Scene();
+    scene.background = null; 
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 0, 5);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+
+    // Controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = true; 
+    controls.autoRotateSpeed = 2.0;
+
+    // Loader
+    const loader = new STLLoader();
+    loader.load(url, function (geometry) {
+        
+        geometry.computeBoundingBox();
+        const center = new THREE.Vector3();
+        geometry.boundingBox.getCenter(center);
+        geometry.center(); 
+
+        const material = new THREE.MeshPhongMaterial({ 
+            color: 0xaaaaaa, 
+            specular: 0x111111, 
+            shininess: 200 
+        });
+        
+        const mesh = new THREE.Mesh(geometry, material);
+        
+        // Fit Camera
+        const box = geometry.boundingBox;
+        const size = box.getSize(new THREE.Vector3()).length();
+        const dist = size / (2 * Math.tan(Math.PI * 45 / 360));
+        camera.position.set(dist * 0.8, dist * 0.5, dist);
+        camera.lookAt(0, 0, 0);
+
+        scene.add(mesh);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+    }, undefined, function (error) {
+        console.error(error);
+        container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%;">Failed to load 3D Model</div>';
+    });
+
+    window.addEventListener('resize', () => {
+        if(!container.isConnected) return; 
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
 }
 
 init();
