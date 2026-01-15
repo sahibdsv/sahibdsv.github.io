@@ -54,8 +54,12 @@ body.header-expanded { padding-top: var(--header-h-expanded); }
     background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #888) 50.5%);
     background-size: 100% 205%;
     background-position: 0 0; 
+    
+    /* Standard & Fallback Compatibility */
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    
     transition: background-position 0.5s var(--ease);
     text-decoration: none;
     display: inline-block;
