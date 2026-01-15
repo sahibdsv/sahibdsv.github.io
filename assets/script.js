@@ -442,7 +442,9 @@ function fetchGitHubStats() {
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
-            const dateStr = new Date(d.pushed_at).toLocaleDateString();
+            const date = new Date(d.pushed_at);
+            // Universal format: YYYY-MM-DD HH:MM
+            const dateStr = date.toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
             document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last Updated: ${dateStr}</a>`;
         } 
     }).catch(()=>{}); 
@@ -455,7 +457,6 @@ function processText(t) {
     let clean = safeHTML(t);
     
     // 3D STL Viewer Shortcode: {{STL: url | #color}}
-    // Group 1: URL, Group 2: Color (optional)
     clean = clean.replace(/\{\{STL: (.*?)(?: \| (.*?))?\}\}/g, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
