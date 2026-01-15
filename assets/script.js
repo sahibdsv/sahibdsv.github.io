@@ -50,17 +50,6 @@ async function fetchData() {
     return [main, quotes];
 }
 
-function fetchCSV(u) { 
-    return new Promise((res, rej) => {
-        if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded. Check your internet connection."));
-        Papa.parse(u, { 
-            download: true, header: true, skipEmptyLines: true, 
-            complete: (r) => res(r.data), 
-            error: (e) => rej(new Error("CSV Error: " + e.message)) 
-        });
-    });
-}
-
 // ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
@@ -76,6 +65,7 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
+    // GOATCOUNTER TRACKING
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -86,6 +76,7 @@ function initApp() {
         }
     });
 
+    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -186,6 +177,7 @@ function buildSubNav(top) {
     setTimeout(() => centerSubNav(true), 100);
 }
 
+// SMART CENTERING LOGIC
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
@@ -205,19 +197,14 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // RENAME: Handle #Index
+    // UPDATE: "Archive" -> "Index"
     if(h === 'Index') { renderIndex(); return; }
     
-    // HEADER LOGIC: Collapse for Index as well
+    // UPDATE: Header Collapse on Index
     const shouldCollapse = (h === 'Home' || h === 'Index' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
-    // INDEX LOGIC: Clear active state if on Index
-    if (h === 'Index') {
-        document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
-    }
-
     const top = h.split('/')[0]; 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
     
@@ -263,19 +250,17 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
-// RENAME: renderArchive -> renderIndex
+// UPDATE: Renamed from renderArchive to renderIndex
 function renderIndex() {
-    // Logic for Index state: Close search/filters if active
-    if(isSearchActive) closeSearch();
-    document.body.classList.remove('header-expanded');
-    document.getElementById('main-header').classList.remove('expanded');
-
+    // UPDATE: Clear search filters if active logic (handled by handleRouting re-render essentially)
+    isSearchActive = false; 
+    
     const app = document.getElementById('app'); 
-    // Removed "Full system inventory" text as requested
+    // UPDATE: Removed "Full system inventory text"
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
     
     const list = app.querySelector('.archive-list');
-    const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
+    const pages = [...new Set(db.map(r => r.map ? r.Page : (r.Page || '')).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
     const groups = {};
     pages.forEach(p => {
@@ -284,14 +269,17 @@ function renderIndex() {
         groups[cat].push(p);
     });
     
+    // COLOR MAPPING FOR INDEX HEADERS
+    const colorMap = {
+        'Projects': 'var(--accent-projects)',
+        'Professional': 'var(--accent-prof)',
+        'Personal': 'var(--accent-personal)'
+    };
+    
     for(const [cat, items] of Object.entries(groups)) {
-        // COLOR LOGIC: Add class based on category
-        let colorClass = '';
-        if (cat === 'Projects') colorClass = 'cat-projects';
-        else if (cat === 'Professional') colorClass = 'cat-professional';
-        else if (cat === 'Personal') colorClass = 'cat-personal';
-
-        let html = `<div class="archive-group"><h3 class="${colorClass}">${cat}</h3>`;
+        // Apply color style
+        const colorStyle = colorMap[cat] ? `style="color:${colorMap[cat]}"` : '';
+        let html = `<div class="archive-group"><h3 ${colorStyle}>${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
@@ -463,10 +451,12 @@ function renderQuoteCard(c) {
     const len = text.length;
     let sizeClass = 'short';
     
+    // UPDATE: Intelligent sizing logic
     if(len > 230) sizeClass = 'xxl';
     else if(len > 150) sizeClass = 'xl';
     else if(len > 100) sizeClass = 'long';
     else if(len > 50) sizeClass = 'medium';
+    else sizeClass = 'short'; // Default for short quotes
     
     c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
                    <div class="quote-footer"><div class="author">— ${auth}</div></div>
@@ -485,11 +475,12 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`; // UPDATED
+    // UPDATE: "Archive" -> "Index"
+    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
-// RELATIVE TIME FUNCTION
+// UPDATE: Relative Time Logic
 function timeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
     let interval = seconds / 31536000;
@@ -501,7 +492,7 @@ function timeAgo(date) {
     interval = seconds / 3600;
     if (interval > 1) return Math.floor(interval) + " hours ago";
     interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    if (interval > 1) return Math.floor(interval) + " mins ago";
     return "just now";
 }
 
@@ -510,8 +501,9 @@ function fetchGitHubStats() {
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
             const date = new Date(d.pushed_at);
-            const timeString = timeAgo(date); // Use relative time
-            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last Updated: ${timeString}</a>`;
+            // UPDATE: Use relative time
+            const relTime = timeAgo(date);
+            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${relTime}</a>`;
         } 
     }).catch(()=>{}); 
 }
@@ -522,6 +514,7 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
+    // UNIVERSAL 3D VIEWER
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -562,7 +555,6 @@ function formatDate(s) {
 
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-    
     if(containers.length === 0) return;
 
     Promise.all([
