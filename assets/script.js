@@ -87,17 +87,16 @@ function initApp() {
         }
     });
 
+    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const wasShrunk = h.classList.contains('shrink');
-        
-        // Toggle Shrink State
         const shouldShrink = window.scrollY > 50;
-        h.classList.toggle('shrink', shouldShrink);
         
-        // DETECT RE-EXPANSION (Scrolling Back Up)
+        h.classList.toggle('shrink', shouldShrink);
+
+        // TRIGGER: If we just Expanded (scrolled up to top) -> Re-center Subnav
         if (wasShrunk && !shouldShrink) {
-            // Header just expanded, ensure sub-nav is centered correctly
             centerSubNav();
         }
     });
@@ -193,24 +192,21 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // Call centering logic after DOM update
+    // SUB-NAV CENTERING LOGIC
     setTimeout(centerSubNav, 100);
 }
 
+// NEW FUNCTION: Smart Centering
 function centerSubNav() {
     const n = document.getElementById('sub-nav');
-    if (!n) return;
-
     const activeLink = n.querySelector('.active');
     
     if (activeLink) {
-        // Option A: Active Page -> Center the active link
+        // Scroll the active link to the center
         activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     } else {
-        // Option B: Main Page (No active sub-link) -> Scroll to absolute center of the list
-        // This hints that there is content to both sides or allows seeing the most content
-        const centerPos = (n.scrollWidth - n.clientWidth) / 2;
-        n.scrollTo({ left: centerPos, behavior: 'smooth' });
+        // Reset to center of scrollable area if no active link
+        n.scrollTo({ left: (n.scrollWidth - n.clientWidth) / 2, behavior: 'smooth' });
     }
 }
 
@@ -305,7 +301,8 @@ function renderHome() {
     const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                       .slice(0, 6);
-    if(recents.length > 0) { renderRows(recents, "Recent", true); } 
+    // RENAMED TO: "Recent Activity"
+    if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
@@ -342,7 +339,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         let mediaHtml = '';
         let hasPlaceholder = false;
 
-        // REGEX: Detect {{3D: ...}} or {{STL: ...}}
         const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
 
         if (modelMatch) {
@@ -354,16 +350,13 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
             // Remove the shortcode from the text body so it doesn't show up twice
             contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
         } else if (r.Media) {
-            // Standard Image Media
             const thumb = getThumbnail(r.Media);
             if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
         } else {
-            // No Media & No Model -> GENERATE PLACEHOLDER
             hasPlaceholder = true;
             mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
         }
 
-        // 2. Setup Categories
         let catClass = '';
         const pLower = r.Page.toLowerCase();
         if(pLower.startsWith('projects')) catClass = 'cat-projects';
@@ -374,7 +367,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
              
-             // In Article mode, we allow the 3D model to be big (article-mode class)
              if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
              else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
              else mediaHtml = ''; 
@@ -453,7 +445,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
-    // Initialize 3D Viewers for these new rows
     setTimeout(init3DViewers, 50);
 }
 
@@ -657,8 +648,8 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         }
 
         const size = box.getSize(new THREE.Vector3()).length();
-        // Multiply by 0.6 instead of 0.8 to Zoom In closer
-        const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
+        // Multiply by 0.55 to Zoom In significantly
+        const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.55; 
         
         camera.position.set(dist, dist * 0.4, dist * 0.8); 
         camera.lookAt(0, 0, 0);
