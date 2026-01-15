@@ -298,9 +298,48 @@ iframe { max-width: 100%; }
 .index-group.cat-personal h3 { color: var(--accent-personal); border-color: var(--accent-personal); }
 @media (max-width: 600px) { .index-list { column-count: 1; } }
 
-footer { text-align: center; padding: 15px 0; border-top: 1px solid #1a1a1a; margin-top: 30px; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin-left: auto; margin-right: auto; width: 100%; }
-footer .footer-links { display: flex; gap: 20px; justify-content: center; }
-footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; --text-hover: #fff; }
+/* --- FOOTER --- */
+footer { 
+    text-align: center; 
+    padding: 30px 20px; /* Added horizontal padding to prevent edge touching */
+    border-top: 1px solid #1a1a1a; 
+    margin-top: 30px; 
+    
+    display: flex; 
+    flex-wrap: wrap; /* ALLOW WRAPPING */
+    justify-content: center; 
+    align-items: center; 
+    
+    /* Gap: 15px vertical (when stacked), 30px horizontal */
+    gap: 15px 30px; 
+    
+    max-width: 1000px; 
+    margin-left: auto; 
+    margin-right: auto; 
+    width: 100%; 
+}
+
+footer .footer-links { 
+    display: flex; 
+    flex-wrap: wrap; /* Allow links to stack */
+    gap: 8px 20px;   /* Compact vertical gap (8px), standard horizontal (20px) */
+    justify-content: center; 
+}
+
+footer .footer-links a { 
+    font-size: 14px; 
+    font-weight: 400; 
+    --text-base: #777; 
+    --text-hover: #fff; 
+    white-space: nowrap; /* Keep individual link text on one line */
+}
+
+/* Ensure Version Tag wraps nicely if needed */
+#version-tag { 
+    font-size: 14px; 
+    color: #666; 
+    white-space: nowrap;
+}
 
 #version-tag { font-size: 14px; color: #666; font-family: 'Jost', sans-serif; --text-base: #666; --text-hover: #fff; }
 #version-tag a { text-decoration: none; }
