@@ -61,7 +61,6 @@ function fetchCSV(u) {
     });
 }
 
-// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -76,7 +75,6 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
-    // GOATCOUNTER TRACKING
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -87,7 +85,6 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -185,22 +182,18 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // Center ONLY when the sub-nav is first built (Navigation event)
     setTimeout(() => centerSubNav(true), 100);
 }
 
-// SMART CENTERING LOGIC
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
     const activeLink = n.querySelector('.active');
     
     if (activeLink) {
-        // If Active: Lock to center
         const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
         n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     } else if (forceMiddleIfNone) {
-        // If Main Page Load: Scroll to MIDDLE to hint content
         const middle = (n.scrollWidth - n.clientWidth) / 2;
         n.scrollTo({ left: middle, behavior: 'smooth' });
     }
@@ -211,7 +204,16 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    if(h === 'Archive') { renderArchive(); return; }
+    // RENAMED: Archive -> Index
+    if(h === 'Index' || h === 'Archive') { 
+        // Ensure header state updates correctly (Collapse sub-nav, clear active links)
+        document.body.classList.remove('header-expanded');
+        document.getElementById('main-header').classList.remove('expanded');
+        document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+        buildSubNav(''); // Clear sub-nav
+        renderArchive(); 
+        return; 
+    }
     
     const shouldCollapse = (h === 'Home' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
@@ -264,7 +266,8 @@ function childrenPagesCheck(p) {
 
 function renderArchive() {
     const app = document.getElementById('app'); 
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Archive</h1><p>Full system index.</p></div><div class="section archive-list"></div>';
+    // RENAMED TITLE: Site Index
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Site Index</h1><p>Full system inventory.</p></div><div class="section archive-list"></div>';
     
     const list = app.querySelector('.archive-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
@@ -277,7 +280,14 @@ function renderArchive() {
     });
     
     for(const [cat, items] of Object.entries(groups)) {
-        let html = `<div class="archive-group"><h3>${cat}</h3>`;
+        // COLOR CODING LOGIC
+        let catClass = '';
+        const catLower = cat.toLowerCase();
+        if(catLower.startsWith('projects')) catClass = 'cat-projects';
+        else if(catLower.startsWith('professional')) catClass = 'cat-professional';
+        else if(catLower.startsWith('personal')) catClass = 'cat-personal';
+
+        let html = `<div class="archive-group ${catClass}"><h3>${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
@@ -434,7 +444,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
-    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
@@ -472,7 +481,8 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    fd.innerHTML += `<a href="#Archive" class="fill-anim" onclick="closeSearch()">Archive</a>`;
+    // UPDATED: "Archive" -> "Site Index"
+    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Site Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
@@ -493,7 +503,7 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
+    // UNIVERSAL 3D VIEWER
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -548,7 +558,6 @@ function init3DViewers() {
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
         
-        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
@@ -565,7 +574,6 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
-                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -588,7 +596,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.physicallyCorrectLights = true;
@@ -659,12 +666,9 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
-        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
-            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
-            
             controls.update();
             renderer.render(scene, camera);
         }
