@@ -532,49 +532,80 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const customColor = container.getAttribute('data-color');
     const ext = url.split('.').pop().toLowerCase();
     
-    // Scene
+    // 1. SETUP SCENE
     const scene = new THREE.Scene();
-    scene.background = null; 
+    
+    // 2. PRO LIGHTING RIG (Key + Fill + Rim)
+    // Ambient: Soft base level
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+    
+    // Key Light: The "Sun" (Warm, Bright, Front-Right)
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    keyLight.position.set(5, 10, 7);
+    scene.add(keyLight);
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 0, 5);
+    // Rim Light: The "Edge" (Cool, Back-Left) - Separates object from background
+    const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
+    rimLight.position.set(-5, 5, -5);
+    scene.add(rimLight);
 
-    // Renderer
+    // Fill Light: Softens shadows (Warm, Front-Left)
+    const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
+    fillLight.position.set(-5, 0, 5);
+    scene.add(fillLight);
+
+    // 3. CAMERA
+    // Near plane 0.01 allows zooming extremely close without clipping
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
+    
+    // 4. RENDERER
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    
+    // Enable physical lighting accuracy
+    renderer.physicallyCorrectLights = true;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    
     container.appendChild(renderer.domElement);
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
-    
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
-
-    // Controls
+    // 5. SMART CONTROLS
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.autoRotate = true; 
+    controls.enablePan = false; // Keep object centered
+    controls.minDistance = 0.1; // Prevent going INSIDE the model
+    controls.maxDistance = 20;  // Prevent getting lost in space
+    
+    // Auto-Rotate Logic
+    controls.autoRotate = true;
     controls.autoRotateSpeed = 2.0;
 
-    // Load Handler
+    // Stop rotation when user grabs it, resume after delay
+    let restartTimer;
+    controls.addEventListener('start', () => {
+        clearTimeout(restartTimer);
+        controls.autoRotate = false;
+    });
+    controls.addEventListener('end', () => {
+        restartTimer = setTimeout(() => {
+            controls.autoRotate = true;
+        }, 2000); // Wait 2 seconds before spinning again
+    });
+
+    // LOAD HANDLER
     const onLoad = (object) => {
         // Normalize Object (Center & Scale)
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
         box.getCenter(center);
         
-        // Move object to center
+        // Move object to center (0,0,0)
         object.position.sub(center);
-        
-        // Add to scene
         scene.add(object);
 
-        // Apply Custom Color (if requested)
+        // Apply Custom Color (Clay Mode)
         if (customColor) {
             object.traverse((child) => {
                 if (child.isMesh) {
@@ -587,11 +618,17 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
             });
         }
 
-        // Fit Camera
+        // SMART ZOOM (Fit to Screen)
         const size = box.getSize(new THREE.Vector3()).length();
-        const dist = size / (2 * Math.tan(Math.PI * 45 / 360));
-        camera.position.set(dist * 0.8, dist * 0.5, dist);
+        // We divide by 0.6 instead of 0.8 to make it fill MORE of the screen (Closer)
+        const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.7; 
+        
+        camera.position.set(dist, dist * 0.4, dist * 0.8); // Offset angle for better drama
         camera.lookAt(0, 0, 0);
+        
+        // Set dynamic zoom limits based on object size
+        controls.minDistance = size * 0.2; 
+        controls.maxDistance = size * 5;
 
         // Animation Loop
         function animate() {
@@ -602,21 +639,18 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         animate();
     };
 
-    // Error Handler
     const onError = (e) => {
         console.error(e);
-        container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%;">Failed to load 3D Model</div>';
+        container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
     };
 
-    // Loader Selection
+    // LOADER SELECTION
     if (ext === 'glb' || ext === 'gltf') {
         const loader = new GLTFLoader();
         loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
     } else {
-        // Assume STL
         const loader = new STLLoader();
         loader.load(url, (geometry) => {
-            // Apply default grey if no custom color
             const mat = new THREE.MeshPhongMaterial({ 
                 color: customColor || 0xaaaaaa, 
                 specular: 0x111111, 
@@ -627,7 +661,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         }, undefined, onError);
     }
 
-    // Resize Handler
+    // RESIZE HANDLER
     window.addEventListener('resize', () => {
         if(!container.isConnected) return; 
         camera.aspect = container.clientWidth / container.clientHeight;
