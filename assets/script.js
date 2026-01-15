@@ -73,7 +73,7 @@ function safeHTML(html) {
 }
 
 function initApp() {
-    buildNav(); handleRouting();
+    handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
     // GOATCOUNTER TRACKING
@@ -168,65 +168,149 @@ function handleSearch(q) {
     renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
 }
 
-function buildNav() { 
-    const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
-    const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
-    p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
-}
+/* --- RECURSIVE NAVIGATION LOGIC --- */
 
-function buildSubNav(top) {
-    const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
-    
-    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
-    
-    subs.forEach(x => { 
-        const name = x.split('/')[1];
-        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
-        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
-    });
-
-    // Center ONLY when the sub-nav is first built (Navigation event)
-    setTimeout(() => centerSubNav(true), 100);
-}
-
-// SMART CENTERING LOGIC
-function centerSubNav(forceMiddleIfNone) {
-    const n = document.getElementById('sub-nav');
-    if(!n) return;
-    const activeLink = n.querySelector('.active');
-    
-    if (activeLink) {
-        // If Active: Lock to center
-        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
-        n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-    } else if (forceMiddleIfNone) {
-        // If Main Page Load: Scroll to MIDDLE to hint content
-        const middle = (n.scrollWidth - n.clientWidth) / 2;
-        n.scrollTo({ left: middle, behavior: 'smooth' });
-    }
-}
-
+// 1. New Routing Handler
 function handleRouting() { 
     if(isSearchActive) return; 
     window.scrollTo(0, 0); 
+    
+    // Get clean hash (remove #)
     let h = window.location.hash.substring(1) || 'Home'; 
     
     if(h === 'Index') { renderIndex(); return; }
     
-    // STATE: Collapse Header for Home, Filter, OR Index
+    // Header State Logic
     const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
     document.body.classList.toggle('header-expanded', !shouldCollapse);
-    document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
+    const header = document.getElementById('main-header');
+    header.classList.toggle('expanded', !shouldCollapse);
     
-    // Deactivate Main Nav Highlights if Index (or non-matching top)
-    const top = h.split('/')[0]; 
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+    // Parse Path: "Projects/SaritEV/Telemetry" -> ['Projects', 'SaritEV', 'Telemetry']
+    const pathSegments = h.split('/').filter(x => x);
     
-    buildSubNav(top); 
+    // Trigger Recursive Builder
+    buildRecursiveNav(pathSegments);
     
+    // Content Rendering
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
 }
+
+// 2. The Recursive Builder
+function buildRecursiveNav(activePath) {
+    // We rebuild the entire nav stack (Primary + Children) to ensure correct hierarchy
+    const container = document.getElementById('primary-nav-container'); // You need to wrap #primary-nav in this div or target #main-header directly
+    // Ideally, we create a specialized container in HTML. 
+    // Let's assume you add <div id="nav-stack"></div> inside #main-header in your HTML.
+    
+    let stackContainer = document.getElementById('nav-stack');
+    if (!stackContainer) {
+        // Create if missing (Robustness)
+        stackContainer = document.createElement('div');
+        stackContainer.id = 'nav-stack';
+        document.getElementById('main-header').appendChild(stackContainer);
+    }
+    stackContainer.innerHTML = ''; // Clear current stack
+
+    // LEVEL 0: ROOT (The old "Primary Nav")
+    // We treat the main categories (Projects, Personal, etc) as Depth 0
+    const roots = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort();
+    
+    // Generate Row for Root
+    generateNavRow(stackContainer, roots, activePath[0] || '', '');
+
+    // LEVEL N: Iterate through active path to generate children rows
+    // If activePath is ['Projects', 'SaritEV'], we need:
+    // 1. Roots (Active: Projects) -> Generated above
+    // 2. Children of 'Projects' (Active: SaritEV)
+    // 3. Children of 'Projects/SaritEV' (Active: None/Next)
+    
+    let currentPath = '';
+    
+    for (let i = 0; i < activePath.length; i++) {
+        const segment = activePath[i];
+        currentPath = currentPath ? `${currentPath}/${segment}` : segment;
+        
+        // Look ahead: What is the active item in the NEXT row?
+        const nextActive = activePath[i + 1] || '';
+        
+        // Find children of CURRENT path
+        // e.g. if currentPath is "Projects", find pages starting with "Projects/"
+        const children = [...new Set(
+            db.filter(r => r.Page && r.Page.startsWith(currentPath + '/'))
+              .map(r => {
+                  // Extract the specific segment after the current path
+                  const rest = r.Page.substring(currentPath.length + 1);
+                  return rest.split('/')[0];
+              })
+        )].sort();
+
+        if (children.length > 0) {
+            generateNavRow(stackContainer, children, nextActive, currentPath);
+        }
+    }
+
+    // Update Body Padding dynamically because header height changes
+    updateBodyPadding();
+    
+    // Smart Center ALL rows
+    setTimeout(() => {
+        document.querySelectorAll('.nav-row').forEach(row => centerNavRow(row));
+    }, 100);
+}
+
+// 3. Row Generator Helper
+function generateNavRow(container, items, activeItem, basePath) {
+    if (items.length === 0) return;
+
+    const row = document.createElement('div');
+    row.className = 'nav-row';
+    
+    items.forEach(name => {
+        const fullLink = basePath ? `#${basePath}/${name}` : `#${name}`;
+        const isActive = name === activeItem;
+        
+        // Link Generation
+        const a = document.createElement('a');
+        a.className = `nav-link fill-anim ${isActive ? 'active' : ''}`;
+        a.href = fullLink;
+        a.innerText = name;
+        a.onclick = () => closeSearch(); // inherit existing logic
+        
+        row.appendChild(a);
+    });
+
+    container.appendChild(row);
+}
+
+// 4. Smart Centering (Updated for Generic Rows)
+function centerNavRow(row) {
+    if(!row) return;
+    const activeLink = row.querySelector('.active');
+    
+    if (activeLink) {
+        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (row.clientWidth / 2);
+        row.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+    } else {
+        // If no active link (e.g. at a leaf node), scroll to middle to indicate availability
+        // Optional: You might prefer not to scroll if it's not active.
+        // row.scrollTo({ left: (row.scrollWidth - row.clientWidth) / 2, behavior: 'smooth' });
+    }
+}
+
+// 5. Dynamic Layout Adjuster
+function updateBodyPadding() {
+    const h = document.getElementById('main-header');
+    if(h) {
+        document.body.style.paddingTop = (h.offsetHeight + 10) + 'px';
+    }
+}
+
+// Add Resize Observer to handle header height changes seamlessly
+const headerObserver = new ResizeObserver(() => updateBodyPadding());
+const headerEl = document.getElementById('main-header');
+if(headerEl) headerObserver.observe(headerEl);
 
 function renderFiltered(t) { 
     const res = db.filter(r => {
