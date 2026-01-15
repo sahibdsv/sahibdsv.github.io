@@ -17,7 +17,7 @@
     --header-h-default: 90px; 
     --header-h-shrink: 60px; 
     --header-h-expanded: 115px; 
-    --header-h-expanded-shrink: 80px;
+    --header-h-expanded-shrink: 90px; /* Adjusted so sub-nav has space */
     
     --ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -120,36 +120,48 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 .nav-link[href="#Personal"] { --text-hover: var(--accent-personal); }
 .nav-link[href="#Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
+/* --- SUB-NAV --- */
 #sub-nav { 
-    display: flex; gap: 25px; font-size: 13px; transition: all 0.4s var(--ease); opacity: 1;
+    display: flex; gap: 25px; font-size: 13px; transition: opacity 0.4s var(--ease); opacity: 1;
     overflow-x: auto; white-space: nowrap; 
     width: 100%; max-width: 900px;
     
-    justify-content: flex-start;
+    /* Default: Center alignment for Desktop (No scrollbars) */
+    justify-content: center;
     padding-bottom: 5px; scrollbar-width: none;
     height: 25px; 
     
-    /* MASK: Wide fade (50px) */
+    /* MASK: Wide fade */
     mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
     
     padding: 0;
 }
 
-/* DYNAMIC SPRINGS: Half Screen Width to allow perfect centering of start/end items */
-#sub-nav::before, #sub-nav::after {
-    content: '';
-    display: block;
-    width: calc(50vw - 30px); /* Smart centering spring */
-    min-width: 50px; 
-    flex-shrink: 0; 
-    flex-grow: 1; 
-}
-
 #sub-nav > * { flex-shrink: 0; }
 
 body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
-#main-header.shrink #sub-nav { font-size: 11px; gap: 15px; }
+
+/* FIX: Don't change font-size/gap on shrink to prevent scroll jumps */
+/* #main-header.shrink #sub-nav { font-size: 11px; gap: 15px; } <--- REMOVED */
+
+/* --- MOBILE SPECIFIC SUB-NAV (The Springs) --- */
+@media (max-width: 900px) {
+    #sub-nav {
+        justify-content: flex-start; /* Switch to start so we can scroll */
+    }
+    
+    /* DYNAMIC SPRINGS: Only on Mobile/Tablet */
+    /* Half Screen Width to allow perfect centering of start/end items */
+    #sub-nav::before, #sub-nav::after {
+        content: '';
+        display: block;
+        width: calc(50vw - 30px); 
+        min-width: 50px; 
+        flex-shrink: 0; 
+        flex-grow: 1; 
+    }
+}
 
 /* --- SEARCH --- */
 #search-controls {
