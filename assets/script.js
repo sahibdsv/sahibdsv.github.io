@@ -61,6 +61,7 @@ function fetchCSV(u) {
     });
 }
 
+// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -205,10 +206,20 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    if(h === 'Index') { renderArchive(); return; } // Renamed from Archive
+    // INDEX/ARCHIVE LOGIC
+    if(h === 'Index' || h === 'Archive') { 
+        renderIndex(); // Formerly renderArchive
+        // Collapse header logic:
+        document.body.classList.remove('header-expanded');
+        document.getElementById('main-header').classList.remove('expanded');
+        // Clear active states
+        document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+        // Clear subnav
+        document.getElementById('sub-nav').innerHTML = '';
+        return; 
+    }
     
-    // Collapse header on Index as well
-    const shouldCollapse = (h === 'Home' || h === 'Index' || h.startsWith('Filter:'));
+    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
@@ -257,9 +268,9 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
-function renderArchive() {
+// Renamed from renderArchive to renderIndex
+function renderIndex() {
     const app = document.getElementById('app'); 
-    // Clean Title, removed subtext
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
     
     const list = app.querySelector('.archive-list');
@@ -273,13 +284,14 @@ function renderArchive() {
     });
     
     for(const [cat, items] of Object.entries(groups)) {
-        // Color Logic for Headers
-        let catClass = '';
-        if(cat === 'Projects') catClass = 'cat-projects';
-        else if(cat === 'Professional') catClass = 'cat-professional';
-        else if(cat === 'Personal') catClass = 'cat-personal';
+        // Color Logic
+        let colorStyle = '';
+        const catLower = cat.toLowerCase();
+        if(catLower === 'projects') colorStyle = 'style="color: var(--accent-projects);"';
+        else if(catLower === 'professional') colorStyle = 'style="color: var(--accent-prof);"';
+        else if(catLower === 'personal') colorStyle = 'style="color: var(--accent-personal);"';
 
-        let html = `<div class="archive-group"><h3 class="${catClass}">${cat}</h3>`;
+        let html = `<div class="archive-group"><h3 ${colorStyle}>${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
@@ -473,36 +485,34 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    // Updated Link Name
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
 // RELATIVE TIME HELPER
-function timeAgo(dateString) {
+function getRelativeTime(dateString) {
     const date = new Date(dateString);
-    if(isNaN(date.getTime())) return dateString;
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
     
-    const seconds = Math.floor((new Date() - date) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " years ago";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " months ago";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " days ago";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " hours ago";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " minutes ago";
-    return "just now";
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
+    return `${Math.floor(months / 12)} year(s) ago`;
 }
 
 function fetchGitHubStats() { 
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
-            const relTime = timeAgo(d.pushed_at);
-            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${relTime}</a>`;
+            const relTime = getRelativeTime(d.pushed_at);
+            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Updated ${relTime}</a>`;
         } 
     }).catch(()=>{}); 
 }
@@ -555,8 +565,10 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
+// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
+    
     if(containers.length === 0) return;
 
     Promise.all([
@@ -565,11 +577,15 @@ function init3DViewers() {
         import('three/addons/loaders/GLTFLoader.js'),
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
+        
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
-                if (entry.isIntersecting) container.setAttribute('data-visible', 'true');
-                else container.setAttribute('data-visible', 'false');
+                if (entry.isIntersecting) {
+                    container.setAttribute('data-visible', 'true');
+                } else {
+                    container.setAttribute('data-visible', 'false');
+                }
             });
         });
 
@@ -589,6 +605,7 @@ function init3DViewers() {
 
 function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     container.classList.add('loaded');
+    
     const url = container.getAttribute('data-src');
     const customColor = container.getAttribute('data-color');
     const ext = url.split('.').pop().toLowerCase();
@@ -640,6 +657,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
 
     const onLoad = (object) => {
         container.classList.add('ready'); 
+
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
         box.getCenter(center);
