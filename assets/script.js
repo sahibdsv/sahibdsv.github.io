@@ -95,8 +95,8 @@ function initApp() {
         
         h.classList.toggle('shrink', shouldShrink);
 
-        // TRIGGER: If we just Expanded (scrolled up to top) -> Re-center active subnav
-        // We pass 'false' to say: "Don't reset to middle if nothing is active."
+        // TRIGGER: If header just Expanded (scrolled to top), fix the nav.
+        // false = "Do NOT force center if nothing is active" (Passive Mode)
         if (wasShrunk && !shouldShrink) {
             centerSubNav(false);
         }
@@ -193,30 +193,28 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // On Page Load/Route Change: Pass 'true' to allow defaulting to middle if no active link
+    // On PAGE LOAD: forceMiddle = true (Show off the scrollability)
     setTimeout(() => centerSubNav(true), 100);
 }
 
-// SMART CENTERING LOGIC
-// forceMiddleIfNone: true = Main Page Reset (Scrolls to middle). false = Scroll Up (Leaves it alone).
+// --- NEW SMART SCROLL LOGIC ---
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
+    if(!n) return;
     const activeLink = n.querySelector('.active');
     
     if (activeLink) {
-        // MATH: Calculate exact center position instead of relying on scrollIntoView
-        const navWidth = n.clientWidth;
-        const linkLeft = activeLink.offsetLeft;
-        const linkWidth = activeLink.offsetWidth;
-        
-        // Target scroll position = (Link Left + Half Link) - (Half Screen)
-        const targetScroll = linkLeft + (linkWidth / 2) - (navWidth / 2);
-        
-        n.scrollTo({ left: targetScroll, behavior: 'smooth' });
+        // RULE 1: If there is an active link, LOCK it to the center.
+        // We use explicit math because scrollIntoView is flaky during CSS transitions.
+        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
+        n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     } else if (forceMiddleIfNone) {
-        // Reset to Middle (Only on initial load/route change)
-        n.scrollTo({ left: (n.scrollWidth - n.clientWidth) / 2, behavior: 'smooth' });
+        // RULE 2A (Load): No active link? Scroll to MIDDLE to hint there is more content.
+        const middle = (n.scrollWidth - n.clientWidth) / 2;
+        n.scrollTo({ left: middle, behavior: 'smooth' });
     }
+    // RULE 2B (Scroll): If forceMiddleIfNone is FALSE, we do NOTHING.
+    // This stops the "Jump to Middle" glitch when scrolling up on a main page.
 }
 
 function handleRouting() { 
@@ -310,7 +308,6 @@ function renderHome() {
     const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                       .slice(0, 6);
-    // RENAMED TO: "Recent Activity"
     if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
 }
 
@@ -507,7 +504,7 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER
+    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -647,6 +644,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         }
 
         const size = box.getSize(new THREE.Vector3()).length();
+        // Multiply by 0.6 to Zoom In closer immediately
         const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
         
         camera.position.set(dist, dist * 0.4, dist * 0.8); 
