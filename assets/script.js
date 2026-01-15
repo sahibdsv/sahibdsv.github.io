@@ -196,16 +196,15 @@ function buildSubNav(top) {
     setTimeout(centerSubNav, 100);
 }
 
-// NEW FUNCTION: Smart Centering
+// Smart Centering: Active link goes to middle, else list goes to middle
 function centerSubNav() {
     const n = document.getElementById('sub-nav');
     const activeLink = n.querySelector('.active');
     
     if (activeLink) {
-        // Scroll the active link to the center
         activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     } else {
-        // Reset to center of scrollable area if no active link
+        // If Main Page (no active sub-link), scroll to MIDDLE of list to suggest scrollability
         n.scrollTo({ left: (n.scrollWidth - n.clientWidth) / 2, behavior: 'smooth' });
     }
 }
@@ -339,6 +338,8 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         let mediaHtml = '';
         let hasPlaceholder = false;
 
+        // REGEX: Detect {{3D: ...}} or {{STL: ...}} in the RAW content
+        // We do this detection manually to "lift" it out of the text block
         const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
 
         if (modelMatch) {
@@ -350,13 +351,16 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
             // Remove the shortcode from the text body so it doesn't show up twice
             contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
         } else if (r.Media) {
+            // Standard Image Media
             const thumb = getThumbnail(r.Media);
             if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
         } else {
+            // No Media & No Model -> GENERATE PLACEHOLDER
             hasPlaceholder = true;
             mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
         }
 
+        // 2. Setup Categories
         let catClass = '';
         const pLower = r.Page.toLowerCase();
         if(pLower.startsWith('projects')) catClass = 'cat-projects';
@@ -367,9 +371,10 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
              
+             // In Article mode, we allow the 3D model to be big (article-mode class)
              if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
              else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else mediaHtml = ''; 
+             else mediaHtml = ''; // No placeholders in article mode, just hide it
 
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
              
@@ -445,6 +450,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
+    // Initialize 3D Viewers for these new rows
     setTimeout(init3DViewers, 50);
 }
 
@@ -648,8 +654,8 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         }
 
         const size = box.getSize(new THREE.Vector3()).length();
-        // Multiply by 0.55 to Zoom In significantly
-        const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.55; 
+        // Multiply by 0.6 to Zoom In closer immediately
+        const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
         
         camera.position.set(dist, dist * 0.4, dist * 0.8); 
         camera.lookAt(0, 0, 0);
