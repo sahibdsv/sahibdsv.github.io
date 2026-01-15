@@ -442,8 +442,8 @@ function fetchGitHubStats() {
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
+            // ISO 8601 Standard Format: YYYY-MM-DD HH:MM UTC
             const date = new Date(d.pushed_at);
-            // Universal format: YYYY-MM-DD HH:MM
             const dateStr = date.toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
             document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last Updated: ${dateStr}</a>`;
         } 
@@ -456,8 +456,9 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // 3D STL Viewer Shortcode: {{STL: url | #color}}
-    clean = clean.replace(/\{\{STL: (.*?)(?: \| (.*?))?\}\}/g, (match, url, color) => {
+    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
+    // Supports both STL and GLB/GLTF
+    clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
@@ -498,36 +499,38 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
-// 3D VIEWER LOGIC
+// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
     
     if(containers.length === 0) return;
 
-    // Dynamic import of Three.js modules
-    import('three').then((THREE) => {
-        import('three/addons/loaders/STLLoader.js').then(({ STLLoader }) => {
-            import('three/addons/controls/OrbitControls.js').then(({ OrbitControls }) => {
-                
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            loadSTL(entry.target, THREE, STLLoader, OrbitControls);
-                            observer.unobserve(entry.target);
-                        }
-                    });
-                }, { rootMargin: "200px" });
-
-                containers.forEach(c => observer.observe(c));
+    // Load Three.js + Loaders (STL & GLTF)
+    Promise.all([
+        import('three'),
+        import('three/addons/loaders/STLLoader.js'),
+        import('three/addons/loaders/GLTFLoader.js'),
+        import('three/addons/controls/OrbitControls.js')
+    ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
+                    observer.unobserve(entry.target);
+                }
             });
-        });
+        }, { rootMargin: "200px" });
+
+        containers.forEach(c => observer.observe(c));
     });
 }
 
-function loadSTL(container, THREE, STLLoader, OrbitControls) {
+function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     container.classList.add('loaded');
     const url = container.getAttribute('data-src');
     const customColor = container.getAttribute('data-color');
+    const ext = url.split('.').pop().toLowerCase();
     
     // Scene
     const scene = new THREE.Scene();
@@ -544,7 +547,7 @@ function loadSTL(container, THREE, STLLoader, OrbitControls) {
     container.appendChild(renderer.domElement);
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
     
     const dirLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -558,47 +561,73 @@ function loadSTL(container, THREE, STLLoader, OrbitControls) {
     controls.autoRotate = true; 
     controls.autoRotateSpeed = 2.0;
 
-    // Loader
-    const loader = new STLLoader();
-    loader.load(url, function (geometry) {
-        
-        geometry.computeBoundingBox();
+    // Load Handler
+    const onLoad = (object) => {
+        // Normalize Object (Center & Scale)
+        const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
-        geometry.boundingBox.getCenter(center);
-        geometry.center(); 
-
-        // Use custom color if provided, else default grey
-        const materialColor = customColor ? customColor : 0xaaaaaa;
-
-        const material = new THREE.MeshPhongMaterial({ 
-            color: materialColor, 
-            specular: 0x111111, 
-            shininess: 200 
-        });
+        box.getCenter(center);
         
-        const mesh = new THREE.Mesh(geometry, material);
+        // Move object to center
+        object.position.sub(center);
         
+        // Add to scene
+        scene.add(object);
+
+        // Apply Custom Color (if requested)
+        if (customColor) {
+            object.traverse((child) => {
+                if (child.isMesh) {
+                    child.material = new THREE.MeshPhongMaterial({ 
+                        color: customColor, 
+                        specular: 0x111111, 
+                        shininess: 100 
+                    });
+                }
+            });
+        }
+
         // Fit Camera
-        const box = geometry.boundingBox;
         const size = box.getSize(new THREE.Vector3()).length();
         const dist = size / (2 * Math.tan(Math.PI * 45 / 360));
         camera.position.set(dist * 0.8, dist * 0.5, dist);
         camera.lookAt(0, 0, 0);
 
-        scene.add(mesh);
-
+        // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
         }
         animate();
+    };
 
-    }, undefined, function (error) {
-        console.error(error);
+    // Error Handler
+    const onError = (e) => {
+        console.error(e);
         container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%;">Failed to load 3D Model</div>';
-    });
+    };
 
+    // Loader Selection
+    if (ext === 'glb' || ext === 'gltf') {
+        const loader = new GLTFLoader();
+        loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
+    } else {
+        // Assume STL
+        const loader = new STLLoader();
+        loader.load(url, (geometry) => {
+            // Apply default grey if no custom color
+            const mat = new THREE.MeshPhongMaterial({ 
+                color: customColor || 0xaaaaaa, 
+                specular: 0x111111, 
+                shininess: 200 
+            });
+            const mesh = new THREE.Mesh(geometry, mat);
+            onLoad(mesh);
+        }, undefined, onError);
+    }
+
+    // Resize Handler
     window.addEventListener('resize', () => {
         if(!container.isConnected) return; 
         camera.aspect = container.clientWidth / container.clientHeight;
