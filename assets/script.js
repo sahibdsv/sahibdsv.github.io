@@ -89,7 +89,17 @@ function initApp() {
 
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
-        if(h) h.classList.toggle('shrink', window.scrollY > 50); 
+        const wasShrunk = h.classList.contains('shrink');
+        
+        // Toggle Shrink State
+        const shouldShrink = window.scrollY > 50;
+        h.classList.toggle('shrink', shouldShrink);
+        
+        // DETECT RE-EXPANSION (Scrolling Back Up)
+        if (wasShrunk && !shouldShrink) {
+            // Header just expanded, ensure sub-nav is centered correctly
+            centerSubNav();
+        }
     });
 
     document.addEventListener('click', (e) => {
@@ -183,17 +193,25 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // SUB-NAV CENTERING LOGIC
-    setTimeout(() => {
-        const activeLink = n.querySelector('.active');
-        if (activeLink) {
-            // Scroll the active link to the center
-            activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        } else {
-            // Reset to left if no active link (Main Page)
-            n.scrollLeft = 0;
-        }
-    }, 100);
+    // Call centering logic after DOM update
+    setTimeout(centerSubNav, 100);
+}
+
+function centerSubNav() {
+    const n = document.getElementById('sub-nav');
+    if (!n) return;
+
+    const activeLink = n.querySelector('.active');
+    
+    if (activeLink) {
+        // Option A: Active Page -> Center the active link
+        activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    } else {
+        // Option B: Main Page (No active sub-link) -> Scroll to absolute center of the list
+        // This hints that there is content to both sides or allows seeing the most content
+        const centerPos = (n.scrollWidth - n.clientWidth) / 2;
+        n.scrollTo({ left: centerPos, behavior: 'smooth' });
+    }
 }
 
 function handleRouting() { 
@@ -324,8 +342,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         let mediaHtml = '';
         let hasPlaceholder = false;
 
-        // REGEX: Detect {{3D: ...}} or {{STL: ...}} in the RAW content
-        // We do this detection manually to "lift" it out of the text block
+        // REGEX: Detect {{3D: ...}} or {{STL: ...}}
         const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
 
         if (modelMatch) {
@@ -360,7 +377,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              // In Article mode, we allow the 3D model to be big (article-mode class)
              if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
              else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else mediaHtml = ''; // No placeholders in article mode, just hide it
+             else mediaHtml = ''; 
 
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
              

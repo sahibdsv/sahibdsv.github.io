@@ -127,9 +127,9 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     padding-bottom: 5px; scrollbar-width: none;
     height: 25px; 
     
-    /* MASK: Narrow fade */
-    mask-image: linear-gradient(to right, transparent 0, black 15px, black calc(100% - 15px), transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0, black 15px, black calc(100% - 15px), transparent 100%);
+    /* MASK: Wider fade (40px) for clearer scroll indication */
+    mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
     
     padding: 0;
 }
@@ -138,8 +138,8 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 #sub-nav::before, #sub-nav::after {
     content: '';
     display: block;
-    width: 25px; 
-    min-width: 25px; 
+    width: 40px; /* Matched to mask width */
+    min-width: 40px; 
     flex-shrink: 0; 
     flex-grow: 1; 
 }
@@ -273,10 +273,10 @@ a[target="_blank"]:not(.clickable-block)::after {
 .row-media .embed-wrapper.stl {
     height: 100% !important; 
     width: 100% !important;
-    background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%); /* Subtle spotlight for the card */
+    background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%); 
     border-radius: 0; 
-    border: none; /* <--- KILLS THE LINE */
-    margin: 0;    /* Ensures it touches the edges */
+    border: none; /* No border for seamless look */
+    margin: 0;    /* Touch edges */
 }
 
 /* 3. 3D Model inside an Article (LARGE VIEW) */
