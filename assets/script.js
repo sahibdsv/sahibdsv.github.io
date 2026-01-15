@@ -211,26 +211,18 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // RENAMED ARCHIVE TO INDEX
     if(h === 'Index') { renderIndex(); return; }
     
-    // collapse header for Home or Index
-    const shouldCollapse = (h === 'Home' || h === 'Index' || h.startsWith('Filter:'));
+    // STATE: Collapse Header for Home, Filter, OR Index
+    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
-    // Clear active nav highlights if on Index or Home
-    if (h === 'Index') {
-        document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-    } else {
-        const top = h.split('/')[0]; 
-        document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
-    }
+    // Deactivate Main Nav Highlights if Index (or non-matching top)
+    const top = h.split('/')[0]; 
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
     
-    // Force close filters/search on routing
-    if (isSearchActive) closeSearch();
-
-    buildSubNav(h.split('/')[0]); 
+    buildSubNav(top); 
     
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
@@ -246,10 +238,6 @@ function renderFiltered(t) {
 
 function renderPage(p) { 
     if(p === 'Home') { renderHome(); return; } 
-    // IF USER NAVIGATES TO 'Index' (via hash), handleRouting catches it. 
-    // But if renderPage is called directly, safeguard:
-    if(p === 'Index') { renderIndex(); return; }
-
     const ex = db.filter(r => r.Page === p); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
@@ -276,15 +264,19 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
-// RENAMED FROM renderArchive -> renderIndex
 function renderIndex() {
-    const app = document.getElementById('app'); 
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
-    
-    // Close any active search UI to ensure clean state
-    closeSearch();
+    // 1. Collapse & Reset UI State (Enforce Constraints)
+    document.body.classList.remove('header-expanded');
+    document.getElementById('main-header').classList.remove('expanded');
+    // Clear Sub-nav
+    buildSubNav('Index'); 
+    // Deactivate Main Nav
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
-    const list = app.querySelector('.archive-list');
+    const app = document.getElementById('app'); 
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
+    
+    const list = app.querySelector('.index-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
     const groups = {};
@@ -295,18 +287,18 @@ function renderIndex() {
     });
     
     for(const [cat, items] of Object.entries(groups)) {
-        // Map Category to CSS Variable Color
-        let colorStyle = '';
-        if(cat === 'Projects') colorStyle = 'style="color: var(--accent-projects);"';
-        if(cat === 'Professional') colorStyle = 'style="color: var(--accent-prof);"';
-        if(cat === 'Personal') colorStyle = 'style="color: var(--accent-personal);"';
+        let catClass = '';
+        const cLower = cat.toLowerCase();
+        if(cLower === 'projects') catClass = 'cat-projects';
+        else if(cLower === 'professional') catClass = 'cat-professional';
+        else if(cLower === 'personal') catClass = 'cat-personal';
 
-        let html = `<div class="archive-group"><h3 ${colorStyle}>${cat}</h3>`;
+        let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
             const title = row ? row.Title : p.split('/').pop();
-            html += `<a href="#${p}" class="archive-link fill-anim">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
+            html += `<a href="#${p}" class="index-link fill-anim">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
         });
         html += `</div>`;
         list.innerHTML += html;
@@ -458,6 +450,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
+    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
@@ -473,9 +466,8 @@ function renderQuoteCard(c) {
     const len = text.length;
     let sizeClass = 'short';
     
-    // Granular sizing logic
-    if(len > 250) sizeClass = 'xxl';
-    else if(len > 180) sizeClass = 'xl';
+    if(len > 230) sizeClass = 'xxl';
+    else if(len > 150) sizeClass = 'xl';
     else if(len > 100) sizeClass = 'long';
     else if(len > 50) sizeClass = 'medium';
     
@@ -496,28 +488,31 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    // UPDATED: Link to Index
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
-}
-
-function getRelativeTime(dateString) {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diff = Math.floor((now - date) / 1000); // Difference in seconds
-
-    if (diff < 60) return 'just now';
-    if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
-    if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
-    return dateString.substring(0, 10); // Fallback to YYYY-MM-DD for old dates
 }
 
 function fetchGitHubStats() { 
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
-            const relTime = getRelativeTime(d.pushed_at);
+            const date = new Date(d.pushed_at);
+            // RELATIVE TIME LOGIC
+            const timeAgo = (d) => {
+                const s = Math.floor((new Date() - d) / 1000);
+                let i = s / 31536000;
+                if (i > 1) return Math.floor(i) + " years ago";
+                i = s / 2592000;
+                if (i > 1) return Math.floor(i) + " months ago";
+                i = s / 86400;
+                if (i > 1) return Math.floor(i) + " days ago";
+                i = s / 3600;
+                if (i > 1) return Math.floor(i) + " hours ago";
+                i = s / 60;
+                if (i > 1) return Math.floor(i) + " mins ago";
+                return "a few mins ago";
+            };
+            const relTime = timeAgo(date);
             document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${relTime}</a>`;
         } 
     }).catch(()=>{}); 
