@@ -61,6 +61,7 @@ function fetchCSV(u) {
     });
 }
 
+// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -185,6 +186,7 @@ function buildSubNav(top) {
     setTimeout(() => centerSubNav(true), 100);
 }
 
+// SMART CENTERING LOGIC
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
@@ -204,16 +206,8 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // RENAMED: Archive -> Index
-    if(h === 'Index' || h === 'Archive') { 
-        // Ensure header state updates correctly (Collapse sub-nav, clear active links)
-        document.body.classList.remove('header-expanded');
-        document.getElementById('main-header').classList.remove('expanded');
-        document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-        buildSubNav(''); // Clear sub-nav
-        renderArchive(); 
-        return; 
-    }
+    // RENAMED from 'Archive' to 'Index'
+    if(h === 'Index') { renderArchive(); return; }
     
     const shouldCollapse = (h === 'Home' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
@@ -266,9 +260,15 @@ function childrenPagesCheck(p) {
 
 function renderArchive() {
     const app = document.getElementById('app'); 
-    // RENAMED TITLE: Site Index
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Site Index</h1><p>Full system inventory.</p></div><div class="section archive-list"></div>';
+    // UPDATED: Title 'Index' and removed subtext
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
     
+    // Ensure header state is reset (Expanded with no active links)
+    document.body.classList.add('header-expanded');
+    document.getElementById('main-header').classList.add('expanded');
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+    buildSubNav('Index'); // Clears sub-nav
+
     const list = app.querySelector('.archive-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
@@ -280,12 +280,12 @@ function renderArchive() {
     });
     
     for(const [cat, items] of Object.entries(groups)) {
-        // COLOR CODING LOGIC
+        // ADDED: Logic to inject category class for coloring
         let catClass = '';
-        const catLower = cat.toLowerCase();
-        if(catLower.startsWith('projects')) catClass = 'cat-projects';
-        else if(catLower.startsWith('professional')) catClass = 'cat-professional';
-        else if(catLower.startsWith('personal')) catClass = 'cat-personal';
+        const cLower = cat.toLowerCase();
+        if(cLower.startsWith('projects')) catClass = 'cat-projects';
+        else if(cLower.startsWith('professional')) catClass = 'cat-professional';
+        else if(cLower.startsWith('personal')) catClass = 'cat-personal';
 
         let html = `<div class="archive-group ${catClass}"><h3>${cat}</h3>`;
         items.forEach(p => {
@@ -481,8 +481,8 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    // UPDATED: "Archive" -> "Site Index"
-    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Site Index</a>`;
+    // UPDATED: "Index" instead of "Archive"
+    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
@@ -503,7 +503,7 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER
+    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -636,7 +636,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); // Fade in canvas
+        container.classList.add('ready'); 
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
@@ -669,6 +669,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         function animate() {
             requestAnimationFrame(animate);
             if (container.getAttribute('data-visible') === 'false') return;
+            
             controls.update();
             renderer.render(scene, camera);
         }
