@@ -12,297 +12,188 @@ const init = () => {
     fetchData().then(([m, q]) => {
         db = m.filter(r => r.Title); 
         quotesDb = q;
-        
         if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
-        
-        initApp(); 
-        renderFooter(); 
-        fetchGitHubStats();
-        
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                document.body.classList.remove('no-transition');
-                document.getElementById('main-header').classList.remove('no-transition');
-            }, 50);
-        });
+        initApp(); renderFooter(); fetchGitHubStats();
     }).catch(e => {
-        console.error("Data Load Error:", e);
-        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
-            <h2>Unable to load content</h2>
-            <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px; margin-top:20px;">${e.message}</p>
-            <p style="color:#666; margin-top:20px;">Please check your internet connection.</p>
-        </div>`;
+        console.error("Data Error:", e);
+        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px; color:#666;">System Offline. Check Connection.</div>`;
     });
 };
 
 async function fetchData() {
     let config = FALLBACK_CONFIG;
-    try {
-        const cfgRes = await fetch('assets/config.json');
-        if (cfgRes.ok) config = await cfgRes.json();
-    } catch (e) { console.warn("Config fetch failed, using fallback URLs."); }
-
-    const [main, quotes] = await Promise.all([
-        fetchCSV(config.main_sheet), 
-        fetchCSV(config.quotes_sheet).catch(()=>[])
-    ]);
-
+    try { const r = await fetch('assets/config.json'); if (r.ok) config = await r.json(); } catch (e) {}
+    const [main, quotes] = await Promise.all([ fetchCSV(config.main_sheet), fetchCSV(config.quotes_sheet).catch(()=>[]) ]);
     return [main, quotes];
 }
 
 function fetchCSV(u) { 
     return new Promise((res, rej) => {
-        if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded. Check your internet connection."));
-        Papa.parse(u, { 
-            download: true, header: true, skipEmptyLines: true, 
-            complete: (r) => res(r.data), 
-            error: (e) => rej(new Error("CSV Error: " + e.message)) 
-        });
+        if(typeof Papa === 'undefined') return rej("PapaParse Missing");
+        Papa.parse(u, { download: true, header: true, skipEmptyLines: true, complete: (r) => res(r.data), error: rej });
     });
-}
-
-// ALLOW IFRAMES IN RAW HTML
-function safeHTML(html) {
-    if(typeof DOMPurify !== 'undefined') {
-        return DOMPurify.sanitize(html, {
-            ADD_TAGS: ['iframe'],
-            ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height']
-        });
-    }
-    return html; 
 }
 
 function initApp() {
-    handleRouting(); // Direct call to new recursive router
+    handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
-    // GOATCOUNTER TRACKING
-    window.addEventListener('hashchange', function(e) {
-        if (window.goatcounter && window.goatcounter.count) {
-            window.goatcounter.count({
-                path: location.pathname + location.search + location.hash,
-                title: location.hash.substring(1) || 'Home',
-                event: false,
-            });
-        }
-    });
+    // Sticky Stack Logic: Adjust body padding when header grows/shrinks
+    const header = document.getElementById('main-header');
+    new ResizeObserver(() => {
+        document.body.style.paddingTop = (header.offsetHeight + 10) + 'px';
+    }).observe(header);
 
-    // SMART SCROLL HEADER
+    // Scroll Compaction
     window.addEventListener('scroll', () => { 
-        const h = document.getElementById('main-header'); 
-        const shouldShrink = window.scrollY > 50;
-        h.classList.toggle('shrink', shouldShrink);
+        header.classList.toggle('shrink', window.scrollY > 50);
     });
 
+    // Global Click Handlers
     document.addEventListener('click', (e) => {
+        // Close search on click outside
         const overlay = document.getElementById('search-overlay');
-        const controls = document.getElementById('search-controls');
-        if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
+        if (overlay.classList.contains('active') && !overlay.contains(e.target) && !e.target.closest('#search-controls')) {
             closeSearch();
         }
-    });
-
-    document.getElementById('app').addEventListener('click', (e) => {
-        if(e.target.closest('.refresh-btn')) { 
-            const quoteContainer = e.target.closest('.layout-quote');
-            if(quoteContainer && !quoteContainer.classList.contains('loading')) {
-                quoteContainer.classList.add('loading');
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
-                setTimeout(() => {
-                    renderQuoteCard(quoteContainer);
-                    quoteContainer.classList.remove('loading');
-                }, 600); 
-            }
-            e.stopPropagation(); return; 
-        }
         
-        if(e.target.classList.contains('zoomable')) { 
-            if(e.target.parentElement.tagName === 'A') return;
-            document.getElementById('lightbox-img').src = e.target.src; 
-            document.getElementById('lightbox').classList.add('active'); 
-            e.stopPropagation(); return; 
-        }
+        // Dynamic Elements
+        if(e.target.closest('.refresh-btn')) { refreshQuote(e.target.closest('.layout-quote')); return; }
+        if(e.target.classList.contains('zoomable')) { openLightbox(e.target.src); return; }
         
-        if(e.target.classList.contains('chip')) { 
-            e.stopPropagation();
-            if(isSearchActive) closeSearch(); 
-            const tag = e.target.getAttribute('data-tag');
-            const date = e.target.getAttribute('data-date');
-            if(date) window.location.hash = 'Filter:' + date;
-            else if(tag) window.location.hash = 'Filter:' + tag;
-            return; 
-        }
-        
+        // Cards
         const block = e.target.closest('.clickable-block');
         if(block && !e.target.classList.contains('chip')) {
-            const link = block.getAttribute('data-link'), target = block.getAttribute('data-target');
+            const link = block.getAttribute('data-link');
             if(link) { 
-                if(target === '_blank') window.open(link, '_blank'); 
-                else { 
-                    window.location.href = link; 
-                    if(isSearchActive) closeSearch(); 
-                } 
+                if(block.getAttribute('data-target') === '_blank') window.open(link, '_blank'); 
+                else window.location.href = link;
             }
         }
     });
 }
 
-function resetToHome() { closeSearch(); window.location.hash = ''; }
-function closeSearch() { document.getElementById('search-overlay').classList.remove('active'); document.getElementById('main-header').classList.remove('search-mode'); document.getElementById('search-input').value = ''; if(isSearchActive) { isSearchActive = false; handleRouting(); } isSearchActive = false; }
-
-function toggleSearch() { 
-    const a = document.getElementById('search-overlay').classList.toggle('active'); 
-    document.getElementById('main-header').classList.toggle('search-mode'); 
-    if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
-    else closeSearch(); 
-}
-
-function handleSearch(q) { 
-    if(!q) return; 
-    isSearchActive = true; 
-    document.body.classList.remove('header-expanded');
-    document.getElementById('main-header').classList.remove('expanded');
-
-    const t = q.toLowerCase();
-    const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
-    renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
-}
-
-// --- RECURSIVE NAVIGATION ---
-function handleRouting() { 
-    if(isSearchActive) return; 
-    window.scrollTo(0, 0); 
-    let h = window.location.hash.substring(1) || 'Home'; 
+/* --- RECURSIVE NAVIGATION (THE SLIDE RULE) --- */
+function handleRouting() {
+    if(isSearchActive) return;
+    window.scrollTo(0, 0);
     
-    if(h === 'Index') { renderIndex(); return; }
+    let hash = window.location.hash.substring(1) || 'Home';
     
-    // Header State Logic
-    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
-    document.body.classList.toggle('header-expanded', !shouldCollapse);
-    const header = document.getElementById('main-header');
-    header.classList.toggle('expanded', !shouldCollapse);
+    // Index Mode
+    if(hash === 'Index') {
+        renderIndex();
+        return;
+    }
+
+    // Parse Path
+    const pathSegments = hash.split('/').filter(x => x);
     
-    // Parse Path for Recursion
-    const pathSegments = h.split('/').filter(x => x);
+    // Build Nav Stack
     buildRecursiveNav(pathSegments);
     
-    if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
-    else { renderPage(h); }
+    // Render Content
+    if(hash.startsWith('Filter:')) renderFiltered(decodeURIComponent(hash.split(':')[1]));
+    else renderPage(hash);
 }
 
 function buildRecursiveNav(activePath) {
-    let stackContainer = document.getElementById('nav-stack');
-    if (!stackContainer) return;
-    stackContainer.innerHTML = ''; 
+    const stack = document.getElementById('nav-stack');
+    stack.innerHTML = '';
+    const header = document.getElementById('main-header');
 
-    // Level 0: Roots
-    const roots = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort();
-    generateNavRow(stackContainer, roots, activePath[0] || '', '');
+    // 1. Determine Theme (Color Cascading)
+    header.className = ''; // Reset
+    const root = activePath[0] || '';
+    if(root.toLowerCase() === 'projects') header.classList.add('theme-projects');
+    else if(root.toLowerCase() === 'professional') header.classList.add('theme-prof');
+    else if(root.toLowerCase() === 'personal') header.classList.add('theme-personal');
 
-    // Level N: Children
+    // 2. Level 0: Roots
+    const roots = ['Home', 'Projects', 'Professional', 'Personal'];
+    generateNavRow(stack, roots, root, '');
+
+    // 3. Level N: Children
     let currentPath = '';
-    for (let i = 0; i < activePath.length; i++) {
+    for(let i=0; i<activePath.length; i++) {
         const segment = activePath[i];
         currentPath = currentPath ? `${currentPath}/${segment}` : segment;
-        const nextActive = activePath[i + 1] || '';
-        
+        const nextActive = activePath[i+1] || '';
+
+        // Find sibling pages for the NEXT level (children of currentPath)
         const children = [...new Set(
             db.filter(r => r.Page && r.Page.startsWith(currentPath + '/'))
-              .map(r => {
-                  const rest = r.Page.substring(currentPath.length + 1);
-                  return rest.split('/')[0];
-              })
+              .map(r => r.Page.substring(currentPath.length + 1).split('/')[0])
         )].sort();
 
-        if (children.length > 0) {
-            generateNavRow(stackContainer, children, nextActive, currentPath);
+        if(children.length > 0) {
+            generateNavRow(stack, children, nextActive, currentPath);
         }
     }
-
-    updateBodyPadding();
-    // Center rows after render
-    setTimeout(() => {
-        document.querySelectorAll('.nav-row').forEach(row => centerNavRow(row));
-    }, 100);
 }
 
 function generateNavRow(container, items, activeItem, basePath) {
-    if (items.length === 0) return;
     const row = document.createElement('div');
     row.className = 'nav-row';
+    
     items.forEach(name => {
-        const fullLink = basePath ? `#${basePath}/${name}` : `#${name}`;
-        const isActive = name === activeItem;
-        const a = document.createElement('a');
-        a.className = `nav-link fill-anim ${isActive ? 'active' : ''}`;
-        a.href = fullLink;
-        a.innerText = name;
-        a.onclick = () => closeSearch();
-        row.appendChild(a);
+        const link = document.createElement('a');
+        link.className = `nav-link ${name === activeItem ? 'active' : ''}`;
+        link.href = basePath ? `#${basePath}/${name}` : `#${name}`;
+        link.innerText = name;
+        row.appendChild(link);
+        
+        // Smart Center Active Item
+        if(name === activeItem) {
+            setTimeout(() => {
+                const center = link.offsetLeft + (link.offsetWidth / 2) - (row.clientWidth / 2);
+                row.scrollTo({ left: center, behavior: 'smooth' });
+            }, 100);
+        }
     });
     container.appendChild(row);
 }
 
-function centerNavRow(row) {
-    if(!row) return;
-    const activeLink = row.querySelector('.active');
-    if (activeLink) {
-        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (row.clientWidth / 2);
-        row.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-    }
-}
-
-function updateBodyPadding() {
-    const h = document.getElementById('main-header');
-    if(h) { document.body.style.paddingTop = (h.offsetHeight + 10) + 'px'; }
-}
-const headerObserver = new ResizeObserver(() => updateBodyPadding());
-const headerEl = document.getElementById('main-header');
-if(headerEl) headerObserver.observe(headerEl);
-
-function renderFiltered(t) { 
-    const res = db.filter(r => {
-        const dateStr = formatDate(r.Timestamp);
-        return (dateStr === t) || (r.Tags && r.Tags.includes(t));
-    });
-    renderRows(res, `Posts tagged "${safeHTML(t)}"`, false, true); 
-}
-
-function renderPage(p) { 
-    if(p === 'Home') { renderHome(); return; } 
-    const ex = db.filter(r => r.Page === p); 
-    const app = document.getElementById('app'); app.innerHTML = ''; 
+/* --- RENDERING --- */
+function renderPage(p) {
+    if(p === 'Home') { renderHome(); return; }
+    const rows = db.filter(r => r.Page === p);
+    const app = document.getElementById('app'); app.innerHTML = '';
     
-    const isMainPage = !p.includes('/');
-    
-    if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
-    else if(childrenPagesCheck(p)) { }
+    if(rows.length > 0) renderRows(rows, null, true, false, true); // Article Mode
     else {
-        app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
-        return; 
-    }
-    
-    if(isMainPage) {
-        const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
-        if(childrenPages.length > 0) {
-            const overviewRows = childrenPages.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
-            renderRows(overviewRows, null, true, true); 
-        } 
+        // Directory check
+        const children = db.filter(r => r.Page && r.Page.startsWith(p + '/'));
+        if(children.length > 0) {
+            // It's a folder, show children previews
+            const directChildren = [...new Set(children.map(r => r.Page))];
+            const previews = directChildren.map(page => db.find(r => r.Page === page)).filter(x=>x);
+            renderRows(previews, null, true, true); // Grid Mode
+        } else {
+            app.innerHTML = `<div class="layout-404"><h1>404</h1><p>Signal Lost.</p></div>`;
+        }
     }
 }
 
-function childrenPagesCheck(p) {
-    const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
-    return childrenPages.length > 0;
+function renderHome() {
+    const app = document.getElementById('app'); app.innerHTML = '';
+    const home = db.filter(r => r.Page === 'Home');
+    renderRows(home, null, true);
+    
+    const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
+                      .sort((a,b) => new Date(b.Timestamp||0) - new Date(a.Timestamp||0))
+                      .slice(0, 6);
+    if(recents.length) renderRows(recents, "Recent Activity", true, true);
 }
 
 function renderIndex() {
-    document.body.classList.remove('header-expanded');
-    document.getElementById('main-header').classList.remove('expanded');
-    buildRecursiveNav(['Index']); // Clear nav stack
+    // Collapse Header
+    const h = document.getElementById('main-header');
+    h.className = ''; 
+    document.getElementById('nav-stack').innerHTML = ''; // Hide Nav
     
-    const app = document.getElementById('app'); 
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
+    const app = document.getElementById('app');
+    app.innerHTML = '<div class="section layout-hero"><h1>Index</h1></div><div class="section index-list"></div>';
     
     const list = app.querySelector('.index-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
@@ -316,441 +207,229 @@ function renderIndex() {
     
     for(const [cat, items] of Object.entries(groups)) {
         let catClass = '';
-        const cLower = cat.toLowerCase();
-        if(cLower === 'projects') catClass = 'cat-projects';
-        else if(cLower === 'professional') catClass = 'cat-professional';
-        else if(cLower === 'personal') catClass = 'cat-personal';
-
+        if(cat==='Projects') catClass='cat-projects';
+        if(cat==='Professional') catClass='cat-professional';
+        if(cat==='Personal') catClass='cat-personal';
+        
         let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
         items.forEach(p => {
-            const row = db.find(r => r.Page === p);
-            const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
-            const title = row ? row.Title : p.split('/').pop();
-            html += `<a href="#${p}" class="index-link fill-anim">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
+            const r = db.find(x => x.Page === p);
+            html += `<a href="#${p}" class="index-link">${r ? r.Title : p.split('/').pop()}</a>`;
         });
-        html += `</div>`;
-        list.innerHTML += html;
+        list.innerHTML += html + '</div>';
     }
 }
 
-function renderHome() { 
-    const hr = db.filter(r => r.Page === 'Home');
-    const app = document.getElementById('app'); app.innerHTML = ''; 
-    renderRows(hr, null, true); 
+function renderRows(rows, title, append, forceGrid, isArticleMode=false) {
+    const app = document.getElementById('app');
+    if(title) app.innerHTML += `<h2 style="text-align:center; font-weight:400; color:#888; margin-bottom:20px;">${title}</h2>`;
     
-    const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
-                      .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
-                      .slice(0, 6);
-    if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
-}
-
-function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
-    const app = document.getElementById('app'); if(!app) return; 
-    
-    rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
-
-    if(!append) {
-        app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
-    } else if(title) {
-        app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
+    let container = app.querySelector('.grid-container');
+    if(!container || !append) {
+        container = document.createElement('div');
+        container.className = forceGrid ? 'grid-container section' : 'section';
+        app.appendChild(container);
     }
 
-    if(rows.length === 0 && !append) { 
-        app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`; 
-        return; 
-    }
-    
-    let gc = app.querySelector('.grid-container');
-    if(append) {
-        gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
-    } else {
-        const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
-        if(hasGridItems && !gc) {
-            gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
-        }
-    }
-    
     rows.forEach(r => {
-        if(!r.Page || r.Page === 'Footer') return; 
+        if(!r.Page || r.Page==='Footer') return;
         
+        // PARSE CONTENT
         let contentHtml = processText(r.Content);
+        
+        // MEDIA LOGIC
         let mediaHtml = '';
-        let hasPlaceholder = false;
-
         const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
-
-        if (modelMatch) {
-            const url = modelMatch[1].trim();
-            const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
-            mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
-            contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
-        } else if (r.Media) {
-            const thumb = getThumbnail(r.Media);
-            if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
-        } else {
-            hasPlaceholder = true;
-            mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+        
+        if(modelMatch) {
+            mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${modelMatch[1].trim()}" data-color="${modelMatch[2]||''}"></div></div>`;
+            contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); // Remove duplications
+        } else if(r.Media) {
+            mediaHtml = `<div class="row-media"><img src="${getThumbnail(r.Media)}" loading="lazy"></div>`;
+        } else if (forceGrid) {
+            mediaHtml = `<div class="row-media placeholder"><span>${r.Title}</span></div>`;
         }
 
+        // CLASS LOGIC
         let catClass = '';
-        const pLower = r.Page.toLowerCase();
-        if(pLower.startsWith('projects')) catClass = 'cat-projects';
-        else if(pLower.startsWith('professional')) catClass = 'cat-professional';
-        else if(pLower.startsWith('personal')) catClass = 'cat-personal';
+        if(r.Page.startsWith('Projects')) catClass = 'cat-projects';
+        else if(r.Page.startsWith('Professional')) catClass = 'cat-professional';
+        else if(r.Page.startsWith('Personal')) catClass = 'cat-personal';
 
-        if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
-             const d = document.createElement('div'); d.className = 'section layout-text';
-             
-             if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else mediaHtml = ''; 
-
-             let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
-             
-             if(r.LinkURL) {
-                 metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
-             }
-
-             metaHtml += '<div class="article-tags">';
-             if(r.Timestamp) {
-                 const dateVal = formatDate(r.Timestamp);
-                 metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
-             }
-             if(r.Tags) {
-                 const tags = r.Tags.split(',').map(x => x.trim());
-                 tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
-             }
-             metaHtml += '</div></div>';
-
-             d.innerHTML = `${mediaHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${contentHtml}</p>`;
-             app.appendChild(d);
-             return;
-        }
-
-        if(!forceGrid) {
-            if(r.SectionType === 'quote') { 
-                const d = document.createElement('div'); d.className = 'layout-quote section'; 
-                renderQuoteCard(d); app.appendChild(d); return; 
+        if(isArticleMode && !forceGrid && (!r.SectionType || r.SectionType === 'card')) {
+            // ARTICLE VIEW
+            if(modelMatch || r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+            else mediaHtml = '';
+            
+            const d = document.createElement('div'); d.className = 'layout-text';
+            d.innerHTML = `${mediaHtml}<h2>${r.Title}</h2>
+                           <div class="article-meta-row"><span class="author-link">SAHIB VIRDEE</span></div>
+                           <p>${contentHtml}</p>`;
+            app.appendChild(d);
+        } else if (!forceGrid && r.SectionType === 'quote') {
+            // QUOTE VIEW
+            const d = document.createElement('div'); d.className = 'layout-quote';
+            renderQuoteCard(d);
+            app.appendChild(d);
+        } else if (!forceGrid && r.SectionType === 'hero') {
+            const d = document.createElement('div'); d.className = 'layout-hero';
+            d.innerHTML = `<h1>${r.Title}</h1><p>${processText(r.Content)}</p>`;
+            app.appendChild(d);
+        } else {
+            // CARD VIEW
+            const d = document.createElement('div');
+            d.className = `layout-grid clickable-block ${catClass}`;
+            d.setAttribute('data-link', r.LinkURL || `#${r.Page}`);
+            d.innerHTML = `${mediaHtml}<h3>${r.Title}</h3><p>${contentHtml}</p>`;
+            
+            // Meta chips
+            let meta = '';
+            if(r.Tags) {
+                meta = '<div class="meta-row">';
+                r.Tags.split(',').forEach(t => meta += `<span class="chip" data-tag="${t.trim()}">${t.trim()}</span>`);
+                meta += '</div>';
             }
-            if(r.SectionType === 'hero') {
-                const d = document.createElement('div'); d.className = 'section layout-hero';
-                let dateHtml = '';
-                if(r.Timestamp) {
-                    let dateVal = formatDate(r.Timestamp);
-                    dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
-                }
-                d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
-                app.appendChild(d); return;
-            }
-            if(r.SectionType === 'text') {
-                 const d = document.createElement('div'); d.className = 'section layout-text';
-                 d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
-                 app.appendChild(d); return;
-            }
+            d.innerHTML += meta;
+            container.appendChild(d);
         }
-
-        const link = r.LinkURL || '';
-        const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
-        let l = link; if(!l) l = `#${r.Page}`; 
-        const internal = l.startsWith('#'), target = internal ? '' : '_blank';
-        
-        let mh = '';
-        if(r.Timestamp || tags.length > 0) {
-             mh = `<div class="meta-row">`;
-             if(r.Timestamp) {
-                 let dateVal = formatDate(r.Timestamp);
-                 mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
-             }
-             tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
-             mh += `</div>`;
-        }
-
-        const d = document.createElement('div'); 
-        d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
-        d.setAttribute('data-link', l); d.setAttribute('data-target', target);
-        
-        d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
-        
-        if(gc) gc.appendChild(d);
     });
     
-    if(window.MathJax && window.MathJax.typeset) {
-        window.MathJax.typeset();
-    }
-
-    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
-function renderQuoteCard(c) {
-    if(quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
-    const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
-    let auth = r.Author || 'Unknown'; 
-    if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`; 
-    else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
+/* --- UTILS --- */
+function processText(t) {
+    if(!t) return '';
+    let clean = t; // Assume safe input or sanitize here
     
-    const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
-    const len = text.length;
-    let sizeClass = 'short';
-    if(len > 230) sizeClass = 'xxl';
-    else if(len > 150) sizeClass = 'xl';
-    else if(len > 100) sizeClass = 'long';
-    else if(len > 50) sizeClass = 'medium';
+    // 1. 3D Shortcode
+    clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => 
+        `<div class="embed-wrapper stl" data-src="${url.trim()}" data-color="${color ? color.trim() : ''}"></div>`);
     
-    c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
-                   <div class="quote-footer"><div class="author">— ${auth}</div></div>
-                   <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
-}
-
-function renderFooter() { 
-    const fd = document.getElementById('footer-links');
-    const fr = db.filter(r => r.Page === 'Footer' || r.Title === 'LinkedIn' || r.Title === 'Contact'); 
-    fd.innerHTML = ''; 
-    fr.forEach(r => { 
-        let link = r.LinkURL;
-        if(r.Title === 'Contact') {
-            link = 'mailto:sahibdsv+site@gmail.com';
-        }
-        if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
-    }); 
-    
-    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
-    fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
-}
-
-function fetchGitHubStats() { 
-    const r = "sahibdsv/sahibdsv.github.io"; 
-    fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
-        if(d.pushed_at) {
-            const date = new Date(d.pushed_at);
-            const timeAgo = (d) => {
-                const s = Math.floor((new Date() - d) / 1000);
-                let i = s / 31536000;
-                if (i > 1) return Math.floor(i) + " years ago";
-                i = s / 2592000;
-                if (i > 1) return Math.floor(i) + " months ago";
-                i = s / 86400;
-                if (i > 1) return Math.floor(i) + " days ago";
-                i = s / 3600;
-                if (i > 1) return Math.floor(i) + " hours ago";
-                i = s / 60;
-                if (i > 1) return Math.floor(i) + " mins ago";
-                return "a few mins ago";
-            };
-            const relTime = timeAgo(date);
-            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${relTime}</a>`;
-        } 
-    }).catch(()=>{}); 
-}
-
-function getThumbnail(u) { if(!u) return null; if(u.includes('youtube.com')||u.includes('youtu.be')) { let v = u.split('v=')[1]; if(v&&v.includes('&')) v=v.split('&')[0]; if(!v&&u.includes('youtu.be')) v=u.split('/').pop(); return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; } if(u.endsWith('.mp4')) return null; return u; }
-
-function processText(t) { 
-    if(!t) return ''; 
-    let clean = safeHTML(t);
-    
-    // 1. UNIVERSAL 3D VIEWER
-    clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
-        const colorAttr = color ? `data-color="${color.trim()}"` : '';
-        return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
-    });
-
-    // 2. INLINE IMAGE GALLERIES
+    // 2. Inline Galleries [url, url]
     clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
-        const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
-        if (!isPureGallery) return match; 
-        const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join('');
+        if(!urls.every(u => u.startsWith('http'))) return match;
+        const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable">`).join('');
         return `<div class="inline-gallery">${imgs}</div>`;
     });
 
-    // 3. WIKI LINKS
-    clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
-
-    // 4. EMBED SHORTCODES
-    clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
-    clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
+    // 3. Other Embeds
     clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
-    clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
-
-    // 5. GENERAL LINK STYLING
-    clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
-
-    return clean; 
+    
+    return clean;
 }
 
-function formatDate(s) {
-    if(!s) return '';
-    if(s.length === 8 && !isNaN(s)) {
-        const y = s.substring(0, 4);
-        const m = s.substring(4, 6);
-        const d = s.substring(6, 8);
-        const dateObj = new Date(`${y}-${m}-${d}`);
-        return `${dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()} ${y}`;
+function renderQuoteCard(c) {
+    if(!quotesDb.length) return;
+    const q = quotesDb[Math.floor(Math.random() * quotesDb.length)];
+    const len = q.Quote.length;
+    let size = 'medium';
+    if(len < 50) size = 'short';
+    if(len > 150) size = 'long';
+    
+    c.innerHTML = `<blockquote class="${size}">"${q.Quote}"</blockquote>
+                   <div class="quote-footer"><div class="author">— ${q.Author}</div>
+                   <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></div>`;
+}
+
+function refreshQuote(c) {
+    c.classList.add('loading');
+    setTimeout(() => { renderQuoteCard(c); c.classList.remove('loading'); }, 400);
+}
+
+function fetchGitHubStats() {
+    fetch('https://api.github.com/repos/sahibdsv/sahibdsv.github.io').then(r=>r.json()).then(d => {
+        if(d.pushed_at) {
+            const s = Math.floor((new Date() - new Date(d.pushed_at)) / 1000);
+            let time = "just now";
+            if(s>60) time = Math.floor(s/60) + " mins ago";
+            if(s>3600) time = Math.floor(s/3600) + " hours ago";
+            if(s>86400) time = Math.floor(s/86400) + " days ago";
+            document.getElementById('version-tag').innerHTML = `Updated ${time}`;
+        }
+    }).catch(()=>{});
+}
+
+function getThumbnail(u) {
+    if(u.includes('youtube') || u.includes('youtu.be')) {
+        let v = u.split('v=')[1] || u.split('/').pop();
+        return `https://img.youtube.com/vi/${v}/mqdefault.jpg`;
     }
-    const d = new Date(s);
-    if(isNaN(d.getTime())) return s;
-    const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
-    const yr = d.getFullYear();
-    return `${mo} ${yr}`;
+    return u;
 }
 
-// 3D VIEWER LOGIC (LAZY LOADED)
+/* --- 3D ENGINE --- */
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-    if(containers.length === 0) return;
+    if(!containers.length) return;
 
-    Promise.all([
-        import('three'),
-        import('three/addons/loaders/STLLoader.js'),
-        import('three/addons/loaders/GLTFLoader.js'),
-        import('three/addons/controls/OrbitControls.js')
-    ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
-        
-        // Visibility Observer for pausing animation
-        const visibilityObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const container = entry.target;
-                if (entry.isIntersecting) {
-                    container.setAttribute('data-visible', 'true');
-                } else {
-                    container.setAttribute('data-visible', 'false');
-                }
+    import('three').then(THREE => {
+        import('three/addons/loaders/STLLoader.js').then(({STLLoader}) => {
+            import('three/addons/controls/OrbitControls.js').then(({OrbitControls}) => {
+                
+                const observer = new IntersectionObserver(entries => {
+                    entries.forEach(e => {
+                        if(e.isIntersecting) {
+                            loadModel(e.target, THREE, STLLoader, OrbitControls);
+                            observer.unobserve(e.target);
+                        }
+                    });
+                });
+                containers.forEach(c => observer.observe(c));
             });
         });
-
-        // Load Observer
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
-                    observer.unobserve(entry.target);
-                    visibilityObserver.observe(entry.target);
-                }
-            });
-        }, { rootMargin: "200px" });
-
-        containers.forEach(c => observer.observe(c));
     });
 }
 
-function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
-    container.classList.add('loaded');
-    
-    const url = container.getAttribute('data-src');
-    const customColor = container.getAttribute('data-color');
-    const ext = url.split('.').pop().toLowerCase();
-    
+function loadModel(c, THREE, STLLoader, OrbitControls) {
+    c.classList.add('loaded');
     const scene = new THREE.Scene();
-    scene.background = null; 
-
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
+    const camera = new THREE.PerspectiveCamera(45, c.clientWidth/c.clientHeight, 0.1, 1000);
     
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.outputColorSpace = THREE.SRGBColorSpace; // FIX DEPRECATION
-    renderer.physicallyCorrectLights = true;
-    container.appendChild(renderer.domElement);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
-    
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    keyLight.position.set(5, 10, 7);
-    scene.add(keyLight);
-
-    const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
-    rimLight.position.set(-5, 5, -5);
-    scene.add(rimLight);
-
-    const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
-    fillLight.position.set(-5, 0, 5);
-    scene.add(fillLight);
+    renderer.setSize(c.clientWidth, c.clientHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace; // FIX
+    c.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.enablePan = false; 
-    controls.autoRotate = true; 
-    controls.autoRotateSpeed = 2.0;
+    controls.enableDamping = true; controls.autoRotate = true;
 
-    let restartTimer;
-    controls.addEventListener('start', () => {
-        clearTimeout(restartTimer);
-        controls.autoRotate = false;
-    });
-    controls.addEventListener('end', () => {
-        restartTimer = setTimeout(() => {
-            controls.autoRotate = true;
-        }, 5000); 
-    });
+    // Lights
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const dir = new THREE.DirectionalLight(0xffffff, 1);
+    dir.position.set(5, 10, 7);
+    scene.add(dir);
 
-    const onLoad = (object) => {
-        container.classList.add('ready'); // Fade in
-
-        const box = new THREE.Box3().setFromObject(object);
-        const center = new THREE.Vector3();
-        box.getCenter(center);
-        object.position.sub(center);
-        scene.add(object);
-
-        if (customColor) {
-            object.traverse((child) => {
-                if (child.isMesh) {
-                    child.material = new THREE.MeshPhongMaterial({ 
-                        color: customColor, 
-                        specular: 0x111111, 
-                        shininess: 100 
-                    });
-                }
-            });
-        }
-
-        const size = box.getSize(new THREE.Vector3()).length();
-        const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
-        camera.position.set(dist, dist * 0.4, dist * 0.8); 
-        camera.lookAt(0, 0, 0);
+    new STLLoader().load(c.dataset.src, (geo) => {
+        const mat = new THREE.MeshPhongMaterial({ color: c.dataset.color || 0x999999, specular: 0x111111 });
+        const mesh = new THREE.Mesh(geo, mat);
         
-        controls.minDistance = size * 0.2; 
-        controls.maxDistance = size * 5;
+        // Center
+        geo.computeBoundingBox();
+        const center = geo.boundingBox.getCenter(new THREE.Vector3());
+        mesh.position.sub(center);
+        scene.add(mesh);
 
+        // Zoom
+        const size = geo.boundingBox.getSize(new THREE.Vector3()).length();
+        camera.position.set(size, size, size);
+        camera.lookAt(0,0,0);
+
+        c.classList.add('ready');
+        
         function animate() {
             requestAnimationFrame(animate);
-            if (container.getAttribute('data-visible') === 'false') return;
             controls.update();
             renderer.render(scene, camera);
         }
         animate();
-    };
-
-    const onError = (e) => {
-        console.error(e);
-        container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
-    };
-
-    if (ext === 'glb' || ext === 'gltf') {
-        const loader = new GLTFLoader();
-        loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
-    } else {
-        const loader = new STLLoader();
-        loader.load(url, (geometry) => {
-            const mat = new THREE.MeshPhongMaterial({ 
-                color: customColor || 0xaaaaaa, 
-                specular: 0x111111, 
-                shininess: 200 
-            });
-            const mesh = new THREE.Mesh(geometry, mat);
-            onLoad(mesh);
-        }, undefined, onError);
-    }
-
-    window.addEventListener('resize', () => {
-        if(!container.isConnected) return; 
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
     });
 }
+
+function resetToHome() { window.location.hash = ''; }
+function toggleSearch() { document.getElementById('search-overlay').classList.toggle('active'); document.getElementById('main-header').classList.toggle('search-mode'); }
+function closeSearch() { document.getElementById('search-overlay').classList.remove('active'); document.getElementById('main-header').classList.remove('search-mode'); }
 
 init();
