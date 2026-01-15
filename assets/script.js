@@ -87,9 +87,7 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER
-    // UX FIX: We removed the centerSubNav call here. 
-    // Now scrolling vertically NEVER affects horizontal nav position.
+    // SMART SCROLL HEADER (Visual Only - No Horizontal Scroll Jacking)
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -187,12 +185,11 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // Center ONLY when the sub-nav is first built (Navigation event)
+    // On PAGE LOAD: Show off scrollability (forceMiddle = true)
     setTimeout(() => centerSubNav(true), 100);
 }
 
 // SMART CENTERING LOGIC
-// forceMiddleIfNone: true = Main Page Reset. false = Passive Mode.
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
@@ -496,7 +493,7 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
+    // UNIVERSAL 3D VIEWER
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -566,6 +563,8 @@ function init3DViewers() {
 
 function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     container.classList.add('loaded');
+    container.classList.add('shimmer'); // START SHIMMER
+    
     const url = container.getAttribute('data-src');
     const customColor = container.getAttribute('data-color');
     const ext = url.split('.').pop().toLowerCase();
@@ -616,6 +615,10 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
+        // STOP SHIMMER & SHOW MODEL
+        container.classList.remove('shimmer');
+        container.classList.add('ready');
+
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
         box.getCenter(center);
@@ -654,6 +657,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
 
     const onError = (e) => {
         console.error(e);
+        container.classList.remove('shimmer');
         container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
     };
 
