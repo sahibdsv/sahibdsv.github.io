@@ -406,9 +406,13 @@ function renderQuoteCard(c) {
     
     const len = text.length;
     let sizeClass = 'short';
-    if(len > 250) sizeClass = 'xl';
-    else if(len > 150) sizeClass = 'long';
-    else if(len > 70) sizeClass = 'medium';
+    
+    // Updated Thresholds for Safety
+    if(len > 230) sizeClass = 'xxl';      // > 230 chars -> 13px
+    else if(len > 150) sizeClass = 'xl';  // > 150 chars -> 14px
+    else if(len > 100) sizeClass = 'long';// > 100 chars -> 16px
+    else if(len > 50) sizeClass = 'medium';// > 50 chars -> 18px
+    // Default (<50) -> 22px
     
     c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
                    <div class="quote-footer"><div class="author">— ${auth}</div></div>

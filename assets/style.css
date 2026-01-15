@@ -250,19 +250,48 @@ a[target="_blank"]:not(.clickable-block)::after {
 .inline-img.zoomable:hover { opacity: 0.9; }
 a .inline-img.zoomable { cursor: pointer; }
 
-/* QUOTE */
-.layout-quote { padding: 0 20px; text-align: center; position: relative; margin: 0 auto 10px; height: 100px; width: 100%; max-width: 800px; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
-.layout-quote blockquote { font-family: 'Playfair Display', serif; font-style: italic; color: #eee; margin-bottom: 5px; line-height: 1.2; transition: font-size 0.3s; }
-.layout-quote blockquote.short { font-size: 24px; }
-.layout-quote blockquote.medium { font-size: 20px; }
-.layout-quote blockquote.long { font-size: 16px; }
-.layout-quote blockquote.xl { font-size: 14px; }
-.quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
-.layout-quote .author { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
-.layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
-.layout-quote .refresh-btn { position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; }
-.layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg); }
-.layout-quote.loading blockquote, .layout-quote.loading .quote-footer { opacity: 0.3; pointer-events: none; }
+
+/* QUOTE - FIXED 100px */
+.layout-quote { 
+    padding: 0 20px; 
+    text-align: center; 
+    position: relative; 
+    margin: 0 auto 10px; 
+    height: 100px; 
+    width: 100%; 
+    max-width: 800px;
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    overflow: hidden; 
+}
+
+.layout-quote blockquote { 
+    font-family: 'Playfair Display', serif; 
+    font-style: italic; 
+    color: #eee; 
+    margin-bottom: 4px; 
+    line-height: 1.25; /* Tighter line height for better fit */
+    transition: font-size 0.3s; 
+    width: 100%;
+}
+
+/* More granular sizing buckets */
+.layout-quote blockquote.short  { font-size: 22px; }
+.layout-quote blockquote.medium { font-size: 18px; }
+.layout-quote blockquote.long   { font-size: 16px; }
+.layout-quote blockquote.xl     { font-size: 14px; }
+.layout-quote blockquote.xxl    { font-size: 13px; line-height: 1.2; } /* New safe tier */
+
+.quote-footer { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+    margin-top: 2px; /* Pull footer up slightly */
+    flex-shrink: 0; /* Prevent footer from shrinking */
+}
 
 /* 404 & ARCHIVE */
 .layout-404 { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
