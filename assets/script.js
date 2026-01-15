@@ -182,6 +182,18 @@ function buildSubNav(top) {
         const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
+
+    // SCROLL CENTER LOGIC:
+    setTimeout(() => {
+        const activeEl = n.querySelector('.sub-link.active');
+        if (activeEl) {
+            // Scroll the active item to the center of the bar
+            activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } else {
+            // If nothing is active (Main Page), scroll to the start to show it's a list
+            n.scrollTo({ left: 0, behavior: 'smooth' });
+        }
+    }, 100);
 }
 
 function handleRouting() { 
@@ -233,9 +245,6 @@ function renderPage(p) {
             renderRows(overviewRows, null, true, true); 
         } 
     }
-
-    // Initialize 3D Viewers
-    setTimeout(init3DViewers, 100);
 }
 
 function childrenPagesCheck(p) {
@@ -279,8 +288,6 @@ function renderHome() {
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                       .slice(0, 6);
     if(recents.length > 0) { renderRows(recents, "Recent", true); } 
-    
-    setTimeout(init3DViewers, 100);
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
@@ -312,6 +319,26 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     rows.forEach(r => {
         if(!r.Page || r.Page === 'Footer') return; 
         
+        let contentHtml = processText(r.Content);
+        let mediaHtml = '';
+        let hasPlaceholder = false;
+
+        // Extract 3D Models to promote to Card Header
+        const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+
+        if (modelMatch) {
+            const url = modelMatch[1].trim();
+            const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+            mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+            contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); // Remove valid duplicate
+        } else if (r.Media) {
+            const thumb = getThumbnail(r.Media);
+            if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+        } else {
+            hasPlaceholder = true;
+            mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+        }
+
         let catClass = '';
         const pLower = r.Page.toLowerCase();
         if(pLower.startsWith('projects')) catClass = 'cat-projects';
@@ -321,10 +348,10 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
              
-             let imgHtml = '';
-             const thumb = getThumbnail(r.Media);
-             if(thumb) imgHtml = `<div class="row-media article-mode"><img src="${thumb}" class="inline-img zoomable" loading="lazy"></div>`;
-             
+             if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+             else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+             else mediaHtml = '';
+
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
              
              if(r.LinkURL) {
@@ -342,7 +369,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              }
              metaHtml += '</div></div>';
 
-             d.innerHTML = `${imgHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${processText(r.Content)}</p>`;
+             d.innerHTML = `${mediaHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${contentHtml}</p>`;
              app.appendChild(d);
              return;
         }
@@ -369,12 +396,10 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
             }
         }
 
-        const media = r.Media || '', link = r.LinkURL || '', tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
+        const link = r.LinkURL || '';
+        const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
         let l = link; if(!l) l = `#${r.Page}`; 
         const internal = l.startsWith('#'), target = internal ? '' : '_blank';
-        
-        const thumb = getThumbnail(media);
-        const imgH = thumb ? `<div class="row-media"><img src="${thumb}" loading="lazy"></div>` : '';
         
         let mh = '';
         if(r.Timestamp || tags.length > 0) {
@@ -387,10 +412,11 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              mh += `</div>`;
         }
 
-        const d = document.createElement('div'); d.className = `layout-grid clickable-block ${catClass}`;
+        const d = document.createElement('div'); 
+        d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
         d.setAttribute('data-link', l); d.setAttribute('data-target', target);
         
-        d.innerHTML = `${imgH}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${processText(r.Content)}</p>${mh}`;
+        d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
         
         if(gc) gc.appendChild(d);
     });
@@ -398,6 +424,8 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     if(window.MathJax && window.MathJax.typeset) {
         window.MathJax.typeset();
     }
+
+    setTimeout(init3DViewers, 50);
 }
 
 function renderQuoteCard(c) {
@@ -442,7 +470,6 @@ function fetchGitHubStats() {
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
-            // ISO 8601 Standard Format: YYYY-MM-DD HH:MM UTC
             const date = new Date(d.pushed_at);
             const dateStr = date.toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
             document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last Updated: ${dateStr}</a>`;
@@ -457,7 +484,6 @@ function processText(t) {
     let clean = safeHTML(t);
     
     // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
-    // Supports both STL and GLB/GLTF
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -532,57 +558,47 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const customColor = container.getAttribute('data-color');
     const ext = url.split('.').pop().toLowerCase();
     
-    // 1. SETUP SCENE
+    // Scene
     const scene = new THREE.Scene();
+    scene.background = null; 
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
-    // 2. PRO LIGHTING RIG (Key + Fill + Rim)
-    // Ambient: Soft base level
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.physicallyCorrectLights = true;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    container.appendChild(renderer.domElement);
+
+    // PRO LIGHTING (Key + Fill + Rim)
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
     
-    // Key Light: The "Sun" (Warm, Bright, Front-Right)
     const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
     keyLight.position.set(5, 10, 7);
     scene.add(keyLight);
 
-    // Rim Light: The "Edge" (Cool, Back-Left) - Separates object from background
     const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
     rimLight.position.set(-5, 5, -5);
     scene.add(rimLight);
 
-    // Fill Light: Softens shadows (Warm, Front-Left)
     const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
     fillLight.position.set(-5, 0, 5);
     scene.add(fillLight);
 
-    // 3. CAMERA
-    // Near plane 0.01 allows zooming extremely close without clipping
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
-    
-    // 4. RENDERER
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    
-    // Enable physical lighting accuracy
-    renderer.physicallyCorrectLights = true;
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    
-    container.appendChild(renderer.domElement);
-
-    // 5. SMART CONTROLS
+    // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.enablePan = false; // Keep object centered
-    controls.minDistance = 0.1; // Prevent going INSIDE the model
-    controls.maxDistance = 20;  // Prevent getting lost in space
+    controls.enablePan = false;
     
-    // Auto-Rotate Logic
+    // Auto-Rotate with Delay
     controls.autoRotate = true;
     controls.autoRotateSpeed = 2.0;
 
-    // Stop rotation when user grabs it, resume after delay
     let restartTimer;
     controls.addEventListener('start', () => {
         clearTimeout(restartTimer);
@@ -591,21 +607,17 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     controls.addEventListener('end', () => {
         restartTimer = setTimeout(() => {
             controls.autoRotate = true;
-        }, 2000); // Wait 2 seconds before spinning again
+        }, 5000); // 5 Seconds Delay
     });
 
-    // LOAD HANDLER
     const onLoad = (object) => {
-        // Normalize Object (Center & Scale)
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
         box.getCenter(center);
         
-        // Move object to center (0,0,0)
         object.position.sub(center);
         scene.add(object);
 
-        // Apply Custom Color (Clay Mode)
         if (customColor) {
             object.traverse((child) => {
                 if (child.isMesh) {
@@ -618,19 +630,17 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
             });
         }
 
-        // SMART ZOOM (Fit to Screen)
+        // SMART ZOOM (Larger)
         const size = box.getSize(new THREE.Vector3()).length();
-        // We divide by 0.6 instead of 0.8 to make it fill MORE of the screen (Closer)
-        const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.7; 
+        // 0.6 factor brings camera closer (larger model)
+        const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
         
-        camera.position.set(dist, dist * 0.4, dist * 0.8); // Offset angle for better drama
+        camera.position.set(dist, dist * 0.4, dist * 0.8);
         camera.lookAt(0, 0, 0);
         
-        // Set dynamic zoom limits based on object size
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
-        // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
@@ -644,7 +654,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
     };
 
-    // LOADER SELECTION
     if (ext === 'glb' || ext === 'gltf') {
         const loader = new GLTFLoader();
         loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
@@ -661,7 +670,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         }, undefined, onError);
     }
 
-    // RESIZE HANDLER
     window.addEventListener('resize', () => {
         if(!container.isConnected) return; 
         camera.aspect = container.clientWidth / container.clientHeight;
