@@ -161,87 +161,49 @@ function handleSearch(q) {
     if(!q) return; 
     isSearchActive = true; 
     document.body.classList.remove('header-expanded');
-    
-    // Clear dynamic stack when searching
-    document.getElementById('dynamic-nav-container').innerHTML = '';
+    document.getElementById('main-header').classList.remove('expanded');
 
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
     renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
 }
 
-// LEVEL 0: ROOTS (Always Visible)
 function buildNav() { 
     const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
     const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
     p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
 }
 
-// UPDATED: THE SLIDE RULE ENGINE (With Depth Sensor)
-function buildRecursiveNav(fullPath) {
-    const container = document.getElementById('dynamic-nav-container');
-    const header = document.getElementById('main-header');
-    if(!container || !header) return;
+function buildSubNav(top) {
+    const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
     
-    container.innerHTML = '';
+    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
     
-    const parts = fullPath.split('/');
-    const depth = parts.length; // How deep are we?
-    
-    // SET DEPTH ATTRIBUTE FOR CSS SCALING
-    // 0 = Root, 1 = Sub, 2+ = Deep
-    header.setAttribute('data-depth', depth);
-
-    let currentPath = parts[0]; 
-    
-    for (let i = 0; i < parts.length; i++) {
-        const parentPath = parts.slice(0, i+1).join('/');
-        
-        // Find children of this segment
-        const children = [...new Set(db
-            .filter(r => r.Page && r.Page.startsWith(parentPath + '/'))
-            .map(r => {
-                const remainder = r.Page.substring(parentPath.length + 1);
-                return remainder.split('/')[0];
-            })
-        )].sort();
-        
-        if (children.length === 0) continue; 
-        
-        // Create Row
-        const row = document.createElement('div');
-        row.className = 'nav-row';
-        
-        // Mark the level for specific CSS targeting (e.g. Row 1 vs Row 3)
-        row.setAttribute('data-level', i + 1);
-        
-        const activeItem = parts[i+1]; 
-        
-        children.forEach(childName => {
-            const href = `${parentPath}/${childName}`;
-            const isActive = (childName === activeItem);
-            row.innerHTML += `<a href="#${href}" class="sub-link fill-anim ${isActive ? 'active' : ''}" onclick="closeSearch()">${safeHTML(childName)}</a>`;
-        });
-        
-        container.appendChild(row);
-        
-        // Center Active Item
-        if (activeItem) {
-             setTimeout(() => {
-                 const activeLink = row.querySelector('.active');
-                 if(activeLink) {
-                     const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (row.clientWidth / 2);
-                     row.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-                 }
-             }, 50);
-        }
-    }
-    
-    // Adjust Padding
-    requestAnimationFrame(() => {
-        const h = document.getElementById('main-header');
-        if(h) document.body.style.paddingTop = (h.offsetHeight + 20) + 'px';
+    subs.forEach(x => { 
+        const name = x.split('/')[1];
+        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
+        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
+
+    // Center ONLY when the sub-nav is first built (Navigation event)
+    setTimeout(() => centerSubNav(true), 100);
+}
+
+// SMART CENTERING LOGIC
+function centerSubNav(forceMiddleIfNone) {
+    const n = document.getElementById('sub-nav');
+    if(!n) return;
+    const activeLink = n.querySelector('.active');
+    
+    if (activeLink) {
+        // If Active: Lock to center
+        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
+        n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+    } else if (forceMiddleIfNone) {
+        // If Main Page Load: Scroll to MIDDLE to hint content
+        const middle = (n.scrollWidth - n.clientWidth) / 2;
+        n.scrollTo({ left: middle, behavior: 'smooth' });
+    }
 }
 
 function handleRouting() { 
@@ -251,25 +213,16 @@ function handleRouting() {
     
     if(h === 'Index') { renderIndex(); return; }
     
-    // STATE: "Expanded" logic is now handled by the stack builder mostly
-    // But we still toggle class for Index vs Content
-    const isIndex = (h === 'Index');
-    document.body.classList.toggle('header-expanded', isIndex);
+    // STATE: Collapse Header for Home, Filter, OR Index
+    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
+    document.body.classList.toggle('header-expanded', !shouldCollapse);
+    document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
-    // Highlight Level 0 (Roots)
+    // Deactivate Main Nav Highlights if Index (or non-matching top)
     const top = h.split('/')[0]; 
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
-        const href = a.getAttribute('href'); 
-        if(href) a.classList.toggle('active', href.replace('#', '') === top); 
-    }); 
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
     
-    // Build Recursive Stack (The Slide Rule)
-    if (!h.startsWith('Filter:') && h !== 'Home') {
-        buildRecursiveNav(h);
-    } else {
-        document.getElementById('dynamic-nav-container').innerHTML = '';
-        document.body.style.paddingTop = ''; // Reset to CSS default
-    }
+    buildSubNav(top); 
     
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
@@ -288,36 +241,22 @@ function renderPage(p) {
     const ex = db.filter(r => r.Page === p); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
-    const isMainPage = !p.includes('/'); // Is Root?
+    const isMainPage = !p.includes('/');
     
-    // If exact match found, render it
     if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
-    // If no exact match but has children (Directory)
     else if(childrenPagesCheck(p)) { }
     else {
         app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
         return; 
     }
     
-    // Render Children Previews (Overview Mode)
-    // Logic: Find all pages that are DIRECT children of p
-    const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
-    
-    if(childrenPages.length > 0) {
-        // Filter to only show direct children (Level + 1) to avoid dumping entire subtree?
-        // Actually, users usually want to see the immediate next steps.
-        // Let's filter for pages that don't have *another* slash after the prefix
-        const directChildren = childrenPages.filter(child => {
-            const remainder = child.substring(p.length + 1);
-            return !remainder.includes('/');
-        });
-        
-        // Fallback: If no direct children (gap in hierarchy), show all descendants
-        const pagesToShow = directChildren.length > 0 ? directChildren : childrenPages;
-        
-        const overviewRows = pagesToShow.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
-        renderRows(overviewRows, null, true, true); 
-    } 
+    if(isMainPage) {
+        const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
+        if(childrenPages.length > 0) {
+            const overviewRows = childrenPages.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
+            renderRows(overviewRows, null, true, true); 
+        } 
+    }
 }
 
 function childrenPagesCheck(p) {
@@ -326,9 +265,12 @@ function childrenPagesCheck(p) {
 }
 
 function renderIndex() {
-    // 1. Clear Stack
-    document.getElementById('dynamic-nav-container').innerHTML = '';
-    // 2. Deactivate Roots
+    // 1. Collapse & Reset UI State (Enforce Constraints)
+    document.body.classList.remove('header-expanded');
+    document.getElementById('main-header').classList.remove('expanded');
+    // Clear Sub-nav
+    buildSubNav('Index'); 
+    // Deactivate Main Nav
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
     const app = document.getElementById('app'); 
@@ -688,10 +630,11 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     renderer.setSize(container.clientWidth, container.clientHeight);
     
     // FIX: Updated Color Space Management (Three.js r152+)
+    // Old: renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
     
     // Lighting Setup
-    renderer.physicallyCorrectLights = true; 
+    renderer.physicallyCorrectLights = true; // Note: In r160+ this becomes renderer.useLegacyLights = false;
     
     container.appendChild(renderer.domElement);
 
