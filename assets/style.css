@@ -121,7 +121,9 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     overflow-x: auto; white-space: nowrap; 
     width: 100%; max-width: 900px;
     
+    /* START LEFT: The "Springs" will handle centering if space permits */
     justify-content: flex-start;
+    
     padding-bottom: 5px; scrollbar-width: none;
     height: 25px; 
     
@@ -129,9 +131,27 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     mask-image: linear-gradient(to right, transparent 0, black 15px, black calc(100% - 15px), transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0, black 15px, black calc(100% - 15px), transparent 100%);
     
-    /* NO PADDING on container. We use spacers instead. */
     padding: 0;
 }
+
+/* DYNAMIC SPRINGS: These center the content when it fits, but shrink to safe bumpers when scrolling */
+#sub-nav::before, #sub-nav::after {
+    content: '';
+    display: block;
+    
+    /* Safety Size: Ensures text never goes under the fade mask when scrolling */
+    width: 25px; 
+    min-width: 25px; 
+    
+    flex-shrink: 0; /* Never shrink smaller than 25px */
+    flex-grow: 1;   /* Grow to fill empty space -> This centers the list! */
+}
+
+#sub-nav > * { flex-shrink: 0; }
+
+body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
+#main-header.shrink #sub-nav { font-size: 11px; gap: 15px; }
+
 
 /* DESKTOP: Re-center if content fits */
 @media (min-width: 900px) { #sub-nav { justify-content: center; } }
