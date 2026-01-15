@@ -73,7 +73,7 @@ function safeHTML(html) {
 }
 
 function initApp() {
-    handleRouting();
+    handleRouting(); // Direct call to new recursive router
     window.addEventListener('hashchange', handleRouting);
     
     // GOATCOUNTER TRACKING
@@ -168,14 +168,10 @@ function handleSearch(q) {
     renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
 }
 
-/* --- RECURSIVE NAVIGATION LOGIC --- */
-
-// 1. New Routing Handler
+// --- RECURSIVE NAVIGATION ---
 function handleRouting() { 
     if(isSearchActive) return; 
     window.scrollTo(0, 0); 
-    
-    // Get clean hash (remove #)
     let h = window.location.hash.substring(1) || 'Home'; 
     
     if(h === 'Index') { renderIndex(); return; }
@@ -186,61 +182,33 @@ function handleRouting() {
     const header = document.getElementById('main-header');
     header.classList.toggle('expanded', !shouldCollapse);
     
-    // Parse Path: "Projects/SaritEV/Telemetry" -> ['Projects', 'SaritEV', 'Telemetry']
+    // Parse Path for Recursion
     const pathSegments = h.split('/').filter(x => x);
-    
-    // Trigger Recursive Builder
     buildRecursiveNav(pathSegments);
     
-    // Content Rendering
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
 }
 
-// 2. The Recursive Builder
 function buildRecursiveNav(activePath) {
-    // We rebuild the entire nav stack (Primary + Children) to ensure correct hierarchy
-    const container = document.getElementById('primary-nav-container'); // You need to wrap #primary-nav in this div or target #main-header directly
-    // Ideally, we create a specialized container in HTML. 
-    // Let's assume you add <div id="nav-stack"></div> inside #main-header in your HTML.
-    
     let stackContainer = document.getElementById('nav-stack');
-    if (!stackContainer) {
-        // Create if missing (Robustness)
-        stackContainer = document.createElement('div');
-        stackContainer.id = 'nav-stack';
-        document.getElementById('main-header').appendChild(stackContainer);
-    }
-    stackContainer.innerHTML = ''; // Clear current stack
+    if (!stackContainer) return;
+    stackContainer.innerHTML = ''; 
 
-    // LEVEL 0: ROOT (The old "Primary Nav")
-    // We treat the main categories (Projects, Personal, etc) as Depth 0
+    // Level 0: Roots
     const roots = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort();
-    
-    // Generate Row for Root
     generateNavRow(stackContainer, roots, activePath[0] || '', '');
 
-    // LEVEL N: Iterate through active path to generate children rows
-    // If activePath is ['Projects', 'SaritEV'], we need:
-    // 1. Roots (Active: Projects) -> Generated above
-    // 2. Children of 'Projects' (Active: SaritEV)
-    // 3. Children of 'Projects/SaritEV' (Active: None/Next)
-    
+    // Level N: Children
     let currentPath = '';
-    
     for (let i = 0; i < activePath.length; i++) {
         const segment = activePath[i];
         currentPath = currentPath ? `${currentPath}/${segment}` : segment;
-        
-        // Look ahead: What is the active item in the NEXT row?
         const nextActive = activePath[i + 1] || '';
         
-        // Find children of CURRENT path
-        // e.g. if currentPath is "Projects", find pages starting with "Projects/"
         const children = [...new Set(
             db.filter(r => r.Page && r.Page.startsWith(currentPath + '/'))
               .map(r => {
-                  // Extract the specific segment after the current path
                   const rest = r.Page.substring(currentPath.length + 1);
                   return rest.split('/')[0];
               })
@@ -251,63 +219,43 @@ function buildRecursiveNav(activePath) {
         }
     }
 
-    // Update Body Padding dynamically because header height changes
     updateBodyPadding();
-    
-    // Smart Center ALL rows
+    // Center rows after render
     setTimeout(() => {
         document.querySelectorAll('.nav-row').forEach(row => centerNavRow(row));
     }, 100);
 }
 
-// 3. Row Generator Helper
 function generateNavRow(container, items, activeItem, basePath) {
     if (items.length === 0) return;
-
     const row = document.createElement('div');
     row.className = 'nav-row';
-    
     items.forEach(name => {
         const fullLink = basePath ? `#${basePath}/${name}` : `#${name}`;
         const isActive = name === activeItem;
-        
-        // Link Generation
         const a = document.createElement('a');
         a.className = `nav-link fill-anim ${isActive ? 'active' : ''}`;
         a.href = fullLink;
         a.innerText = name;
-        a.onclick = () => closeSearch(); // inherit existing logic
-        
+        a.onclick = () => closeSearch();
         row.appendChild(a);
     });
-
     container.appendChild(row);
 }
 
-// 4. Smart Centering (Updated for Generic Rows)
 function centerNavRow(row) {
     if(!row) return;
     const activeLink = row.querySelector('.active');
-    
     if (activeLink) {
         const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (row.clientWidth / 2);
         row.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-    } else {
-        // If no active link (e.g. at a leaf node), scroll to middle to indicate availability
-        // Optional: You might prefer not to scroll if it's not active.
-        // row.scrollTo({ left: (row.scrollWidth - row.clientWidth) / 2, behavior: 'smooth' });
     }
 }
 
-// 5. Dynamic Layout Adjuster
 function updateBodyPadding() {
     const h = document.getElementById('main-header');
-    if(h) {
-        document.body.style.paddingTop = (h.offsetHeight + 10) + 'px';
-    }
+    if(h) { document.body.style.paddingTop = (h.offsetHeight + 10) + 'px'; }
 }
-
-// Add Resize Observer to handle header height changes seamlessly
 const headerObserver = new ResizeObserver(() => updateBodyPadding());
 const headerEl = document.getElementById('main-header');
 if(headerEl) headerObserver.observe(headerEl);
@@ -349,14 +297,10 @@ function childrenPagesCheck(p) {
 }
 
 function renderIndex() {
-    // 1. Collapse & Reset UI State (Enforce Constraints)
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
-    // Clear Sub-nav
-    buildSubNav('Index'); 
-    // Deactivate Main Nav
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-
+    buildRecursiveNav(['Index']); // Clear nav stack
+    
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
     
@@ -546,10 +490,8 @@ function renderQuoteCard(c) {
     else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
     
     const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
-    
     const len = text.length;
     let sizeClass = 'short';
-    
     if(len > 230) sizeClass = 'xxl';
     else if(len > 150) sizeClass = 'xl';
     else if(len > 100) sizeClass = 'long';
@@ -581,7 +523,6 @@ function fetchGitHubStats() {
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
             const date = new Date(d.pushed_at);
-            // RELATIVE TIME LOGIC
             const timeAgo = (d) => {
                 const s = Math.floor((new Date() - d) / 1000);
                 let i = s / 31536000;
@@ -608,13 +549,13 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // 1. UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
+    // 1. UNIVERSAL 3D VIEWER
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
 
-    // 2. INLINE IMAGE GALLERIES: [https://url1, https://url2]
+    // 2. INLINE IMAGE GALLERIES
     clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
@@ -623,7 +564,7 @@ function processText(t) {
         return `<div class="inline-gallery">${imgs}</div>`;
     });
 
-    // 3. WIKI LINKS: [[Page Name]]
+    // 3. WIKI LINKS
     clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
 
     // 4. EMBED SHORTCODES
@@ -657,7 +598,6 @@ function formatDate(s) {
 // 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-    
     if(containers.length === 0) return;
 
     Promise.all([
@@ -667,7 +607,7 @@ function init3DViewers() {
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
         
-        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
+        // Visibility Observer for pausing animation
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
@@ -679,12 +619,12 @@ function init3DViewers() {
             });
         });
 
+        // Load Observer
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
-                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -706,20 +646,11 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
-    // RENDERER SETUP
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    
-    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    
-    // FIX: Updated Color Space Management (Three.js r152+)
-    // Old: renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.outputColorSpace = THREE.SRGBColorSpace; 
-    
-    // Lighting Setup
-    renderer.physicallyCorrectLights = true; // Note: In r160+ this becomes renderer.useLegacyLights = false;
-    
+    renderer.outputColorSpace = THREE.SRGBColorSpace; // FIX DEPRECATION
+    renderer.physicallyCorrectLights = true;
     container.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
@@ -756,12 +687,11 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); // Fade in canvas
+        container.classList.add('ready'); // Fade in
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
         box.getCenter(center);
-        
         object.position.sub(center);
         scene.add(object);
 
@@ -779,19 +709,15 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
 
         const size = box.getSize(new THREE.Vector3()).length();
         const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
-        
         camera.position.set(dist, dist * 0.4, dist * 0.8); 
         camera.lookAt(0, 0, 0);
         
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
-        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
-            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
-            
             controls.update();
             renderer.render(scene, camera);
         }
