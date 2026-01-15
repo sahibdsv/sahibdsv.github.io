@@ -622,12 +622,20 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
+    // RENDERER SETUP
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    
     // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.physicallyCorrectLights = true;
-    renderer.outputEncoding = THREE.sRGBEncoding;
+    
+    // FIX: Updated Color Space Management (Three.js r152+)
+    // Old: renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.outputColorSpace = THREE.SRGBColorSpace; 
+    
+    // Lighting Setup
+    renderer.physicallyCorrectLights = true; // Note: In r160+ this becomes renderer.useLegacyLights = false;
+    
     container.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
