@@ -61,6 +61,7 @@ function fetchCSV(u) {
     });
 }
 
+// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -75,7 +76,7 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
-    // GOATCOUNTER
+    // GOATCOUNTER TRACKING
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -86,6 +87,7 @@ function initApp() {
         }
     });
 
+    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -175,6 +177,9 @@ function buildNav() {
 function buildSubNav(top) {
     const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
     
+    // IF INDEX: Don't build subnav (treat like home)
+    if(top === 'Archive') return;
+
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
     
     subs.forEach(x => { 
@@ -183,9 +188,11 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
+    // Center ONLY when the sub-nav is first built (Navigation event)
     setTimeout(() => centerSubNav(true), 100);
 }
 
+// SMART CENTERING LOGIC
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
@@ -205,12 +212,15 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // INDEX BEHAVIOR: Collapse header, clear active states
-    if(h === 'Index') { 
+    // TREAT ARCHIVE (Index) LIKE HOME (Collapse header)
+    if(h === 'Archive') { 
+        closeSearch(); 
         document.body.classList.remove('header-expanded');
         document.getElementById('main-header').classList.remove('expanded');
-        document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
-        renderIndex(); 
+        // Clear active states on primary nav
+        document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+        document.getElementById('sub-nav').innerHTML = ''; // Clear sub-nav
+        renderArchive(); 
         return; 
     }
     
@@ -263,14 +273,13 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
-// RENDER INDEX (Formerly Archive)
-function renderIndex() {
+function renderArchive() {
     const app = document.getElementById('app'); 
-    // Removed description text as requested
+    // RENAMED TO: "Index" (No hardcoded subtitle)
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
     
     const list = app.querySelector('.archive-list');
-    const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
+    const pages = [...new Set(db.map(r => r.map ? r.Page : (r.Page || '')).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
     const groups = {};
     pages.forEach(p => {
@@ -280,9 +289,8 @@ function renderIndex() {
     });
     
     for(const [cat, items] of Object.entries(groups)) {
-        // Add class like "cat-projects" for coloring
-        const catClass = `cat-${cat.toLowerCase().split('/')[0]}`;
-        let html = `<div class="archive-group ${catClass}"><h3>${cat}</h3>`;
+        // ADD CLASS FOR COLORING (e.g., cat-Projects)
+        let html = `<div class="archive-group cat-${cat}"><h3>${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
@@ -451,13 +459,15 @@ function renderQuoteCard(c) {
     
     const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
     
+    // REVISED LENGTH LOGIC FOR BIGGER FONTS
     const len = text.length;
     let sizeClass = 'short';
     
     if(len > 230) sizeClass = 'xxl';
     else if(len > 150) sizeClass = 'xl';
-    else if(len > 100) sizeClass = 'long';
-    else if(len > 50) sizeClass = 'medium';
+    else if(len > 100) sizeClass = 'long'; 
+    else if(len > 60) sizeClass = 'medium'; 
+    // <= 60 chars gets "short" (32px)
     
     c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
                    <div class="quote-footer"><div class="author">— ${auth}</div></div>
@@ -476,7 +486,7 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
+    fd.innerHTML += `<a href="#Archive" class="fill-anim" onclick="closeSearch()">Index</a>`; // Renamed to "Index"
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
@@ -492,7 +502,7 @@ function timeAgo(date) {
     interval = seconds / 3600;
     if (interval > 1) return Math.floor(interval) + " hours ago";
     interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    if (interval > 1) return Math.floor(interval) + " mins ago";
     return "just now";
 }
 
@@ -501,9 +511,8 @@ function fetchGitHubStats() {
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
             const date = new Date(d.pushed_at);
-            // Updated to Fuzzy Time
-            const dateStr = timeAgo(date);
-            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${dateStr}</a>`;
+            const relative = timeAgo(date);
+            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Updated ${relative}</a>`;
         } 
     }).catch(()=>{}); 
 }
@@ -569,6 +578,7 @@ function init3DViewers() {
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
         
+        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
@@ -585,6 +595,7 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
+                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -607,6 +618,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.physicallyCorrectLights = true;
@@ -647,7 +659,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready');
+        container.classList.add('ready'); // Fade in canvas
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
@@ -677,8 +689,10 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
+        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
+            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
             
             controls.update();
