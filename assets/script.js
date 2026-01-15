@@ -61,7 +61,6 @@ function fetchCSV(u) {
     });
 }
 
-// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -76,7 +75,7 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
-    // GOATCOUNTER TRACKING
+    // GOATCOUNTER
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -206,16 +205,12 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // INDEX/ARCHIVE LOGIC
-    if(h === 'Index' || h === 'Archive') { 
-        renderIndex(); // Formerly renderArchive
-        // Collapse header logic:
+    // INDEX BEHAVIOR: Collapse header, clear active states
+    if(h === 'Index') { 
         document.body.classList.remove('header-expanded');
         document.getElementById('main-header').classList.remove('expanded');
-        // Clear active states
         document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
-        // Clear subnav
-        document.getElementById('sub-nav').innerHTML = '';
+        renderIndex(); 
         return; 
     }
     
@@ -268,9 +263,10 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
-// Renamed from renderArchive to renderIndex
+// RENDER INDEX (Formerly Archive)
 function renderIndex() {
     const app = document.getElementById('app'); 
+    // Removed description text as requested
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
     
     const list = app.querySelector('.archive-list');
@@ -284,14 +280,9 @@ function renderIndex() {
     });
     
     for(const [cat, items] of Object.entries(groups)) {
-        // Color Logic
-        let colorStyle = '';
-        const catLower = cat.toLowerCase();
-        if(catLower === 'projects') colorStyle = 'style="color: var(--accent-projects);"';
-        else if(catLower === 'professional') colorStyle = 'style="color: var(--accent-prof);"';
-        else if(catLower === 'personal') colorStyle = 'style="color: var(--accent-personal);"';
-
-        let html = `<div class="archive-group"><h3 ${colorStyle}>${cat}</h3>`;
+        // Add class like "cat-projects" for coloring
+        const catClass = `cat-${cat.toLowerCase().split('/')[0]}`;
+        let html = `<div class="archive-group ${catClass}"><h3>${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
@@ -490,29 +481,29 @@ function renderFooter() {
 }
 
 // RELATIVE TIME HELPER
-function getRelativeTime(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now - date) / 1000);
-    
-    if (seconds < 60) return "just now";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
-    const months = Math.floor(days / 30);
-    if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
-    return `${Math.floor(months / 12)} year(s) ago`;
+function timeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return "just now";
 }
 
 function fetchGitHubStats() { 
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
-            const relTime = getRelativeTime(d.pushed_at);
-            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Updated ${relTime}</a>`;
+            const date = new Date(d.pushed_at);
+            // Updated to Fuzzy Time
+            const dateStr = timeAgo(date);
+            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${dateStr}</a>`;
         } 
     }).catch(()=>{}); 
 }
@@ -523,7 +514,7 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER
+    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -656,7 +647,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); 
+        container.classList.add('ready');
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
@@ -689,6 +680,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         function animate() {
             requestAnimationFrame(animate);
             if (container.getAttribute('data-visible') === 'false') return;
+            
             controls.update();
             renderer.render(scene, camera);
         }

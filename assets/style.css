@@ -17,7 +17,7 @@
     --header-h-default: 90px; 
     --header-h-shrink: 60px; 
     --header-h-expanded: 115px; 
-    --header-h-expanded-shrink: 90px; 
+    --header-h-expanded-shrink: 90px;
     
     --ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -126,12 +126,10 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     overflow-x: auto; white-space: nowrap; 
     width: 100%; max-width: 900px;
     
-    /* Default: Center alignment for Desktop */
     justify-content: center;
     padding-bottom: 5px; scrollbar-width: none;
     height: 25px; 
     
-    /* MASK: Wide fade */
     mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
     
@@ -144,18 +142,10 @@ body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; o
 
 /* --- MOBILE SPECIFIC SUB-NAV --- */
 @media (max-width: 900px) {
-    #sub-nav {
-        justify-content: flex-start; /* Enable scroll */
-    }
+    #sub-nav { justify-content: flex-start; }
     
-    /* DYNAMIC SPRINGS: Half Screen Width to allow perfect centering */
     #sub-nav::before, #sub-nav::after {
-        content: '';
-        display: block;
-        width: calc(50vw - 30px); 
-        min-width: 50px; 
-        flex-shrink: 0; 
-        flex-grow: 1; 
+        content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; 
     }
 }
 
@@ -312,8 +302,6 @@ iframe { max-width: 100%; }
 
 /* Disable Interaction in Cards */
 .layout-grid .embed-wrapper { pointer-events: none; }
-
-/* Hide Inline Galleries in Cards */
 .layout-grid .inline-gallery, .layout-grid .inline-img { display: none !important; }
 
 /* --- ARTICLE IMAGE MODE --- */
@@ -331,7 +319,7 @@ iframe { max-width: 100%; }
 @media (max-width: 768px) {
     .row-media.article-mode .embed-wrapper.stl {
         height: auto !important;
-        aspect-ratio: 16/9; /* Wide and short */
+        aspect-ratio: 16/9; 
         max-height: 300px;
     }
 }
@@ -347,15 +335,16 @@ iframe { max-width: 100%; }
 .layout-grid p { font-size: 14px; margin: 0; color: var(--text-dim); font-weight: 400; line-height: 1.4; margin-bottom: 2px; }
 
 .meta-row { display: flex; gap: 6px; margin-top: auto; flex-wrap: wrap; align-items: center; padding-top: 4px; }
-.chip { font-size: 12px; font-weight: 600; color: #777; background: #1a1a1a; padding: 4px 10px; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; user-select: none; display: inline-flex; align-items: center; justify-content: center; }
+/* CHIP SIZE: Increased to 11px */
+.chip { font-size: 11px; font-weight: 600; color: #777; background: #1a1a1a; padding: 4px 10px; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; user-select: none; display: inline-flex; align-items: center; justify-content: center; }
 .chip:hover { color: #fff; background: #333; }
 .chip.date { background: transparent; color: #666; font-weight: 500; border: 1px solid #333; padding: 4px 10px; }
 .chip.date:hover { color: #fff; background: #1a1a1a; border-color: #555; } 
 
 .article-meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
-.author-link { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; color: #666; transition: color 0.2s; }
+.author-link { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; color: #666; transition: color 0.2s; }
 .author-link:hover { color: var(--accent-projects); }
-.article-link-btn { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #222; fill: #999; transition: all 0.2s; text-decoration: none; }
+.article-link-btn { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #222; fill: #999; transition: all 0.2s; text-decoration: none; }
 .article-link-btn:hover { background: #fff; fill: #000; }
 .article-tags { display: flex; gap: 6px; }
 
@@ -383,15 +372,16 @@ a .inline-img.zoomable { cursor: pointer; }
     font-family: 'Playfair Display', serif; font-style: italic; color: #eee; margin-bottom: 4px; line-height: 1.25; 
     transition: font-size 0.3s; width: 100%;
 }
-/* Updated Quote Sizes */
-.layout-quote blockquote.short  { font-size: 32px; }
-.layout-quote blockquote.medium { font-size: 24px; }
-.layout-quote blockquote.long   { font-size: 18px; }
-.layout-quote blockquote.xl     { font-size: 16px; }
-.layout-quote blockquote.xxl    { font-size: 14px; line-height: 1.2; }
+/* QUOTE SIZES: Bumped for impact */
+.layout-quote blockquote.short  { font-size: 32px; } /* Was 22px */
+.layout-quote blockquote.medium { font-size: 24px; } /* Was 18px */
+.layout-quote blockquote.long   { font-size: 18px; } /* Was 16px */
+.layout-quote blockquote.xl     { font-size: 15px; }
+.layout-quote blockquote.xxl    { font-size: 13px; line-height: 1.2; }
 
 .quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 2px; flex-shrink: 0; }
-.layout-quote .author { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
+/* AUTHOR SIZE: Bumped */
+.layout-quote .author { font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
 .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
 .layout-quote .refresh-btn { position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; }
 .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg); }
@@ -404,18 +394,27 @@ a .inline-img.zoomable { cursor: pointer; }
 .btn-primary { display: inline-block; padding: 10px 25px; background: #fff; color: #000; text-decoration: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; border-radius: 4px; transition: opacity 0.2s; }
 .btn-primary:hover { opacity: 0.8; }
 
+/* INDEX (Archive) STYLES */
 .archive-list { column-count: 2; column-gap: 40px; margin-top: 20px; }
 .archive-group { break-inside: avoid; margin-bottom: 30px; }
 .archive-group h3 { font-size: 14px; text-transform: uppercase; color: #666; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; }
+
+/* INDEX CATEGORY COLORS */
+.archive-group.cat-projects h3 { color: var(--accent-projects); }
+.archive-group.cat-professional h3 { color: var(--accent-prof); }
+.archive-group.cat-personal h3 { color: var(--accent-personal); }
+
 .archive-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
 .archive-link span { color: #444; font-size: 12px; margin-left: 8px; }
 @media (max-width: 600px) { .archive-list { column-count: 1; } }
 
 footer { text-align: center; padding: 15px 0; border-top: 1px solid #1a1a1a; margin-top: 30px; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin-left: auto; margin-right: auto; width: 100%; }
 footer .footer-links { display: flex; gap: 20px; justify-content: center; }
+/* FOOTER LINK SIZE: Bumped to 14px */
 footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; --text-hover: #fff; }
 
-#version-tag { font-size: 13px; color: #666; font-family: 'Jost', sans-serif; --text-base: #666; --text-hover: #fff; }
+/* VERSION TAG SIZE: Bumped */
+#version-tag { font-size: 14px; color: #666; font-family: 'Jost', sans-serif; --text-base: #666; --text-hover: #fff; }
 #version-tag a { text-decoration: none; }
 #version-tag a:hover { text-decoration: underline; }
 
