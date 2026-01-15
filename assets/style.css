@@ -129,18 +129,18 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     padding-bottom: 5px; scrollbar-width: none;
     height: 25px; 
     
-    /* MASK: Wide fade (50px) to make scroll obvious */
+    /* MASK: Wide fade (50px) */
     mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
     
     padding: 0;
 }
 
-/* DYNAMIC SPRINGS: Center content if fits, otherwise act as bumpers */
+/* DYNAMIC SPRINGS: Half Screen Width to allow perfect centering of start/end items */
 #sub-nav::before, #sub-nav::after {
     content: '';
     display: block;
-    width: 50px; 
+    width: calc(50vw - 30px); /* Smart centering spring */
     min-width: 50px; 
     flex-shrink: 0; 
     flex-grow: 1; 
@@ -288,18 +288,8 @@ iframe { max-width: 100%; }
     transition: background 0.3s;
 }
 .embed-wrapper.stl:active { cursor: grabbing; }
+/* Fade In Canvas - NO Shimmer */
 .embed-wrapper.stl canvas { outline: none; opacity: 0; transition: opacity 0.6s ease-out; }
-
-/* 3D Loading State (Shimmer) */
-.embed-wrapper.stl.shimmer {
-    background: #1a1a1a;
-    background-image: linear-gradient(90deg, #1a1a1a 0%, #333 50%, #1a1a1a 100%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite linear;
-    cursor: wait;
-}
-
-/* 3D Ready State (Fade In) */
 .embed-wrapper.stl.ready canvas { opacity: 1; }
 
 /* 3D Model inside a Card (Seamless) */
@@ -310,10 +300,6 @@ iframe { max-width: 100%; }
     border-radius: 0; 
     border: none; 
     margin: 0;    
-}
-/* Shimmer override for Cards */
-.row-media .embed-wrapper.stl.shimmer {
-    background-image: linear-gradient(90deg, #1a1a1a 0%, #333 50%, #1a1a1a 100%);
 }
 
 /* Disable Interaction in Cards (No "Scroll Trap") */

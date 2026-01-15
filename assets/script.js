@@ -87,7 +87,7 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER (Visual Only - No Horizontal Scroll Jacking)
+    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -185,7 +185,7 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // On PAGE LOAD: Show off scrollability (forceMiddle = true)
+    // Center ONLY when the sub-nav is first built (Navigation event)
     setTimeout(() => centerSubNav(true), 100);
 }
 
@@ -434,7 +434,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
-    // JITTER FIX: Wait 500ms (after CSS transition) before loading 3D
+    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
@@ -493,7 +493,7 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER
+    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -548,11 +548,25 @@ function init3DViewers() {
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
         
+        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
+        const visibilityObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const container = entry.target;
+                if (entry.isIntersecting) {
+                    container.setAttribute('data-visible', 'true');
+                } else {
+                    container.setAttribute('data-visible', 'false');
+                }
+            });
+        });
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
+                    // Start tracking visibility for performance
+                    visibilityObserver.observe(entry.target);
                 }
             });
         }, { rootMargin: "200px" });
@@ -563,7 +577,6 @@ function init3DViewers() {
 
 function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     container.classList.add('loaded');
-    container.classList.add('shimmer'); // START SHIMMER
     
     const url = container.getAttribute('data-src');
     const customColor = container.getAttribute('data-color');
@@ -575,8 +588,9 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    // Performance: Limit pixel ratio on phones
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.physicallyCorrectLights = true;
     renderer.outputEncoding = THREE.sRGBEncoding;
     container.appendChild(renderer.domElement);
@@ -615,9 +629,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        // STOP SHIMMER & SHOW MODEL
-        container.classList.remove('shimmer');
-        container.classList.add('ready');
+        container.classList.add('ready'); // Fade in canvas
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
@@ -647,8 +659,12 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
+        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
+            // If not visible, skip heavy lifting
+            if (container.getAttribute('data-visible') === 'false') return;
+            
             controls.update();
             renderer.render(scene, camera);
         }
@@ -657,7 +673,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
 
     const onError = (e) => {
         console.error(e);
-        container.classList.remove('shimmer');
         container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
     };
 
