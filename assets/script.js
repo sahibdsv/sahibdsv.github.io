@@ -76,6 +76,7 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
+    // GOATCOUNTER TRACKING
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -86,6 +87,7 @@ function initApp() {
         }
     });
 
+    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -183,6 +185,7 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
+    // Center ONLY when the sub-nav is first built
     setTimeout(() => centerSubNav(true), 100);
 }
 
@@ -206,10 +209,11 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // RENAMED from 'Archive' to 'Index'
-    if(h === 'Index') { renderArchive(); return; }
+    // RENAMED TO Index
+    if(h === 'Index') { renderIndex(); return; }
     
-    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:'));
+    // Collapses header on Home AND Index
+    const shouldCollapse = (h === 'Home' || h === 'Index' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
@@ -258,17 +262,11 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
-function renderArchive() {
+// RENAMED & UPDATED: INDEX
+function renderIndex() {
     const app = document.getElementById('app'); 
-    // UPDATED: Title 'Index' and removed subtext
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1><p>System Overview</p></div><div class="section archive-list"></div>';
     
-    // Ensure header state is reset (Expanded with no active links)
-    document.body.classList.add('header-expanded');
-    document.getElementById('main-header').classList.add('expanded');
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-    buildSubNav('Index'); // Clears sub-nav
-
     const list = app.querySelector('.archive-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
@@ -279,15 +277,18 @@ function renderArchive() {
         groups[cat].push(p);
     });
     
+    // Category Colors Map
+    const catColors = {
+        'Projects': 'var(--accent-projects)',
+        'Professional': 'var(--accent-prof)',
+        'Personal': 'var(--accent-personal)'
+    };
+    
     for(const [cat, items] of Object.entries(groups)) {
-        // ADDED: Logic to inject category class for coloring
-        let catClass = '';
-        const cLower = cat.toLowerCase();
-        if(cLower.startsWith('projects')) catClass = 'cat-projects';
-        else if(cLower.startsWith('professional')) catClass = 'cat-professional';
-        else if(cLower.startsWith('personal')) catClass = 'cat-personal';
-
-        let html = `<div class="archive-group ${catClass}"><h3>${cat}</h3>`;
+        // Apply color if category matches
+        const colorStyle = catColors[cat] ? `style="color:${catColors[cat]}; border-bottom-color:#222;"` : '';
+        
+        let html = `<div class="archive-group"><h3 ${colorStyle}>${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
@@ -481,18 +482,36 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    // UPDATED: "Index" instead of "Archive"
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
+}
+
+// RELATIVE TIME FUNCTION
+function timeAgo(dateString) {
+    const date = new Date(dateString);
+    if(isNaN(date.getTime())) return dateString;
+    
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " mins ago";
+    return "just now";
 }
 
 function fetchGitHubStats() { 
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
-            const date = new Date(d.pushed_at);
-            const dateStr = date.toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
-            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last Updated: ${dateStr}</a>`;
+            const relTime = timeAgo(d.pushed_at);
+            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${relTime}</a>`;
         } 
     }).catch(()=>{}); 
 }
@@ -558,6 +577,7 @@ function init3DViewers() {
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
         
+        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
@@ -574,6 +594,7 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
+                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -596,6 +617,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.physicallyCorrectLights = true;
@@ -636,7 +658,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); 
+        container.classList.add('ready'); // Fade in canvas
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
@@ -666,8 +688,10 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
+        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
+            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
             
             controls.update();
