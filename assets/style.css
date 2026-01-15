@@ -303,6 +303,46 @@ a[target="_blank"]:not(.clickable-block)::after {
 .inline-img.zoomable:hover { opacity: 0.9; }
 a .inline-img.zoomable { cursor: pointer; }
 
+/* --- CARD MEDIA TYPES --- */
+
+/* 1. Placeholder (Text Cover) for empty cards */
+.row-media.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #151515 0%, #222 100%);
+    border-bottom: 1px solid #222;
+    padding: 20px;
+    text-align: center;
+}
+
+.row-media.placeholder span {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #444; /* Subtle text */
+    letter-spacing: 1px;
+    line-height: 1.3;
+}
+
+.layout-grid:hover .row-media.placeholder span {
+    color: #fff; /* Light up on hover */
+    transition: color 0.3s;
+}
+
+/* 2. 3D Model inside a Card */
+.row-media .embed-wrapper.stl {
+    height: 100% !important; /* Force it to fit the card header (160px) */
+    width: 100% !important;
+    background: transparent; /* Let the card bg show */
+    border-radius: 0; /* Remove border radius as the container has it */
+}
+
+/* 3. Ensure the text content doesn't duplicate the title if we have a placeholder */
+.layout-grid.has-placeholder h3 {
+    margin-top: 5px;
+}
+
 /* EMBEDS */
 .embed-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: 6px; margin: 20px 0; background: #111; border: 1px solid #222; }
 .embed-wrapper.video { padding-top: 56.25%; }
