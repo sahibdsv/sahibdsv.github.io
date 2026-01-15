@@ -234,7 +234,7 @@ function renderPage(p) {
         } 
     }
 
-    // Initialize 3D Viewers if present
+    // Initialize 3D Viewers
     setTimeout(init3DViewers, 100);
 }
 
@@ -412,12 +412,10 @@ function renderQuoteCard(c) {
     const len = text.length;
     let sizeClass = 'short';
     
-    // Updated Thresholds for Safety
-    if(len > 230) sizeClass = 'xxl';      // > 230 chars -> 13px
-    else if(len > 150) sizeClass = 'xl';  // > 150 chars -> 14px
-    else if(len > 100) sizeClass = 'long';// > 100 chars -> 16px
-    else if(len > 50) sizeClass = 'medium';// > 50 chars -> 18px
-    // Default (<50) -> 22px
+    if(len > 230) sizeClass = 'xxl';
+    else if(len > 150) sizeClass = 'xl';
+    else if(len > 100) sizeClass = 'long';
+    else if(len > 50) sizeClass = 'medium';
     
     c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
                    <div class="quote-footer"><div class="author">— ${auth}</div></div>
@@ -456,8 +454,12 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // 3D STL Viewer Shortcode
-    clean = clean.replace(/\{\{STL: (.*?)\}\}/g, '<div class="embed-wrapper stl" data-src="$1"></div>');
+    // 3D STL Viewer Shortcode: {{STL: url | #color}}
+    // Group 1: URL, Group 2: Color (optional)
+    clean = clean.replace(/\{\{STL: (.*?)(?: \| (.*?))?\}\}/g, (match, url, color) => {
+        const colorAttr = color ? `data-color="${color.trim()}"` : '';
+        return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
+    });
 
     // Embed Shortcodes
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
@@ -524,6 +526,7 @@ function init3DViewers() {
 function loadSTL(container, THREE, STLLoader, OrbitControls) {
     container.classList.add('loaded');
     const url = container.getAttribute('data-src');
+    const customColor = container.getAttribute('data-color');
     
     // Scene
     const scene = new THREE.Scene();
@@ -563,8 +566,11 @@ function loadSTL(container, THREE, STLLoader, OrbitControls) {
         geometry.boundingBox.getCenter(center);
         geometry.center(); 
 
+        // Use custom color if provided, else default grey
+        const materialColor = customColor ? customColor : 0xaaaaaa;
+
         const material = new THREE.MeshPhongMaterial({ 
-            color: 0xaaaaaa, 
+            color: materialColor, 
             specular: 0x111111, 
             shininess: 200 
         });
