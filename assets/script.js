@@ -1,4 +1,4 @@
-/* assets/script.js */
+/* assets/script.js - v1.6 */
 
 let db = [], quotesDb = [], isSearchActive = false;
 
@@ -73,7 +73,8 @@ function safeHTML(html) {
 }
 
 function initApp() {
-    buildNav(); handleRouting();
+    buildNav(); 
+    handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
     // GOATCOUNTER TRACKING
@@ -87,11 +88,23 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER
+    // SMART SCROLL & CLICK-TO-EXPAND
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
-        h.classList.toggle('shrink', shouldShrink);
+        
+        if (h.classList.contains('shrink') !== shouldShrink) {
+            h.classList.toggle('shrink', shouldShrink);
+            if (!shouldShrink) h.classList.remove('manual-expand');
+        }
+    });
+
+    document.getElementById('main-header').addEventListener('click', (e) => {
+        if(e.target.closest('a') || e.target.closest('input') || e.target.closest('.icon-btn')) return;
+        const h = document.getElementById('main-header');
+        if (h.classList.contains('shrink')) {
+            h.classList.toggle('manual-expand');
+        }
     });
 
     document.addEventListener('click', (e) => {
@@ -161,49 +174,85 @@ function handleSearch(q) {
     if(!q) return; 
     isSearchActive = true; 
     document.body.classList.remove('header-expanded');
-    document.getElementById('main-header').classList.remove('expanded');
+    
+    // Clear dynamic stack
+    document.getElementById('dynamic-nav-container').innerHTML = '';
 
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
     renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
 }
 
+// LEVEL 0: ROOTS
 function buildNav() { 
     const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
     const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
     p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
 }
 
-function buildSubNav(top) {
-    const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
+// THE SLIDE RULE ENGINE (v1.6 Fixed)
+function buildRecursiveNav(fullPath) {
+    const container = document.getElementById('dynamic-nav-container');
+    const header = document.getElementById('main-header');
+    if(!container || !header) return;
     
-    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
+    container.innerHTML = '';
     
-    subs.forEach(x => { 
-        const name = x.split('/')[1];
-        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
-        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
-    });
+    const parts = fullPath.split('/');
+    const depth = parts.length; 
+    
+    // Set Depth immediately for CSS
+    header.setAttribute('data-depth', depth);
+    header.classList.remove('manual-expand');
 
-    // Center ONLY when the sub-nav is first built (Navigation event)
-    setTimeout(() => centerSubNav(true), 100);
-}
-
-// SMART CENTERING LOGIC
-function centerSubNav(forceMiddleIfNone) {
-    const n = document.getElementById('sub-nav');
-    if(!n) return;
-    const activeLink = n.querySelector('.active');
-    
-    if (activeLink) {
-        // If Active: Lock to center
-        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
-        n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-    } else if (forceMiddleIfNone) {
-        // If Main Page Load: Scroll to MIDDLE to hint content
-        const middle = (n.scrollWidth - n.clientWidth) / 2;
-        n.scrollTo({ left: middle, behavior: 'smooth' });
+    for (let i = 0; i < parts.length; i++) {
+        const parentPath = parts.slice(0, i+1).join('/');
+        
+        const children = [...new Set(db
+            .filter(r => r.Page && r.Page.startsWith(parentPath + '/'))
+            .map(r => {
+                const remainder = r.Page.substring(parentPath.length + 1);
+                return remainder.split('/')[0];
+            })
+        )].sort();
+        
+        if (children.length === 0) continue; 
+        
+        const row = document.createElement('div');
+        row.className = 'nav-row';
+        row.setAttribute('data-level', i + 1);
+        
+        const activeItem = parts[i+1]; 
+        
+        children.forEach(childName => {
+            const href = `${parentPath}/${childName}`;
+            const isActive = (childName === activeItem);
+            row.innerHTML += `<a href="#${href}" class="sub-link fill-anim ${isActive ? 'active' : ''}" onclick="closeSearch()">${safeHTML(childName)}</a>`;
+        });
+        
+        container.appendChild(row);
+        
+        if (activeItem) {
+             setTimeout(() => {
+                 const activeLink = row.querySelector('.active');
+                 if(activeLink) {
+                     const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (row.clientWidth / 2);
+                     row.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+                 }
+             }, 50);
+        }
     }
+    
+    // Recalculate Padding
+    requestAnimationFrame(() => {
+        const wasShrunk = header.classList.contains('shrink');
+        if(wasShrunk) header.classList.remove('shrink');
+        
+        const fullHeight = header.offsetHeight;
+        document.body.style.paddingTop = (fullHeight + 20) + 'px';
+        
+        if(wasShrunk) header.classList.add('shrink');
+    });
 }
 
 function handleRouting() { 
@@ -213,16 +262,22 @@ function handleRouting() {
     
     if(h === 'Index') { renderIndex(); return; }
     
-    // STATE: Collapse Header for Home, Filter, OR Index
-    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
-    document.body.classList.toggle('header-expanded', !shouldCollapse);
-    document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
+    const isIndex = (h === 'Index');
+    document.body.classList.toggle('header-expanded', isIndex);
     
-    // Deactivate Main Nav Highlights if Index (or non-matching top)
     const top = h.split('/')[0]; 
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
+        const href = a.getAttribute('href'); 
+        if(href) a.classList.toggle('active', href.replace('#', '') === top); 
+    }); 
     
-    buildSubNav(top); 
+    if (!h.startsWith('Filter:') && h !== 'Home') {
+        buildRecursiveNav(h);
+    } else {
+        document.getElementById('dynamic-nav-container').innerHTML = '';
+        document.getElementById('main-header').setAttribute('data-depth', 0);
+        document.body.style.paddingTop = ''; 
+    }
     
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
@@ -241,7 +296,7 @@ function renderPage(p) {
     const ex = db.filter(r => r.Page === p); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
-    const isMainPage = !p.includes('/');
+    const isMainPage = !p.includes('/'); 
     
     if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
     else if(childrenPagesCheck(p)) { }
@@ -250,13 +305,17 @@ function renderPage(p) {
         return; 
     }
     
-    if(isMainPage) {
-        const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
-        if(childrenPages.length > 0) {
-            const overviewRows = childrenPages.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
-            renderRows(overviewRows, null, true, true); 
-        } 
-    }
+    const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
+    
+    if(childrenPages.length > 0) {
+        const directChildren = childrenPages.filter(child => {
+            const remainder = child.substring(p.length + 1);
+            return !remainder.includes('/');
+        });
+        const pagesToShow = directChildren.length > 0 ? directChildren : childrenPages;
+        const overviewRows = pagesToShow.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
+        renderRows(overviewRows, null, true, true); 
+    } 
 }
 
 function childrenPagesCheck(p) {
@@ -265,12 +324,8 @@ function childrenPagesCheck(p) {
 }
 
 function renderIndex() {
-    // 1. Collapse & Reset UI State (Enforce Constraints)
-    document.body.classList.remove('header-expanded');
-    document.getElementById('main-header').classList.remove('expanded');
-    // Clear Sub-nav
-    buildSubNav('Index'); 
-    // Deactivate Main Nav
+    document.getElementById('dynamic-nav-container').innerHTML = '';
+    document.getElementById('main-header').setAttribute('data-depth', 0);
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
     const app = document.getElementById('app'); 
@@ -318,7 +373,6 @@ function renderHome() {
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     const app = document.getElementById('app'); if(!app) return; 
-    
     rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
 
     if(!append) {
@@ -378,11 +432,9 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              else mediaHtml = ''; 
 
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
-             
              if(r.LinkURL) {
                  metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
              }
-
              metaHtml += '<div class="article-tags">';
              if(r.Timestamp) {
                  const dateVal = formatDate(r.Timestamp);
@@ -425,7 +477,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
         let l = link; if(!l) l = `#${r.Page}`; 
         const internal = l.startsWith('#'), target = internal ? '' : '_blank';
-        
         let mh = '';
         if(r.Timestamp || tags.length > 0) {
              mh = `<div class="meta-row">`;
@@ -440,17 +491,13 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         const d = document.createElement('div'); 
         d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
         d.setAttribute('data-link', l); d.setAttribute('data-target', target);
-        
         d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
-        
         if(gc) gc.appendChild(d);
     });
     
     if(window.MathJax && window.MathJax.typeset) {
         window.MathJax.typeset();
     }
-
-    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
@@ -487,7 +534,6 @@ function renderFooter() {
         }
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
-    
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
@@ -497,7 +543,6 @@ function fetchGitHubStats() {
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
             const date = new Date(d.pushed_at);
-            // RELATIVE TIME LOGIC
             const timeAgo = (d) => {
                 const s = Math.floor((new Date() - d) / 1000);
                 let i = s / 31536000;
@@ -524,13 +569,11 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // 1. UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
 
-    // 2. INLINE IMAGE GALLERIES: [https://url1, https://url2]
     clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
@@ -539,16 +582,11 @@ function processText(t) {
         return `<div class="inline-gallery">${imgs}</div>`;
     });
 
-    // 3. WIKI LINKS: [[Page Name]]
     clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
-
-    // 4. EMBED SHORTCODES
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
     clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
-
-    // 5. GENERAL LINK STYLING
     clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
 
     return clean; 
@@ -570,10 +608,8 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
-// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-    
     if(containers.length === 0) return;
 
     Promise.all([
@@ -583,7 +619,6 @@ function init3DViewers() {
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
         
-        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
@@ -600,7 +635,6 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
-                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -621,20 +655,12 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     scene.background = null; 
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
-    
-    // RENDERER SETUP
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     
-    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    
-    // FIX: Updated Color Space Management (Three.js r152+)
-    // Old: renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
-    
-    // Lighting Setup
-    renderer.physicallyCorrectLights = true; // Note: In r160+ this becomes renderer.useLegacyLights = false;
+    renderer.physicallyCorrectLights = true; 
     
     container.appendChild(renderer.domElement);
 
@@ -672,8 +698,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); // Fade in canvas
-
+        container.classList.add('ready'); 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
         box.getCenter(center);
@@ -702,12 +727,9 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
-        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
-            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
-            
             controls.update();
             renderer.render(scene, camera);
         }
