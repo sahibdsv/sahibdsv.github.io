@@ -121,7 +121,9 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     overflow-x: auto; white-space: nowrap; 
     width: 100%; max-width: 900px;
     
+    /* START LEFT: The "Springs" will handle centering if space permits */
     justify-content: flex-start;
+    
     padding-bottom: 5px; scrollbar-width: none;
     height: 25px; 
     
@@ -129,19 +131,20 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     mask-image: linear-gradient(to right, transparent 0, black 15px, black calc(100% - 15px), transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0, black 15px, black calc(100% - 15px), transparent 100%);
     
-    /* NO PADDING on container. We use spacers instead. */
     padding: 0;
 }
 
-/* DESKTOP: Re-center if content fits */
-@media (min-width: 900px) { #sub-nav { justify-content: center; } }
-
-/* SCROLL BUMPERS: These force the text to stop inside the 'safe zone' */
+/* DYNAMIC SPRINGS: These center the content when it fits, but shrink to safe bumpers when scrolling */
 #sub-nav::before, #sub-nav::after {
     content: '';
     display: block;
-    width: 25px; /* Wider than the 15px mask so text is fully visible */
-    flex-shrink: 0;
+    
+    /* Safety Size: Ensures text never goes under the fade mask when scrolling */
+    width: 25px; 
+    min-width: 25px; 
+    
+    flex-shrink: 0; /* Never shrink smaller than 25px */
+    flex-grow: 1;   /* Grow to fill empty space -> This centers the list! */
 }
 
 #sub-nav > * { flex-shrink: 0; }
@@ -225,9 +228,28 @@ a[target="_blank"]:not(.clickable-block)::after {
 .layout-grid { 
     display: flex; flex-direction: column; gap: 3px; padding: 12px; 
     border-radius: 6px; transition: background 0.2s; border: none; height: 100%; position: relative;
+    /* 1. Stop the blue flash on Android/Chrome */
     -webkit-tap-highlight-color: transparent; 
 }
-.layout-grid.clickable-block { cursor: pointer; user-select: none; -webkit-user-select: none; }
+
+/* 2. The "Nuclear" Fix for Text Highlighting */
+.layout-grid.clickable-block,
+.layout-grid.clickable-block * { 
+    cursor: pointer;
+    
+    /* Stop text selection */
+    user-select: none; 
+    -webkit-user-select: none; 
+    
+    /* Stop the iOS long-press magnifying glass */
+    -webkit-touch-callout: none; 
+}
+
+/* 3. Re-enable pointer events for Chips so they can still be clicked */
+.layout-grid.clickable-block .chip {
+    pointer-events: auto;
+}
+
 .layout-grid:hover { background: var(--card-bg-hover); }
 
 .layout-grid.cat-projects h3 { --text-hover: var(--accent-projects); }
@@ -277,7 +299,13 @@ a[target="_blank"]:not(.clickable-block)::after {
 .inline-img.zoomable:hover { opacity: 0.9; }
 a .inline-img.zoomable { cursor: pointer; }
 
-<<<<<<< HEAD
+/* EMBEDS */
+.embed-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: 6px; margin: 20px 0; background: #111; border: 1px solid #222; }
+.embed-wrapper.video { padding-top: 56.25%; }
+.embed-wrapper.doc { height: 600px; }
+.embed-wrapper.map { height: 400px; }
+.embed-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+iframe { max-width: 100%; }
 
 /* QUOTE - FIXED 100px */
 .layout-quote { 
@@ -320,28 +348,17 @@ a .inline-img.zoomable { cursor: pointer; }
     margin-top: 2px; /* Pull footer up slightly */
     flex-shrink: 0; /* Prevent footer from shrinking */
 }
-=======
-/* EMBEDS */
-.embed-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: 6px; margin: 20px 0; background: #111; border: 1px solid #222; }
-.embed-wrapper.video { padding-top: 56.25%; }
-.embed-wrapper.doc { height: 600px; }
-.embed-wrapper.map { height: 400px; }
-.embed-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-iframe { max-width: 100%; }
 
-.layout-quote { padding: 0 20px; text-align: center; position: relative; margin: 0 auto 10px; height: 100px; width: 100%; max-width: 800px; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
-.layout-quote blockquote { font-family: 'Playfair Display', serif; font-style: italic; color: #eee; margin-bottom: 5px; line-height: 1.2; transition: font-size 0.3s; }
-.layout-quote blockquote.short { font-size: 24px; }
-.layout-quote blockquote.medium { font-size: 20px; }
-.layout-quote blockquote.long { font-size: 16px; }
-.layout-quote blockquote.xl { font-size: 14px; }
-.quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; }
 .layout-quote .author { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
 .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
-.layout-quote .refresh-btn { position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; }
+
+.layout-quote .refresh-btn { 
+    position: absolute; bottom: 5px; right: 5px; 
+    width: 18px; height: 18px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; 
+    padding: 2px;
+}
 .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg); }
 .layout-quote.loading blockquote, .layout-quote.loading .quote-footer { opacity: 0.3; pointer-events: none; }
->>>>>>> a1b30c33a3c55a81227a84c6c1c5497b8b778d9a
 
 .layout-404 { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .layout-404 h1 { font-size: 80px; margin: 0; line-height: 1; color: #333; }
