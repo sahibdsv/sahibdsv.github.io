@@ -358,3 +358,70 @@ footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; -
     .layout-hero h1 { font-size: 32px; }
     .layout-404 h1 { font-size: 60px; }
 }
+
+/* --- DEEP STACK COMPRESSION (The "Slide Rule" Fix) --- */
+
+/* DEFAULT STATE (Depth 0-1) */
+#main-header { transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+
+/* DEPTH 2+ (Sub-Sub-Nav and deeper) 
+   Trigger: When we have 3+ rows of navigation 
+*/
+#main-header[data-depth="2"],
+#main-header[data-depth="3"],
+#main-header[data-depth="4"] {
+    padding-top: 5px; /* Minimal top padding */
+}
+
+/* 1. AGGRESSIVELY SHRINK BRAND NAME */
+#main-header[data-depth="2"] #brand-name,
+#main-header[data-depth="3"] #brand-name {
+    font-size: 12px;     /* Tiny, label-like */
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+    opacity: 0.6;        /* Fade it out slightly to reduce visual weight */
+}
+
+/* 2. AGGRESSIVELY SHRINK ROOT NAV (Projects/Prof/Personal) */
+#main-header[data-depth="2"] #primary-nav,
+#main-header[data-depth="3"] #primary-nav {
+    margin-bottom: 2px;
+    gap: 15px;
+}
+#main-header[data-depth="2"] .nav-link,
+#main-header[data-depth="3"] .nav-link {
+    font-size: 11px;     /* Match the tiny brand */
+    opacity: 0.8;
+}
+
+/* 3. COMPRESS THE STACKED ROWS */
+#main-header[data-depth="2"] .nav-row,
+#main-header[data-depth="3"] .nav-row {
+    padding: 0 0 4px;    /* Almost zero padding */
+    gap: 15px;
+}
+#main-header[data-depth="2"] .sub-link,
+#main-header[data-depth="3"] .sub-link {
+    font-size: 12px;     /* Keep readable, but small */
+    padding: 2px 0;      /* Tighter touch targets (but still usable) */
+}
+
+/* 4. VISUAL HIERARCHY: Make the DEEPEST row slightly brighter/larger? */
+#main-header[data-depth] .nav-row:last-child .sub-link {
+    font-weight: 600;
+    color: #eee;
+}
+#main-header[data-depth] .nav-row:not(:last-child) .sub-link {
+    font-weight: 400;
+    opacity: 0.7;        /* Dim parent levels */
+}
+
+/* MOBILE ADJUSTMENTS */
+@media (max-width: 600px) {
+    /* On mobile deep dive, we might even hide the Brand Name completely to save space? 
+       Uncomment if you want that behavior: */
+    /* #main-header[data-depth="3"] #brand-name { display: none; } 
+    */
+    
+    #main-header[data-depth="2"] .nav-link { font-size: 10px; }
+}

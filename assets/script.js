@@ -177,32 +177,27 @@ function buildNav() {
     p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
 }
 
-// THE SLIDE RULE: RECURSIVE BUILDER
+// UPDATED: THE SLIDE RULE ENGINE (With Depth Sensor)
 function buildRecursiveNav(fullPath) {
     const container = document.getElementById('dynamic-nav-container');
-    if(!container) return;
+    const header = document.getElementById('main-header');
+    if(!container || !header) return;
+    
     container.innerHTML = '';
     
     const parts = fullPath.split('/');
-    // We already have Level 0 (Roots) in #primary-nav.
-    // We need to build Level 1, Level 2, etc.
+    const depth = parts.length; // How deep are we?
     
-    // Iterate from depth 0 to length-1 to build siblings for each level
-    // Logic: 
-    // If path is "Projects/SaritEV/Telemetry"
-    // Level 1: Siblings of "Projects/..." (Children of Projects) -> Highlight "SaritEV"
-    // Level 2: Siblings of "Projects/SaritEV/..." (Children of SaritEV) -> Highlight "Telemetry"
-    
-    let currentPath = parts[0]; // Start at Root (e.g. "Projects")
+    // SET DEPTH ATTRIBUTE FOR CSS SCALING
+    // 0 = Root, 1 = Sub, 2+ = Deep
+    header.setAttribute('data-depth', depth);
+
+    let currentPath = parts[0]; 
     
     for (let i = 0; i < parts.length; i++) {
-        // Look for children of currentPath
-        // The "next" level items will start with currentPath + "/"
-        // Example: i=0, currentPath="Projects". Find "Projects/X".
-        
         const parentPath = parts.slice(0, i+1).join('/');
         
-        // Find all pages that are direct children of parentPath
+        // Find children of this segment
         const children = [...new Set(db
             .filter(r => r.Page && r.Page.startsWith(parentPath + '/'))
             .map(r => {
@@ -211,13 +206,15 @@ function buildRecursiveNav(fullPath) {
             })
         )].sort();
         
-        if (children.length === 0) continue; // No children at this level
+        if (children.length === 0) continue; 
         
         // Create Row
         const row = document.createElement('div');
         row.className = 'nav-row';
         
-        // Determine active item for this row (if it exists in path)
+        // Mark the level for specific CSS targeting (e.g. Row 1 vs Row 3)
+        row.setAttribute('data-level', i + 1);
+        
         const activeItem = parts[i+1]; 
         
         children.forEach(childName => {
@@ -228,10 +225,8 @@ function buildRecursiveNav(fullPath) {
         
         container.appendChild(row);
         
-        // If we have an active item, center it
+        // Center Active Item
         if (activeItem) {
-             // We can't center immediately because DOM render needs a tick, 
-             // but we can try slightly delayed or rely on user scroll
              setTimeout(() => {
                  const activeLink = row.querySelector('.active');
                  if(activeLink) {
@@ -242,14 +237,10 @@ function buildRecursiveNav(fullPath) {
         }
     }
     
-    // Adjust Body Padding based on Header Height (Since it's dynamic now)
+    // Adjust Padding
     requestAnimationFrame(() => {
         const h = document.getElementById('main-header');
-        if(h) {
-            const height = h.offsetHeight;
-            // Add buffer
-            document.body.style.paddingTop = (height + 20) + 'px';
-        }
+        if(h) document.body.style.paddingTop = (h.offsetHeight + 20) + 'px';
     });
 }
 
