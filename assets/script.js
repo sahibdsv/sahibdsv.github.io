@@ -61,7 +61,6 @@ function fetchCSV(u) {
     });
 }
 
-// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -87,7 +86,6 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -185,11 +183,9 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // Center ONLY when the sub-nav is first built
     setTimeout(() => centerSubNav(true), 100);
 }
 
-// SMART CENTERING LOGIC
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
@@ -209,10 +205,9 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // RENAMED TO Index
-    if(h === 'Index') { renderIndex(); return; }
+    if(h === 'Index') { renderArchive(); return; } // Renamed from Archive
     
-    // Collapses header on Home AND Index
+    // Collapse header on Index as well
     const shouldCollapse = (h === 'Home' || h === 'Index' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
@@ -262,10 +257,10 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
-// RENAMED & UPDATED: INDEX
-function renderIndex() {
+function renderArchive() {
     const app = document.getElementById('app'); 
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1><p>System Overview</p></div><div class="section archive-list"></div>';
+    // Clean Title, removed subtext
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
     
     const list = app.querySelector('.archive-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
@@ -277,18 +272,14 @@ function renderIndex() {
         groups[cat].push(p);
     });
     
-    // Category Colors Map
-    const catColors = {
-        'Projects': 'var(--accent-projects)',
-        'Professional': 'var(--accent-prof)',
-        'Personal': 'var(--accent-personal)'
-    };
-    
     for(const [cat, items] of Object.entries(groups)) {
-        // Apply color if category matches
-        const colorStyle = catColors[cat] ? `style="color:${catColors[cat]}; border-bottom-color:#222;"` : '';
-        
-        let html = `<div class="archive-group"><h3 ${colorStyle}>${cat}</h3>`;
+        // Color Logic for Headers
+        let catClass = '';
+        if(cat === 'Projects') catClass = 'cat-projects';
+        else if(cat === 'Professional') catClass = 'cat-professional';
+        else if(cat === 'Personal') catClass = 'cat-personal';
+
+        let html = `<div class="archive-group"><h3 class="${catClass}">${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
@@ -482,18 +473,18 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
+    // Updated Link Name
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
-// RELATIVE TIME FUNCTION
+// RELATIVE TIME HELPER
 function timeAgo(dateString) {
     const date = new Date(dateString);
     if(isNaN(date.getTime())) return dateString;
     
     const seconds = Math.floor((new Date() - date) / 1000);
     let interval = seconds / 31536000;
-    
     if (interval > 1) return Math.floor(interval) + " years ago";
     interval = seconds / 2592000;
     if (interval > 1) return Math.floor(interval) + " months ago";
@@ -502,7 +493,7 @@ function timeAgo(dateString) {
     interval = seconds / 3600;
     if (interval > 1) return Math.floor(interval) + " hours ago";
     interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " mins ago";
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
     return "just now";
 }
 
@@ -522,7 +513,7 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
+    // UNIVERSAL 3D VIEWER
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -564,10 +555,8 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
-// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-    
     if(containers.length === 0) return;
 
     Promise.all([
@@ -576,16 +565,11 @@ function init3DViewers() {
         import('three/addons/loaders/GLTFLoader.js'),
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
-        
-        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
-                if (entry.isIntersecting) {
-                    container.setAttribute('data-visible', 'true');
-                } else {
-                    container.setAttribute('data-visible', 'false');
-                }
+                if (entry.isIntersecting) container.setAttribute('data-visible', 'true');
+                else container.setAttribute('data-visible', 'false');
             });
         });
 
@@ -594,7 +578,6 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
-                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -606,7 +589,6 @@ function init3DViewers() {
 
 function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     container.classList.add('loaded');
-    
     const url = container.getAttribute('data-src');
     const customColor = container.getAttribute('data-color');
     const ext = url.split('.').pop().toLowerCase();
@@ -617,7 +599,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.physicallyCorrectLights = true;
@@ -658,8 +639,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); // Fade in canvas
-
+        container.classList.add('ready'); 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
         box.getCenter(center);
@@ -688,12 +668,9 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
-        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
-            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
-            
             controls.update();
             renderer.render(scene, camera);
         }
