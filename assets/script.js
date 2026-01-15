@@ -183,15 +183,15 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // SCROLL CENTER LOGIC:
+    // SUB-NAV CENTERING LOGIC
     setTimeout(() => {
-        const activeEl = n.querySelector('.sub-link.active');
-        if (activeEl) {
-            // Scroll the active item to the center of the bar
-            activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        const activeLink = n.querySelector('.active');
+        if (activeLink) {
+            // Scroll the active link to the center
+            activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         } else {
-            // If nothing is active (Main Page), scroll to the start to show it's a list
-            n.scrollTo({ left: 0, behavior: 'smooth' });
+            // Reset to left if no active link (Main Page)
+            n.scrollLeft = 0;
         }
     }, 100);
 }
@@ -319,38 +319,48 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     rows.forEach(r => {
         if(!r.Page || r.Page === 'Footer') return; 
         
+        // 1. Process Content & Extract 3D Models
         let contentHtml = processText(r.Content);
         let mediaHtml = '';
         let hasPlaceholder = false;
 
-        // Extract 3D Models to promote to Card Header
+        // REGEX: Detect {{3D: ...}} or {{STL: ...}} in the RAW content
+        // We do this detection manually to "lift" it out of the text block
         const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
 
         if (modelMatch) {
+            // Found a model! Use it as the CARD MEDIA
             const url = modelMatch[1].trim();
             const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
             mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
-            contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); // Remove valid duplicate
+            
+            // Remove the shortcode from the text body so it doesn't show up twice
+            contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
         } else if (r.Media) {
+            // Standard Image Media
             const thumb = getThumbnail(r.Media);
             if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
         } else {
+            // No Media & No Model -> GENERATE PLACEHOLDER
             hasPlaceholder = true;
             mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
         }
 
+        // 2. Setup Categories
         let catClass = '';
         const pLower = r.Page.toLowerCase();
         if(pLower.startsWith('projects')) catClass = 'cat-projects';
         else if(pLower.startsWith('professional')) catClass = 'cat-professional';
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
+        // 3. Render Article Mode (Text View)
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
              
+             // In Article mode, we allow the 3D model to be big (article-mode class)
              if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
              else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else mediaHtml = '';
+             else mediaHtml = ''; // No placeholders in article mode, just hide it
 
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
              
@@ -374,6 +384,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              return;
         }
 
+        // 4. Render Grid Mode (Cards)
         if(!forceGrid) {
             if(r.SectionType === 'quote') { 
                 const d = document.createElement('div'); d.className = 'layout-quote section'; 
@@ -425,6 +436,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
+    // Initialize 3D Viewers for these new rows
     setTimeout(init3DViewers, 50);
 }
 
@@ -531,7 +543,6 @@ function init3DViewers() {
     
     if(containers.length === 0) return;
 
-    // Load Three.js + Loaders (STL & GLTF)
     Promise.all([
         import('three'),
         import('three/addons/loaders/STLLoader.js'),
@@ -562,7 +573,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const scene = new THREE.Scene();
     scene.background = null; 
 
-    // Camera
+    // Camera (Close clip 0.01 prevents ghosting)
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
     // Renderer
@@ -573,7 +584,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     renderer.outputEncoding = THREE.sRGBEncoding;
     container.appendChild(renderer.domElement);
 
-    // PRO LIGHTING (Key + Fill + Rim)
+    // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
     
@@ -593,10 +604,8 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.enablePan = false;
-    
-    // Auto-Rotate with Delay
-    controls.autoRotate = true;
+    controls.enablePan = false; 
+    controls.autoRotate = true; 
     controls.autoRotateSpeed = 2.0;
 
     let restartTimer;
@@ -607,7 +616,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     controls.addEventListener('end', () => {
         restartTimer = setTimeout(() => {
             controls.autoRotate = true;
-        }, 5000); // 5 Seconds Delay
+        }, 5000); // 5 Seconds Pause
     });
 
     const onLoad = (object) => {
@@ -630,12 +639,11 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
             });
         }
 
-        // SMART ZOOM (Larger)
         const size = box.getSize(new THREE.Vector3()).length();
-        // 0.6 factor brings camera closer (larger model)
+        // Multiply by 0.6 instead of 0.8 to Zoom In closer
         const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
         
-        camera.position.set(dist, dist * 0.4, dist * 0.8);
+        camera.position.set(dist, dist * 0.4, dist * 0.8); 
         camera.lookAt(0, 0, 0);
         
         controls.minDistance = size * 0.2; 
