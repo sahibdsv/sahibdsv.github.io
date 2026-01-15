@@ -107,7 +107,7 @@ function initApp() {
             const quoteContainer = e.target.closest('.layout-quote');
             if(quoteContainer && !quoteContainer.classList.contains('loading')) {
                 quoteContainer.classList.add('loading');
-                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
+                quoteContainer.innerHTML = `<div class="sk-box quote" style="height:160px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
                     renderQuoteCard(quoteContainer);
                     quoteContainer.classList.remove('loading');
@@ -177,9 +177,6 @@ function buildNav() {
 function buildSubNav(top) {
     const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
     
-    // IF INDEX: Don't build subnav (treat like home)
-    if(top === 'Archive') return;
-
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
     
     subs.forEach(x => { 
@@ -199,9 +196,11 @@ function centerSubNav(forceMiddleIfNone) {
     const activeLink = n.querySelector('.active');
     
     if (activeLink) {
+        // If Active: Lock to center
         const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
         n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     } else if (forceMiddleIfNone) {
+        // If Main Page Load: Scroll to MIDDLE to hint content
         const middle = (n.scrollWidth - n.clientWidth) / 2;
         n.scrollTo({ left: middle, behavior: 'smooth' });
     }
@@ -212,29 +211,27 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // TREAT ARCHIVE (Index) LIKE HOME (Collapse header)
-    if(h === 'Archive') { 
-        closeSearch(); 
-        document.body.classList.remove('header-expanded');
-        document.getElementById('main-header').classList.remove('expanded');
-        // Clear active states on primary nav
-        document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-        document.getElementById('sub-nav').innerHTML = ''; // Clear sub-nav
-        renderArchive(); 
-        return; 
-    }
+    if(h === 'Index') { renderIndex(); return; }
     
-    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:'));
+    // Header Logic: Collapse if Home, Index, or Filter
+    const shouldCollapse = (h === 'Home' || h === 'Index' || h.startsWith('Filter:'));
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
+    // Clear Active Nav if Index, otherwise Highlight Active
     const top = h.split('/')[0]; 
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
+        const href = a.getAttribute('href'); 
+        if(href) {
+            if(h === 'Index') a.classList.remove('active');
+            else a.classList.toggle('active', href.replace('#', '') === top); 
+        }
+    }); 
     
     buildSubNav(top); 
     
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
-    else { renderPage(h); }
+    else if(h !== 'Index') { renderPage(h); }
 }
 
 function renderFiltered(t) { 
@@ -273,13 +270,12 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
-function renderArchive() {
+function renderIndex() {
     const app = document.getElementById('app'); 
-    // RENAMED TO: "Index" (No hardcoded subtitle)
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section archive-list"></div>';
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1><p>Full system index.</p></div><div class="section archive-list"></div>';
     
     const list = app.querySelector('.archive-list');
-    const pages = [...new Set(db.map(r => r.map ? r.Page : (r.Page || '')).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
+    const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
     const groups = {};
     pages.forEach(p => {
@@ -289,8 +285,13 @@ function renderArchive() {
     });
     
     for(const [cat, items] of Object.entries(groups)) {
-        // ADD CLASS FOR COLORING (e.g., cat-Projects)
-        let html = `<div class="archive-group cat-${cat}"><h3>${cat}</h3>`;
+        // Colorize Headers based on Category Name
+        let colorStyle = '';
+        if(cat === 'Projects') colorStyle = 'style="color: var(--accent-projects);"';
+        else if(cat === 'Professional') colorStyle = 'style="color: var(--accent-prof);"';
+        else if(cat === 'Personal') colorStyle = 'style="color: var(--accent-personal);"';
+
+        let html = `<div class="archive-group"><h3 ${colorStyle}>${cat}</h3>`;
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
@@ -447,6 +448,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
+    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
@@ -459,15 +461,13 @@ function renderQuoteCard(c) {
     
     const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
     
-    // REVISED LENGTH LOGIC FOR BIGGER FONTS
     const len = text.length;
     let sizeClass = 'short';
     
     if(len > 230) sizeClass = 'xxl';
     else if(len > 150) sizeClass = 'xl';
-    else if(len > 100) sizeClass = 'long'; 
-    else if(len > 60) sizeClass = 'medium'; 
-    // <= 60 chars gets "short" (32px)
+    else if(len > 100) sizeClass = 'long';
+    else if(len > 50) sizeClass = 'medium';
     
     c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
                    <div class="quote-footer"><div class="author">— ${auth}</div></div>
@@ -486,33 +486,31 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    fd.innerHTML += `<a href="#Archive" class="fill-anim" onclick="closeSearch()">Index</a>`; // Renamed to "Index"
+    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
-// RELATIVE TIME HELPER
-function timeAgo(date) {
-    const seconds = Math.floor((new Date() - date) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " years ago";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " months ago";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " days ago";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " hours ago";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " mins ago";
-    return "just now";
+function timeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) return "just now";
+    if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString(); 
 }
 
 function fetchGitHubStats() { 
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
-            const date = new Date(d.pushed_at);
-            const relative = timeAgo(date);
-            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Updated ${relative}</a>`;
+            const relTime = timeAgo(d.pushed_at);
+            document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Updated ${relTime}</a>`;
         } 
     }).catch(()=>{}); 
 }
