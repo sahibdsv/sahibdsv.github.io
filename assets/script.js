@@ -524,30 +524,34 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
+    // 1. UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
 
-    // Embed Shortcodes
+    // 2. INLINE IMAGE GALLERIES: [https://url1, https://url2]
+    clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
+        const urls = content.split(',').map(u => u.trim());
+        const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
+        if (!isPureGallery) return match; 
+        const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join('');
+        return `<div class="inline-gallery">${imgs}</div>`;
+    });
+
+    // 3. WIKI LINKS: [[Page Name]]
+    clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
+
+    // 4. EMBED SHORTCODES
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
     clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
 
-    // Collages
-    clean = clean.replace(/\[\[(http.*?,.*?)\]\]/g, (match, content) => {
-        const urls = content.split(',').map(u => u.trim());
-        const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy">`).join('');
-        return `<div class="inline-gallery">${imgs}</div>`;
-    });
+    // 5. GENERAL LINK STYLING
+    clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
 
-    // Single Images
-    clean = clean.replace(/\[\[(http.*?)\]\]/g, `<img src="$1" class="inline-img zoomable" loading="lazy">`);
-
-    return clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>')
-            .replace(/<a /g, '<a class="fill-anim" '); 
+    return clean; 
 }
 
 function formatDate(s) {
