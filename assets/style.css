@@ -120,12 +120,30 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     display: flex; gap: 25px; font-size: 13px; transition: all 0.4s var(--ease); opacity: 1;
     overflow-x: auto; white-space: nowrap; 
     width: 100%; max-width: 900px;
-    justify-content: center;
+    
+    justify-content: flex-start;
     padding-bottom: 5px; scrollbar-width: none;
     height: 25px; 
-    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+    
+    /* MASK: Narrow fade (15px) */
+    mask-image: linear-gradient(to right, transparent 0, black 15px, black calc(100% - 15px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 15px, black calc(100% - 15px), transparent 100%);
+    
+    /* NO PADDING on container. We use spacers instead. */
+    padding: 0;
 }
+
+/* DESKTOP: Re-center if content fits */
+@media (min-width: 900px) { #sub-nav { justify-content: center; } }
+
+/* SCROLL BUMPERS: These force the text to stop inside the 'safe zone' */
+#sub-nav::before, #sub-nav::after {
+    content: '';
+    display: block;
+    width: 25px; /* Wider than the 15px mask so text is fully visible */
+    flex-shrink: 0;
+}
+
 #sub-nav > * { flex-shrink: 0; }
 
 body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
