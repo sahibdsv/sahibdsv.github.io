@@ -95,9 +95,10 @@ function initApp() {
         
         h.classList.toggle('shrink', shouldShrink);
 
-        // TRIGGER: If we just Expanded (scrolled up to top) -> Re-center Subnav
+        // TRIGGER: If we just Expanded (scrolled up to top) -> Re-center active subnav
+        // We pass 'false' to say: "Don't reset to middle if nothing is active."
         if (wasShrunk && !shouldShrink) {
-            centerSubNav();
+            centerSubNav(false);
         }
     });
 
@@ -192,19 +193,28 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // SUB-NAV CENTERING LOGIC
-    setTimeout(centerSubNav, 100);
+    // On Page Load/Route Change: Pass 'true' to allow defaulting to middle if no active link
+    setTimeout(() => centerSubNav(true), 100);
 }
 
-// Smart Centering: Active link goes to middle, else list goes to middle
-function centerSubNav() {
+// SMART CENTERING LOGIC
+// forceMiddleIfNone: true = Main Page Reset (Scrolls to middle). false = Scroll Up (Leaves it alone).
+function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     const activeLink = n.querySelector('.active');
     
     if (activeLink) {
-        activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    } else {
-        // If Main Page (no active sub-link), scroll to MIDDLE of list to suggest scrollability
+        // MATH: Calculate exact center position instead of relying on scrollIntoView
+        const navWidth = n.clientWidth;
+        const linkLeft = activeLink.offsetLeft;
+        const linkWidth = activeLink.offsetWidth;
+        
+        // Target scroll position = (Link Left + Half Link) - (Half Screen)
+        const targetScroll = linkLeft + (linkWidth / 2) - (navWidth / 2);
+        
+        n.scrollTo({ left: targetScroll, behavior: 'smooth' });
+    } else if (forceMiddleIfNone) {
+        // Reset to Middle (Only on initial load/route change)
         n.scrollTo({ left: (n.scrollWidth - n.clientWidth) / 2, behavior: 'smooth' });
     }
 }
@@ -338,43 +348,33 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         let mediaHtml = '';
         let hasPlaceholder = false;
 
-        // REGEX: Detect {{3D: ...}} or {{STL: ...}} in the RAW content
-        // We do this detection manually to "lift" it out of the text block
         const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
 
         if (modelMatch) {
-            // Found a model! Use it as the CARD MEDIA
             const url = modelMatch[1].trim();
             const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
             mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
-            
-            // Remove the shortcode from the text body so it doesn't show up twice
             contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
         } else if (r.Media) {
-            // Standard Image Media
             const thumb = getThumbnail(r.Media);
             if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
         } else {
-            // No Media & No Model -> GENERATE PLACEHOLDER
             hasPlaceholder = true;
             mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
         }
 
-        // 2. Setup Categories
         let catClass = '';
         const pLower = r.Page.toLowerCase();
         if(pLower.startsWith('projects')) catClass = 'cat-projects';
         else if(pLower.startsWith('professional')) catClass = 'cat-professional';
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
-        // 3. Render Article Mode (Text View)
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
              
-             // In Article mode, we allow the 3D model to be big (article-mode class)
              if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
              else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else mediaHtml = ''; // No placeholders in article mode, just hide it
+             else mediaHtml = ''; 
 
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
              
@@ -398,7 +398,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
              return;
         }
 
-        // 4. Render Grid Mode (Cards)
         if(!forceGrid) {
             if(r.SectionType === 'quote') { 
                 const d = document.createElement('div'); d.className = 'layout-quote section'; 
@@ -450,7 +449,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
-    // Initialize 3D Viewers for these new rows
     setTimeout(init3DViewers, 50);
 }
 
@@ -509,7 +507,7 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
+    // UNIVERSAL 3D VIEWER
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
@@ -583,14 +581,11 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const customColor = container.getAttribute('data-color');
     const ext = url.split('.').pop().toLowerCase();
     
-    // Scene
     const scene = new THREE.Scene();
     scene.background = null; 
 
-    // Camera (Close clip 0.01 prevents ghosting)
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
-    // Renderer
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -598,7 +593,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     renderer.outputEncoding = THREE.sRGBEncoding;
     container.appendChild(renderer.domElement);
 
-    // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
     
@@ -614,7 +608,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     fillLight.position.set(-5, 0, 5);
     scene.add(fillLight);
 
-    // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
@@ -630,7 +623,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     controls.addEventListener('end', () => {
         restartTimer = setTimeout(() => {
             controls.autoRotate = true;
-        }, 5000); // 5 Seconds Pause
+        }, 5000); 
     });
 
     const onLoad = (object) => {
@@ -654,7 +647,6 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         }
 
         const size = box.getSize(new THREE.Vector3()).length();
-        // Multiply by 0.6 to Zoom In closer immediately
         const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
         
         camera.position.set(dist, dist * 0.4, dist * 0.8); 
