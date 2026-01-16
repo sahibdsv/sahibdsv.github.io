@@ -38,11 +38,12 @@
             --accent-prof: #00ffff;
             --accent-projects: #ff9933;
             
-            /* METRICS */
+            /* --- HEADER METRICS --- */
             --brand-row-h: 36px; 
-            --nav-row-h: 26px; /* Standard height for all nav rows */
+            --nav-row-h: 26px; 
             --gap: 1px;
             
+            /* --- RADIUS SYSTEM --- */
             --card-radius: 18px;
             --card-padding: 12px;
             --media-radius: calc(var(--card-radius) - var(--card-padding)); 
@@ -60,15 +61,14 @@
 
         body {
             background-color: var(--bg); color: var(--text-main); font-family: 'Jost', sans-serif; line-height: 1.5;
-            /* Padding is set dynamically via JS to prevent overlap */
+            /* Padding is set dynamically by JS now, but we keep a fallback */
             padding-top: 80px; 
-            transition: padding-top 0.3s var(--ease);
             display: flex; flex-direction: column; min-height: 100vh;
             width: 100%; position: relative; overflow-x: hidden; 
         }
         
         body.search-active {
-            padding-top: 140px !important;
+            overflow: hidden; /* Prevent scrolling when search is open */
         }
 
         p, h1, h2, h3, a { overflow-wrap: break-word; word-wrap: break-word; }
@@ -104,98 +104,119 @@
             gap: var(--gap); 
             border-bottom: 1px solid #1a1a1a; 
             overflow: hidden; 
+            /* Height is dynamic now, removed hardcoded transition to let resizeObserver handle it */
             transition: transform 0.4s var(--ease);
-            /* Height is dynamic based on content */
         }
 
         body.search-active #main-header {
-            transform: translateY(-100%) !important; 
+            transform: translateY(-100%); 
         }
 
-        /* --- BRAND ROW --- */
+        /* --- HEADER ROWS --- */
         #brand-name {
             width: 100%; height: var(--brand-row-h); flex-shrink: 0; 
             display: flex; align-items: center; justify-content: center;
             font-size: 30px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; 
             line-height: 1; cursor: pointer; user-select: none;
             --text-base: #666; --text-hover: #fff; 
-            transition: opacity 0.3s var(--ease);
+            transition: height 0.4s var(--ease), opacity 0.3s var(--ease), margin 0.4s var(--ease), background-position 0.5s var(--ease);
+            opacity: 1; margin-bottom: 0; overflow: hidden;
+            
+            /* FORCE FILL EFFECT */
             background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #666) 50.5%);
             background-size: 100% 205%;
             background-position: 0 0;
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
+        
         #brand-name:hover { background-position: 0 100%; }
 
-        /* --- RECURSIVE NAV ROWS --- */
-        #nav-container {
-            width: 100%; display: flex; flex-direction: column; gap: var(--gap);
-        }
-
+        /* Generic Nav Row Class (Replaces ID-based styles) */
         .nav-row {
             width: 100%; height: var(--nav-row-h); flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; gap: 20px;
+            display: flex; align-items: center; justify-content: center; gap: 20px; 
             margin: 0; padding: 0;
+            font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1;
             overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-            transition: opacity 0.3s;
-        }
-        
-        /* Level 0 (Primary) Styling */
-        .nav-row[data-level="0"] { gap: 30px; }
-        .nav-row[data-level="0"] .nav-link { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
-        
-        /* Level 1+ (Children) Styling */
-        .nav-row[data-level]:not([data-level="0"]) {
-            font-size: 13px; font-weight: 700; letter-spacing: 1px;
+            
+            /* Fade Mask for scroll */
             mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
+            
+            transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
+            opacity: 1;
         }
-        
-        /* Scroll Spacers for Children */
-        .nav-row[data-level]:not([data-level="0"])::before,
-        .nav-row[data-level]:not([data-level="0"])::after {
-            content: ''; display: none; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0;
+
+        /* Primary Row Specifics (Larger text) */
+        .nav-row.level-0 {
+            font-size: 15px; 
+            gap: 30px;
+            /* Primary row usually doesn't need mask unless overflowing on tiny screens */
         }
+
+        /* Spacers for horizontal scroll */
+        .nav-row::before, .nav-row::after { 
+            content: ''; display: none; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0; 
+        }
+        .nav-row > * { flex-shrink: 0; }
 
         .nav-link {
-            text-transform: uppercase; line-height: 1; user-select: none; --text-base: #666; --text-hover: #fff;
-            flex-shrink: 0;
+            line-height: 1; user-select: none; --text-base: #666; --text-hover: #fff;
+            text-decoration: none; cursor: pointer;
         }
 
-        /* Color Accents based on Href */
-        .nav-link[href*="Projects"] { --text-hover: var(--accent-projects); }
-        .nav-link[href*="Projects"].active { --text-base: var(--accent-projects); --text-hover: var(--accent-projects); }
-        .nav-link[href*="Professional"] { --text-hover: var(--accent-prof); }
-        .nav-link[href*="Professional"].active { --text-base: var(--accent-prof); --text-hover: var(--accent-prof); }
-        .nav-link[href*="Personal"] { --text-hover: var(--accent-personal); }
-        .nav-link[href*="Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
+        /* Context Highlighting */
+        .nav-link[data-cat="Projects"] { --text-hover: var(--accent-projects); }
+        .nav-link[data-cat="Projects"].active { --text-base: var(--accent-projects); --text-hover: var(--accent-projects); }
+        .nav-link[data-cat="Professional"] { --text-hover: var(--accent-prof); }
+        .nav-link[data-cat="Professional"].active { --text-base: var(--accent-prof); --text-hover: var(--accent-prof); }
+        .nav-link[data-cat="Personal"] { --text-hover: var(--accent-personal); }
+        .nav-link[data-cat="Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
-        /* --- SEARCH CONTROLS --- */
+        /* SCROLL STATES */
+        
+        /* 1. Hide Brand on Scroll */
+        #main-header.scrolled #brand-name {
+            height: 0; opacity: 0; margin-bottom: -1px; pointer-events: none;
+        }
+        
+        /* 2. Hide Top Rows on Aggressive Scroll */
+        #main-header.scrolled .nav-row.hide-on-scroll {
+            height: 0; opacity: 0; pointer-events: none;
+        }
+
+        #main-header.scrolled {
+            gap: 0; justify-content: center; 
+        }
+
+        /* --- SEARCH CONTROLS & TOOLTIP --- */
         #search-controls { 
             position: absolute; right: 10px; top: 0; 
             height: var(--brand-row-h); width: 60px; 
             display: flex; align-items: center; justify-content: center; 
-            z-index: 1002; transition: opacity 0.2s; 
+            z-index: 1002; transition: top 0.4s var(--ease), opacity 0.2s; 
         }
-        
-        /* HIDE SEARCH WHEN SCROLLED DOWN */
         #main-header.scrolled #search-controls { opacity: 0; pointer-events: none; }
-        /* HIDE BRAND WHEN SCROLLED DOWN */
-        #main-header.scrolled #brand-name { opacity: 0; pointer-events: none; }
 
-        .icon-btn { width: 44px; height: 44px; padding: 10px; cursor: pointer; fill: #666; transition: all 0.4s; position: relative; }
+        .icon-btn { 
+            width: 44px; height: 44px; padding: 10px; 
+            cursor: pointer; fill: #666; transition: all 0.4s; transform-origin: center; position: relative;
+        }
         .icon-btn:hover { fill: #fff; }
         .search-icon { opacity: 1; }
         .close-icon  { opacity: 0; display: none; } 
 
         .icon-btn[data-tooltip]:hover::after {
-            content: attr(data-tooltip); position: absolute; top: 100%; right: 50%; transform: translateX(50%);
-            background: #222; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-family: 'Jost', sans-serif;
-            white-space: nowrap; pointer-events: none; opacity: 0; animation: fadeInTooltip 0.2s forwards 0.3s;
+            content: attr(data-tooltip);
+            position: absolute; top: 100%; right: 50%; transform: translateX(50%);
+            background: #222; color: #fff; padding: 4px 8px; border-radius: 4px;
+            font-size: 11px; font-family: 'Jost', sans-serif; white-space: nowrap; pointer-events: none;
+            opacity: 0; animation: fadeInTooltip 0.2s forwards 0.3s;
             border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         @keyframes fadeInTooltip { to { opacity: 1; top: 110%; } }
 
+        /* --- FIXED FLOATING SEARCH BUBBLE --- */
         #search-overlay { 
             position: fixed; top: 40px; left: 50%; width: 400px; max-width: 90%; height: 50px; 
             transform-origin: center; transform: translate(-50%, -40px) scale(0.9);
@@ -208,13 +229,11 @@
         
         #search-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0) scale(1); }
         #search-input { width: 100%; height: 100%; background: transparent; border: none; color: #fff; font-size: 20px; font-family: 'Jost', sans-serif; padding: 0 20px; outline: none; text-align: center; font-weight: 500; }
-        #app.search-active { opacity: 0.3; transition: 0.4s; }
-
+        
+        /* MOBILE OPTIMIZATIONS */
         @media (max-width: 768px) {
-            .nav-row[data-level]:not([data-level="0"]) { justify-content: flex-start; }
-            .nav-row[data-level]:not([data-level="0"])::before, 
-            .nav-row[data-level]:not([data-level="0"])::after { display: block; }
-            
+            .nav-row { justify-content: flex-start; }
+            .nav-row::before, .nav-row::after { display: block; }
             .grid-container { grid-template-columns: 1fr; }
             footer { flex-direction: column; gap: 20px; text-align: center; }
             .content-container { padding: 10px 15px 0; }
@@ -223,7 +242,7 @@
         }
 
         /* --- CONTENT --- */
-        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 10px 20px 0; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; transition: 0.4s; }
+        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 10px 20px 0; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; transition: opacity 0.4s; }
         .section { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.4s forwards; position: relative; } 
         @keyframes fadeIn { to { opacity: 1; } }
         .skeleton-visible { opacity: 1 !important; animation: none !important; }
@@ -241,7 +260,8 @@
         
         .layout-grid { 
             display: flex; flex-direction: column; gap: 3px; 
-            padding: var(--card-padding); border-radius: var(--card-radius); 
+            padding: var(--card-padding); 
+            border-radius: var(--card-radius); 
             transition: background 0.2s; border: none; height: 100%; position: relative; -webkit-tap-highlight-color: transparent; 
         }
         .layout-grid.clickable-block, .layout-grid.clickable-block * { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -253,7 +273,8 @@
         .layout-grid.cat-personal h3 { --text-hover: var(--accent-personal); }
 
         .row-media { 
-            width: 100%; height: 160px; border-radius: var(--media-radius); 
+            width: 100%; height: 160px; 
+            border-radius: var(--media-radius); 
             overflow: hidden; background: #111; flex-shrink: 0; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; 
         }
         .row-media img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: filter 0.3s; }
@@ -330,7 +351,8 @@
         .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
         
         .layout-quote .refresh-btn { 
-            position: absolute; bottom: 18px; right: 18px; width: 26px; height: 26px; 
+            position: absolute; bottom: 18px; right: 18px; 
+            width: 26px; height: 26px; 
             opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; 
         }
         .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg) scale(1.1); }
@@ -344,12 +366,13 @@
         .btn-primary { display: inline-block; padding: 10px 25px; background: #fff; color: #000; text-decoration: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; border-radius: 4px; transition: opacity 0.2s; }
         .btn-primary:hover { opacity: 0.8; }
 
-        /* --- INDEX --- */
+        /* --- INDEX INDENTATION --- */
         .index-list { column-count: 2; column-gap: 40px; margin-top: 20px; }
         .index-group { break-inside: avoid; margin-bottom: 30px; }
         .index-group h3 { font-size: 14px; text-transform: uppercase; color: #666; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; }
         .index-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
         .index-link span { color: #444; font-size: 12px; margin-left: 8px; }
+        
         .index-link.depth-3 { padding-left: 20px; font-size: 15px; color: #888; }
         .index-link.depth-3::before { content: "└ "; opacity: 0.5; margin-right: 5px; font-family: monospace; }
 
@@ -401,7 +424,9 @@
 <body class="no-transition">
     
     <script>
-        if (history.scrollRestoration) { history.scrollRestoration = 'manual'; }
+        if (history.scrollRestoration) {
+            history.scrollRestoration = 'manual';
+        }
     </script>
 
     <div id="search-overlay">
@@ -410,9 +435,6 @@
 
     <header id="main-header" class="no-transition">
         <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
-        
-        <div id="nav-container"></div>
-        
         <div id="search-controls">
             <svg id="search-trigger" class="icon-btn search-icon" onclick="toggleSearch()" viewBox="0 0 24 24" data-tooltip="Search (/)">
                 <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -424,11 +446,26 @@
     </header>
 
     <div class="content-container" id="app">
-        <div class="section layout-quote skeleton-visible"><div class="sk-box quote"></div></div>
+        <div class="section layout-quote skeleton-visible">
+            <div class="sk-box quote"></div>
+        </div>
+        
         <div class="grid-container section skeleton-visible">
-            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div></div>
-            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div></div>
-            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div></div>
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+            </div>
         </div>
     </div>
 
@@ -448,6 +485,13 @@
         };
 
         const init = () => {
+            // Setup Resize Observer for Dynamic Padding
+            const header = document.getElementById('main-header');
+            const resizeObserver = new ResizeObserver(() => {
+                document.body.style.paddingTop = (header.offsetHeight + 10) + 'px';
+            });
+            resizeObserver.observe(header);
+
             fetchData().then(([m, q]) => {
                 db = m.filter(r => r.Title); 
                 quotesDb = q;
@@ -462,7 +506,6 @@
                     setTimeout(() => {
                         document.body.classList.remove('no-transition');
                         document.getElementById('main-header').classList.remove('no-transition');
-                        updateHeader();
                     }, 50);
                 });
             }).catch(e => {
@@ -470,6 +513,7 @@
                 document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
                     <h2>Unable to load content</h2>
                     <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px; margin-top:20px;">${e.message}</p>
+                    <p style="color:#666; margin-top:20px;">Please check your internet connection.</p>
                 </div>`;
             });
         };
@@ -484,14 +528,21 @@
 
         function fetchCSV(u) { 
             return new Promise((res, rej) => {
-                if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded. Check internet."));
-                Papa.parse(u, { download: true, header: true, skipEmptyLines: true, complete: (r) => res(r.data), error: (e) => rej(new Error("CSV Error: " + e.message)) });
+                if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded. Check your internet connection."));
+                Papa.parse(u, { 
+                    download: true, header: true, skipEmptyLines: true, 
+                    complete: (r) => res(r.data), 
+                    error: (e) => rej(new Error("CSV Error: " + e.message)) 
+                });
             });
         }
 
         function safeHTML(html) {
             if(typeof DOMPurify !== 'undefined') {
-                return DOMPurify.sanitize(html, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height'] });
+                return DOMPurify.sanitize(html, {
+                    ADD_TAGS: ['iframe'],
+                    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height']
+                });
             }
             return html; 
         }
@@ -500,236 +551,346 @@
             handleRouting();
             window.addEventListener('hashchange', handleRouting);
             
-            // Analytics
+            // TRACKING
             window.addEventListener('hashchange', function(e) {
                 if (window.goatcounter && window.goatcounter.count) {
-                    window.goatcounter.count({ path: location.pathname + location.search + location.hash, title: location.hash.substring(1) || 'Home', event: false });
+                    window.goatcounter.count({
+                        path: location.pathname + location.search + location.hash,
+                        title: location.hash.substring(1) || 'Home',
+                        event: false,
+                    });
                 }
             });
 
-            // Scroll Logic (Aggressive Hiding)
-            window.addEventListener('scroll', handleScroll);
+            // SCROLL LOGIC
+            window.addEventListener('scroll', () => { 
+                const h = document.getElementById('main-header'); 
+                const isScrolled = window.scrollY > 10; 
+                h.classList.toggle('scrolled', isScrolled);
+            });
             
-            // Event Delegation
-            document.addEventListener('click', handleGlobalClick);
-            document.getElementById('app').addEventListener('click', handleContentClick);
-            document.addEventListener('keydown', handleKeys);
-        }
-
-        // --- RECURSIVE NAV ENGINE ---
-        function buildRecursiveNav() {
-            const container = document.getElementById('nav-container');
-            if(!container) return;
-            container.innerHTML = ''; // Reset
-
-            const hash = window.location.hash.substring(1);
-            let pathSegments = [];
-            
-            // If on home/index/filter, show Root level. If deep, splits path.
-            if(hash && hash !== 'Home' && hash !== 'Index' && !hash.startsWith('Filter:')) {
-                pathSegments = hash.split('/');
-            }
-
-            // Always generate at least 1 level (Root)
-            const maxLevel = pathSegments.length; 
-            
-            // Generate Level 0 (Root)
-            generateNavRow(container, 0, null, pathSegments[0]);
-
-            // Generate subsequent levels
-            for(let i = 0; i < maxLevel; i++) {
-                const parentPath = pathSegments.slice(0, i+1).join('/');
-                // Look ahead: Does this level have children?
-                const hasChildren = db.some(r => r.Page && r.Page.startsWith(parentPath + '/'));
-                
-                if (hasChildren) {
-                    generateNavRow(container, i + 1, parentPath, pathSegments[i+1]);
+            // EVENT DELEGATION
+            document.addEventListener('click', (e) => {
+                const overlay = document.getElementById('search-overlay');
+                const controls = document.getElementById('search-controls');
+                if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
+                    closeSearch();
                 }
-            }
-            
-            updateHeader(); // Recalculate dimensions
-        }
-
-        function generateNavRow(container, level, parentPath, activeItem) {
-            let items = [];
-            
-            if (level === 0) {
-                // Root Categories
-                items = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort();
-            } else {
-                // Children of parentPath
-                items = [...new Set(db.filter(r => r.Page && r.Page.startsWith(parentPath + '/'))
-                                      .map(r => r.Page.split('/').slice(0, level + 1).join('/')))].sort();
-            }
-
-            if (items.length === 0) return;
-
-            const row = document.createElement('nav');
-            row.className = 'nav-row';
-            row.setAttribute('data-level', level);
-            
-            // Calculate delay for cascade effect
-            row.style.transitionDelay = `${level * 50}ms`;
-
-            items.forEach(path => {
-                const name = path.split('/')[level]; // Get just the name for this level
-                const isActive = (name === activeItem) || (activeItem === undefined && level > 0 && path === parentPath); // Logic for highlighting
-                
-                // Active check: Exact match OR path starts with this segment
-                const isSelected = window.location.hash.startsWith(`#${path}`);
-                
-                const link = document.createElement('a');
-                link.href = `#${path}`;
-                link.className = `nav-link fill-anim ${isSelected ? 'active' : ''}`;
-                link.textContent = name;
-                link.onclick = () => closeSearch();
-                row.appendChild(link);
             });
 
-            container.appendChild(row);
-            
-            // Center active item if scrolling is needed
-            setTimeout(() => {
-                const activeLink = row.querySelector('.active');
-                if (activeLink && row.scrollWidth > row.clientWidth) {
-                    const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (row.clientWidth / 2);
-                    row.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+            document.getElementById('app').addEventListener('click', (e) => {
+                // Quote Refresh
+                if(e.target.closest('.refresh-btn')) { 
+                    const quoteContainer = e.target.closest('.layout-quote');
+                    if(quoteContainer && !quoteContainer.classList.contains('loading')) {
+                        quoteContainer.classList.add('loading');
+                        quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
+                        setTimeout(() => {
+                            renderQuoteCard(quoteContainer);
+                            quoteContainer.classList.remove('loading');
+                        }, 600); 
+                    }
+                    e.stopPropagation(); return; 
                 }
-            }, 10);
-        }
-
-        function updateHeader() {
-            const h = document.getElementById('main-header');
-            const navRows = document.querySelectorAll('.nav-row').length;
-            
-            // Base heights from CSS vars (approx)
-            const brandH = 36; 
-            const navRowH = 26; 
-            const gap = 1;
-            
-            // Calculate total visible height
-            let totalH = brandH + gap + (navRows * (navRowH + gap));
-            
-            // Update Body Padding to match
-            document.body.style.paddingTop = (totalH + 20) + 'px'; // +20 buffer
-            
-            handleScroll(); // Re-trigger scroll logic to set initial transforms
-        }
-
-        // --- AGGRESSIVE SCROLL LOGIC ---
-        function handleScroll() {
-            const h = document.getElementById('main-header');
-            const scrollY = window.scrollY;
-            const rows = document.querySelectorAll('.nav-row');
-            const numRows = rows.length;
-            const brandH = 36;
-            const navRowH = 26;
-            const gap = 1;
-
-            if (scrollY > 10) {
-                h.classList.add('scrolled');
                 
-                // If deep (4+ rows), hide top rows too
-                if (numRows >= 4) {
-                    // We want bottom 2 visible.
-                    // Height to Hide = Brand + (NumRows - 2) * RowHeight
-                    const rowsToHide = numRows - 2;
-                    const translateY = brandH + gap + (rowsToHide * (navRowH + gap));
-                    h.style.transform = `translateY(-${translateY}px)`;
-                } else {
-                    // Standard: Hide only brand
-                    h.style.transform = `translateY(-${brandH + gap}px)`;
+                // Zoom Image
+                if(e.target.classList.contains('zoomable')) { 
+                    if(e.target.parentElement.tagName === 'A') return;
+                    document.getElementById('lightbox-img').src = e.target.src; 
+                    document.getElementById('lightbox').classList.add('active'); 
+                    e.stopPropagation(); return; 
                 }
-            } else {
-                h.classList.remove('scrolled');
-                h.style.transform = `translateY(0)`;
+                
+                // Chip Click
+                if(e.target.classList.contains('chip')) { 
+                    e.stopPropagation();
+                    if(isSearchActive) closeSearch();
+                    const tag = e.target.getAttribute('data-tag');
+                    const filterVal = e.target.getAttribute('data-filter'); // New date filter
+                    
+                    if(filterVal) window.location.hash = 'Filter:' + filterVal;
+                    else if(tag) window.location.hash = 'Filter:' + tag;
+                    return; 
+                }
+                
+                // Card Click
+                const block = e.target.closest('.clickable-block');
+                if(block && !e.target.classList.contains('chip')) {
+                    const link = block.getAttribute('data-link'), target = block.getAttribute('data-target');
+                    if(link) { 
+                        if(target === '_blank') window.open(link, '_blank'); 
+                        else { 
+                            window.location.href = link; 
+                            if(isSearchActive) closeSearch(); 
+                        } 
+                    }
+                }
+            });
+            
+            // KEYBOARD
+            document.addEventListener('keydown', (e) => {
+                if ((e.key === '/' || (e.metaKey && e.key === 'k') || (e.ctrlKey && e.key === 'k')) && !isSearchActive) {
+                    e.preventDefault(); toggleSearch();
+                }
+                if (e.key === 'Escape') {
+                    if(isSearchActive || document.getElementById('search-overlay').classList.contains('active')) {
+                        closeSearch();
+                    }
+                }
+            });
+        }
+
+        function resetToHome() { closeSearch(); window.location.hash = ''; }
+        function closeSearch() { 
+            document.getElementById('search-overlay').classList.remove('active'); 
+            document.body.classList.remove('search-active');
+            const input = document.getElementById('search-input');
+            input.value = ''; 
+            input.blur(); 
+            if(isSearchActive) { isSearchActive = false; handleRouting(); } 
+            isSearchActive = false; 
+        }
+
+        function toggleSearch() { 
+            const a = document.getElementById('search-overlay').classList.toggle('active'); 
+            document.body.classList.toggle('search-active');
+            if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
+            else closeSearch(); 
+        }
+
+        function handleSearch(q) { 
+            if(!document.getElementById('search-overlay').classList.contains('active')) return;
+            isSearchActive = true; 
+            if(!q) { 
+                const app = document.getElementById('app');
+                app.innerHTML = '<div class="layout-404" style="padding:40px 0;"><h2>Search</h2><p>Type to find projects and posts...</p></div>';
+                return;
+            } 
+            const t = q.toLowerCase();
+            // Search all fields including Date string
+            const res = db.filter(r => {
+                const dateStr = formatDateDisplay(r.Timestamp);
+                return (r.Title && r.Title.toLowerCase().includes(t)) || 
+                       (r.Content && r.Content.toLowerCase().includes(t)) || 
+                       (r.Tags && r.Tags.toLowerCase().includes(t)) ||
+                       (dateStr && dateStr.toLowerCase().includes(t));
+            }); 
+            renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
+        }
+
+        // --- NEW RECURSIVE NAV ENGINE ---
+        function buildRecursiveNav(currentPath) {
+            const header = document.getElementById('main-header');
+            
+            // Remove old nav rows but keep brand and search
+            const existingNavs = header.querySelectorAll('.nav-row');
+            existingNavs.forEach(n => n.remove());
+            
+            // Determine active levels
+            // If Home (empty), parts = []
+            const parts = currentPath && currentPath !== 'Home' ? currentPath.split('/') : [];
+            const levelsToBuild = parts.length + 1; // Always try to build one deeper level
+            
+            // Find reference node (insert after Brand)
+            const brand = document.getElementById('brand-name');
+            
+            for (let i = 0; i < levelsToBuild; i++) {
+                const parentPath = i === 0 ? '' : parts.slice(0, i).join('/');
+                
+                // Get unique children at this level
+                // Logic: filter pages starting with parentPath, extract the segment at index i
+                const siblings = [...new Set(db
+                    .filter(r => r.Page && r.Page !== 'Footer' && r.Page !== 'Home' && (i === 0 || r.Page.startsWith(parentPath + '/')))
+                    .map(r => r.Page.split('/')[i])
+                    .filter(x => x) // Remove empty/undefined
+                )].sort();
+
+                if (siblings.length === 0) continue; // Stop if no children found
+
+                const navRow = document.createElement('nav');
+                navRow.className = `nav-row level-${i}`;
+                
+                // --- AGGRESSIVE SCROLL LOGIC ---
+                // If depth > 3 (meaning we have 4+ rows), hide top levels on scroll
+                // We keep the last 2 levels visible (current context + parent)
+                // Levels 0 to (total - 3) should hide
+                const totalLevels = levelsToBuild; // Approximation
+                if (totalLevels >= 4 && i < totalLevels - 2) {
+                    navRow.classList.add('hide-on-scroll');
+                }
+
+                const activeItem = parts[i];
+
+                siblings.forEach(name => {
+                    const itemPath = i === 0 ? name : `${parentPath}/${name}`;
+                    // Determine if this item is a "Folder" (has children) or a "File" (Main page)
+                    // We link to the Anchor #Path
+                    const isActive = name === activeItem;
+                    
+                    // Specific highlight colors based on root category
+                    let colorAttr = '';
+                    if (i === 0) colorAttr = `data-cat="${name}"`;
+                    else {
+                        // Inherit color from root
+                        const root = parts[0] || name; 
+                        colorAttr = `data-cat="${root}"`;
+                    }
+
+                    navRow.innerHTML += `<a href="#${itemPath}" class="nav-link fill-anim ${isActive ? 'active' : ''}" ${colorAttr} onclick="closeSearch()">${safeHTML(name)}</a>`;
+                });
+
+                // Insert into DOM in order
+                header.insertBefore(navRow, document.getElementById('search-controls'));
+                
+                // Center active item after render
+                setTimeout(() => centerNavRow(navRow), 50);
             }
         }
 
-        // --- CORE ROUTING ---
+        function centerNavRow(n) {
+            if(n.scrollWidth <= n.clientWidth + 5) return;
+            const activeLink = n.querySelector('.active');
+            if (activeLink) {
+                const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
+                n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+            }
+        }
+
         function handleRouting() { 
             if(isSearchActive) return; 
             window.scrollTo(0, 0); 
             
-            let hash = window.location.hash.substring(1) || 'Home'; 
-            if(hash === 'Index') { renderIndex(); buildRecursiveNav(); return; }
-            
-            // Regenerate Navigation based on current path
-            buildRecursiveNav();
+            // Force Header Reset
+            const h = document.getElementById('main-header');
+            if(h) h.classList.remove('scrolled');
 
-            if(hash.startsWith('Filter:')) { 
-                // e.g. Filter:2025-12
-                renderFiltered(decodeURIComponent(hash.split(':')[1])); 
-            } else { 
-                renderPage(hash); 
-            }
+            let hash = window.location.hash.substring(1) || 'Home'; 
+            if(hash === 'Index') { renderIndex(); return; }
+            
+            // RECURSIVE NAV BUILDER
+            // Extract the path without filter/query junk
+            let cleanPath = hash.split(':')[0]; // Remove Filter: prefix
+            if(cleanPath === 'Filter') cleanPath = 'Home'; // Fallback
+            
+            buildRecursiveNav(cleanPath);
+            
+            if(hash.startsWith('Filter:')) { renderFiltered(decodeURIComponent(hash.split(':')[1])); } 
+            else { renderPage(hash); }
         }
 
-        function renderFiltered(filter) { 
-            // Smart Filter: Checks if date string contains filter (e.g. "2025-12-15" contains "2025-12")
-            // OR if tag matches
+        function renderFiltered(t) { 
             const res = db.filter(r => {
-                const dateStr = r.Timestamp || '';
-                return (dateStr.includes(filter)) || (r.Tags && r.Tags.includes(filter));
+                // Check if the filter matches the formatted Month-Year string (Smart Date Chip)
+                const dateFilterStr = formatDateFilter(r.Timestamp);
+                return (dateFilterStr === t) || (r.Tags && r.Tags.includes(t));
             });
-            renderRows(res, `Posts matching "${safeHTML(filter)}"`, false, true); 
+            renderRows(res, `Posts tagged "${safeHTML(t)}"`, false, true); 
         }
 
         function renderPage(p) { 
             if(p === 'Home') { renderHome(); return; } 
-            
-            // Exact Match (Article)
             const ex = db.filter(r => r.Page === p); 
             const app = document.getElementById('app'); app.innerHTML = ''; 
             
-            // Check if this page is a Parent Category (has children)
-            const children = db.filter(r => r.Page && r.Page.startsWith(p + '/'));
-            const isCategory = children.length > 0 && !p.includes('/'); // Root categories like "Projects"
-
-            if(ex.length > 0) { 
-                // Render Article. Pass 'true' for isArticleMode to respect Sheet Order
-                renderRows(ex, null, true, false, true); 
-            } else if(children.length > 0) {
-                // It's a category folder without a direct page row (e.g. just a grouper)
-            } else {
-                app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return Home</a></div>`;
+            const isMainPage = !p.includes('/'); // Root category page like /Projects
+            
+            // RENDER ARTICLE: If strict page match found
+            // Pass 'true' for isArticleMode to DISABLE sorting
+            if(ex.length > 0) { renderRows(ex, null, true, false, true); } 
+            else if(childrenPagesCheck(p)) { }
+            else {
+                app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
                 return; 
             }
             
-            // If it has children, render them below as a grid
-            if(children.length > 0) {
-                // Find "Main Card" rows for children (SectionType=card or empty)
-                // Filter out sub-rows of the children to avoid duplicates
-                const uniqueChildren = [...new Set(children.map(c => {
-                    const relPath = c.Page.replace(p + '/', '');
-                    const rootChild = relPath.split('/')[0];
-                    return p + '/' + rootChild;
-                }))];
+            // If it's a folder, show children (Always sorted by date)
+            const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
+            if(childrenPages.length > 0) {
+                // Filter to get the "Card" row for each child page (usually the one with a date)
+                const overviewRows = childrenPages.map(childPage => {
+                    const rows = db.filter(r => r.Page === childPage);
+                    // Prefer row with SectionType=card or non-empty Timestamp
+                    return rows.find(r => r.SectionType === 'card') || rows.find(r => r.Timestamp) || rows[0];
+                }).filter(r => r);
                 
-                const overviewRows = uniqueChildren.map(page => db.find(r => r.Page === page && (r.SectionType === 'card' || !r.SectionType))).filter(r => r);
-                
-                if (overviewRows.length > 0) {
-                    renderRows(overviewRows, null, true, true, false); 
-                }
+                renderRows(overviewRows, null, true, true); // Force Grid, Default Sort
+            } 
+        }
+
+        function childrenPagesCheck(p) {
+            const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
+            return childrenPages.length > 0;
+        }
+
+        function renderIndex() {
+            buildRecursiveNav('Index'); 
+            const app = document.getElementById('app'); 
+            app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
+            
+            const list = app.querySelector('.index-list');
+            const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
+            
+            const groups = {};
+            pages.forEach(p => {
+                const cat = p.split('/')[0];
+                if(!groups[cat]) groups[cat] = [];
+                groups[cat].push(p);
+            });
+            
+            for(const [cat, items] of Object.entries(groups)) {
+                let catClass = '';
+                const cLower = cat.toLowerCase();
+                if(cLower === 'projects') catClass = 'cat-projects';
+                else if(cLower === 'professional') catClass = 'cat-professional';
+                else if(cLower === 'personal') catClass = 'cat-personal';
+
+                let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
+                items.forEach(p => {
+                    const row = db.find(r => r.Page === p);
+                    const date = row && row.Timestamp ? formatDateDisplay(row.Timestamp) : '';
+                    const title = row ? row.Title : p.split('/').pop();
+                    const depth = p.split('/').length;
+                    const indentClass = depth > 2 ? 'depth-3' : '';
+                    
+                    html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
+                });
+                html += `</div>`;
+                list.innerHTML += html;
             }
+        }
+
+        function renderHome() { 
+            const hr = db.filter(r => r.Page === 'Home');
+            const app = document.getElementById('app'); app.innerHTML = ''; 
+            renderRows(hr, null, true, false, true); // Respect sheet order for Home Intro
+            
+            // Recent Grid (Sorted by Date)
+            const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && r.Timestamp)
+                            .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
+                            // Unique pages only
+                            .filter((v,i,a)=>a.findIndex(t=>(t.Page===v.Page))===i)
+                            .slice(0, 6);
+            
+            if(recents.length > 0) { renderRows(recents, "Recent Activity", true, true); } 
         }
 
         function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
             const app = document.getElementById('app'); if(!app) return; 
             
-            // SORTING LOGIC:
-            // If Grid/Home: Newest Date First.
-            // If Article: Maintain Sheet Order (Don't sort).
+            // LOGIC: Only sort by date for Grids/Home. For Articles, respect Sheet Order.
             if (!isArticleMode) {
                 rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
             }
 
-            if(!append && title) {
-                app.innerHTML = `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
+            if(!append) {
+                app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
+            } else if(title) {
+                app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
             }
 
             if(rows.length === 0 && !append) { 
-                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2></div>`; return; 
+                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`; 
+                return; 
             }
             
             let gc = app.querySelector('.grid-container');
@@ -770,39 +931,44 @@
                 else if(pLower.startsWith('professional')) catClass = 'cat-professional';
                 else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
-                // ARTICLE MODE RENDER
-                if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
+                // ARTICLE MODE RENDERING (Text blocks)
+                if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card' || r.SectionType === 'text')) {
                     const d = document.createElement('div'); d.className = 'section layout-text';
                     
-                    if(modelMatch || r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+                    if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+                    else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
                     else mediaHtml = ''; 
 
-                    let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
-                    if(r.LinkURL) {
-                        metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+                    // Meta Row only on the FIRST block (usually Title block)
+                    let metaHtml = '';
+                    if(r.Title && !hasPlaceholder) {
+                       // Assume this is the "Header" row of the article
+                       metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
+                       if(r.LinkURL) {
+                           metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+                       }
+                       metaHtml += '<div class="article-tags">';
+                       
+                       // SMART DATE CHIP (Only if exists)
+                       if(r.Timestamp) {
+                           const displayDate = formatDateDisplay(r.Timestamp);
+                           const filterDate = formatDateFilter(r.Timestamp);
+                           metaHtml += `<span class="chip date" data-filter="${filterDate}">${displayDate}</span>`;
+                       }
+                       
+                       if(r.Tags) {
+                           const tags = r.Tags.split(',').map(x => x.trim());
+                           tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
+                       }
+                       metaHtml += '</div></div>';
                     }
-
-                    // Date Chip in Article (Only if Timestamp exists)
-                    metaHtml += '<div class="article-tags">';
-                    if(r.Timestamp) {
-                        const dateObj = parseDate(r.Timestamp);
-                        if (dateObj) {
-                            const display = dateObj.display; // "15 DEC 2025"
-                            const filter = dateObj.filter;   // "2025-12"
-                            metaHtml += `<span class="chip date" data-filter="${filter}">${display}</span>`;
-                        }
-                    }
-                    if(r.Tags) {
-                        r.Tags.split(',').forEach(t => metaHtml += `<span class="chip" data-tag="${t.trim()}">${safeHTML(t.trim())}</span>`);
-                    }
-                    metaHtml += '</div></div>';
 
                     d.innerHTML = `${mediaHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${contentHtml}</p>`;
                     app.appendChild(d);
                     return;
                 }
 
-                // NON-GRID ROWS
+                // HERO/QUOTE/TEXT (Non-Grid)
                 if(!forceGrid) {
                     if(r.SectionType === 'quote') { 
                         const d = document.createElement('div'); d.className = 'layout-quote section'; 
@@ -812,184 +978,47 @@
                         const d = document.createElement('div'); d.className = 'section layout-hero';
                         let dateHtml = '';
                         if(r.Timestamp) {
-                            const dateObj = parseDate(r.Timestamp);
-                            if (dateObj) dateHtml = `<div class="hero-meta"><span class="chip date" data-filter="${dateObj.filter}">${dateObj.display}</span></div>`;
+                            const dateVal = formatDateDisplay(r.Timestamp);
+                            const filterVal = formatDateFilter(r.Timestamp);
+                            dateHtml = `<div class="hero-meta"><span class="chip date" data-filter="${filterVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${filterVal}'">${dateVal}</span></div>`;
                         }
                         d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
-                        app.appendChild(d); return;
-                    }
-                    if(r.SectionType === 'text') {
-                        const d = document.createElement('div'); d.className = 'section layout-text';
-                        d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
                         app.appendChild(d); return;
                     }
                 }
 
                 // GRID CARD
-                const link = r.LinkURL || `#${r.Page}`;
-                const target = link.startsWith('#') ? '' : '_blank';
+                const link = r.LinkURL || '';
+                const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
+                let l = link; if(!l) l = `#${r.Page}`; 
+                const internal = l.startsWith('#'), target = internal ? '' : '_blank';
                 
                 let mh = '';
-                if(r.Timestamp || (r.Tags && r.Tags.length > 0)) {
+                if(r.Timestamp || tags.length > 0) {
                     mh = `<div class="meta-row">`;
                     if(r.Timestamp) {
-                        const dateObj = parseDate(r.Timestamp);
-                        if(dateObj) mh += `<span class="chip date" data-filter="${dateObj.filter}">${dateObj.display}</span>`; 
+                        const displayDate = formatDateDisplay(r.Timestamp);
+                        const filterDate = formatDateFilter(r.Timestamp);
+                        mh += `<span class="chip date" data-filter="${filterDate}">${displayDate}</span>`; 
                     }
-                    if (r.Tags) {
-                        r.Tags.split(',').forEach(t => mh += `<span class="chip" data-tag="${t.trim()}">${safeHTML(t.trim())}</span>`); 
-                    }
+                    tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
                     mh += `</div>`;
                 }
 
                 const d = document.createElement('div'); 
                 d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
-                d.setAttribute('data-link', link); d.setAttribute('data-target', target);
+                d.setAttribute('data-link', l); d.setAttribute('data-target', target);
                 
                 d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
                 
                 if(gc) gc.appendChild(d);
             });
             
-            if(window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
+            if(window.MathJax && window.MathJax.typeset) {
+                window.MathJax.typeset();
+            }
+
             setTimeout(init3DViewers, 500);
-        }
-
-        // --- UTILS ---
-        function parseDate(s) {
-            if(!s) return null;
-            // Handle "YYYY-MM-DD" -> Display "15 DEC 2025", Filter "2025-12"
-            const d = new Date(s);
-            if(isNaN(d.getTime())) return { display: s, filter: s }; // Fallback
-            
-            const day = d.getDate();
-            const monthShort = d.toLocaleString('default', { month: 'short' }).toUpperCase();
-            const year = d.getFullYear();
-            const monthNum = (d.getMonth() + 1).toString().padStart(2, '0');
-            
-            return {
-                display: `${day} ${monthShort} ${year}`,
-                filter: `${year}-${monthNum}` // Matches YYYY-MM
-            };
-        }
-
-        function handleGlobalClick(e) {
-            const overlay = document.getElementById('search-overlay');
-            const controls = document.getElementById('search-controls');
-            if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
-                closeSearch();
-            }
-        }
-
-        function handleContentClick(e) {
-            if(e.target.closest('.refresh-btn')) { 
-                const qc = e.target.closest('.layout-quote');
-                if(qc && !qc.classList.contains('loading')) {
-                    qc.classList.add('loading');
-                    qc.innerHTML = `<div class="sk-box quote" style="height:100px;width:100%;margin:0 auto;"></div>`;
-                    setTimeout(() => { renderQuoteCard(qc); qc.classList.remove('loading'); }, 600); 
-                }
-                e.stopPropagation(); return; 
-            }
-            if(e.target.classList.contains('zoomable')) { 
-                if(e.target.parentElement.tagName === 'A') return;
-                document.getElementById('lightbox-img').src = e.target.src; 
-                document.getElementById('lightbox').classList.add('active'); 
-                e.stopPropagation(); return; 
-            }
-            if(e.target.classList.contains('chip')) { 
-                e.stopPropagation();
-                if(isSearchActive) closeSearch();
-                const filter = e.target.getAttribute('data-filter'); // Date Filter
-                const tag = e.target.getAttribute('data-tag');       // Tag Filter
-                
-                if(filter) window.location.hash = 'Filter:' + filter;
-                else if(tag) window.location.hash = 'Filter:' + tag;
-                return; 
-            }
-            const block = e.target.closest('.clickable-block');
-            if(block && !e.target.classList.contains('chip')) {
-                const link = block.getAttribute('data-link'), target = block.getAttribute('data-target');
-                if(link) { 
-                    if(target === '_blank') window.open(link, '_blank'); 
-                    else { window.location.href = link; if(isSearchActive) closeSearch(); } 
-                }
-            }
-        }
-
-        function handleKeys(e) {
-            if ((e.key === '/' || (e.metaKey && e.key === 'k') || (e.ctrlKey && e.key === 'k')) && !isSearchActive) {
-                e.preventDefault(); toggleSearch();
-            }
-            if (e.key === 'Escape') {
-                if(isSearchActive || document.getElementById('search-overlay').classList.contains('active')) closeSearch();
-            }
-        }
-
-        function resetToHome() { closeSearch(); window.location.hash = ''; }
-        function closeSearch() { 
-            document.getElementById('search-overlay').classList.remove('active'); 
-            document.body.classList.remove('search-active'); 
-            const input = document.getElementById('search-input'); input.value = ''; input.blur(); 
-            if(isSearchActive) { isSearchActive = false; handleRouting(); } 
-            isSearchActive = false; 
-        }
-        function toggleSearch() { 
-            const a = document.getElementById('search-overlay').classList.toggle('active'); 
-            document.body.classList.toggle('search-active');
-            if(a) setTimeout(() => document.getElementById('search-input').focus(), 100); else closeSearch(); 
-        }
-        function handleSearch(q) { 
-            if(!document.getElementById('search-overlay').classList.contains('active')) return;
-            isSearchActive = true; 
-            if(!q) { 
-                document.getElementById('app').innerHTML = '<div class="layout-404" style="padding:40px 0;"><h2>Search</h2><p>Type to find projects...</p></div>';
-                return;
-            } 
-            const t = q.toLowerCase();
-            const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
-            renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
-        }
-
-        function renderIndex() {
-            document.getElementById('nav-container').innerHTML = ''; // Clear nav
-            document.body.classList.remove('has-sub-nav', 'has-tertiary-nav');
-            updateHeader();
-
-            const app = document.getElementById('app'); 
-            app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
-            const list = app.querySelector('.index-list');
-            const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
-            const groups = {};
-            pages.forEach(p => {
-                const cat = p.split('/')[0];
-                if(!groups[cat]) groups[cat] = [];
-                groups[cat].push(p);
-            });
-            for(const [cat, items] of Object.entries(groups)) {
-                let catClass = '';
-                const cLower = cat.toLowerCase();
-                if(cLower === 'projects') catClass = 'cat-projects'; else if(cLower === 'professional') catClass = 'cat-professional'; else if(cLower === 'personal') catClass = 'cat-personal';
-                let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
-                items.forEach(p => {
-                    const row = db.find(r => r.Page === p);
-                    const title = row ? row.Title : p.split('/').pop();
-                    const depth = p.split('/').length;
-                    const indentClass = depth > 2 ? 'depth-3' : '';
-                    html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title}</a>`;
-                });
-                html += `</div>`; list.innerHTML += html;
-            }
-        }
-
-        function renderHome() { 
-            const hr = db.filter(r => r.Page === 'Home');
-            const app = document.getElementById('app'); app.innerHTML = ''; 
-            renderRows(hr, null, true); 
-            const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
-                            .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
-                            .slice(0, 6);
-            if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
         }
 
         function renderQuoteCard(c) {
@@ -998,11 +1027,19 @@
             let auth = r.Author || 'Unknown'; 
             if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`; 
             else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
+            
             const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
             const len = text.length;
             let sizeClass = 'short';
-            if(len > 230) sizeClass = 'xxl'; else if(len > 150) sizeClass = 'xl'; else if(len > 100) sizeClass = 'long'; else if(len > 50) sizeClass = 'medium';
-            c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote><div class="quote-footer"><div class="author">— ${auth}</div></div><svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.23 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
+            
+            if(len > 230) sizeClass = 'xxl';
+            else if(len > 150) sizeClass = 'xl';
+            else if(len > 100) sizeClass = 'long';
+            else if(len > 50) sizeClass = 'medium';
+            
+            c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
+                        <div class="quote-footer"><div class="author">— ${auth}</div></div>
+                        <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.23 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
         }
 
         function renderFooter() { 
@@ -1011,10 +1048,13 @@
             fd.innerHTML = ''; 
             fr.forEach(r => { 
                 let link = r.LinkURL;
-                if(r.Title === 'Contact') link = 'mailto:sahibdsv+site@gmail.com';
+                if(r.Title === 'Contact') {
+                    link = 'mailto:sahibdsv+site@gmail.com';
+                }
                 if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
             }); 
-            fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="resetToHome(); window.location.hash='Index'">Index</a>`;
+            
+            fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
             fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
         }
 
@@ -1022,9 +1062,23 @@
             const r = "sahibdsv/sahibdsv.github.io"; 
             fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
                 if(d.pushed_at) {
-                    const rel = Math.floor((new Date() - new Date(d.pushed_at)) / 86400000);
-                    const txt = rel === 0 ? "today" : rel + " days ago";
-                    document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Updated ${txt}</a>`;
+                    const date = new Date(d.pushed_at);
+                    const timeAgo = (d) => {
+                        const s = Math.floor((new Date() - d) / 1000);
+                        let i = s / 31536000;
+                        if (i > 1) return Math.floor(i) + " years ago";
+                        i = s / 2592000;
+                        if (i > 1) return Math.floor(i) + " months ago";
+                        i = s / 86400;
+                        if (i > 1) return Math.floor(i) + " days ago";
+                        i = s / 3600;
+                        if (i > 1) return Math.floor(i) + " hours ago";
+                        i = s / 60;
+                        if (i > 1) return Math.floor(i) + " mins ago";
+                        return "a few mins ago";
+                    };
+                    const relTime = timeAgo(date);
+                    document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${relTime}</a>`;
                 } 
             }).catch(()=>{}); 
         }
@@ -1054,68 +1108,185 @@
             return clean; 
         }
 
-        // 3D VIEWER (With imports)
+        // DATE FORMATTERS
+        function formatDateDisplay(s) {
+            // Returns "15 DEC 2025"
+            if(!s) return '';
+            const d = new Date(s);
+            if(isNaN(d.getTime())) return s;
+            const day = d.getDate();
+            const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+            const yr = d.getFullYear();
+            return `${day} ${mo} ${yr}`;
+        }
+
+        function formatDateFilter(s) {
+            // Returns "DEC 2025" for filtering
+            if(!s) return '';
+            const d = new Date(s);
+            if(isNaN(d.getTime())) return s;
+            const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+            const yr = d.getFullYear();
+            return `${mo} ${yr}`;
+        }
+
         function init3DViewers() {
             const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
             if(containers.length === 0) return;
+
             Promise.all([
-                import('three'), import('three/addons/loaders/STLLoader.js'), import('three/addons/loaders/GLTFLoader.js'), import('three/addons/controls/OrbitControls.js')
+                import('three'),
+                import('three/addons/loaders/STLLoader.js'),
+                import('three/addons/loaders/GLTFLoader.js'),
+                import('three/addons/controls/OrbitControls.js')
             ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
+                
+                const visibilityObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const container = entry.target;
+                        if (entry.isIntersecting) container.setAttribute('data-visible', 'true');
+                        else container.setAttribute('data-visible', 'false');
+                    });
+                });
+
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                             observer.unobserve(entry.target);
+                            visibilityObserver.observe(entry.target);
                         }
                     });
                 }, { rootMargin: "200px" });
+
                 containers.forEach(c => observer.observe(c));
             });
         }
 
         function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
             container.classList.add('loaded');
+            
             const url = container.getAttribute('data-src');
             const customColor = container.getAttribute('data-color');
             const ext = url.split('.').pop().toLowerCase();
-            const scene = new THREE.Scene(); scene.background = null; 
+            
+            const scene = new THREE.Scene();
+            scene.background = null; 
+
             const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.setSize(container.clientWidth, container.clientHeight);
             renderer.outputColorSpace = THREE.SRGBColorSpace; 
             renderer.physicallyCorrectLights = true; 
+            
             container.appendChild(renderer.domElement);
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); scene.add(ambientLight);
-            const keyLight = new THREE.DirectionalLight(0xffffff, 1.2); keyLight.position.set(5, 10, 7); scene.add(keyLight);
-            const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0); rimLight.position.set(-5, 5, -5); scene.add(rimLight);
-            const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5); fillLight.position.set(-5, 0, 5); scene.add(fillLight);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            keyLight.position.set(5, 10, 7);
+            scene.add(keyLight);
+
+            const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
+            rimLight.position.set(-5, 5, -5);
+            scene.add(rimLight);
+
+            const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
+            fillLight.position.set(-5, 0, 5);
+            scene.add(fillLight);
+
             const controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true; controls.dampingFactor = 0.05; controls.enablePan = false; 
-            controls.autoRotate = true; controls.autoRotateSpeed = 2.0;
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enablePan = false; 
+            controls.autoRotate = true; 
+            controls.autoRotateSpeed = 2.0;
+
             let restartTimer;
-            controls.addEventListener('start', () => { clearTimeout(restartTimer); controls.autoRotate = false; });
-            controls.addEventListener('end', () => { restartTimer = setTimeout(() => { controls.autoRotate = true; }, 5000); });
+            controls.addEventListener('start', () => {
+                clearTimeout(restartTimer);
+                controls.autoRotate = false;
+            });
+            controls.addEventListener('end', () => {
+                restartTimer = setTimeout(() => {
+                    controls.autoRotate = true;
+                }, 5000); 
+            });
+
             const onLoad = (object) => {
                 container.classList.add('ready'); 
+
                 const box = new THREE.Box3().setFromObject(object);
-                const center = new THREE.Vector3(); box.getCenter(center); object.position.sub(center); scene.add(object);
-                if (customColor) { object.traverse((child) => { if (child.isMesh) { child.material = new THREE.MeshPhongMaterial({ color: customColor, specular: 0x111111, shininess: 100 }); } }); }
+                const center = new THREE.Vector3();
+                box.getCenter(center);
+                object.position.sub(center);
+                scene.add(object);
+
+                if (customColor) {
+                    object.traverse((child) => {
+                        if (child.isMesh) {
+                            child.material = new THREE.MeshPhongMaterial({ 
+                                color: customColor, 
+                                specular: 0x111111, 
+                                shininess: 100 
+                            });
+                        }
+                    });
+                }
+
                 const size = box.getSize(new THREE.Vector3()).length();
                 const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
-                camera.position.set(dist, dist * 0.4, dist * 0.8); camera.lookAt(0, 0, 0);
-                controls.minDistance = size * 0.2; controls.maxDistance = size * 5;
-                function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+                camera.position.set(dist, dist * 0.4, dist * 0.8); 
+                camera.lookAt(0, 0, 0);
+                controls.minDistance = size * 0.2; 
+                controls.maxDistance = size * 5;
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    if (container.getAttribute('data-visible') === 'false') return;
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
                 animate();
             };
-            const onError = (e) => { console.error(e); container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>'; };
-            if (ext === 'glb' || ext === 'gltf') { const loader = new GLTFLoader(); loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError); } 
-            else { const loader = new STLLoader(); loader.load(url, (geometry) => { const mat = new THREE.MeshPhongMaterial({ color: customColor || 0xaaaaaa, specular: 0x111111, shininess: 200 }); const mesh = new THREE.Mesh(geometry, mat); onLoad(mesh); }, undefined, onError); }
-            window.addEventListener('resize', () => { if(!container.isConnected) return; camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); });
+
+            const onError = (e) => {
+                console.error(e);
+                container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
+            };
+
+            if (ext === 'glb' || ext === 'gltf') {
+                const loader = new GLTFLoader();
+                loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
+            } else {
+                const loader = new STLLoader();
+                loader.load(url, (geometry) => {
+                    const mat = new THREE.MeshPhongMaterial({ 
+                        color: customColor || 0xaaaaaa, 
+                        specular: 0x111111, 
+                        shininess: 200 
+                    });
+                    const mesh = new THREE.Mesh(geometry, mat);
+                    onLoad(mesh);
+                }, undefined, onError);
+            }
+
+            window.addEventListener('resize', () => {
+                if(!container.isConnected) return; 
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            if(typeof Papa === 'undefined') { window.addEventListener('load', init); } else { init(); }
+            if(typeof Papa === 'undefined') {
+                window.addEventListener('load', init);
+            } else {
+                init();
+            }
         });
     </script>
 </body>
