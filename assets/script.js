@@ -87,10 +87,20 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER
+    // SMART SCROLL HEADER LOGIC
     window.addEventListener('scroll', () => { 
-        const isTop = window.scrollY === 0;
-        document.body.classList.toggle('scrolled', !isTop);
+        const h = document.getElementById('main-header');
+        const b = document.body;
+        // Logic: Row 1 hides immediately on any scroll down. Reappears ONLY at 0.
+        const isAtTop = window.scrollY === 0;
+        
+        if (!isAtTop) {
+            h.classList.add('scrolled-down');
+            b.classList.add('scrolled-down-mode');
+        } else {
+            h.classList.remove('scrolled-down');
+            b.classList.remove('scrolled-down-mode');
+        }
     });
 
     document.addEventListener('click', (e) => {
@@ -144,18 +154,6 @@ function initApp() {
             }
         }
     });
-    
-    // TIMELINE SCROLL FADE
-    document.addEventListener('scroll', (e) => {
-        if(e.target.classList && e.target.classList.contains('timeline-content')) {
-            const el = e.target;
-            if(el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
-                el.classList.add('end-scroll');
-            } else {
-                el.classList.remove('end-scroll');
-            }
-        }
-    }, true);
 }
 
 function resetToHome() { closeSearch(); window.location.hash = ''; }
@@ -172,7 +170,9 @@ function handleSearch(q) {
     if(!q) return; 
     isSearchActive = true; 
     
-    // Search mode force collapse handled by CSS class 'search-mode'
+    // Collapse header in search mode
+    document.getElementById('main-header').classList.add('scrolled-down');
+    document.body.classList.add('scrolled-down-mode');
 
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
@@ -186,88 +186,89 @@ function buildNav() {
 }
 
 function buildSubNav(top) {
-    const n = document.getElementById('sub-nav'); if(!n) return; n.innerHTML = ''; 
+    const n = document.getElementById('sub-nav');
+    const t = document.getElementById('tertiary-nav');
+    
+    if(!n || !t) return; 
+    
+    n.innerHTML = ''; 
+    t.innerHTML = '';
+    
+    // Logic: Identify current depth
+    const currentHash = window.location.hash.replace('#', '');
+    const parts = currentHash.split('/');
+    
+    // --- ROW 3: Sub Nav (Children of Top) ---
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
     
-    if (subs.length === 0) {
-        n.classList.add('hidden-row');
-    } else {
-        n.classList.remove('hidden-row');
+    if(subs.length > 0) {
+        n.classList.remove('hidden');
         subs.forEach(x => { 
             const name = x.split('/')[1];
-            const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
+            const active = currentHash === x || currentHash.startsWith(x + '/');
             n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
         });
         setTimeout(() => centerNav(n), 100);
-    }
-}
-
-function buildTertiaryNav(top, sub) {
-    const n = document.getElementById('tertiary-nav'); if(!n) return; n.innerHTML = '';
-    
-    if(!sub) {
-        n.classList.add('hidden-row');
-        return;
-    }
-
-    const prefix = `${top}/${sub}`;
-    // Find deeper pages: Project/EV/Motor -> Motor
-    const thirds = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix + '/')).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
-
-    if (thirds.length === 0) {
-        n.classList.add('hidden-row');
     } else {
-        n.classList.remove('hidden-row');
-        thirds.forEach(x => {
-            const name = x.split('/')[2];
-            const active = window.location.hash === `#${x}`;
-            n.innerHTML += `<a href="#${x}" class="tertiary-link ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
-        });
-        setTimeout(() => centerNav(n), 100);
+        n.classList.add('hidden');
+    }
+
+    // --- ROW 4: Tertiary (Children of 2nd Level) ---
+    // Only show if we are at least 2 levels deep
+    if(parts.length >= 2) {
+        const subCat = parts.slice(0, 2).join('/'); // e.g., Professional/Experience
+        const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(subCat + '/')).map(r => r.Page))].sort();
+        
+        if(terts.length > 0) {
+            t.classList.remove('hidden');
+            terts.forEach(x => {
+                const name = x.split('/')[2]; // The 3rd part
+                const active = currentHash === x;
+                t.innerHTML += `<a href="#${x}" class="tert-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
+            });
+            setTimeout(() => centerNav(t), 100);
+        } else {
+            t.classList.add('hidden');
+        }
+    } else {
+        t.classList.add('hidden');
     }
 }
 
-function centerNav(n) {
-    if(!n) return;
-    const activeLink = n.querySelector('.active');
+function centerNav(nav) {
+    if(!nav) return;
+    const activeLink = nav.querySelector('.active');
     if (activeLink) {
-        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
-        n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-    } else {
-        const middle = (n.scrollWidth - n.clientWidth) / 2;
-        n.scrollTo({ left: middle, behavior: 'smooth' });
+        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (nav.clientWidth / 2);
+        nav.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     }
 }
 
 function handleRouting() { 
     if(isSearchActive) return; 
     window.scrollTo(0, 0); 
+    
+    // Reset Header State on Route Change (show everything unless scrolled)
+    if(window.scrollY === 0) {
+        document.getElementById('main-header').classList.remove('scrolled-down');
+        document.body.classList.remove('scrolled-down-mode');
+    }
+
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // Handle Special Pages
     if(h === 'Index') { renderIndex(); return; }
     if(h === 'Timeline') { renderTimeline(); return; }
     
-    if(h.startsWith('Filter:')) { 
-        document.body.classList.remove('header-expanded'); // Not used anymore but kept safe
-        renderFiltered(decodeURIComponent(h.split(':')[1])); 
-        return;
-    } 
-
-    const parts = h.split('/');
-    const top = parts[0];
-    const sub = parts.length > 1 ? parts[1] : null;
-
-    // Deactivate Main Nav Highlights if Index (or non-matching top)
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+    const top = h.split('/')[0]; 
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
+        const href = a.getAttribute('href'); 
+        if(href) a.classList.toggle('active', href.replace('#', '') === top); 
+    }); 
     
     buildSubNav(top); 
-    buildTertiaryNav(top, sub);
-
-    // Update Body Padding dynamically based on active rows?
-    // CSS transition handles smoothening, but we can verify active classes if needed.
     
-    renderPage(h);
+    if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
+    else { renderPage(h); }
 }
 
 function renderFiltered(t) { 
@@ -307,14 +308,16 @@ function childrenPagesCheck(p) {
 }
 
 function renderIndex() {
-    buildSubNav('Index'); 
-    buildTertiaryNav('Index', null);
+    // Reset Navigation
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+    document.getElementById('sub-nav').classList.add('hidden');
+    document.getElementById('tertiary-nav').classList.add('hidden');
 
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
     
     const list = app.querySelector('.index-list');
+    // Sort Pages Alphabetically
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
     const groups = {};
@@ -336,8 +339,10 @@ function renderIndex() {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
             const title = row ? row.Title : p.split('/').pop();
+            // Check for depth (Level 3+)
             const depth = p.split('/').length;
-            const indentClass = depth >= 3 ? 'indent-tertiary' : '';
+            const indentClass = depth >= 3 ? 'indent' : '';
+            
             html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
         });
         html += `</div>`;
@@ -346,54 +351,84 @@ function renderIndex() {
 }
 
 function renderTimeline() {
-    buildSubNav('Timeline');
-    buildTertiaryNav('Timeline', null);
+    // Reset Nav
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-
-    const app = document.getElementById('app');
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-section"></div>';
-    const section = app.querySelector('.timeline-section');
-
-    // Get all items with timestamp
-    const items = db.filter(r => r.Timestamp && r.Page !== 'Home').sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+    document.getElementById('sub-nav').classList.add('hidden');
+    document.getElementById('tertiary-nav').classList.add('hidden');
     
-    // Group by Month Year
-    const grouped = {};
-    items.forEach(r => {
-        const d = formatDate(r.Timestamp);
-        if(!grouped[d]) grouped[d] = [];
-        grouped[d].push(r);
+    const app = document.getElementById('app');
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-list"></div>';
+    
+    const list = app.querySelector('.timeline-list');
+    
+    // 1. Get all items with a timestamp, sort Descending
+    const timedItems = db.filter(r => r.Timestamp).sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+    
+    // 2. Group by Month/Year
+    const groups = {};
+    timedItems.forEach(item => {
+        const d = new Date(item.Timestamp);
+        const key = `${d.getFullYear()}-${d.getMonth()}`; // Unique Key
+        if(!groups[key]) groups[key] = { year: d.getFullYear(), month: d.toLocaleString('default', { month: 'short' }), items: [] };
+        groups[key].items.push(item);
     });
-
-    for(const [date, rows] of Object.entries(grouped)) {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'timeline-row';
+    
+    // 3. Render
+    Object.keys(groups).sort((a,b) => b.split('-')[0] - a.split('-')[0] || b.split('-')[1] - a.split('-')[1]).forEach(key => {
+        const g = groups[key];
+        const rowId = `tl-row-${key}`;
         
-        const dateDiv = document.createElement('div');
-        dateDiv.className = 'timeline-date';
-        dateDiv.innerText = date;
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'timeline-content';
-        
-        // Render Mini-Cards
-        rows.forEach(r => {
-            const card = document.createElement('div');
-            card.className = 'layout-grid clickable-block';
-            card.setAttribute('data-link', `#${r.Page}`);
+        let rowHtml = `
+        <div class="timeline-row">
+            <div class="timeline-date">
+                <span class="mo">${g.month}</span>
+                <span class="yr">${g.year}</span>
+            </div>
+            <div class="timeline-content-wrapper" id="${rowId}">
+                <div class="timeline-content">`;
+                
+        // Render Cards manually using existing logic parts
+        g.items.forEach(r => {
+            let contentHtml = processText(r.Content);
+            let mediaHtml = '';
+            let hasPlaceholder = false;
             
-            let thumb = '';
-            if(r.Media) thumb = `<div class="row-media"><img src="${getThumbnail(r.Media)}" loading="lazy"></div>`;
-            else thumb = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+            if (r.Media) {
+                const thumb = getThumbnail(r.Media);
+                if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+            } else {
+                hasPlaceholder = true;
+                mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+            }
             
-            card.innerHTML = `${thumb}<h3 class="fill-anim" style="font-size:14px">${safeHTML(r.Title)}</h3>`;
-            contentDiv.appendChild(card);
+            let l = r.LinkURL || `#${r.Page}`;
+            let target = l.startsWith('#') ? '' : '_blank';
+            
+            rowHtml += `
+            <div class="layout-grid clickable-block ${hasPlaceholder ? 'has-placeholder' : ''}" data-link="${l}" data-target="${target}">
+                ${mediaHtml}
+                <h3 class="fill-anim">${safeHTML(r.Title)}</h3>
+                <p>${contentHtml}</p>
+            </div>`;
         });
 
-        rowDiv.appendChild(dateDiv);
-        rowDiv.appendChild(contentDiv);
-        section.appendChild(rowDiv);
-    }
+        rowHtml += `</div></div></div>`;
+        list.innerHTML += rowHtml;
+    });
+
+    // 4. Attach Scroll Listeners for Fade Effect
+    document.querySelectorAll('.timeline-content-wrapper').forEach(wrapper => {
+        const content = wrapper.querySelector('.timeline-content');
+        content.addEventListener('scroll', () => {
+            if (content.scrollLeft + content.clientWidth >= content.scrollWidth - 10) {
+                wrapper.classList.add('scrolled-end');
+            } else {
+                wrapper.classList.remove('scrolled-end');
+            }
+        });
+        // Init check
+        if(content.scrollWidth <= content.clientWidth) wrapper.classList.add('scrolled-end');
+    });
 }
 
 function renderHome() { 
@@ -401,28 +436,27 @@ function renderHome() {
     const app = document.getElementById('app'); app.innerHTML = ''; 
     renderRows(hr, null, true); 
     
-    // Featured Pins
-    const featured = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && r.Tags && r.Tags.includes('featured'))
-                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
-
-    // Others (Recent)
-    const others = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && (!r.Tags || !r.Tags.includes('featured')))
-                      .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
-                      .slice(0, 6); // Limit recent to 6
-
-    // Combine: Featured first
-    const displayRows = [...featured, ...others];
-    // Remove duplicates if any (though logic handles separation)
-    const uniqueRows = [...new Set(displayRows)];
-
-    if(uniqueRows.length > 0) { renderRows(uniqueRows, "Featured & Recent", true, true); } 
+    // FEATURE REQUEST 3: Featured Pins
+    let recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer');
+    
+    // Logic: Split into Featured vs Standard
+    const featured = recents.filter(r => r.Tags && r.Tags.includes('Featured'));
+    const standard = recents.filter(r => !r.Tags || !r.Tags.includes('Featured'));
+    
+    // Sort standard by date
+    standard.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
+    
+    // Combine: Featured First, then Standard
+    const finalDisplay = [...featured, ...standard].slice(0, 8); // increased limit slightly to show pins
+    
+    if(finalDisplay.length > 0) { renderRows(finalDisplay, "Featured & Recent", true); } 
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     const app = document.getElementById('app'); if(!app) return; 
     
-    // Only sort if NOT Home (Home logic handles its own sorting)
-    if(!append) {
+    // Note: Home render handles its own sorting now, others use this default
+    if(!rows[0] || !rows[0].Tags || !rows[0].Tags.includes('Featured')) {
         rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
     }
 
@@ -439,10 +473,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     
     let gc = app.querySelector('.grid-container');
     if(append) {
-        // If appending and no grid exists, create one
-        if(!gc) {
-             gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
-        }
+        gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
     } else {
         const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
         if(hasGridItems && !gc) {
@@ -558,6 +589,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
+    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
@@ -595,8 +627,8 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="closeSearch()">Timeline</a>`;
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
+    fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="closeSearch()">Timeline</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
@@ -605,6 +637,7 @@ function fetchGitHubStats() {
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
             const date = new Date(d.pushed_at);
+            // RELATIVE TIME LOGIC
             const timeAgo = (d) => {
                 const s = Math.floor((new Date() - d) / 1000);
                 let i = s / 31536000;
@@ -707,6 +740,7 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
+                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -728,13 +762,19 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
+    // RENDERER SETUP
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     
+    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     
+    // FIX: Updated Color Space Management (Three.js r152+)
+    // Old: renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
-    renderer.physicallyCorrectLights = true; 
+    
+    // Lighting Setup
+    renderer.physicallyCorrectLights = true; // Note: In r160+ this becomes renderer.useLegacyLights = false;
     
     container.appendChild(renderer.domElement);
 
@@ -772,7 +812,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); 
+        container.classList.add('ready'); // Fade in canvas
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
@@ -802,9 +842,12 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
+        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
+            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
+            
             controls.update();
             renderer.render(scene, camera);
         }
