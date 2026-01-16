@@ -1,11 +1,11 @@
 /* assets/js/viewer.js */
 
-// 3D VIEWER LOGIC (LAZY LOADED)
-export function init3DViewers() {
+function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
     if(containers.length === 0) return;
 
-    // Dynamic import preserves your lazy loading optimization
+    // We keep the dynamic import here because Three.js is huge and we only want it if needed.
+    // This usually works fine in global scripts too.
     Promise.all([
         import('three'),
         import('three/addons/loaders/STLLoader.js'),
@@ -39,7 +39,6 @@ export function init3DViewers() {
 
 function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls, visibilityObserver) {
     container.classList.add('loaded');
-    // Start tracking visibility for performance
     visibilityObserver.observe(container);
     
     const url = container.getAttribute('data-src');

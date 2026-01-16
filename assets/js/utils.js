@@ -1,6 +1,6 @@
 /* assets/js/utils.js */
 
-export function safeHTML(html) {
+function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
             ADD_TAGS: ['iframe'],
@@ -10,7 +10,7 @@ export function safeHTML(html) {
     return html; 
 }
 
-export function formatDate(s) {
+function formatDate(s) {
     if(!s) return '';
     if(s.length === 8 && !isNaN(s)) {
         const y = s.substring(0, 4);
@@ -26,7 +26,7 @@ export function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
-export function getThumbnail(u) { 
+function getThumbnail(u) { 
     if(!u) return null; 
     if(u.includes('youtube.com')||u.includes('youtu.be')) { 
         let v = u.split('v=')[1]; 
@@ -38,7 +38,7 @@ export function getThumbnail(u) {
     return u; 
 }
 
-export function processText(t) { 
+function processText(t) { 
     if(!t) return ''; 
     let clean = safeHTML(t);
     

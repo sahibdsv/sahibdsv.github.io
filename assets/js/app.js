@@ -1,11 +1,10 @@
 /* assets/js/app.js */
-import { loadData } from './api.js';
-import * as UI from './ui.js';
 
 let db = [], quotesDb = [];
 
 /* --- INITIALIZATION --- */
 const init = () => {
+    // loadData() is defined in api.js
     loadData().then(([m, q]) => {
         db = m.filter(r => r.Title); 
         quotesDb = q;
@@ -13,8 +12,8 @@ const init = () => {
         if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
         
         initApp(); 
-        UI.renderFooter(db); 
-        UI.fetchGitHubStats();
+        renderFooter(db); 
+        fetchGitHubStats();
         
         requestAnimationFrame(() => {
             setTimeout(() => {
@@ -33,12 +32,12 @@ const init = () => {
 };
 
 function initApp() {
-    UI.buildNav(db); 
+    buildNav(db); 
     handleRouting();
     
     // LISTENERS
     window.addEventListener('hashchange', handleRouting);
-    window.addEventListener('search-closed', handleRouting); // Custom event from UI
+    window.addEventListener('search-closed', handleRouting); 
 
     // GOATCOUNTER
     window.addEventListener('hashchange', function(e) {
@@ -64,7 +63,7 @@ function initApp() {
         const controls = document.getElementById('search-controls');
         // Close search if clicking outside
         if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
-            UI.closeSearch();
+            closeSearch();
         }
     });
 
@@ -76,7 +75,7 @@ function initApp() {
                 quoteContainer.classList.add('loading');
                 quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
                 setTimeout(() => {
-                    UI.renderQuoteCard(quoteContainer, quotesDb);
+                    renderQuoteCard(quoteContainer, quotesDb);
                     quoteContainer.classList.remove('loading');
                 }, 600); 
             }
@@ -94,7 +93,7 @@ function initApp() {
         // Chip Clicking
         if(e.target.classList.contains('chip')) { 
             e.stopPropagation();
-            if(UI.isSearchOpen()) UI.closeSearch(); 
+            if(isSearchOpen()) closeSearch(); 
             const tag = e.target.getAttribute('data-tag');
             const date = e.target.getAttribute('data-date');
             if(date) window.location.hash = 'Filter:' + date;
@@ -110,7 +109,7 @@ function initApp() {
                 if(target === '_blank') window.open(link, '_blank'); 
                 else { 
                     window.location.href = link; 
-                    if(UI.isSearchOpen()) UI.closeSearch(); 
+                    if(isSearchOpen()) closeSearch(); 
                 } 
             }
         }
@@ -118,11 +117,11 @@ function initApp() {
 }
 
 function handleRouting() { 
-    if(UI.isSearchOpen()) return; 
+    if(isSearchOpen()) return; 
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    if(h === 'Index') { UI.renderIndex(db); return; }
+    if(h === 'Index') { renderIndex(db); return; }
     
     // STATE: Collapse Header for Home, Filter, OR Index
     const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
@@ -133,19 +132,18 @@ function handleRouting() {
     const top = h.split('/')[0]; 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
     
-    UI.buildSubNav(top, db); 
+    buildSubNav(top, db); 
     
-    if(h.startsWith('Filter:')) { UI.renderFiltered(decodeURIComponent(h.split(':')[1]), db); } 
-    else { UI.renderPage(h, db); }
+    if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1]), db); } 
+    else { renderPage(h, db); }
 }
 
-/* --- EXPOSE TO HTML --- */
-// Because modules have their own scope, onclick="..." in HTML can't see them.
-// We must manually attach them to the window object.
-window.toggleSearch = UI.toggleSearch;
-window.handleSearch = (val) => UI.handleSearch(val, db);
-window.resetToHome = UI.resetToHome;
-window.closeSearch = UI.closeSearch;
+// Global binding for HTML click handlers
+// (Just in case your HTML calls them directly)
+window.toggleSearch = toggleSearch;
+window.handleSearch = (val) => handleSearch(val, db);
+window.resetToHome = resetToHome;
+window.closeSearch = closeSearch;
 
 // Start!
 init();

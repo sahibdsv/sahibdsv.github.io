@@ -5,7 +5,7 @@ const FALLBACK_CONFIG = {
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
 };
 
-export async function loadData() {
+async function loadData() {
     let config = FALLBACK_CONFIG;
     try {
         const cfgRes = await fetch('assets/config.json');

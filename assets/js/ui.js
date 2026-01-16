@@ -1,14 +1,12 @@
 /* assets/js/ui.js */
-import { safeHTML, processText, formatDate, getThumbnail } from './utils.js';
-import { init3DViewers } from './viewer.js';
 
 /* --- STATE HELPERS --- */
-export function isSearchOpen() {
+function isSearchOpen() {
     return document.getElementById('search-overlay').classList.contains('active');
 }
 
 /* --- NAVIGATION & SEARCH --- */
-export function toggleSearch() { 
+function toggleSearch() { 
     const overlay = document.getElementById('search-overlay');
     const header = document.getElementById('main-header');
     const isActive = overlay.classList.toggle('active'); 
@@ -18,7 +16,7 @@ export function toggleSearch() {
     else closeSearch(); 
 }
 
-export function closeSearch() { 
+function closeSearch() { 
     const overlay = document.getElementById('search-overlay');
     if(!overlay.classList.contains('active')) return;
     
@@ -29,7 +27,7 @@ export function closeSearch() {
     window.dispatchEvent(new CustomEvent('search-closed'));
 }
 
-export function handleSearch(q, db) { 
+function handleSearch(q, db) { 
     if(!q) return; 
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
@@ -39,18 +37,18 @@ export function handleSearch(q, db) {
     renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
 }
 
-export function resetToHome() { 
+function resetToHome() { 
     closeSearch(); 
     window.location.hash = ''; 
 }
 
-export function buildNav(db) { 
+function buildNav(db) { 
     const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
     const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
     p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
 }
 
-export function buildSubNav(top, db) {
+function buildSubNav(top, db) {
     const n = document.getElementById('sub-nav'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
     
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
@@ -63,7 +61,7 @@ export function buildSubNav(top, db) {
     setTimeout(() => centerSubNav(true), 100);
 }
 
-export function centerSubNav(forceMiddleIfNone) {
+function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
     const activeLink = n.querySelector('.active');
@@ -78,7 +76,7 @@ export function centerSubNav(forceMiddleIfNone) {
 }
 
 /* --- PAGE RENDERING --- */
-export function renderHome(db) { 
+function renderHome(db) { 
     const hr = db.filter(r => r.Page === 'Home');
     const app = document.getElementById('app'); app.innerHTML = ''; 
     renderRows(hr, null, true); 
@@ -89,7 +87,7 @@ export function renderHome(db) {
     if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
 }
 
-export function renderIndex(db) {
+function renderIndex(db) {
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
     buildSubNav('Index', db); 
@@ -127,7 +125,7 @@ export function renderIndex(db) {
     }
 }
 
-export function renderFiltered(t, db) { 
+function renderFiltered(t, db) { 
     const res = db.filter(r => {
         const dateStr = formatDate(r.Timestamp);
         return (dateStr === t) || (r.Tags && r.Tags.includes(t));
@@ -135,7 +133,7 @@ export function renderFiltered(t, db) {
     renderRows(res, `Posts tagged "${safeHTML(t)}"`, false, true); 
 }
 
-export function renderPage(p, db) { 
+function renderPage(p, db) { 
     if(p === 'Home') { renderHome(db); return; } 
     const ex = db.filter(r => r.Page === p); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
@@ -161,7 +159,7 @@ export function renderPage(p, db) {
 }
 
 /* --- CORE ROW RENDERER --- */
-export function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
+function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     const app = document.getElementById('app'); if(!app) return; 
     
     rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
@@ -291,7 +289,8 @@ export function renderRows(rows, title, append, forceGrid, isArticleMode = false
     setTimeout(init3DViewers, 500);
 }
 
-export function renderQuoteCard(c, quotesDb) {
+function renderQuoteCard(c, quotesDb) {
+    // Note: If quotesDb is undefined, we return early
     if(!quotesDb || quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
     const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
     let auth = r.Author || 'Unknown'; 
@@ -312,7 +311,7 @@ export function renderQuoteCard(c, quotesDb) {
                    <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
 }
 
-export function renderFooter(db) { 
+function renderFooter(db) { 
     const fd = document.getElementById('footer-links');
     const fr = db.filter(r => r.Page === 'Footer' || r.Title === 'LinkedIn' || r.Title === 'Contact'); 
     fd.innerHTML = ''; 
@@ -326,7 +325,7 @@ export function renderFooter(db) {
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
-export function fetchGitHubStats() { 
+function fetchGitHubStats() { 
     const r = "sahibdsv/sahibdsv.github.io"; 
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
