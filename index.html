@@ -120,9 +120,17 @@
             font-size: 30px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; 
             line-height: 1; cursor: pointer; user-select: none;
             --text-base: #666; --text-hover: #fff; 
-            transition: height 0.4s var(--ease), opacity 0.3s var(--ease), transform 0.4s var(--ease), margin 0.4s var(--ease);
+            transition: height 0.4s var(--ease), opacity 0.3s var(--ease), transform 0.4s var(--ease), margin 0.4s var(--ease), background-position 0.5s var(--ease);
             opacity: 1; transform: translateY(0); margin-bottom: 0;
+            
+            /* FORCE FILL EFFECT */
+            background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #666) 50.5%);
+            background-size: 100% 205%;
+            background-position: 0 0;
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
+        
+        #brand-name:hover { background-position: 0 100%; }
 
         #primary-nav { 
             width: 100%; height: var(--main-row-h); flex-shrink: 0;
@@ -144,13 +152,19 @@
 
         #sub-nav, #tertiary-nav { 
             width: 100%; max-width: 900px; height: 0; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; gap: 20px; 
+            /* CHANGED TO START TO ALLOW SCROLLING LEFT ITEMS TO CENTER */
+            display: flex; align-items: center; justify-content: flex-start; gap: 20px; 
             font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1;
             overflow-x: auto; white-space: nowrap; scrollbar-width: none;
             mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
             opacity: 0; pointer-events: none;
             transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
+        }
+        
+        /* SCROLL SPACERS: CENTERS CONTENT BY DEFAULT, ALLOWS EDGE SCROLLING */
+        #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { 
+            content: ''; display: block; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0; 
         }
         
         #sub-nav > *, #tertiary-nav > * { flex-shrink: 0; }
@@ -223,10 +237,9 @@
         #search-input { width: 100%; height: 100%; background: transparent; border: none; color: #fff; font-size: 20px; font-family: 'Jost', sans-serif; padding: 0 20px; outline: none; text-align: center; font-weight: 500; }
         #app.search-active { opacity: 0.3; transition: 0.4s; }
 
-        /* MOBILE SPRINGS */
+        /* MOBILE SPRINGS REPLACED BY GLOBAL SPRINGS ABOVE, PRESERVING LAYOUT */
         @media (max-width: 900px) {
-            #sub-nav, #terti-nav { justify-content: flex-start; }
-            #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; }
+            /* Handled by global spacers now */
         }
 
         /* --- CONTENT --- */
