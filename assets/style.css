@@ -13,10 +13,11 @@
     --accent-prof: #00ffff;
     --accent-projects: #ff9933;
     
-    /* Header Variables - TIGHTENED */
-    --header-h-default: 90px; 
-    --header-h-shrink: 60px; 
-    --header-h-expanded: 105px; 
+    /* Header Variables - UPDATED for Collapsing Behavior */
+    --header-h-default: 120px; /* Taller start to fit more rows */
+    --header-h-shrink: 60px;   /* Compact state when scrolling */
+    
+    --header-h-expanded: 135px; 
     --header-h-expanded-shrink: 85px;
     
     --ease: cubic-bezier(0.25, 1, 0.5, 1);
@@ -65,32 +66,57 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 #main-header {
     position: fixed; top: 0; left: 0; width: 100%; background: rgba(5,5,5,0.95); 
     backdrop-filter: blur(12px); z-index: 1000; 
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    padding-top: 15px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding-top: 10px; 
     height: var(--header-h-default); 
     transition: height 0.4s var(--ease), padding 0.4s var(--ease); 
     overflow: hidden; border-bottom: 1px solid #1a1a1a; 
 }
 
-#main-header.shrink { height: var(--header-h-shrink); padding-top: 10px; }
+#main-header.shrink { 
+    height: var(--header-h-shrink); 
+    padding-top: 0; 
+}
+
 #main-header.expanded { height: var(--header-h-expanded); }
 #main-header.expanded.shrink { height: var(--header-h-expanded-shrink); }
 #main-header.search-mode { height: 90px; }
 
 #brand-name {
     font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
-    margin-bottom: 4px; 
+    margin-bottom: 12px; 
+    
+    /* COLLAPSE ANIMATION PROPERTIES */
+    max-height: 50px; 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    
     transition: all 0.4s var(--ease); user-select: none;
     --text-base: #666; --text-hover: #fff; z-index: 1003; 
+    display: flex; align-items: center;
 }
-#main-header.shrink #brand-name { font-size: 16px; margin-bottom: 3px; }
+
+#main-header.shrink #brand-name { 
+    font-size: 20px; 
+    max-height: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+    pointer-events: none; 
+}
 
 #primary-nav { 
     display: flex; gap: 30px; 
-    margin-bottom: 4px; 
+    margin-bottom: 0; 
     transition: all 0.4s var(--ease); 
+    align-items: center;
+    height: 30px; 
 }
-#main-header.shrink #primary-nav { margin-bottom: 4px; gap: 20px; }
+
+#main-header.shrink #primary-nav { 
+    gap: 25px; 
+    transform: translateY(2px);
+}
 
 .nav-link {
     font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
@@ -167,17 +193,16 @@ a[target="_blank"]:not(.clickable-block)::after { content: ""; display: inline-b
 
 /* --- TYPOGRAPHY & LISTS --- */
 ol, ul {
-    padding-left: 25px; /* Restores space for numbers/bullets */
+    padding-left: 25px; 
     margin-top: 8px;
     margin-bottom: 12px;
 }
 
 li {
-    margin-bottom: 6px; /* Adds breathing room between list items */
-    padding-left: 5px;  /* Slight gap between number and text */
+    margin-bottom: 6px; 
+    padding-left: 5px;  
 }
 
-/* Ensure nested lists look correct */
 ol ol, ul ul, ol ul, ul ol {
     margin-top: 5px;
     margin-bottom: 5px;
@@ -301,16 +326,15 @@ iframe { max-width: 100%; }
 /* --- FOOTER --- */
 footer { 
     text-align: center; 
-    padding: 30px 20px; /* Added horizontal padding to prevent edge touching */
+    padding: 30px 20px; 
     border-top: 1px solid #1a1a1a; 
     margin-top: 30px; 
     
     display: flex; 
-    flex-wrap: wrap; /* ALLOW WRAPPING */
+    flex-wrap: wrap; 
     justify-content: center; 
     align-items: center; 
     
-    /* Gap: 15px vertical (when stacked), 30px horizontal */
     gap: 15px 30px; 
     
     max-width: 1000px; 
@@ -321,8 +345,8 @@ footer {
 
 footer .footer-links { 
     display: flex; 
-    flex-wrap: wrap; /* Allow links to stack */
-    gap: 8px 20px;   /* Compact vertical gap (8px), standard horizontal (20px) */
+    flex-wrap: wrap; 
+    gap: 8px 20px; 
     justify-content: center; 
 }
 
@@ -331,10 +355,9 @@ footer .footer-links a {
     font-weight: 400; 
     --text-base: #777; 
     --text-hover: #fff; 
-    white-space: nowrap; /* Keep individual link text on one line */
+    white-space: nowrap; 
 }
 
-/* Ensure Version Tag wraps nicely if needed */
 #version-tag { 
     font-size: 14px; 
     color: #666; 
