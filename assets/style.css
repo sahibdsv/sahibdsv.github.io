@@ -14,8 +14,6 @@
     --accent-projects: #ff9933;
     
     /* DEFAULT HEADER HEIGHT (Fallback = 2 Rows/Home) */
-    /* Starting small prevents the "gap" from appearing on load */
-    /* 4(pad) + 30(R1) + 2(gap) + 30(R2) + 2(pad) = 68px */
     --header-h-default: 68px; 
     
     --ease: cubic-bezier(0.25, 1, 0.5, 1);
@@ -23,13 +21,13 @@
 
 /* DYNAMIC HEADER HEIGHTS */
 body.rows-2 { --header-h-default: 68px; }
-body.rows-3 { --header-h-default: 95px; } /* +25px Row 3 + 2px Gap */
-body.rows-4 { --header-h-default: 122px; } /* +25px Row 4 + 2px Gap */
+body.rows-3 { --header-h-default: 95px; } 
+body.rows-4 { --header-h-default: 122px; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { 
-    /* Enable native elastic bounce/glow */
+    overflow-y: scroll;
     overscroll-behavior-y: auto; 
     overflow-x: hidden; 
     width: 100%;
@@ -69,7 +67,13 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     position: fixed; top: 0; left: 0; width: 100%; 
     background: rgba(5,5,5,0.95); 
     backdrop-filter: blur(12px); z-index: 1000; 
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: flex-start;
+    
+    gap: 2px;
     padding-top: 4px; padding-bottom: 2px;
     border-bottom: 1px solid #1a1a1a;
     transition: height 0.4s var(--ease);
@@ -81,35 +85,58 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     height: calc(var(--header-h-default) - 32px);
 }
 
-/* SEARCH MODE */
+/* --- SEARCH MODE & MODERN BUBBLE --- */
+
+/* 1. Force Header Height & Reset Layout when searching */
 #main-header.search-mode {
-    /* Force height to match overlay (66px) so it looks clean */
-    height: 66px !important;
+    height: 70px !important; /* Fixed height for search mode */
+    gap: 0 !important; /* Remove gaps to prevent layout jitter */
+    padding-top: 0 !important; /* Reset padding for perfect centering */
+    justify-content: center; /* Center the overlay */
 }
 
-/* SEARCH OVERLAY */
+/* 2. Search Overlay - The Container */
 #search-overlay { 
-    position: absolute; top: 0; left: 0; width: 100%; height: 66px; 
-    display: flex; align-items: center; justify-content: flex-end; 
-    background-color: var(--bg); z-index: 1001; 
-    overflow: hidden; transition: opacity 0.3s, visibility 0.3s; 
-    opacity: 0; visibility: hidden; border-bottom: 1px solid #222;
+    position: absolute; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background-color: var(--bg); 
+    z-index: 1001; 
+    transition: opacity 0.3s, visibility 0.3s; 
+    opacity: 0; visibility: hidden; 
 }
 #search-overlay.active { opacity: 1; visibility: visible; }
 
+/* 3. The Modern Bubble Input */
 #search-input { 
-    width: 100%; height: 100%; background: transparent; border: none; 
-    color: #fff; font-size: 24px; font-family: 'Jost', sans-serif; 
-    /* Right aligned text with padding to clear the icon */
-    text-align: right;
-    padding: 0 60px 0 20px; 
+    width: 90%; max-width: 600px;
+    height: 44px; /* Comfortable touch target */
+    background: #1a1a1a; 
+    border: 1px solid #333;
+    border-radius: 24px; /* Pill shape */
+    color: #fff; 
+    font-size: 18px; 
+    font-family: 'Jost', sans-serif; 
+    padding: 0 50px 0 20px; /* Right padding for the icon */
     outline: none; 
+    text-align: left; /* Reset to left for readability */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: border-color 0.2s;
 }
+#search-input:focus { border-color: #555; }
 
-/* SEARCH CONTROLS */
+/* 4. Controls (Icons) */
 #search-controls { 
-    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-    display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; 
+    position: absolute; 
+    /* Position relative to the bubble or screen edge? 
+       Let's keep them absolute but align them to match the new bubble design */
+    right: max(25px, calc(50% - 290px)); /* Dynamically sit inside the bubble */
+    top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; justify-content: center; 
+    width: 30px; height: 30px; 
     z-index: 1002; 
 }
 
@@ -122,26 +149,30 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 #main-header.search-mode .search-icon { opacity: 0; transform: rotate(90deg) scale(0.5); pointer-events: none; }
 #main-header.search-mode .close-icon  { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; fill: #fff !important; }
 
-/* Keep Row 1 visible for icons, fade others */
-#main-header.search-mode #header-row-1 { height: 30px !important; margin-bottom: 2px !important; opacity: 1 !important; pointer-events: auto !important; }
-#main-header.search-mode > div:not(#search-overlay):not(#header-row-1) { opacity: 0.1; pointer-events: none; transition: opacity 0.2s; }
+/* 5. Hide other rows cleanly in search mode */
+#main-header.search-mode > div:not(#search-overlay):not(#search-controls) { 
+    opacity: 0; pointer-events: none; transition: opacity 0.2s; 
+    position: absolute; /* Take out of flow to prevent pushing */
+}
+
+/* --- HEADER ROWS --- */
 
 /* ROW 1 */
 #header-row-1 {
     width: 100%; position: relative; display: flex; justify-content: center; align-items: center;
-    height: 30px; margin-bottom: 2px; opacity: 1; overflow: hidden;
-    transition: height 0.4s var(--ease), margin 0.4s var(--ease), opacity 0.4s var(--ease);
+    height: 30px; opacity: 1; overflow: hidden; margin: 0;
+    transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
 }
 #brand-name {
     font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; 
     cursor: pointer; user-select: none; --text-base: #666; --text-hover: #fff; 
 }
-#main-header.shrink #header-row-1 { height: 0; margin-bottom: 0; opacity: 0; pointer-events: none; }
+#main-header.shrink #header-row-1 { height: 0; opacity: 0; pointer-events: none; margin-bottom: -2px; }
 
 /* ROW 2 */
 #header-row-2 {
     width: 100%; display: flex; justify-content: center; align-items: center;
-    height: 30px; margin-bottom: 2px; 
+    height: 30px; margin: 0;
 }
 #primary-nav { display: flex; gap: 30px; transition: all 0.4s var(--ease); }
 .nav-link {
@@ -157,8 +188,7 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 
 /* ROW 3 */
 #header-row-3 {
-    width: 100%; height: 25px; display: flex; justify-content: center; align-items: center;
-    margin-bottom: 2px;
+    width: 100%; height: 25px; display: flex; justify-content: center; align-items: center; margin: 0;
 }
 #secondary-nav { 
     display: flex; gap: 25px; font-size: 14px; transition: opacity 0.4s var(--ease); 
@@ -169,11 +199,11 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 }
 #secondary-nav > * { flex-shrink: 0; }
 body:not(.header-expanded) #secondary-nav { height: 0; padding-bottom: 0; opacity: 0; pointer-events: none; }
-body:not(.header-expanded) #header-row-3 { height: 0; margin-bottom: 0; }
+body:not(.header-expanded) #header-row-3 { height: 0; }
 
 /* ROW 4 */
 #header-row-4 {
-    width: 100%; height: 25px; display: flex; justify-content: center; align-items: center;
+    width: 100%; height: 25px; display: flex; justify-content: center; align-items: center; margin: 0;
 }
 #tertiary-nav { 
     display: flex; gap: 25px; font-size: 13px; transition: opacity 0.4s var(--ease); 
@@ -191,13 +221,13 @@ body:not(.header-expanded) #header-row-4 { height: 0; }
     #secondary-nav::before, #secondary-nav::after, #tertiary-nav::before, #tertiary-nav::after { 
         content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; 
     }
+    
+    /* Adjust Close Icon Position on Mobile */
+    #search-controls { right: 25px; }
 }
 
 /* --- GHOST ROW FIXES --- */
-/* Strictly hide unused rows to prevent gaps */
-body.rows-2 #header-row-3, 
-body.rows-2 #header-row-4 { display: none !important; }
-
+body.rows-2 #header-row-3, body.rows-2 #header-row-4 { display: none !important; }
 body.rows-3 #header-row-4 { display: none !important; }
 
 /* --- CONTENT --- */
@@ -224,7 +254,6 @@ ol ol, ul ul, ol ul, ul ol { margin-top: 5px; margin-bottom: 5px; }
 .layout-grid.clickable-block .chip { pointer-events: auto; }
 .layout-grid:hover { background: var(--card-bg-hover); }
 
-/* Category Colors */
 .layout-grid.cat-projects h3 { --text-hover: var(--accent-projects); }
 .layout-grid.cat-professional h3 { --text-hover: var(--accent-prof); }
 .layout-grid.cat-personal h3 { --text-hover: var(--accent-personal); }
@@ -241,7 +270,6 @@ ol ol, ul ul, ol ul, ul ol { margin-top: 5px; margin-bottom: 5px; }
 .layout-grid.cat-personal:hover .row-media.placeholder span { color: var(--accent-personal); }
 
 /* --- EMBEDS --- */
-/* Rounded Corners Updated */
 .embed-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: 12px; margin: 20px 0; background: #111; border: 1px solid #222; }
 .embed-wrapper.video { padding-top: 56.25%; }
 .embed-wrapper.doc { height: 600px; }
@@ -265,7 +293,6 @@ iframe { max-width: 100%; }
 
 /* --- INLINE GALLERY --- */
 .inline-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
-/* Rounded Corners Updated */
 .inline-img { width: 100%; border-radius: 12px; display: block; object-fit: cover; transition: transform 0.2s; }
 .inline-img.zoomable { cursor: zoom-in; }
 .inline-img.zoomable:hover { opacity: 0.9; }

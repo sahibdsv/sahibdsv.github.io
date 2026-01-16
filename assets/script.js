@@ -232,6 +232,10 @@ function applyBodyPaddingClass(rows) {
 
 function handleRouting() { 
     if(isSearchActive) return; 
+    
+    // IMPORTANT: Reset shrink state on navigation to prevent bouncing
+    document.getElementById('main-header').classList.remove('shrink');
+    
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
