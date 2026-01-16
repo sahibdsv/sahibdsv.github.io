@@ -143,9 +143,7 @@ body:not(.header-expanded) #header-row-3 { height: 0; }
 #search-overlay { 
     position: absolute; top: 50%; right: 60px; transform: translateY(-50%);
     height: 100%; width: 0; display: flex; align-items: center; justify-content: flex-end; 
-    /* Changed from transparent to solid bg */
-    background-color: var(--bg); 
-    z-index: 1001; overflow: hidden; 
+    background-color: var(--bg); z-index: 1001; overflow: hidden; 
     transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s; opacity: 0; visibility: hidden; 
 }
 #search-overlay.active { width: 260px; max-width: calc(100% - 80px); opacity: 1; visibility: visible; }
@@ -297,7 +295,13 @@ iframe { max-width: 100%; }
     position: sticky; left: 0;
 }
 
-.timeline-scroller-wrapper { flex: 1; position: relative; overflow: hidden; }
+/* FIX: Ensure flex item has constraint (min-width: 0) to allow shrinking */
+.timeline-scroller-wrapper { 
+    flex: 1; 
+    position: relative; 
+    overflow: hidden; 
+    min-width: 0; 
+}
 
 /* Mask for fade effect */
 .timeline-scroller-wrapper.fade-active::after {
@@ -307,8 +311,15 @@ iframe { max-width: 100%; }
 }
 
 .timeline-scroller {
-    display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;
-    scrollbar-width: none; -ms-overflow-style: none; scroll-behavior: smooth;
+    display: flex; 
+    gap: 15px; 
+    overflow-x: auto; 
+    padding-bottom: 10px;
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
+    scroll-behavior: smooth;
+    /* FIX: Enable momentum scrolling on iOS */
+    -webkit-overflow-scrolling: touch; 
 }
 .timeline-scroller::-webkit-scrollbar { display: none; }
 
@@ -321,6 +332,9 @@ iframe { max-width: 100%; }
     .timeline-row { flex-direction: column; gap: 10px; }
     .timeline-date { text-align: left; width: 100%; padding-top: 0; margin-bottom: 5px; }
     .timeline-scroller .layout-grid { min-width: 240px; width: 240px; }
+    
+    /* FIX: Force full width on mobile so scroll container is constrained */
+    .timeline-scroller-wrapper { width: 100%; }
 }
 
 /* --- FOOTER --- */
