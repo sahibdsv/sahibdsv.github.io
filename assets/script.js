@@ -233,7 +233,8 @@ function applyBodyPaddingClass(rows) {
 function handleRouting() { 
     if(isSearchActive) return; 
     document.getElementById('main-header').classList.remove('shrink');
-    window.scrollTo(0, 0); 
+    
+    // Defer scrolling to prevent "hop" before content loads
     let h = window.location.hash.substring(1) || 'Home'; 
     
     if(h === 'Timeline') { renderTimeline(); return; }
@@ -290,6 +291,7 @@ function renderPage(p) {
     else if(childrenPagesCheck(p)) { }
     else {
         app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
+        window.scrollTo(0, 0);
         return; 
     }
     
@@ -312,8 +314,10 @@ function renderIndex() {
     document.getElementById('main-header').classList.remove('expanded');
     buildSecondaryNav('Index'); buildTertiaryNav('Index', null); applyBodyPaddingClass(3); 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+    
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
+    window.scrollTo(0, 0); // Scroll after render setup
     
     const list = app.querySelector('.index-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
@@ -352,8 +356,10 @@ function renderTimeline() {
     document.getElementById('main-header').classList.remove('expanded');
     buildSecondaryNav('Timeline'); buildTertiaryNav('Timeline', null); applyBodyPaddingClass(2); 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+    
     const app = document.getElementById('app');
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-wrapper"></div>';
+    window.scrollTo(0, 0); // Scroll after render setup
     
     const container = app.querySelector('.timeline-wrapper');
     const items = db.filter(r => r.Page && r.Page !== 'Footer' && r.Page !== 'Home' && r.Title);
@@ -438,6 +444,10 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false, prese
     if (!preserveOrder) { rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0)); }
     if(!append) { app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : ''; } 
     else if(title) { app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`; }
+    
+    // SCROLL AFTER HEADER INJECTION BUT BEFORE GRID
+    if (!append) window.scrollTo(0, 0); 
+
     if(rows.length === 0 && !append) { app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`; return; }
     
     let gc = app.querySelector('.grid-container');
