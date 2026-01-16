@@ -101,9 +101,14 @@
             
             border-bottom: 1px solid #1a1a1a; 
             overflow: hidden; 
-            transition: height 0.4s var(--ease);
+            transition: height 0.4s var(--ease), transform 0.4s var(--ease);
             
             height: calc(var(--brand-row-h) + var(--main-row-h) + var(--gap));
+        }
+
+        /* HEADER COLLAPSE ON SEARCH */
+        body.search-active #main-header {
+            transform: translateY(-100%); /* Slide completely up */
         }
 
         /* --- HEADER ROWS --- */
@@ -115,11 +120,11 @@
             flex-shrink: 0; 
             
             display: flex; align-items: center; justify-content: center;
-            /* Dense Typography */
             font-size: 30px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; 
             line-height: 1; 
             cursor: pointer; user-select: none;
-            /* HUMBLE GREY BASE */
+            
+            /* ANIMATION COLORS */
             --text-base: #666; --text-hover: #fff; 
             
             transition: height 0.4s var(--ease), opacity 0.3s var(--ease), transform 0.4s var(--ease), margin 0.4s var(--ease);
@@ -137,7 +142,7 @@
         }
 
         .nav-link {
-            font-size: 14px; 
+            font-size: 15px; 
             font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
             line-height: 1; 
             user-select: none; --text-base: #666; --text-hover: #fff;
@@ -150,30 +155,18 @@
         .nav-link[href="#Personal"] { --text-hover: var(--accent-personal); }
         .nav-link[href="#Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
-        /* 3. SUB NAV */
-        #sub-nav { 
+        /* 3. SUB NAV & 4. TERTIARY NAV */
+        #sub-nav, #tertiary-nav { 
             width: 100%; max-width: 900px;
             height: 0; flex-shrink: 0;
             
             display: flex; align-items: center; justify-content: center; gap: 20px; 
+            
+            /* UPDATED TYPOGRAPHY FOR LEGIBILITY */
             font-size: 13px; 
-            line-height: 1;
-            
-            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-            mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            
-            opacity: 0; pointer-events: none;
-            transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
-        }
-
-        /* 4. TERTIARY NAV */
-        #tertiary-nav { 
-            width: 100%; max-width: 900px;
-            height: 0; flex-shrink: 0;
-            
-            display: flex; align-items: center; justify-content: center; gap: 20px; 
-            font-size: 13px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
             line-height: 1;
             
             overflow-x: auto; white-space: nowrap; scrollbar-width: none;
@@ -229,20 +222,18 @@
         /* --- FIXED FLOATING SEARCH BUBBLE --- */
         #search-overlay { 
             position: fixed; /* FIXED TO VIEWPORT */
-            top: 20px; left: 50%; width: 320px; max-width: 80%; height: 40px; 
+            top: 40px; left: 50%; width: 400px; max-width: 90%; height: 50px; 
             transform-origin: center; 
-            transform: translate(-50%, -20px) scale(0.9);
+            transform: translate(-50%, -40px) scale(0.9);
             display: flex; align-items: center; justify-content: center; 
             
-            /* Glassy Background, No Page Blur */
-            background-color: rgba(20,20,20,0.6); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
+            /* SOLID GRADIENT (Like Placeholders) */
+            background: linear-gradient(135deg, #151515 0%, #222 100%);
             
-            z-index: 2000; /* Above Header */
-            border-radius: 22px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 2000; /* Above Everything */
+            border-radius: 25px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
+            border: 1px solid #333;
             
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
             opacity: 0; visibility: hidden; pointer-events: none;
@@ -253,8 +244,11 @@
             transform: translate(-50%, 0) scale(1); 
         }
         
-        #search-input { width: 100%; height: 100%; background: transparent; border: none; color: #fff; font-size: 16px; font-family: 'Jost', sans-serif; padding: 0 20px; outline: none; text-align: center; }
+        #search-input { width: 100%; height: 100%; background: transparent; border: none; color: #fff; font-size: 20px; font-family: 'Jost', sans-serif; padding: 0 20px; outline: none; text-align: center; font-weight: 500; }
         
+        /* Dim page when search is active */
+        #app.search-active { opacity: 0.3; transition: 0.4s; }
+
 
         /* MOBILE SPRINGS */
         @media (max-width: 900px) {
@@ -692,6 +686,7 @@
         function resetToHome() { closeSearch(); window.location.hash = ''; }
         function closeSearch() { 
             document.getElementById('search-overlay').classList.remove('active'); 
+            document.body.classList.remove('search-active'); // Remove class from body
             document.getElementById('search-input').value = ''; 
             if(isSearchActive) { isSearchActive = false; handleRouting(); } 
             isSearchActive = false; 
@@ -699,6 +694,7 @@
 
         function toggleSearch() { 
             const a = document.getElementById('search-overlay').classList.toggle('active'); 
+            document.body.classList.toggle('search-active'); // Toggle class on body
             if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
             else closeSearch(); 
         }
