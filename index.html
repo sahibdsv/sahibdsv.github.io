@@ -5,12 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Sahib Virdee</title>
-    <meta name="description" content="Portfolio of Sahib Virdee, Mechanical Engineering student.">
+    <meta name="description" content="Portfolio of Sahib Virdee, Mechanical Engineering student. Projects in EV design, manufacturing, and engineering analysis.">
     <meta name="author" content="Sahib Virdee">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sahibvirdee.com/">
     <meta property="og:title" content="Sahib Virdee | Engineering Portfolio">
+    <meta property="og:description" content="Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.">
+    <meta property="og:image" content="https://placehold.co/1200x630/050505/FFF?text=Sahib+Virdee">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://sahibvirdee.com/">
+    <meta property="twitter:title" content="Sahib Virdee | Engineering Portfolio">
+    <meta property="twitter:description" content="Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.">
+    <meta property="twitter:image" content="https://placehold.co/1200x630/050505/FFF?text=Sahib+Virdee">
     
     <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
@@ -31,584 +39,1195 @@
             --accent-projects: #ff9933;
             
             --ease: cubic-bezier(0.25, 1, 0.5, 1);
-            --header-h: 90px; /* Calculated via JS */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+        html { 
+            scroll-behavior: smooth; 
+            overflow-x: hidden; 
+            width: 100%;
+        }
 
         body {
             background-color: var(--bg); color: var(--text-main); font-family: 'Jost', sans-serif; line-height: 1.5;
-            padding-top: var(--header-h); /* DYNAMIC OFFSET */
+            padding-top: 140px; /* Dynamic via JS, fallback here */
             display: flex; flex-direction: column; min-height: 100vh;
             width: 100%; position: relative; overflow-x: hidden; 
         }
 
+        p, h1, h2, h3, a { overflow-wrap: break-word; word-wrap: break-word; }
+
+        .no-transition * { transition: none !important; }
+        .sk-line, .sk-img, .sk-box { animation-play-state: running !important; }
+
         /* --- GLOBAL ANIMATION --- */
         .fill-anim {
             background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #888) 50.5%);
-            background-size: 100% 205%; background-position: 0 0; 
+            background-size: 100% 205%;
+            background-position: 0 0; 
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
             transition: background-position 0.5s var(--ease);
             text-decoration: none; display: inline-block; color: var(--text-base, #888); 
         }
+
         .fill-anim:hover, .clickable-block:hover .fill-anim, .fill-anim.active {
             background-position: 0 100%; color: var(--text-hover, #fff);
         }
 
-        /* --- ADVANCED HEADER --- */
+        h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
+
+        /* --- HEADER (Updated Logic) --- */
         #main-header {
-            position: fixed; top: 0; left: 0; width: 100%; 
-            background: rgba(5,5,5,0.95); backdrop-filter: blur(12px); 
-            z-index: 1000; border-bottom: 1px solid #1a1a1a;
-            display: flex; flex-direction: column;
-            transition: none; /* Height handled by content flow */
+            position: fixed; top: 0; left: 0; width: 100%; background: rgba(5,5,5,0.95); 
+            backdrop-filter: blur(12px); z-index: 1000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 1px 0; /* Tight padding */
+            transition: transform 0.4s var(--ease);
+            border-bottom: 1px solid #1a1a1a;
         }
 
-        /* ROW SYSTEM */
-        .h-row {
-            width: 100%; display: flex; align-items: center; justify-content: center;
-            padding: 1px 20px; /* REQ: 1px padding */
-            flex-shrink: 0;
-            min-height: 28px;
+        /* Rows */
+        #brand-row, #primary-nav, #sub-nav, #tertiary-nav {
+            width: 100%; display: flex; justify-content: center; align-items: center;
+            transition: all 0.4s var(--ease);
+            overflow: hidden;
+            padding: 1px 0; /* 1px vertical padding */
+            min-height: 0;
         }
 
-        /* 1. BRAND ROW */
-        #row-brand {
-            justify-content: space-between; 
-            padding-top: 8px; padding-bottom: 4px;
+        #brand-row {
+            position: relative; height: 32px;
+            max-width: 1000px; justify-content: center;
         }
+
+        /* SCROLL STATE: Collapsed Brand Row */
+        #main-header.scrolled-down #brand-row {
+            height: 0; padding: 0; opacity: 0; pointer-events: none;
+        }
+
         #brand-name {
-            font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
-            --text-base: #666; --text-hover: #fff;
+            font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
+            user-select: none; --text-base: #666; --text-hover: #fff; z-index: 1003; 
+            line-height: 1;
         }
 
-        /* 2. MAIN NAV ROW */
-        #row-main { gap: 30px; margin-bottom: 2px; }
+        /* Main Nav - Static Height */
+        #primary-nav { 
+            gap: 20px; height: 30px; border-bottom: 1px solid #111;
+        }
+
         .nav-link {
-            font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer; --text-base: #666; --text-hover: #fff;
+            font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            user-select: none; --text-base: #666; --text-hover: #fff;
         }
-        /* REQ: Main Headings Static Size (No shrink) */
+        .nav-link.active { color: #fff; }
 
-        /* 3. SUB NAV ROW */
-        #row-sub { 
-            gap: 20px; overflow-x: auto; scrollbar-width: none; mask-image: linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
-            height: auto; min-height: 0; transition: height 0.3s var(--ease), opacity 0.3s; opacity: 1;
+        /* Secondary & Tertiary - Dynamic */
+        #sub-nav, #tertiary-nav { 
+            gap: 15px; font-size: 14px; /* Increased Font Size */
+            overflow-x: auto; white-space: nowrap; 
+            width: 100%; max-width: 900px;
+            scrollbar-width: none;
+            mask-image: linear-gradient(to right, transparent 0, black 30px, black calc(100% - 30px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0, black 30px, black calc(100% - 30px), transparent 100%);
         }
-        .sub-link { font-size: 15px; font-weight: 500; cursor: pointer; white-space: nowrap; --text-base: #666; --text-hover: #fff; }
         
-        /* 4. TERTIARY ROW */
-        #row-tert {
-            gap: 15px; overflow-x: auto; scrollbar-width: none;
-            height: auto; min-height: 0;
-            transition: height 0.3s var(--ease), opacity 0.3s;
-            border-top: 1px solid #111; /* Subtle separation */
+        #sub-nav { height: 28px; }
+        #tertiary-nav { height: 28px; border-top: 1px solid #111; }
+
+        /* Collapse States */
+        body:not(.has-sub) #sub-nav { height: 0; padding: 0; opacity: 0; }
+        body:not(.has-tertiary) #tertiary-nav { height: 0; padding: 0; opacity: 0; border-top: none; }
+
+        .sub-link, .tertiary-link {
+            font-weight: 500; font-size: 14px; /* Larger */
+            --text-base: #555; --text-hover: #fff;
+            padding: 0 5px;
         }
-        .tert-link { font-size: 14px; font-weight: 400; cursor: pointer; white-space: nowrap; color: #555; transition: color 0.2s; }
-        .tert-link:hover, .tert-link.active { color: #fff; }
-        
-        /* HIDE LOGIC */
-        .hidden-row { height: 0 !important; min-height: 0 !important; opacity: 0; pointer-events: none; padding-top: 0; padding-bottom: 0; border: none !important; }
+        .sub-link.active, .tertiary-link.active { --text-base: #fff; }
 
-        /* SCROLLED STATE LOGIC */
-        /* REQ: Brand row disappears completely */
-        #main-header.scrolled #row-brand { display: none; }
-        
-        /* COLOR CODING */
-        .nav-link[data-cat="Projects"] { --text-hover: var(--accent-projects); }
-        .nav-link[data-cat="Projects"].active { --text-base: var(--accent-projects); }
-        .nav-link[data-cat="Professional"] { --text-hover: var(--accent-prof); }
-        .nav-link[data-cat="Professional"].active { --text-base: var(--accent-prof); }
-        .nav-link[data-cat="Personal"] { --text-hover: var(--accent-personal); }
-        .nav-link[data-cat="Personal"].active { --text-base: var(--accent-personal); }
+        .nav-link[href="#Projects"] { --text-hover: var(--accent-projects); }
+        .nav-link[href="#Projects"].active { --text-base: var(--accent-projects); --text-hover: var(--accent-projects); }
+        .nav-link[href="#Professional"] { --text-hover: var(--accent-prof); }
+        .nav-link[href="#Professional"].active { --text-base: var(--accent-prof); --text-hover: var(--accent-prof); }
+        .nav-link[href="#Personal"] { --text-hover: var(--accent-personal); }
+        .nav-link[href="#Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
-        /* --- SEARCH --- */
-        #search-container { position: relative; display: flex; align-items: center; }
-        .icon-btn { width: 20px; height: 20px; cursor: pointer; fill: #666; transition: fill 0.3s; }
+        /* --- SEARCH (Moved Top Right) --- */
+        #search-controls { 
+            position: absolute; right: 0; top: 50%; transform: translateY(-50%); 
+            display: flex; align-items: center; justify-content: center; 
+            width: 30px; height: 30px; z-index: 1002; 
+        }
+
+        .icon-btn { position: absolute; width: 20px; height: 20px; cursor: pointer; fill: #666; transition: all 0.4s var(--ease); }
         .icon-btn:hover { fill: #fff; }
-        #search-overlay {
-            position: absolute; right: 30px; top: -5px; height: 30px; width: 0;
-            background: #111; display: flex; align-items: center; overflow: hidden;
-            transition: width 0.3s var(--ease); border-radius: 4px;
-        }
-        #search-overlay.active { width: 200px; border: 1px solid #333; }
-        #search-input { width: 100%; background: transparent; border: none; color: #fff; padding: 0 10px; outline: none; font-family: 'Jost'; font-size: 14px; }
 
-        /* --- CONTENT GRID --- */
-        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 20px; flex: 1; }
-        .section { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.4s forwards; } 
+        .search-icon { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
+        .close-icon  { opacity: 0; transform: rotate(-90deg) scale(0.5); pointer-events: none; }
+
+        #main-header.search-mode .search-icon { opacity: 0; transform: rotate(90deg) scale(0.5); pointer-events: none; }
+        #main-header.search-mode .close-icon  { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; fill: #fff !important; }
+
+        #search-overlay { position: absolute; top: 0; right: 40px; height: 100%; width: 0; display: flex; align-items: center; justify-content: flex-end; background-color: transparent; z-index: 1001; overflow: hidden; transition: width 0.4s var(--ease), opacity 0.2s; opacity: 0; visibility: hidden; }
+        #search-overlay.active { width: 260px; opacity: 1; visibility: visible; }
+        #search-input { width: 100%; height: 80%; background: #111; border: 1px solid #333; border-radius: 4px; color: #fff; font-size: 14px; font-family: 'Jost', sans-serif; padding: 0 10px; outline: none; }
+
+        /* --- CONTENT --- */
+        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 0 20px; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; }
+        .section { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.4s forwards; position: relative; } 
         @keyframes fadeIn { to { opacity: 1; } }
+        .skeleton-visible { opacity: 1 !important; animation: none !important; }
 
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .layout-grid { 
-            display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 6px; 
-            border: 1px solid transparent; transition: background 0.2s, border-color 0.2s; 
-            cursor: pointer; background: rgba(255,255,255,0.02);
-        }
-        .layout-grid:hover { background: var(--card-bg-hover); border-color: #222; }
+        p a:not(.wiki-link) { --text-base: #999; --text-hover: #fff; border-bottom: 1px dotted #444; }
+        p a:not(.wiki-link):hover { border-bottom-color: #fff; }
 
-        .row-media { width: 100%; height: 160px; border-radius: 4px; overflow: hidden; background: #111; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
+        a[target="_blank"]:not(.clickable-block) { display: inline-flex; align-items: center; gap: 4px; }
+        a[target="_blank"]:not(.clickable-block)::after { content: ""; display: inline-block; width: 12px; height: 12px; background-color: currentColor; -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; }
+
+        ol, ul { padding-left: 25px; margin-top: 8px; margin-bottom: 12px; }
+        li { margin-bottom: 6px; padding-left: 5px; }
+        ol ol, ul ul, ol ul, ul ol { margin-top: 5px; margin-bottom: 5px; }
+
+        /* --- CARDS & GRID --- */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); column-gap: 20px; row-gap: 10px; margin-bottom: 15px; }
+        .layout-grid { display: flex; flex-direction: column; gap: 3px; padding: 12px; border-radius: 6px; transition: background 0.2s; border: none; height: 100%; position: relative; -webkit-tap-highlight-color: transparent; }
+        .layout-grid.clickable-block, .layout-grid.clickable-block * { cursor: pointer; user-select: none; }
+        .layout-grid.clickable-block .chip { pointer-events: auto; }
+        .layout-grid:hover { background: var(--card-bg-hover); }
+
+        .layout-grid.cat-projects h3 { --text-hover: var(--accent-projects); }
+        .layout-grid.cat-professional h3 { --text-hover: var(--accent-prof); }
+        .layout-grid.cat-personal h3 { --text-hover: var(--accent-personal); }
+
+        .row-media { width: 100%; height: 160px; border-radius: 4px; overflow: hidden; background: #111; flex-shrink: 0; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
         .row-media img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: filter 0.3s; }
         .layout-grid:hover .row-media img { filter: grayscale(0%); }
-        .row-media.placeholder span { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #444; letter-spacing: 1px; }
 
-        .layout-grid h3 { font-size: 18px; font-weight: 500; margin: 0; color: #eee; }
-        .layout-grid p { font-size: 14px; color: var(--text-dim); line-height: 1.4; }
-        .chip { font-size: 11px; font-weight: 600; color: #666; border: 1px solid #333; padding: 2px 8px; border-radius: 4px; margin-top: auto; display: inline-block; }
+        .row-media.placeholder { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #151515 0%, #222 100%); border-bottom: 1px solid #222; padding: 20px; text-align: center; }
+        .row-media.placeholder span { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #444; letter-spacing: 1px; line-height: 1.3; transition: color 0.3s; }
+        .layout-grid.cat-projects:hover .row-media.placeholder span { color: var(--accent-projects); }
+        .layout-grid.cat-professional:hover .row-media.placeholder span { color: var(--accent-prof); }
+        .layout-grid.cat-personal:hover .row-media.placeholder span { color: var(--accent-personal); }
+
+        .embed-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: 6px; margin: 20px 0; background: #111; border: 1px solid #222; }
+        .embed-wrapper.video { padding-top: 56.25%; }
+        .embed-wrapper.doc { height: 600px; }
+        .embed-wrapper.map { height: 400px; }
+        .embed-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        iframe { max-width: 100%; }
+
+        .embed-wrapper.stl { height: 400px; background: radial-gradient(circle at center, #222 0%, #111 100%); cursor: grab; transition: background 0.3s; }
+        .embed-wrapper.stl:active { cursor: grabbing; }
+        .embed-wrapper.stl canvas { outline: none; opacity: 0; transition: opacity 0.6s ease-out; }
+        .embed-wrapper.stl.ready canvas { opacity: 1; }
+        .row-media .embed-wrapper.stl { height: 100% !important; width: 100% !important; background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%); border-radius: 0; border: none; margin: 0; }
+        .layout-grid .embed-wrapper { pointer-events: none; }
+        .layout-grid .inline-gallery, .layout-grid .inline-img { display: none !important; }
+
+        .row-media.article-mode { background: transparent; height: auto; max-height: 500px; width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+        .row-media.article-mode img { width: auto; max-width: 100%; height: auto; max-height: 500px; object-fit: contain; filter: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .row-media.article-mode .embed-wrapper.stl { height: 500px !important; aspect-ratio: 3/4; max-height: 70vh; }
+
+        .inline-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
+        .inline-img { width: 100%; border-radius: 4px; display: block; object-fit: cover; transition: transform 0.2s; }
+        .inline-img.zoomable { cursor: zoom-in; }
+        .inline-img.zoomable:hover { opacity: 0.9; }
+
+        .layout-grid.has-placeholder h3 { margin-top: 5px; }
+        .layout-grid h3 { font-size: 18px; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 6px; --text-base: #eee; --text-hover: #fff; }
+        .layout-grid[data-target="_blank"] h3::after { content: ""; display: inline-block; width: 12px; height: 12px; background-color: currentColor; opacity: 0.7; -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; }
+        .layout-grid p { font-size: 14px; margin: 0; color: var(--text-dim); font-weight: 400; line-height: 1.4; margin-bottom: 2px; }
+
+        .meta-row { display: flex; gap: 6px; margin-top: auto; flex-wrap: wrap; align-items: center; padding-top: 4px; }
+        .chip { font-size: 13px; font-weight: 600; color: #777; background: #1a1a1a; padding: 4px 10px; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; user-select: none; display: inline-flex; align-items: center; justify-content: center; }
+        .chip:hover { color: #fff; background: #333; }
+        .chip.date { background: transparent; color: #666; font-weight: 500; border: 1px solid #333; padding: 4px 10px; }
+        .chip.date:hover { color: #fff; background: #1a1a1a; border-color: #555; } 
+
+        .article-meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+        .author-link { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; color: #666; transition: color 0.2s; }
+        .author-link:hover { color: var(--accent-projects); }
+        .article-link-btn { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #222; fill: #999; transition: all 0.2s; text-decoration: none; }
+        .article-link-btn:hover { background: #fff; fill: #000; }
+        .article-tags { display: flex; gap: 6px; }
+
+        .layout-hero { text-align: center; margin: 0 0 10px; position: relative; }
+        .layout-hero h1 { font-size: 42px; font-weight: 300; letter-spacing: -1px; margin-bottom: 5px; color: #fff; }
+        .layout-hero p { font-size: 18px; color: #999; font-weight: 300; max-width: 650px; margin: 0 auto; line-height: 1.4; }
+        .hero-meta { margin-bottom: 10px; display: flex; justify-content: center; }
+
+        .layout-text { margin-bottom: 15px; }
+        .layout-text h2 { font-size: 22px; font-weight: 400; margin-bottom: 8px; margin-top: 10px; color: #fff; }
+        .layout-text p { margin-bottom: 12px; color: #d4d4d4; font-weight: 300; line-height: 1.5; }
+
+        .layout-quote { padding: 0 20px; text-align: center; position: relative; margin: 0 auto 10px; min-height: 120px; height: auto; width: 100%; max-width: 800px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .layout-quote blockquote { font-family: 'Playfair Display', serif; font-style: italic; color: #eee; margin-bottom: 4px; line-height: 1.25; transition: font-size 0.3s; width: 100%; font-size: clamp(16px, 3vw, 24px); }
+        .layout-quote blockquote.short  { font-size: clamp(20px, 4vw, 32px); }
+        .layout-quote blockquote.medium { font-size: clamp(18px, 3.5vw, 26px); }
+        .layout-quote blockquote.long   { font-size: clamp(16px, 3vw, 22px); }
+        .layout-quote blockquote.xl     { font-size: clamp(15px, 2.5vw, 20px); }
+        .layout-quote blockquote.xxl    { font-size: clamp(14px, 2vw, 18px); line-height: 1.3; }
+
+        .quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; flex-shrink: 0; }
+        .layout-quote .author { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
+        .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
+        .layout-quote .refresh-btn { position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; }
+        .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg); }
+        .layout-quote.loading blockquote, .layout-quote.loading .quote-footer { opacity: 0.3; pointer-events: none; }
+
+        .layout-404 { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .layout-404 h1 { font-size: 80px; margin: 0; line-height: 1; color: #333; }
+        .layout-404 h2 { font-size: 24px; font-weight: 400; margin: 10px 0 20px; color: #fff; }
+        .layout-404 p { color: #888; max-width: 400px; margin-bottom: 30px; }
+        .btn-primary { display: inline-block; padding: 10px 25px; background: #fff; color: #000; text-decoration: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; border-radius: 4px; transition: opacity 0.2s; }
+        .btn-primary:hover { opacity: 0.8; }
+
+        /* --- INDEX --- */
+        .index-list { column-count: 2; column-gap: 40px; margin-top: 20px; }
+        .index-group { break-inside: avoid; margin-bottom: 30px; }
+        .index-group h3 { font-size: 14px; text-transform: uppercase; color: #666; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; }
+        .index-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
+        /* Index Tertiary Indent */
+        .index-link.indent-3 { padding-left: 20px; position: relative; }
+        .index-link.indent-3::before { content: "↳"; position: absolute; left: 0; opacity: 0.5; font-size: 12px; }
         
-        /* CATEGORY ACCENTS */
-        .layout-grid.cat-projects:hover h3 { color: var(--accent-projects); }
-        .layout-grid.cat-professional:hover h3 { color: var(--accent-prof); }
-        .layout-grid.cat-personal:hover h3 { color: var(--accent-personal); }
+        .index-link span { color: #444; font-size: 12px; margin-left: 8px; }
+        .index-group.cat-projects h3 { color: var(--accent-projects); border-color: var(--accent-projects); }
+        .index-group.cat-professional h3 { color: var(--accent-prof); border-color: var(--accent-prof); }
+        .index-group.cat-personal h3 { color: var(--accent-personal); border-color: var(--accent-personal); }
+        @media (max-width: 600px) { .index-list { column-count: 1; } }
 
         /* --- TIMELINE VIEW --- */
-        .timeline-container { display: flex; flex-direction: column; gap: 40px; padding-bottom: 50px; }
-        .timeline-month { display: flex; gap: 20px; align-items: flex-start; position: relative; }
-        
-        .timeline-date { 
-            position: sticky; left: 0; top: 110px; width: 80px; flex-shrink: 0; 
-            text-align: right; font-weight: 700; color: #666; font-size: 14px; text-transform: uppercase; 
-            padding-top: 15px; z-index: 10;
-        }
-        .timeline-cards-wrapper { 
-            flex: 1; min-width: 0; position: relative; 
-            /* FADE MASK LOGIC handled via JS class for right-edge */
-        }
-        .timeline-cards-wrapper.fade-mask {
-            mask-image: linear-gradient(to right, black 85%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-        }
-        .timeline-scroll-area {
-            display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;
-            scrollbar-width: none; /* REQ: No scrollbar */
-        }
+        .timeline-section { display: flex; flex-direction: column; gap: 20px; }
+        .timeline-row { display: flex; gap: 20px; position: relative; margin-bottom: 30px; }
+        .timeline-date { width: 100px; flex-shrink: 0; font-size: 14px; font-weight: 700; color: #666; text-transform: uppercase; position: sticky; left: 0; height: fit-content; padding-top: 12px; background: var(--bg); z-index: 2; }
+        .timeline-scroll-area { flex-grow: 1; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; display: flex; gap: 15px; padding-bottom: 10px; mask-image: linear-gradient(to right, black 85%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%); }
         .timeline-scroll-area::-webkit-scrollbar { display: none; }
-
-        .timeline-card {
-            width: 260px; flex-shrink: 0; background: #0f0f0f; border: 1px solid #222; 
-            border-radius: 6px; padding: 10px; cursor: pointer; transition: transform 0.2s;
+        .timeline-scroll-area .layout-grid { width: 280px; display: inline-flex; white-space: normal; vertical-align: top; flex-shrink: 0; }
+        @media (max-width: 768px) {
+            .timeline-row { flex-direction: column; gap: 10px; }
+            .timeline-date { position: relative; width: 100%; border-bottom: 1px solid #222; margin-bottom: 5px; padding-bottom: 5px; }
         }
-        .timeline-card:hover { transform: translateY(-3px); background: #161616; }
-        .timeline-card .media { height: 140px; background: #000; margin-bottom: 8px; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .timeline-card img { width: 100%; height: 100%; object-fit: cover; }
-        .timeline-card h4 { font-size: 15px; color: #ddd; margin-bottom: 4px; }
-        .timeline-card p { font-size: 13px; color: #888; line-height: 1.3; height: 34px; overflow: hidden; }
+
+        /* --- FOOTER --- */
+        footer { 
+            text-align: center; padding: 30px 20px; border-top: 1px solid #1a1a1a; margin-top: 30px; 
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px 30px; 
+            max-width: 1000px; margin-left: auto; margin-right: auto; width: 100%; 
+        }
+        footer .footer-links { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: center; }
+        footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; --text-hover: #fff; white-space: nowrap; }
+        #version-tag { font-size: 14px; color: #666; white-space: nowrap; }
+        #version-tag a { text-decoration: none; }
+        #version-tag a:hover { text-decoration: underline; }
+
+        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+        #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
+        #lightbox.active { display: flex; animation: fadeIn 0.2s; }
+
+        .sk-line, .sk-img, .sk-box { background: #1a1a1a; background-image: linear-gradient(90deg, #1a1a1a 0%, #333 50%, #1a1a1a 100%); background-size: 200% 100%; border-radius: 4px; animation: shimmer 1.5s infinite linear; display: block; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .sk-line { margin-bottom: 10px; }
+        .sk-line.title { height: 48px; width: 50%; margin: 0 auto 20px; }
+        .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
+        .sk-line.text { height: 20px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
+        .sk-line.text.short { width: 60%; }
+        .sk-box.quote { height: 100px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
+        .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 10px; border-radius: 4px; }
+        .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 10px; }
+        .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 6px; }
 
         @media (max-width: 768px) {
-            .timeline-month { flex-direction: column; gap: 5px; }
-            .timeline-date { position: relative; top: 0; text-align: left; width: 100%; padding-top: 0; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-            .timeline-cards-wrapper { width: 100%; }
+            .grid-container { grid-template-columns: 1fr; }
+            footer { flex-direction: column; gap: 20px; text-align: center; }
+            .content-container { padding: 10px 15px 0; }
+            .layout-hero h1 { font-size: 32px; }
+            .layout-404 h1 { font-size: 60px; }
         }
-
-        /* --- INDEX VIEW REFINEMENTS --- */
-        .index-list { column-count: 2; gap: 40px; }
-        .index-group { break-inside: avoid; margin-bottom: 30px; }
-        .index-group h3 { border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 10px; color: #fff; font-size: 16px; }
-        .index-link { display: block; font-size: 15px; margin-bottom: 6px; color: #888; text-decoration: none; transition: color 0.2s; }
-        .index-link:hover { color: #fff; }
-        .index-link.indent-1 { padding-left: 15px; font-size: 14px; border-left: 1px solid #222; }
-        .index-link.indent-2 { padding-left: 30px; font-size: 13px; border-left: 1px solid #222; }
-
-        /* FOOTER */
-        footer { text-align: center; padding: 40px 20px; border-top: 1px solid #1a1a1a; margin-top: 40px; color: #666; font-size: 14px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-        footer a { color: #888; text-decoration: none; }
-        footer a:hover { color: #fff; }
-
-        /* EMBEDS & HELPERS */
-        .layout-quote { text-align: center; padding: 40px 20px; font-family: 'Playfair Display', serif; font-style: italic; color: #eee; font-size: 22px; }
-        .layout-hero { text-align: center; margin-bottom: 30px; }
-        .layout-hero h1 { font-size: 48px; font-weight: 300; color: #fff; margin-bottom: 10px; }
-        .embed-wrapper { background: #111; width: 100%; height: 400px; position: relative; margin: 20px 0; border-radius: 6px; overflow: hidden; }
-        .embed-wrapper iframe { width: 100%; height: 100%; border: 0; }
-        
-        /* 3D Viewer */
-        .embed-wrapper.stl { cursor: grab; background: radial-gradient(circle at center, #222, #000); }
-        .embed-wrapper.stl:active { cursor: grabbing; }
     </style>
     
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script data-goatcounter="https://sahib.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
     </script>
 </head>
 <body class="no-transition">
     
-    <header id="main-header">
-        
-        <div class="h-row" id="row-brand">
-            <div id="brand-name" class="fill-anim" onclick="resetToHome()">SAHIB VIRDEE</div>
-            <div id="search-container">
-                <div id="search-overlay">
-                    <input type="text" id="search-input" placeholder="Search..." onkeyup="handleSearch(this.value)">
-                </div>
-                <svg class="icon-btn" onclick="toggleSearch()" viewBox="0 0 24 24">
+    <script>
+        if (history.scrollRestoration) {
+            history.scrollRestoration = 'manual';
+        }
+    </script>
+
+    <header id="main-header" class="no-transition">
+        <div id="brand-row">
+            <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
+            <div id="search-controls">
+                <svg id="search-trigger" class="icon-btn search-icon" onclick="toggleSearch()" viewBox="0 0 24 24">
                     <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                 </svg>
+                <svg id="close-search" class="icon-btn close-icon" onclick="toggleSearch()" viewBox="0 0 24 24">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </div>
+            <div id="search-overlay">
+                <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
             </div>
         </div>
 
-        <nav class="h-row" id="row-main"></nav>
+        <nav id="primary-nav"></nav>
+        
+        <nav id="sub-nav"></nav>
 
-        <nav class="h-row hidden-row" id="row-sub"></nav>
-
-        <nav class="h-row hidden-row" id="row-tert"></nav>
-
+        <nav id="tertiary-nav"></nav>
     </header>
 
-    <div class="content-container" id="app"></div>
+    <div class="content-container" id="app">
+        <div class="section layout-quote skeleton-visible">
+            <div class="sk-box quote"></div>
+        </div>
+        
+        <div class="grid-container section skeleton-visible">
+            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div><div class="sk-line text short"></div></div>
+            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div><div class="sk-line text short"></div></div>
+            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div><div class="sk-line text short"></div></div>
+            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div><div class="sk-line text short"></div></div>
+        </div>
+    </div>
 
     <footer>
-        <div id="footer-links"></div>
-        <a href="#Timeline" onclick="handleRouting()">Timeline</a>
-        <a href="#Index" onclick="handleRouting()">Index</a>
+        <div class="footer-links" id="footer-links"></div>
+        <div id="version-tag"></div>
     </footer>
 
-    <div id="lightbox" onclick="this.classList.remove('active')" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:2000; align-items:center; justify-content:center;"><img id="lightbox-img" style="max-width:90%; max-height:90%;"></div>
+    <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
 
     <script>
+        let db = [], quotesDb = [], isSearchActive = false;
+        
+        // --- 1. CONFIG ---
         const CONFIG = {
             main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
             quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
         };
 
-        let db = [], quotesDb = [];
-        let headerObserver;
-
         const init = () => {
             fetchData().then(([m, q]) => {
                 db = m.filter(r => r.Title); 
                 quotesDb = q;
-                initApp();
+                
+                if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
+                
+                initApp(); 
+                renderFooter(); 
+                fetchGitHubStats();
+                
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        document.body.classList.remove('no-transition');
+                        document.getElementById('main-header').classList.remove('no-transition');
+                        updateHeaderOffset(); // Initial padding set
+                    }, 50);
+                });
+            }).catch(e => {
+                console.error("Data Load Error:", e);
+                document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
+                    <h2>Unable to load content</h2>
+                    <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px; margin-top:20px;">${e.message}</p>
+                    <p style="color:#666; margin-top:20px;">Please check your internet connection.</p>
+                </div>`;
             });
         };
 
         async function fetchData() {
-            const fetchCSV = (u) => new Promise(res => Papa.parse(u, { download:true, header:true, skipEmptyLines:true, complete:r=>res(r.data), error:()=>res([]) }));
-            return Promise.all([ fetchCSV(CONFIG.main_sheet), fetchCSV(CONFIG.quotes_sheet) ]);
+            const [main, quotes] = await Promise.all([
+                fetchCSV(CONFIG.main_sheet), 
+                fetchCSV(CONFIG.quotes_sheet).catch(()=>[])
+            ]);
+            return [main, quotes];
+        }
+
+        function fetchCSV(u) { 
+            return new Promise((res, rej) => {
+                if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded. Check your internet connection."));
+                Papa.parse(u, { 
+                    download: true, header: true, skipEmptyLines: true, 
+                    complete: (r) => res(r.data), 
+                    error: (e) => rej(new Error("CSV Error: " + e.message)) 
+                });
+            });
+        }
+
+        function safeHTML(html) {
+            if(typeof DOMPurify !== 'undefined') {
+                return DOMPurify.sanitize(html, {
+                    ADD_TAGS: ['iframe'],
+                    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height']
+                });
+            }
+            return html; 
         }
 
         function initApp() {
-            setupHeaderObserver();
-            buildMainNav();
-            handleRouting();
-            
+            buildNav(); handleRouting();
             window.addEventListener('hashchange', handleRouting);
-            window.addEventListener('scroll', handleScroll);
             
-            document.body.classList.remove('no-transition');
-        }
-
-        // --- REQUIREMENT 1 & 4: ADVANCED HEADER & DYNAMIC OFFSET ---
-        function setupHeaderObserver() {
-            const h = document.getElementById('main-header');
-            // Observer updates --header-h variable whenever header size changes (due to rows showing/hiding)
-            headerObserver = new ResizeObserver(entries => {
-                for (let entry of entries) {
-                    document.documentElement.style.setProperty('--header-h', `${entry.contentRect.height}px`);
+            window.addEventListener('hashchange', function(e) {
+                if (window.goatcounter && window.goatcounter.count) {
+                    window.goatcounter.count({
+                        path: location.pathname + location.search + location.hash,
+                        title: location.hash.substring(1) || 'Home',
+                        event: false,
+                    });
                 }
             });
-            headerObserver.observe(h);
-        }
 
-        function handleScroll() {
-            const h = document.getElementById('main-header');
-            const y = window.scrollY;
-            
-            // REQ: Reappear only at absolute top (< 50px)
-            // REQ: Disappear when scrolled down
-            if (y > 50) {
-                if (!h.classList.contains('scrolled')) h.classList.add('scrolled');
-            } else {
-                if (h.classList.contains('scrolled')) h.classList.remove('scrolled');
-            }
-        }
-
-        // --- NAVIGATION BUILDERS ---
-        function buildMainNav() {
-            const n = document.getElementById('row-main'); n.innerHTML = '';
-            // Get Top-Level Pages (unique first segment)
-            const tops = [...new Set(db.filter(r => r.Page && r.Page!=='Footer' && r.Page!=='Home').map(r => r.Page.split('/')[0]))].sort().reverse();
-            
-            tops.forEach(t => {
-                n.innerHTML += `<div class="nav-link fill-anim" data-cat="${t}" onclick="window.location.hash='#${t}'">${t}</div>`;
-            });
-        }
-
-        function updateSubNavs(currentPath) {
-            const subRow = document.getElementById('row-sub');
-            const tertRow = document.getElementById('row-tert');
-            
-            if(!currentPath || currentPath === 'Home' || currentPath === 'Index' || currentPath === 'Timeline') {
-                subRow.classList.add('hidden-row');
-                tertRow.classList.add('hidden-row');
-                return;
-            }
-
-            const parts = currentPath.split('/');
-            const mainCat = parts[0];
-            const subCat = parts.length > 1 ? parts[1] : null;
-
-            // 1. BUILD SECONDARY ROW (Children of Main)
-            // Logic: Find all pages that start with "Main/" and get the 2nd segment
-            const subs = [...new Set(db
-                .filter(r => r.Page.startsWith(mainCat + '/') && r.Page.split('/').length >= 2)
-                .map(r => r.Page.split('/')[1])
-            )].sort();
-
-            if (subs.length > 0) {
-                subRow.innerHTML = subs.map(s => {
-                    const active = (s === subCat) ? 'active' : '';
-                    return `<div class="sub-link fill-anim ${active}" onclick="window.location.hash='#${mainCat}/${s}'">${s}</div>`;
-                }).join('');
-                subRow.classList.remove('hidden-row');
-            } else {
-                subRow.classList.add('hidden-row');
-            }
-
-            // 2. BUILD TERTIARY ROW (Children of Main/Sub) - REQ: "The New Tertiary Row"
-            if (subCat) {
-                const prefix = `${mainCat}/${subCat}/`;
-                const terts = [...new Set(db
-                    .filter(r => r.Page.startsWith(prefix))
-                    .map(r => r.Page.split('/')[2])
-                )].filter(x => x).sort(); // filter(x=>x) removes undefined if path ends at sub
-
-                if (terts.length > 0) {
-                    tertRow.innerHTML = terts.map(t => {
-                        const active = (parts[2] === t) ? 'active' : '';
-                        return `<div class="tert-link ${active}" onclick="window.location.hash='#${prefix}${t}'">${t}</div>`;
-                    }).join('');
-                    tertRow.classList.remove('hidden-row');
+            // --- 2. ADVANCED SCROLL LOGIC ---
+            window.addEventListener('scroll', () => { 
+                const h = document.getElementById('main-header'); 
+                const scrollY = window.scrollY;
+                
+                // State C: Scrolled Down (Hide Brand Row)
+                if (scrollY > 50) {
+                    h.classList.add('scrolled-down');
                 } else {
-                    tertRow.classList.add('hidden-row');
+                    // State D: Top (Show Brand Row)
+                    h.classList.remove('scrolled-down');
                 }
-            } else {
-                tertRow.classList.add('hidden-row');
-            }
-            
-            // Highlight Main Nav
-            document.querySelectorAll('.nav-link').forEach(el => {
-                el.classList.toggle('active', el.getAttribute('data-cat') === mainCat);
+            });
+
+            // Dynamic Page Offset (ResizeObserver to ensure padding matches header)
+            const ro = new ResizeObserver(() => updateHeaderOffset());
+            ro.observe(document.getElementById('main-header'));
+
+            document.addEventListener('click', (e) => {
+                const overlay = document.getElementById('search-overlay');
+                const controls = document.getElementById('search-controls');
+                if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
+                    closeSearch();
+                }
+            });
+
+            document.getElementById('app').addEventListener('click', (e) => {
+                if(e.target.closest('.refresh-btn')) { 
+                    const quoteContainer = e.target.closest('.layout-quote');
+                    if(quoteContainer && !quoteContainer.classList.contains('loading')) {
+                        quoteContainer.classList.add('loading');
+                        quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
+                        setTimeout(() => {
+                            renderQuoteCard(quoteContainer);
+                            quoteContainer.classList.remove('loading');
+                        }, 600); 
+                    }
+                    e.stopPropagation(); return; 
+                }
+                
+                if(e.target.classList.contains('zoomable')) { 
+                    if(e.target.parentElement.tagName === 'A') return;
+                    document.getElementById('lightbox-img').src = e.target.src; 
+                    document.getElementById('lightbox').classList.add('active'); 
+                    e.stopPropagation(); return; 
+                }
+                
+                if(e.target.classList.contains('chip')) { 
+                    e.stopPropagation();
+                    if(isSearchActive) closeSearch(); 
+                    const tag = e.target.getAttribute('data-tag');
+                    const date = e.target.getAttribute('data-date');
+                    if(date) window.location.hash = 'Filter:' + date;
+                    else if(tag) window.location.hash = 'Filter:' + tag;
+                    return; 
+                }
+                
+                const block = e.target.closest('.clickable-block');
+                if(block && !e.target.classList.contains('chip')) {
+                    const link = block.getAttribute('data-link'), target = block.getAttribute('data-target');
+                    if(link) { 
+                        if(target === '_blank') window.open(link, '_blank'); 
+                        else { 
+                            window.location.href = link; 
+                            if(isSearchActive) closeSearch(); 
+                        } 
+                    }
+                }
             });
         }
 
-        // --- ROUTING ---
-        function handleRouting() {
-            window.scrollTo(0, 0);
-            const hash = window.location.hash.substring(1) || 'Home';
+        function updateHeaderOffset() {
+            const h = document.getElementById('main-header').offsetHeight;
+            document.body.style.paddingTop = h + 'px';
+        }
+
+        function resetToHome() { closeSearch(); window.location.hash = ''; }
+        function closeSearch() { document.getElementById('search-overlay').classList.remove('active'); document.getElementById('main-header').classList.remove('search-mode'); document.getElementById('search-input').value = ''; if(isSearchActive) { isSearchActive = false; handleRouting(); } isSearchActive = false; }
+
+        function toggleSearch() { 
+            const a = document.getElementById('search-overlay').classList.toggle('active'); 
+            document.getElementById('main-header').classList.toggle('search-mode'); 
+            if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
+            else closeSearch(); 
+        }
+
+        function handleSearch(q) { 
+            if(!q) return; 
+            isSearchActive = true; 
+            // Reset nav states
+            document.body.classList.remove('has-sub', 'has-tertiary');
             
-            updateSubNavs(hash);
-            document.getElementById('search-overlay').classList.remove('active');
-
-            if (hash === 'Index') { renderIndex(); return; }
-            if (hash === 'Timeline') { renderTimeline(); return; }
-
-            renderPage(hash);
+            const t = q.toLowerCase();
+            const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
+            renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
         }
 
-        function renderPage(path) {
-            const app = document.getElementById('app');
-            app.innerHTML = '';
-
-            if (path === 'Home') {
-                // REQ: Featured Pins
-                const featured = db.filter(r => r.Tags && r.Tags.toLowerCase().includes('featured'));
-                if (featured.length > 0) {
-                    app.innerHTML += `<div class="layout-hero"><h1>Featured</h1></div>`;
-                    renderGrid(featured, app);
-                    app.innerHTML += `<div style="height:40px"></div>`; // spacer
-                }
-                
-                // Recent (excluding featured to avoid dupes)
-                const recent = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && (!r.Tags || !r.Tags.toLowerCase().includes('featured')))
-                                 .sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp))
-                                 .slice(0, 8);
-                
-                app.innerHTML += `<div class="layout-hero"><h1>Latest</h1></div>`;
-                renderGrid(recent, app);
-                return;
-            }
-
-            // Normal Category/Page Render
-            const exactRows = db.filter(r => r.Page === path);
-            const childRows = db.filter(r => r.Page.startsWith(path + '/'));
-            const allRows = [...exactRows, ...childRows];
-
-            if (allRows.length === 0) {
-                app.innerHTML = `<div class="layout-hero"><h1>404</h1><p>Signal Lost.</p></div>`;
-                return;
-            }
-
-            // Check if we have "Hero" text
-            const heroRow = exactRows.find(r => r.SectionType === 'hero');
-            if (heroRow) {
-                app.innerHTML += `<div class="layout-hero"><h1>${heroRow.Title}</h1><p>${processText(heroRow.Content)}</p></div>`;
-            } else if (path.includes('/')) {
-                // Auto title for sub-pages
-                app.innerHTML += `<div class="layout-hero"><h1>${path.split('/').pop()}</h1></div>`;
-            }
-
-            // Filter out hero/text rows from grid
-            const gridRows = allRows.filter(r => r !== heroRow && r.SectionType !== 'text' && r.SectionType !== 'quote');
-            if (gridRows.length > 0) renderGrid(gridRows, app);
+        function buildNav() { 
+            const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
+            const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
+            p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
         }
 
-        // --- REQUIREMENT 2: TIMELINE VIEW ---
-        function renderTimeline() {
-            const app = document.getElementById('app');
-            app.innerHTML = `<div class="layout-hero"><h1>Timeline</h1></div><div class="timeline-container"></div>`;
-            const container = app.querySelector('.timeline-container');
-
-            // 1. Group by "Month Year"
-            const groups = {};
-            db.forEach(r => {
-                if (!r.Timestamp || r.Page === 'Home' || r.Page === 'Footer') return;
-                const d = new Date(r.Timestamp);
-                if(isNaN(d)) return;
-                const key = `${d.toLocaleString('default', { month: 'long' })} ${d.getFullYear()}`;
-                const sortKey = d.getTime(); // Use timestamp for sorting months
-                
-                if (!groups[key]) groups[key] = { sort: sortKey, items: [] };
-                groups[key].items.push(r);
-            });
-
-            // 2. Sort Groups Descending
-            const sortedKeys = Object.keys(groups).sort((a,b) => groups[b].sort - groups[a].sort);
-
-            sortedKeys.forEach(month => {
-                const data = groups[month];
-                // REQ: Sort items alphabetically
-                data.items.sort((a,b) => a.Title.localeCompare(b.Title));
-
-                const monthDiv = document.createElement('div');
-                monthDiv.className = 'timeline-month';
-                
-                let cardsHtml = '';
-                data.items.forEach(item => {
-                    let thumb = getThumbnail(item.Media) || '';
-                    if (!thumb) thumb = `<div style="width:100%; height:100%; background:#222; display:flex; align-items:center; justify-content:center; color:#444; font-weight:700; font-size:12px;">NO MEDIA</div>`;
-                    else thumb = `<img src="${thumb}" loading="lazy">`;
-
-                    cardsHtml += `
-                    <div class="timeline-card" onclick="window.location.hash='#${item.Page}'">
-                        <div class="media">${thumb}</div>
-                        <h4>${item.Title}</h4>
-                        <p>${item.Content ? item.Content.substring(0, 60)+'...' : ''}</p>
-                    </div>`;
+        // --- 3. REFACTORED NAV LOGIC (3 TIERS) ---
+        function buildSubNav(path) {
+            const n = document.getElementById('sub-nav');
+            const tn = document.getElementById('tertiary-nav');
+            const parts = path.split('/');
+            const top = parts[0];
+            
+            // 1. Build Secondary
+            n.innerHTML = '';
+            const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/')[1]).filter(x=>x))].sort();
+            
+            if(subs.length > 0 && top !== 'Index' && top !== 'Timeline') {
+                document.body.classList.add('has-sub');
+                subs.forEach(x => { 
+                    const full = `${top}/${x}`;
+                    const active = path === full || path.startsWith(full + '/'); 
+                    n.innerHTML += `<a href="#${full}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(x)}</a>`; 
                 });
+            } else {
+                document.body.classList.remove('has-sub');
+            }
 
-                monthDiv.innerHTML = `
-                    <div class="timeline-date">${month.replace(' ', '<br>')}</div>
-                    <div class="timeline-cards-wrapper fade-mask">
-                        <div class="timeline-scroll-area" onscroll="checkFade(this)">${cardsHtml}</div>
-                    </div>
-                `;
-                container.appendChild(monthDiv);
+            // 2. Build Tertiary (Dependent on Secondary Selection)
+            tn.innerHTML = '';
+            if(parts.length >= 2) {
+                const sec = parts[1];
+                const prefix = `${top}/${sec}/`;
+                const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix)).map(r => r.Page.split('/')[2]).filter(x=>x))].sort();
                 
-                // Initial check for fade (in case few items)
-                setTimeout(() => {
-                    const scroll = monthDiv.querySelector('.timeline-scroll-area');
-                    checkFade(scroll);
-                }, 100);
-            });
+                if(terts.length > 0) {
+                    document.body.classList.add('has-tertiary');
+                    terts.forEach(x => {
+                        const full = `${prefix}${x}`;
+                        const active = path === full;
+                        tn.innerHTML += `<a href="#${full}" class="tertiary-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(x)}</a>`;
+                    });
+                } else {
+                    document.body.classList.remove('has-tertiary');
+                }
+            } else {
+                document.body.classList.remove('has-tertiary');
+            }
+            
+            setTimeout(() => {
+                centerNav(n);
+                centerNav(tn);
+            }, 100);
         }
 
-        // REQ: Remove fade only at absolute end
-        window.checkFade = function(el) {
-            const wrapper = el.parentElement;
-            // tolerance of 2px for math rounding
-            if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 2) {
-                wrapper.classList.remove('fade-mask');
-            } else {
-                wrapper.classList.add('fade-mask');
+        function centerNav(el) {
+            if(!el) return;
+            const active = el.querySelector('.active');
+            if(active) {
+                const scrollTarget = active.offsetLeft + (active.offsetWidth / 2) - (el.clientWidth / 2);
+                el.scrollTo({ left: scrollTarget, behavior: 'smooth' });
             }
-        };
+        }
 
-        // --- REQ 3: INDEX REFINEMENTS ---
-        function renderIndex() {
-            const app = document.getElementById('app');
-            app.innerHTML = `<div class="layout-hero"><h1>Index</h1></div><div class="index-list"></div>`;
-            const list = app.querySelector('.index-list');
-
-            const pages = [...new Set(db.map(r => r.Page).filter(p => p && p!=='Home' && p!=='Footer'))].sort();
+        function handleRouting() { 
+            if(isSearchActive) return; 
+            window.scrollTo(0, 0); 
+            let h = window.location.hash.substring(1) || 'Home'; 
             
-            // Group by Top Level
-            const cats = {};
-            pages.forEach(p => {
-                const root = p.split('/')[0];
-                if (!cats[root]) cats[root] = [];
-                cats[root].push(p);
-            });
+            if(h === 'Index') { renderIndex(); return; }
+            if(h === 'Timeline') { renderTimeline(); return; }
+            
+            // Highlight Primary
+            const top = h.split('/')[0]; 
+            document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+            
+            buildSubNav(h); 
+            
+            if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
+            else { renderPage(h); }
+        }
 
-            for (const [cat, items] of Object.entries(cats)) {
-                let html = `<div class="index-group"><h3>${cat}</h3>`;
+        function renderFiltered(t) { 
+            document.body.classList.remove('has-sub', 'has-tertiary');
+            const res = db.filter(r => {
+                const dateStr = formatDate(r.Timestamp);
+                return (dateStr === t) || (r.Tags && r.Tags.includes(t));
+            });
+            renderRows(res, `Posts tagged "${safeHTML(t)}"`, false, true); 
+        }
+
+        function renderPage(p) { 
+            if(p === 'Home') { renderHome(); return; } 
+            const ex = db.filter(r => r.Page === p); 
+            const app = document.getElementById('app'); app.innerHTML = ''; 
+            
+            const isMainPage = !p.includes('/');
+            
+            if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
+            else if(childrenPagesCheck(p)) { }
+            else {
+                app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
+                return; 
+            }
+            
+            if(isMainPage) {
+                const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
+                if(childrenPages.length > 0) {
+                    const overviewRows = childrenPages.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
+                    renderRows(overviewRows, null, true, true); 
+                } 
+            }
+        }
+
+        function childrenPagesCheck(p) {
+            const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
+            return childrenPages.length > 0;
+        }
+
+        function renderIndex() {
+            document.body.classList.remove('has-sub', 'has-tertiary');
+            document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+
+            const app = document.getElementById('app'); 
+            app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
+            
+            const list = app.querySelector('.index-list');
+            const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
+            
+            const groups = {};
+            pages.forEach(p => {
+                const cat = p.split('/')[0];
+                if(!groups[cat]) groups[cat] = [];
+                groups[cat].push(p);
+            });
+            
+            for(const [cat, items] of Object.entries(groups)) {
+                let catClass = '';
+                const cLower = cat.toLowerCase();
+                if(cLower === 'projects') catClass = 'cat-projects';
+                else if(cLower === 'professional') catClass = 'cat-professional';
+                else if(cLower === 'personal') catClass = 'cat-personal';
+
+                let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
                 items.forEach(p => {
-                    const depth = p.split('/').length - 1; // 0 for root (handled above), 1 for sub, 2 for tert
-                    const name = p.split('/').pop();
-                    const indentClass = depth > 0 ? `indent-${depth}` : '';
-                    
-                    html += `<a href="#${p}" class="index-link ${indentClass}">${name}</a>`;
+                    const row = db.find(r => r.Page === p);
+                    const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
+                    const title = row ? row.Title : p.split('/').pop();
+                    const depth = p.split('/').length;
+                    const indentClass = depth >= 3 ? 'indent-3' : '';
+                    html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
                 });
                 html += `</div>`;
                 list.innerHTML += html;
             }
         }
 
-        function renderGrid(rows, container) {
-            const grid = document.createElement('div'); grid.className = 'grid-container';
-            rows.forEach(r => {
-                const cls = r.Page.split('/')[0].toLowerCase();
-                let media = getThumbnail(r.Media);
-                let mediaHtml = media ? `<div class="row-media"><img src="${media}" loading="lazy"></div>` : `<div class="row-media placeholder"><span>${r.Title}</span></div>`;
-                
-                // Check for 3D
-                if(r.Content && r.Content.includes('{{3D:')) mediaHtml = `<div class="row-media placeholder"><span>3D MODEL</span></div>`;
+        // --- 4. TIMELINE LOGIC ---
+        function renderTimeline() {
+            document.body.classList.remove('has-sub', 'has-tertiary');
+            document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
-                const div = document.createElement('div');
-                div.className = `layout-grid cat-${cls}`;
-                div.onclick = () => window.location.hash = `#${r.Page}`;
-                div.innerHTML = `${mediaHtml}<h3>${r.Title}</h3><p>${r.Content ? r.Content.substring(0, 80) : ''}</p>`;
-                
-                if (r.Tags) {
-                    const tags = r.Tags.split(',').slice(0, 2);
-                    tags.forEach(t => div.innerHTML += `<span class="chip">${t.trim()}</span>`);
-                }
-                grid.appendChild(div);
+            const app = document.getElementById('app');
+            app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-section"></div>';
+            const section = app.querySelector('.timeline-section');
+
+            // Group by Year-Month
+            const groups = {};
+            db.forEach(r => {
+                if(!r.Timestamp || r.Page === 'Footer') return;
+                // Parse YYYYMMDD
+                const y = r.Timestamp.substring(0,4);
+                const m = r.Timestamp.substring(4,6);
+                const key = `${y}-${m}`;
+                if(!groups[key]) groups[key] = [];
+                groups[key].push(r);
             });
-            container.appendChild(grid);
+
+            // Sort Groups Descending (Newest First)
+            const keys = Object.keys(groups).sort().reverse();
+
+            keys.forEach(k => {
+                // Sort Items Alphabetical
+                groups[k].sort((a,b) => a.Title.localeCompare(b.Title));
+
+                const dateObj = new Date(`${k}-01`);
+                const label = dateObj.toLocaleString('default', { month: 'short', year: 'numeric' }).toUpperCase();
+                
+                const row = document.createElement('div');
+                row.className = 'timeline-row';
+                
+                let cardsHtml = '';
+                groups[k].forEach(r => {
+                    // Generate Card HTML (Simplified version of renderRows logic)
+                    cardsHtml += buildCardHTML(r);
+                });
+
+                row.innerHTML = `<div class="timeline-date">${label}</div><div class="timeline-scroll-area">${cardsHtml}</div>`;
+                section.appendChild(row);
+            });
+            
+            setTimeout(init3DViewers, 500); // Re-init viewers for timeline cards
         }
 
-        // --- HELPERS ---
-        function resetToHome() { 
-            document.getElementById('search-input').value = ''; 
-            document.getElementById('search-overlay').classList.remove('active');
-            window.location.hash = ''; 
-        }
-        function toggleSearch() {
-            const o = document.getElementById('search-overlay');
-            o.classList.toggle('active');
-            if(o.classList.contains('active')) document.getElementById('search-input').focus();
-        }
-        function handleSearch(q) {
-            if(!q) return;
-            const app = document.getElementById('app'); app.innerHTML = `<div class="layout-hero"><h1>Search</h1></div>`;
-            const res = db.filter(r => JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
-            renderGrid(res, app);
-        }
-        function processText(t) { return DOMPurify.sanitize(t); } // Simplified for brevity
-        function getThumbnail(u) {
-            if(!u) return null;
-            if(u.includes('youtube.com') || u.includes('youtu.be')) {
-                let v = u.split('v=')[1] || u.split('/').pop();
-                if(v.includes('&')) v = v.split('&')[0];
-                return `https://img.youtube.com/vi/${v}/mqdefault.jpg`;
+        // Helper to generate a single card string (extracted from renderRows)
+        function buildCardHTML(r) {
+            let contentHtml = processText(r.Content);
+            let mediaHtml = '';
+            let hasPlaceholder = false;
+            const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+
+            if (modelMatch) {
+                const url = modelMatch[1].trim();
+                const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+                mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+                contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
+            } else if (r.Media) {
+                const thumb = getThumbnail(r.Media);
+                if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+            } else {
+                hasPlaceholder = true;
+                mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
             }
-            return u.match(/\.(jpeg|jpg|gif|png)$/) != null ? u : null;
+
+            let catClass = '';
+            const pLower = r.Page ? r.Page.toLowerCase() : '';
+            if(pLower.startsWith('projects')) catClass = 'cat-projects';
+            else if(pLower.startsWith('professional')) catClass = 'cat-professional';
+            else if(pLower.startsWith('personal')) catClass = 'cat-personal';
+
+            const link = r.LinkURL || `#${r.Page}`;
+            const target = link.startsWith('#') ? '' : '_blank';
+            
+            return `<div class="layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}" data-link="${link}" data-target="${target}">
+                ${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>
+            </div>`;
         }
 
+        function renderHome() { 
+            const hr = db.filter(r => r.Page === 'Home');
+            const app = document.getElementById('app'); app.innerHTML = ''; 
+            renderRows(hr, null, true); 
+            
+            // --- 5. REFINEMENT: FEATURED PINS ---
+            const allPosts = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer');
+            const featured = allPosts.filter(r => r.Tags && r.Tags.toLowerCase().includes('featured'));
+            
+            // Remove featured from "recents" pool to avoid duplicates
+            const others = allPosts.filter(r => !featured.includes(r))
+                                   .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
+                                   .slice(0, 6); // Take top 6 recent non-featured
+            
+            // Combine: Featured first, then Others
+            const displayList = [...featured, ...others];
+
+            if(displayList.length > 0) { renderRows(displayList, "Featured & Recent", true); } 
+        }
+
+        function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
+            const app = document.getElementById('app'); if(!app) return; 
+            
+            // Only sort if NOT Timeline/Featured (Timeline sorts internally, Home sorts custom)
+            if (!title || title.includes("Search")) {
+                rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
+            }
+
+            if(!append) {
+                app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
+            } else if(title) {
+                app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
+            }
+
+            if(rows.length === 0 && !append) { 
+                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`; 
+                return; 
+            }
+            
+            let gc = app.querySelector('.grid-container');
+            if(append) {
+                gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
+            } else {
+                const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
+                if(hasGridItems && !gc) {
+                    gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
+                }
+            }
+            
+            rows.forEach(r => {
+                if(!r.Page || r.Page === 'Footer') return; 
+                
+                let contentHtml = processText(r.Content);
+                let mediaHtml = '';
+                let hasPlaceholder = false;
+
+                const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+
+                if (modelMatch) {
+                    const url = modelMatch[1].trim();
+                    const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+                    mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+                    contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
+                } else if (r.Media) {
+                    const thumb = getThumbnail(r.Media);
+                    if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+                } else {
+                    hasPlaceholder = true;
+                    mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+                }
+
+                let catClass = '';
+                const pLower = r.Page.toLowerCase();
+                if(pLower.startsWith('projects')) catClass = 'cat-projects';
+                else if(pLower.startsWith('professional')) catClass = 'cat-professional';
+                else if(pLower.startsWith('personal')) catClass = 'cat-personal';
+
+                if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
+                    const d = document.createElement('div'); d.className = 'section layout-text';
+                    
+                    if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+                    else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+                    else mediaHtml = ''; 
+
+                    let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
+                    
+                    if(r.LinkURL) {
+                        metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+                    }
+
+                    metaHtml += '<div class="article-tags">';
+                    if(r.Timestamp) {
+                        const dateVal = formatDate(r.Timestamp);
+                        metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
+                    }
+                    if(r.Tags) {
+                        const tags = r.Tags.split(',').map(x => x.trim());
+                        tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
+                    }
+                    metaHtml += '</div></div>';
+
+                    d.innerHTML = `${mediaHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${contentHtml}</p>`;
+                    app.appendChild(d);
+                    return;
+                }
+
+                if(!forceGrid) {
+                    if(r.SectionType === 'quote') { 
+                        const d = document.createElement('div'); d.className = 'layout-quote section'; 
+                        renderQuoteCard(d); app.appendChild(d); return; 
+                    }
+                    if(r.SectionType === 'hero') {
+                        const d = document.createElement('div'); d.className = 'section layout-hero';
+                        let dateHtml = '';
+                        if(r.Timestamp) {
+                            let dateVal = formatDate(r.Timestamp);
+                            dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
+                        }
+                        d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
+                        app.appendChild(d); return;
+                    }
+                    if(r.SectionType === 'text') {
+                        const d = document.createElement('div'); d.className = 'section layout-text';
+                        d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+                        app.appendChild(d); return;
+                    }
+                }
+
+                const link = r.LinkURL || '';
+                const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
+                let l = link; if(!l) l = `#${r.Page}`; 
+                const internal = l.startsWith('#'), target = internal ? '' : '_blank';
+                
+                let mh = '';
+                if(r.Timestamp || tags.length > 0) {
+                    mh = `<div class="meta-row">`;
+                    if(r.Timestamp) {
+                        let dateVal = formatDate(r.Timestamp);
+                        mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
+                    }
+                    tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
+                    mh += `</div>`;
+                }
+
+                const d = document.createElement('div'); 
+                d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
+                d.setAttribute('data-link', l); d.setAttribute('data-target', target);
+                
+                d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
+                
+                if(gc) gc.appendChild(d);
+            });
+            
+            if(window.MathJax && window.MathJax.typeset) {
+                window.MathJax.typeset();
+            }
+            setTimeout(init3DViewers, 500);
+        }
+
+        function renderQuoteCard(c) {
+            if(quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
+            const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
+            let auth = r.Author || 'Unknown'; 
+            if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`; 
+            else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
+            
+            const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
+            
+            const len = text.length;
+            let sizeClass = 'short';
+            
+            if(len > 230) sizeClass = 'xxl';
+            else if(len > 150) sizeClass = 'xl';
+            else if(len > 100) sizeClass = 'long';
+            else if(len > 50) sizeClass = 'medium';
+            
+            c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
+                        <div class="quote-footer"><div class="author">— ${auth}</div></div>
+                        <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
+        }
+
+        function renderFooter() { 
+            const fd = document.getElementById('footer-links');
+            const fr = db.filter(r => r.Page === 'Footer' || r.Title === 'LinkedIn' || r.Title === 'Contact'); 
+            fd.innerHTML = ''; 
+            fr.forEach(r => { 
+                let link = r.LinkURL;
+                if(r.Title === 'Contact') {
+                    link = 'mailto:sahibdsv+site@gmail.com';
+                }
+                if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
+            }); 
+            
+            fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="closeSearch()">Timeline</a>`;
+            fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
+            fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
+        }
+
+        function fetchGitHubStats() { 
+            const r = "sahibdsv/sahibdsv.github.io"; 
+            fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
+                if(d.pushed_at) {
+                    const date = new Date(d.pushed_at);
+                    const timeAgo = (d) => {
+                        const s = Math.floor((new Date() - d) / 1000);
+                        let i = s / 31536000;
+                        if (i > 1) return Math.floor(i) + " years ago";
+                        i = s / 2592000;
+                        if (i > 1) return Math.floor(i) + " months ago";
+                        i = s / 86400;
+                        if (i > 1) return Math.floor(i) + " days ago";
+                        i = s / 3600;
+                        if (i > 1) return Math.floor(i) + " hours ago";
+                        i = s / 60;
+                        if (i > 1) return Math.floor(i) + " mins ago";
+                        return "a few mins ago";
+                    };
+                    const relTime = timeAgo(date);
+                    document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${relTime}</a>`;
+                } 
+            }).catch(()=>{}); 
+        }
+
+        function getThumbnail(u) { if(!u) return null; if(u.includes('youtube.com')||u.includes('youtu.be')) { let v = u.split('v=')[1]; if(v&&v.includes('&')) v=v.split('&')[0]; if(!v&&u.includes('youtu.be')) v=u.split('/').pop(); return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; } if(u.endsWith('.mp4')) return null; return u; }
+
+        function processText(t) { 
+            if(!t) return ''; 
+            let clean = safeHTML(t);
+            clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
+                const colorAttr = color ? `data-color="${color.trim()}"` : '';
+                return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
+            });
+            clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
+                const urls = content.split(',').map(u => u.trim());
+                const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
+                if (!isPureGallery) return match; 
+                const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join('');
+                return `<div class="inline-gallery">${imgs}</div>`;
+            });
+            clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
+            clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
+            clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
+            clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
+            clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
+            clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
+            return clean; 
+        }
+
+        function formatDate(s) {
+            if(!s) return '';
+            if(s.length === 8 && !isNaN(s)) {
+                const y = s.substring(0, 4);
+                const m = s.substring(4, 6);
+                const d = s.substring(6, 8);
+                const dateObj = new Date(`${y}-${m}-${d}`);
+                return `${dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()} ${y}`;
+            }
+            const d = new Date(s);
+            if(isNaN(d.getTime())) return s;
+            const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+            const yr = d.getFullYear();
+            return `${mo} ${yr}`;
+        }
+
+        function init3DViewers() {
+            const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
+            if(containers.length === 0) return;
+
+            Promise.all([
+                import('three'),
+                import('three/addons/loaders/STLLoader.js'),
+                import('three/addons/loaders/GLTFLoader.js'),
+                import('three/addons/controls/OrbitControls.js')
+            ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
+                const visibilityObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const container = entry.target;
+                        if (entry.isIntersecting) {
+                            container.setAttribute('data-visible', 'true');
+                        } else {
+                            container.setAttribute('data-visible', 'false');
+                        }
+                    });
+                });
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
+                            observer.unobserve(entry.target);
+                            visibilityObserver.observe(entry.target);
+                        }
+                    });
+                }, { rootMargin: "200px" });
+
+                containers.forEach(c => observer.observe(c));
+            });
+        }
+
+        function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
+            container.classList.add('loaded');
+            const url = container.getAttribute('data-src');
+            const customColor = container.getAttribute('data-color');
+            const ext = url.split('.').pop().toLowerCase();
+            const scene = new THREE.Scene();
+            scene.background = null; 
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.outputColorSpace = THREE.SRGBColorSpace; 
+            renderer.physicallyCorrectLights = true; 
+            container.appendChild(renderer.domElement);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            keyLight.position.set(5, 10, 7);
+            scene.add(keyLight);
+            const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
+            rimLight.position.set(-5, 5, -5);
+            scene.add(rimLight);
+            const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
+            fillLight.position.set(-5, 0, 5);
+            scene.add(fillLight);
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enablePan = false; 
+            controls.autoRotate = true; 
+            controls.autoRotateSpeed = 2.0;
+
+            let restartTimer;
+            controls.addEventListener('start', () => {
+                clearTimeout(restartTimer);
+                controls.autoRotate = false;
+            });
+            controls.addEventListener('end', () => {
+                restartTimer = setTimeout(() => {
+                    controls.autoRotate = true;
+                }, 5000); 
+            });
+
+            const onLoad = (object) => {
+                container.classList.add('ready'); 
+                const box = new THREE.Box3().setFromObject(object);
+                const center = new THREE.Vector3();
+                box.getCenter(center);
+                object.position.sub(center);
+                scene.add(object);
+                if (customColor) {
+                    object.traverse((child) => {
+                        if (child.isMesh) {
+                            child.material = new THREE.MeshPhongMaterial({ 
+                                color: customColor, 
+                                specular: 0x111111, 
+                                shininess: 100 
+                            });
+                        }
+                    });
+                }
+                const size = box.getSize(new THREE.Vector3()).length();
+                const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
+                camera.position.set(dist, dist * 0.4, dist * 0.8); 
+                camera.lookAt(0, 0, 0);
+                controls.minDistance = size * 0.2; 
+                controls.maxDistance = size * 5;
+                function animate() {
+                    requestAnimationFrame(animate);
+                    if (container.getAttribute('data-visible') === 'false') return;
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                animate();
+            };
+            const onError = (e) => {
+                console.error(e);
+                container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
+            };
+            if (ext === 'glb' || ext === 'gltf') {
+                const loader = new GLTFLoader();
+                loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
+            } else {
+                const loader = new STLLoader();
+                loader.load(url, (geometry) => {
+                    const mat = new THREE.MeshPhongMaterial({ 
+                        color: customColor || 0xaaaaaa, 
+                        specular: 0x111111, 
+                        shininess: 200 
+                    });
+                    const mesh = new THREE.Mesh(geometry, mat);
+                    onLoad(mesh);
+                }, undefined, onError);
+            }
+            window.addEventListener('resize', () => {
+                if(!container.isConnected) return; 
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
         init();
     </script>
 </body>
