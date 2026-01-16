@@ -174,7 +174,6 @@ function buildNav() {
 function buildSecondaryNav(top) {
     const n = document.getElementById('secondary-nav'), b = document.body; if(!n) return false; 
     n.innerHTML = ''; 
-    // Note: Do not rely on attribute for style logic anymore, use classes.
     b.setAttribute('data-page', top); 
     
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
@@ -247,33 +246,27 @@ function handleRouting() {
     const top = parts[0]; 
     const sub = parts.length > 1 ? parts[1] : null;
 
-    // Active State L1
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
         const href = a.getAttribute('href'); 
         if(href) a.classList.toggle('active', href.replace('#', '') === top); 
     }); 
     
-    // Build Navs & Determine Existence
     const hasSec = buildSecondaryNav(top); 
     const hasTert = buildTertiaryNav(top, sub);
 
-    // Dynamic Padding & Rows Logic
-    let rowCount = 2; // Default (Brand + Main)
+    let rowCount = 2; 
     if (hasSec) rowCount = 3;
     if (hasTert) rowCount = 4;
     applyBodyPaddingClass(rowCount);
 
-    // Scroll Logic: Only the "lowest" active row gets the preview scroll (forceMiddleIfNone=true)
     setTimeout(() => {
         const secEl = document.getElementById('secondary-nav');
         const tertEl = document.getElementById('tertiary-nav');
         
         if (hasTert) {
-            // Tert is last -> Center Tert (Preview), Center Sec (Active/Standard)
             centerSubNav(tertEl, true);
             centerSubNav(secEl, false);
         } else if (hasSec) {
-            // Sec is last -> Center Sec (Preview)
             centerSubNav(secEl, true);
         }
     }, 100);
@@ -324,7 +317,7 @@ function renderIndex() {
     
     buildSecondaryNav('Index'); 
     buildTertiaryNav('Index', null);
-    applyBodyPaddingClass(3); // Index effectively uses 3 rows (Secondary is category headers)
+    applyBodyPaddingClass(3); 
 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
@@ -370,7 +363,7 @@ function renderTimeline() {
     
     buildSecondaryNav('Timeline');
     buildTertiaryNav('Timeline', null);
-    applyBodyPaddingClass(2); // Timeline usually 2 rows (no sub-nav items)
+    applyBodyPaddingClass(2); 
 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
@@ -419,6 +412,25 @@ function renderTimeline() {
         });
         init3DViewers();
     }, 100);
+}
+
+function checkFade(el) {
+    const wrapper = el.parentElement;
+    const tolerance = 5;
+    
+    // Toggle Left Fade
+    if (el.scrollLeft > tolerance) {
+        wrapper.classList.add('fade-left-active');
+    } else {
+        wrapper.classList.remove('fade-left-active');
+    }
+
+    // Toggle Right Fade
+    if (el.scrollLeft + el.clientWidth < el.scrollWidth - tolerance) {
+        wrapper.classList.add('fade-right-active');
+    } else {
+        wrapper.classList.remove('fade-right-active');
+    }
 }
 
 function renderHome() { 
