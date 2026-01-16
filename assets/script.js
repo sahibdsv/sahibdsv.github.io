@@ -87,12 +87,14 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER
+    // SMART SCROLL HEADER (Modified)
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
-        // Logic: Collapses Row 1 (Brand/Search) when scrolling down
-        const shouldShrink = window.scrollY > 30;
+        const shouldShrink = window.scrollY > 50;
         h.classList.toggle('shrink', shouldShrink);
+        
+        // Dynamically update padding based on visible rows
+        updateHeaderHeight();
     });
 
     document.addEventListener('click', (e) => {
@@ -148,6 +150,23 @@ function initApp() {
     });
 }
 
+function updateHeaderHeight() {
+    const h = document.getElementById('main-header');
+    if (!h) return;
+    const body = document.body;
+    // Calculate visible height
+    const brandH = h.querySelector('#brand-row').offsetHeight;
+    const navH = h.querySelector('#primary-nav').offsetHeight;
+    // Add sub/tert if expanded
+    let total = brandH + navH + 10; // 10px padding top
+    if(body.classList.contains('header-expanded')) {
+         const sub = h.querySelector('#sub-nav').offsetHeight;
+         const tert = h.querySelector('#tertiary-nav').offsetHeight;
+         total += sub + tert;
+    }
+    body.style.paddingTop = `${total}px`;
+}
+
 function resetToHome() { closeSearch(); window.location.hash = ''; }
 function closeSearch() { document.getElementById('search-overlay').classList.remove('active'); document.getElementById('main-header').classList.remove('search-mode'); document.getElementById('search-input').value = ''; if(isSearchActive) { isSearchActive = false; handleRouting(); } isSearchActive = false; }
 
@@ -161,10 +180,9 @@ function toggleSearch() {
 function handleSearch(q) { 
     if(!q) return; 
     isSearchActive = true; 
-    
-    // Hide nav rows when searching to maintain collapsed visual state
     document.body.classList.remove('header-expanded');
-    
+    document.getElementById('main-header').classList.remove('expanded');
+
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
     renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
@@ -177,55 +195,49 @@ function buildNav() {
 }
 
 function buildSubNav(top) {
-    const n = document.getElementById('sub-nav');
-    if(!n) return; 
-    n.innerHTML = ''; 
+    const n = document.getElementById('sub-nav'); if(!n) return; n.innerHTML = ''; 
     
+    // Only items starting with "Top/"
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
     
-    if (subs.length > 0) document.body.classList.add('has-sub-nav');
-    else document.body.classList.remove('has-sub-nav');
-
     subs.forEach(x => { 
         const name = x.split('/')[1];
         const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
-    
+
+    // Center ONLY when the sub-nav is first built
     setTimeout(() => centerNav(n, true), 100);
 }
 
-function buildTertiaryNav(top, sub) {
-    const n = document.getElementById('tertiary-nav');
-    if(!n) return;
-    n.innerHTML = '';
-
-    const prefix = `${top}/${sub}/`;
-    const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix)).map(r => r.Page))].sort();
-
-    if (terts.length > 0) document.body.classList.add('has-tert-nav');
-    else document.body.classList.remove('has-tert-nav');
+function buildTertiaryNav(topSub) {
+    const n = document.getElementById('tertiary-nav'); if(!n) return; n.innerHTML = '';
+    
+    // Only items starting with "Top/Sub/"
+    const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(topSub + '/')).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
+    
+    if(terts.length === 0) return; // Hide if no tertiary
 
     terts.forEach(x => {
-        const name = x.split('/').pop();
-        const active = window.location.hash === `#${x}`;
-        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
+        const name = x.split('/')[2];
+        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`);
+        n.innerHTML += `<a href="#${x}" class="tertiary-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
     });
     
     setTimeout(() => centerNav(n, true), 100);
 }
 
-// SHARED CENTER LOGIC
-function centerNav(el, forceMiddleIfNone) {
-    if(!el) return;
-    const activeLink = el.querySelector('.active');
+// GENERIC NAV CENTERING
+function centerNav(n, forceMiddleIfNone) {
+    if(!n) return;
+    const activeLink = n.querySelector('.active');
     
     if (activeLink) {
-        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (el.clientWidth / 2);
-        el.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-    } else if (forceMiddleIfNone) {
-        const middle = (el.scrollWidth - el.clientWidth) / 2;
-        el.scrollTo({ left: middle, behavior: 'smooth' });
+        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
+        n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+    } else if (forceMiddleIfNone && n.scrollWidth > n.clientWidth) {
+        const middle = (n.scrollWidth - n.clientWidth) / 2;
+        n.scrollTo({ left: middle, behavior: 'smooth' });
     }
 }
 
@@ -235,23 +247,32 @@ function handleRouting() {
     let h = window.location.hash.substring(1) || 'Home'; 
     
     if(h === 'Index') { renderIndex(); return; }
+    if(h === 'Timeline') { renderTimeline(); return; }
     
-    // STATE: Collapse Header for Home, Filter, OR Index
-    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
-    
-    // Main Nav Highlights
     const parts = h.split('/');
     const top = parts[0];
-    const sub = parts[1];
+    const sub = parts.length > 1 ? parts[0] + '/' + parts[1] : null;
+    const tert = parts.length > 2 ? parts[0] + '/' + parts[1] + '/' + parts[2] : null;
+
+    // STATE: Collapse Header for Home, Filter, Index, Timeline
+    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index' || h === 'Timeline');
+    document.body.classList.toggle('header-expanded', !shouldCollapse);
+    document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+    // 1. Primary
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
+        const href = a.getAttribute('href'); 
+        a.classList.toggle('active', href && href.replace('#', '') === top); 
+    }); 
     
-    buildSubNav(top); 
-    if(sub) buildTertiaryNav(top, sub);
-    else {
-        document.getElementById('tertiary-nav').innerHTML = '';
-        document.body.classList.remove('has-tert-nav');
-    }
+    // 2. Sub
+    buildSubNav(top);
+    
+    // 3. Tertiary
+    if(sub) buildTertiaryNav(sub);
+    else document.getElementById('tertiary-nav').innerHTML = '';
+
+    setTimeout(updateHeaderHeight, 100);
     
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
@@ -294,11 +315,12 @@ function childrenPagesCheck(p) {
 }
 
 function renderIndex() {
-    // 1. Reset UI State
-    buildSubNav('Index'); 
-    document.getElementById('tertiary-nav').innerHTML = '';
-    document.body.classList.remove('has-tert-nav');
+    document.body.classList.remove('header-expanded');
+    document.getElementById('main-header').classList.remove('expanded');
+    document.getElementById('sub-nav').innerHTML = ''; 
+    document.getElementById('tertiary-nav').innerHTML = ''; 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+    setTimeout(updateHeaderHeight, 100);
 
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
@@ -314,7 +336,10 @@ function renderIndex() {
         groups[cat].push(p);
     });
     
-    for(const [cat, items] of Object.entries(groups)) {
+    const sortedCats = Object.keys(groups).sort();
+
+    sortedCats.forEach(cat => {
+        const items = groups[cat];
         let catClass = '';
         const cLower = cat.toLowerCase();
         if(cLower === 'projects') catClass = 'cat-projects';
@@ -322,23 +347,99 @@ function renderIndex() {
         else if(cLower === 'personal') catClass = 'cat-personal';
 
         let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
-        
-        // Items are already sorted because 'pages' was sorted
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
-            const parts = p.split('/');
-            const title = row ? row.Title : parts.pop();
+            const title = row ? row.Title : p.split('/').pop();
+            // INDENTATION CHECK
+            const depth = p.split('/').length;
+            const indentClass = depth >= 3 ? 'indent-3' : '';
             
-            // Hierarchy Check
-            const isTertiary = parts.length > 2;
-            const extraClass = isTertiary ? 'tertiary' : '';
-
-            html += `<a href="#${p}" class="index-link fill-anim ${extraClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
+            html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
         });
         html += `</div>`;
         list.innerHTML += html;
-    }
+    });
+}
+
+function renderTimeline() {
+    // Reset Header State
+    document.body.classList.remove('header-expanded');
+    document.getElementById('main-header').classList.remove('expanded');
+    document.getElementById('sub-nav').innerHTML = '';
+    document.getElementById('tertiary-nav').innerHTML = '';
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+    setTimeout(updateHeaderHeight, 100);
+
+    const app = document.getElementById('app');
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section" id="timeline-container"></div>';
+
+    const container = document.getElementById('timeline-container');
+    
+    // Group by YYYY-MM
+    const groups = {};
+    db.filter(r => r.Timestamp && r.Page !== 'Footer').forEach(r => {
+        const d = new Date(r.Timestamp);
+        if(isNaN(d.getTime())) return;
+        const key = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2, '0')}`;
+        if(!groups[key]) groups[key] = [];
+        groups[key].push(r);
+    });
+
+    // Sort Keys Descending (Newest First)
+    const sortedKeys = Object.keys(groups).sort().reverse();
+
+    sortedKeys.forEach(key => {
+        const [year, monthNum] = key.split('-');
+        const dateObj = new Date(year, parseInt(monthNum)-1);
+        const monthName = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
+        
+        // Sort Cards Alphabetically within group
+        const items = groups[key].sort((a, b) => a.Title.localeCompare(b.Title));
+
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'timeline-group';
+        
+        let cardsHtml = '';
+        // We reuse logic from renderRows but manually construct simple cards to fit timeline
+        items.forEach(r => {
+             // Mini Card Logic
+             let link = r.LinkURL || `#${r.Page}`;
+             let target = link.startsWith('#') ? '' : '_blank';
+             let mediaHtml = '';
+             
+             // Media Thumb
+             if (r.Media) {
+                const thumb = getThumbnail(r.Media);
+                if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+             } else {
+                mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+             }
+
+             // Cat Class
+             let catClass = '';
+             if(r.Page.toLowerCase().startsWith('projects')) catClass = 'cat-projects';
+             else if(r.Page.toLowerCase().startsWith('professional')) catClass = 'cat-professional';
+             else if(r.Page.toLowerCase().startsWith('personal')) catClass = 'cat-personal';
+
+             cardsHtml += `
+             <div class="layout-grid clickable-block ${catClass}" data-link="${link}" data-target="${target}" style="height:100%">
+                 ${mediaHtml}
+                 <h3 class="fill-anim" style="font-size:16px;">${safeHTML(r.Title)}</h3>
+             </div>`;
+        });
+
+        groupDiv.innerHTML = `
+            <div class="timeline-date">
+                <span class="month">${monthName}</span>
+                <span class="year">${year}</span>
+            </div>
+            <div class="timeline-cards-container">
+                ${cardsHtml}
+            </div>
+        `;
+        container.appendChild(groupDiv);
+    });
 }
 
 function renderHome() { 
@@ -346,21 +447,25 @@ function renderHome() {
     const app = document.getElementById('app'); app.innerHTML = ''; 
     renderRows(hr, null, true); 
     
-    const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
+    // FEATURED SECTION
+    const featured = db.filter(r => r.Tags && r.Tags.toLowerCase().includes('featured'));
+    if(featured.length > 0) {
+        renderRows(featured, "Featured Projects", true);
+    }
+
+    const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && (!r.Tags || !r.Tags.toLowerCase().includes('featured')))
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
-                      .slice(6);
+                      .slice(0, 6);
     if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     const app = document.getElementById('app'); if(!app) return; 
     
-    rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
-
     if(!append) {
         app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
     } else if(title) {
-        app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
+        app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; margin-top:30px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
     }
 
     if(rows.length === 0 && !append) { 
@@ -368,12 +473,15 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         return; 
     }
     
-    let gc = app.querySelector('.grid-container');
-    if(append) {
+    let gc = app.querySelector('.grid-container:last-of-type');
+    // If we are appending a NEW titled section, force a new grid
+    if(append && title) gc = null;
+
+    if(append && !gc) {
         gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
-    } else {
+    } else if (!gc) {
         const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
-        if(hasGridItems && !gc) {
+        if(hasGridItems) {
             gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
         }
     }
@@ -486,7 +594,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
-    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
@@ -525,6 +632,7 @@ function renderFooter() {
     }); 
     
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
+    fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="closeSearch()">Timeline</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
@@ -533,7 +641,6 @@ function fetchGitHubStats() {
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
             const date = new Date(d.pushed_at);
-            // RELATIVE TIME LOGIC
             const timeAgo = (d) => {
                 const s = Math.floor((new Date() - d) / 1000);
                 let i = s / 31536000;
@@ -560,13 +667,11 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // 1. UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
 
-    // 2. INLINE IMAGE GALLERIES: [https://url1, https://url2]
     clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
@@ -575,16 +680,13 @@ function processText(t) {
         return `<div class="inline-gallery">${imgs}</div>`;
     });
 
-    // 3. WIKI LINKS: [[Page Name]]
     clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
 
-    // 4. EMBED SHORTCODES
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
     clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
 
-    // 5. GENERAL LINK STYLING
     clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
 
     return clean; 
@@ -606,10 +708,8 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
-// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-    
     if(containers.length === 0) return;
 
     Promise.all([
@@ -619,7 +719,6 @@ function init3DViewers() {
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
         
-        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
@@ -636,7 +735,6 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
-                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -657,20 +755,12 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     scene.background = null; 
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
-    
-    // RENDERER SETUP
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     
-    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    
-    // FIX: Updated Color Space Management (Three.js r152+)
-    // Old: renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
-    
-    // Lighting Setup
-    renderer.physicallyCorrectLights = true; // Note: In r160+ this becomes renderer.useLegacyLights = false;
+    renderer.physicallyCorrectLights = true; 
     
     container.appendChild(renderer.domElement);
 
@@ -708,7 +798,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); // Fade in canvas
+        container.classList.add('ready'); 
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
@@ -738,12 +828,9 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
-        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
-            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
-            
             controls.update();
             renderer.render(scene, camera);
         }
