@@ -38,20 +38,14 @@
             --accent-prof: #00ffff;
             --accent-projects: #ff9933;
             
-            /* --- HEADER ROW METRICS (Explicit Heights for Consistency) --- */
-            /* UPDATED: Increased Brand height to spacing for Search Icon on mobile */
+            /* --- HEADER ROW METRICS --- */
             --brand-row-h: 40px; 
             --main-row-h: 30px;
-            --header-row-h: 28px; /* Sub & Tertiary slightly smaller but visually consistent */
+            --header-row-h: 28px; 
 
             /* Calculated Total Heights */
-            /* State A: Brand + Main */
             --header-h-default: calc(var(--brand-row-h) + var(--main-row-h)); 
-            
-            /* State C: Main Only */
             --header-h-scrolled: var(--main-row-h);
-
-            /* Expanded States (Base + Sub) */
             --header-h-expanded: calc(var(--header-h-default) + var(--header-row-h));
             
             --ease: cubic-bezier(0.25, 1, 0.5, 1);
@@ -67,7 +61,6 @@
 
         body {
             background-color: var(--bg); color: var(--text-main); font-family: 'Jost', sans-serif; line-height: 1.5;
-            /* DYNAMIC PADDING: Controlled by JS to prevent jitter, fallback here */
             padding-top: var(--header-h-default); 
             transition: padding-top 0.4s var(--ease);
             display: flex; flex-direction: column; min-height: 100vh;
@@ -76,7 +69,7 @@
 
         p, h1, h2, h3, a { overflow-wrap: break-word; word-wrap: break-word; }
 
-        /* BODY PADDING STATES (Push content down based on header size) */
+        /* BODY PADDING STATES */
         body.header-expanded { padding-top: var(--header-h-expanded); }
         
         body.tertiary-active { padding-top: calc(var(--header-h-default) + var(--header-row-h)); }
@@ -105,36 +98,44 @@
         #main-header {
             position: fixed; top: 0; left: 0; width: 100%; background: rgba(5,5,5,0.95); 
             backdrop-filter: blur(12px); z-index: 1000; 
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-            padding-top: 0px; /* Zero top padding for tight alignment */
+            display: flex; flex-direction: column; align-items: center; 
+            /* FIXED: Use flex-start generally to prevent gap stretching, but center content in scrolled mode */
+            justify-content: flex-start; 
+            padding-top: 0px; 
             height: var(--header-h-default); 
             transition: height 0.4s var(--ease), padding 0.4s var(--ease); 
             overflow: hidden; border-bottom: 1px solid #1a1a1a; 
             gap: 0px; 
         }
 
-        /* --- STATE C: SCROLLED (Collapse Brand) --- */
+        /* --- STATE C: SCROLLED --- */
         #main-header.scrolled { 
             height: var(--header-h-scrolled); 
             padding-top: 0; 
+            /* FIXED: Vertically center the Main Nav when collapsed to fix uneven top/bottom padding */
+            justify-content: center; 
         }
         
-        /* EXPANDED + SCROLLED LOGIC (Main + Sub) */
-        #main-header.scrolled.expanded { height: calc(var(--header-h-scrolled) + var(--header-row-h)); }
+        #main-header.scrolled.expanded { 
+            height: calc(var(--header-h-scrolled) + var(--header-row-h)); 
+            justify-content: flex-start; /* Reset to stack when expanded */
+        }
         
-        /* TERTIARY + SCROLLED LOGIC (Main + Sub + Tertiary) */
         #main-header.tertiary-active { height: calc(var(--header-h-default) + var(--header-row-h)); }
-        #main-header.scrolled.tertiary-active { height: calc(var(--header-h-scrolled) + var(--header-row-h)); }
         
-        /* FULL COMBO (Main + Sub + Tertiary) Scrolled */
+        #main-header.scrolled.tertiary-active { 
+            height: calc(var(--header-h-scrolled) + var(--header-row-h)); 
+            justify-content: flex-start; 
+        }
+        
         #main-header.scrolled.expanded.tertiary-active { height: calc(var(--header-h-scrolled) + var(--header-row-h) + var(--header-row-h)); }
 
         /* --- BRAND ROW --- */
         #brand-name {
             font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
             margin-bottom: 0px; 
-            padding: 2px 0; /* Tight padding */
-            height: var(--brand-row-h); /* Explicit Height */
+            padding: 2px 0; 
+            height: var(--brand-row-h); 
             display: flex; align-items: center; justify-content: center;
             transition: all 0.4s var(--ease); user-select: none;
             --text-base: #666; --text-hover: #fff; z-index: 1003; 
@@ -142,25 +143,19 @@
             transform-origin: top;
         }
         
-        /* COLLAPSE BRAND ON SCROLL */
         #main-header.scrolled #brand-name { 
-            height: 0; 
-            opacity: 0; 
-            margin: 0; 
-            padding: 0;
-            pointer-events: none;
+            height: 0; opacity: 0; margin: 0; padding: 0; pointer-events: none;
         }
 
         /* --- MAIN NAV --- */
         #primary-nav { 
             display: flex; gap: 30px; 
             margin-bottom: 0px; 
-            padding: 1px 0; /* Tight padding */
+            padding: 1px 0; 
             height: var(--main-row-h);
             transition: all 0.4s var(--ease); 
             line-height: 1;
-            align-items: center; /* Center vertically in its row */
-            justify-content: center;
+            align-items: center; justify-content: center;
         }
 
         .nav-link {
@@ -176,17 +171,17 @@
         .nav-link[href="#Personal"] { --text-hover: var(--accent-personal); }
         .nav-link[href="#Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
-        /* --- SUB-NAV (Secondary) --- */
+        /* --- SUB-NAV --- */
         #sub-nav { 
             display: flex; gap: 25px; 
-            font-size: 14px; /* INCREASED slightly for readability */
-            transition: opacity 0.4s var(--ease); opacity: 1;
+            font-size: 14px; 
+            /* FIXED: Smooth transition for height prevents "squeezing" */
+            transition: opacity 0.4s var(--ease), height 0.4s var(--ease); opacity: 1;
             overflow-x: auto; white-space: nowrap; 
             width: 100%; max-width: 900px;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; align-items: center;
             
-            padding: 1px 0; /* Consistent tight padding */
+            padding: 1px 0; 
             scrollbar-width: none;
             height: var(--header-row-h); 
             
@@ -200,17 +195,16 @@
 
         body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
 
-        /* --- TERTIARY NAV (Tertiary) --- */
+        /* --- TERTIARY NAV --- */
         #tertiary-nav { 
             display: flex; gap: 25px; 
-            font-size: 14px; /* INCREASED slightly for readability */
+            font-size: 14px; 
             transition: opacity 0.4s var(--ease), height 0.4s var(--ease); opacity: 1;
             overflow-x: auto; white-space: nowrap; 
             width: 100%; max-width: 900px;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; align-items: center;
             
-            padding: 1px 0; /* Consistent tight padding */
+            padding: 1px 0; 
             scrollbar-width: none;
             height: var(--header-row-h); 
             
@@ -231,61 +225,58 @@
             #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; }
         }
 
-        /* --- SEARCH (UPDATED to Bubble) --- */
+        /* --- SEARCH BUBBLE LOGIC --- */
         #search-controls { 
             position: absolute; right: 20px; 
-            top: 5px; /* Re-aligned slightly for visual balance */
+            top: 5px; 
             display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; z-index: 1002; transition: top 0.4s var(--ease), opacity 0.2s; 
         }
         
-        /* HIDE SEARCH ICON ON SCROLL */
-        #main-header.scrolled #search-controls { 
-            opacity: 0; 
-            pointer-events: none;
-        }
+        #main-header.scrolled #search-controls { opacity: 0; pointer-events: none; }
 
         .icon-btn { position: absolute; width: 24px; height: 24px; cursor: pointer; fill: #666; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: center; }
         .icon-btn:hover { fill: #fff; }
 
         .search-icon { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
-        .close-icon  { opacity: 0; transform: rotate(-90deg) scale(0.5); pointer-events: none; }
+        /* Removed Close Icon styles as requested */
+        .close-icon  { opacity: 0; display: none; } 
 
-        #main-header.search-mode .search-icon { opacity: 0; transform: rotate(90deg) scale(0.5); pointer-events: none; }
-        #main-header.search-mode .close-icon  { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; fill: #fff !important; }
-
-        /* MODERN FLOATING SEARCH BUBBLE */
+        /* FLOATING SEARCH BUBBLE */
         #search-overlay { 
-            position: fixed; 
-            top: 20px; left: 50%; 
-            width: 90%; max-width: 500px; height: 50px; 
-            transform: translateX(-50%) scale(0.95); 
+            position: absolute; /* Relative to Header */
+            top: 50%; left: 50%; /* Center Start */
+            width: 320px; max-width: 80%; height: 44px; 
+            /* TRANSFORM ORIGIN: Expands from top right (icon position) */
+            transform-origin: calc(100% - 35px) 50%;
+            transform: translate(-50%, -50%) scale(0); /* Hidden State */
+            
             display: flex; align-items: center; justify-content: center; 
-            background-color: rgba(30,30,30,0.95); 
-            backdrop-filter: blur(12px); 
+            background-color: rgba(20,20,20,0.98); 
+            backdrop-filter: blur(16px); 
             z-index: 1001; 
-            border-radius: 25px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
+            border-radius: 22px; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6); 
             border: 1px solid #333;
             overflow: hidden; 
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Bouncy expand */
             opacity: 0; visibility: hidden; pointer-events: none;
         }
         
         #search-overlay.active { 
             opacity: 1; visibility: visible; pointer-events: auto; 
-            transform: translateX(-50%) scale(1); 
-            top: 100px; /* Positions nicely below header */
+            /* Transform into center view */
+            transform: translate(-50%, -50%) scale(1); 
         }
 
         #search-input { 
             width: 100%; height: 100%; 
             background: transparent; border: none; 
-            color: #fff; font-size: 18px; font-family: 'Jost', sans-serif; 
-            padding: 0 25px; outline: none; text-align: left; 
+            color: #fff; font-size: 16px; font-family: 'Jost', sans-serif; 
+            padding: 0 20px; outline: none; text-align: center; /* Center Text */
         }
         
-        #main-header.search-mode > *:not(#search-controls) { opacity: 0.3; transition: opacity 0.2s; }
-        #main-header.search-mode > #search-controls { opacity: 1; }
+        #main-header.search-mode > *:not(#search-overlay):not(#search-controls) { opacity: 0.2; transition: opacity 0.2s; filter: blur(2px); }
+        #main-header.search-mode #search-controls { opacity: 0; pointer-events: none; } /* Hide icon when open */
 
         /* --- CONTENT --- */
         .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 10px 20px 0; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; }
@@ -762,7 +753,7 @@
         }
 
         function handleSearch(q) { 
-            if(!q) { isSearchActive = false; handleRouting(); return; } // FIXED LINE
+            if(!q) { isSearchActive = false; handleRouting(); closeSearch(); return; } // FIXED LINE
             isSearchActive = true; 
             document.body.classList.remove('header-expanded');
             document.getElementById('main-header').classList.remove('expanded');
