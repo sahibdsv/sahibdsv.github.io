@@ -39,7 +39,7 @@
             --accent-projects: #ff9933;
             
             /* --- HEADER ROW METRICS --- */
-            --brand-row-h: 40px; 
+            --brand-row-h: 50px; /* Increased to accommodate larger font */
             --main-row-h: 30px;
             --header-row-h: 28px; 
 
@@ -105,7 +105,7 @@
             height: var(--header-h-default); 
             transition: height 0.4s var(--ease), padding 0.4s var(--ease); 
             overflow: hidden; border-bottom: 1px solid #1a1a1a; 
-            gap: 0px; 
+            gap: 0px; /* Force tight stacking */
         }
 
         /* --- STATE C: SCROLLED --- */
@@ -132,9 +132,9 @@
 
         /* --- BRAND ROW --- */
         #brand-name {
-            font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
+            font-size: 28px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
             margin-bottom: 0px; 
-            padding: 2px 0; 
+            padding: 0px; 
             height: var(--brand-row-h); 
             display: flex; align-items: center; justify-content: center;
             transition: all 0.4s var(--ease); user-select: none;
@@ -144,18 +144,19 @@
         }
         
         #main-header.scrolled #brand-name { 
-            height: 0; opacity: 0; margin: 0; padding: 0; pointer-events: none;
+            height: 0; opacity: 0; margin: 0; padding: 0; pointer-events: none; overflow: hidden;
         }
 
         /* --- MAIN NAV --- */
         #primary-nav { 
             display: flex; gap: 30px; 
             margin-bottom: 0px; 
-            padding: 1px 0; 
+            padding: 0; 
             height: var(--main-row-h);
             transition: all 0.4s var(--ease); 
             line-height: 1;
             align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
 
         .nav-link {
@@ -228,7 +229,7 @@
         /* --- SEARCH BUBBLE LOGIC --- */
         #search-controls { 
             position: absolute; right: 20px; 
-            top: 5px; 
+            top: 13px; /* Centered visually relative to 50px header row */
             display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; z-index: 1002; transition: top 0.4s var(--ease), opacity 0.2s; 
         }
         
@@ -673,7 +674,7 @@
                 h.classList.toggle('shrink', isScrolled); 
                 
                 // Wait slightly for header to animate then update padding
-                setTimeout(updatePadding, 100); 
+                // setTimeout(updatePadding, 100); 
             });
             
             window.addEventListener('resize', updatePadding);
