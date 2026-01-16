@@ -157,7 +157,8 @@ body:not(.header-expanded) #header-row-3 { height: 0; }
 #main-header.search-mode > *:not(#header-row-1) { opacity: 0.3; pointer-events: none; transition: opacity 0.2s; }
 
 /* --- CONTENT --- */
-.content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 10px 20px 0; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; }
+/* Reduced padding-top to 0 to pull content up to header */
+.content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 0 20px 0; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; }
 .section { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.4s forwards; position: relative; } 
 @keyframes fadeIn { to { opacity: 1; } }
 .skeleton-visible { opacity: 1 !important; animation: none !important; }
