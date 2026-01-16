@@ -13,14 +13,22 @@
     --accent-prof: #00ffff;
     --accent-projects: #ff9933;
     
-    /* Calculated Header Heights (Includes 4th Row) */
-    /* 4(pad)+30(r1)+4(gap)+30(r2)+4(gap)+25(r3)+4(gap)+25(r4)+2(pad) = 128px */
-    --header-h-default: 128px; 
-    /* Collapsed: 128 - 30(r1) - 4(gap) = 94px */
-    --header-h-shrink: 94px; 
+    /* DEFAULT HEADER HEIGHT (Fallback) - 4 Rows */
+    /* 4(pad) + 30(R1) + 2(gap) + 30(R2) + 2(gap) + 25(R3) + 2(gap) + 25(R4) + 2(pad) = 122px */
+    --header-h-default: 122px; 
     
     --ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
+
+/* DYNAMIC HEADER HEIGHTS via Body Classes */
+/* 2 Rows (Homepage): 4 + 30 + 2 + 30 + 2 = 68px */
+body.rows-2 { --header-h-default: 68px; }
+
+/* 3 Rows: 4 + 30 + 2 + 30 + 2 + 25 + 2 = 95px */
+body.rows-3 { --header-h-default: 95px; }
+
+/* 4 Rows: 122px */
+body.rows-4 { --header-h-default: 122px; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -68,12 +76,19 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     padding-top: 4px; padding-bottom: 2px;
     border-bottom: 1px solid #1a1a1a;
     transition: all 0.4s var(--ease);
+    /* Ensure height matches the body padding variable initially */
+    height: var(--header-h-default);
+}
+
+/* SHRUNK STATE: Subtract Row 1 (30px) + Gap (2px) = 32px */
+#main-header.shrink {
+    height: calc(var(--header-h-default) - 32px);
 }
 
 /* ROW 1: BRAND + SEARCH */
 #header-row-1 {
     width: 100%; position: relative; display: flex; justify-content: center; align-items: center;
-    height: 30px; margin-bottom: 4px; opacity: 1; overflow: hidden;
+    height: 30px; margin-bottom: 2px; opacity: 1; overflow: hidden;
     transition: height 0.4s var(--ease), margin 0.4s var(--ease), opacity 0.4s var(--ease);
 }
 
@@ -87,7 +102,7 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 /* ROW 2: MAIN NAV */
 #header-row-2 {
     width: 100%; display: flex; justify-content: center; align-items: center;
-    height: 30px; margin-bottom: 4px; 
+    height: 30px; margin-bottom: 2px; 
 }
 
 #primary-nav { display: flex; gap: 30px; transition: all 0.4s var(--ease); }
@@ -104,32 +119,36 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 .nav-link[href="#Personal"] { --text-hover: var(--accent-personal); }
 .nav-link[href="#Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
-/* ROW 3: SUB NAV */
+/* ROW 3: SECONDARY NAV (Previously Sub) */
 #header-row-3 {
     width: 100%; height: 25px; display: flex; justify-content: center; align-items: center;
-    margin-bottom: 4px; /* Added gap for row 4 */
+    margin-bottom: 2px;
 }
 
-#sub-nav { 
-    display: flex; gap: 25px; font-size: 13px; transition: opacity 0.4s var(--ease); 
+#secondary-nav { 
+    display: flex; gap: 25px; 
+    font-size: 14px; /* Increased */
+    transition: opacity 0.4s var(--ease); 
     opacity: 1; overflow-x: auto; white-space: nowrap; width: 100%; max-width: 900px;
     justify-content: center; padding-bottom: 2px; scrollbar-width: none; height: 100%; 
     mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
 }
 
-#sub-nav > * { flex-shrink: 0; }
+#secondary-nav > * { flex-shrink: 0; }
 
-body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; opacity: 0; pointer-events: none; }
+body:not(.header-expanded) #secondary-nav { height: 0; padding-bottom: 0; opacity: 0; pointer-events: none; }
 body:not(.header-expanded) #header-row-3 { height: 0; margin-bottom: 0; }
 
-/* ROW 4: TERTIARY NAV (NEW) */
+/* ROW 4: TERTIARY NAV */
 #header-row-4 {
     width: 100%; height: 25px; display: flex; justify-content: center; align-items: center;
 }
 
 #tertiary-nav { 
-    display: flex; gap: 25px; font-size: 12px; transition: opacity 0.4s var(--ease); 
+    display: flex; gap: 25px; 
+    font-size: 13px; /* Increased */
+    transition: opacity 0.4s var(--ease); 
     opacity: 1; overflow-x: auto; white-space: nowrap; width: 100%; max-width: 900px;
     justify-content: center; padding-bottom: 2px; scrollbar-width: none; height: 100%; 
     mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
@@ -142,13 +161,13 @@ body:not(.header-expanded) #tertiary-nav { height: 0; padding-bottom: 0; opacity
 body:not(.header-expanded) #header-row-4 { height: 0; }
 
 @media (max-width: 900px) {
-    #sub-nav, #tertiary-nav { justify-content: flex-start; }
-    #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { 
+    #secondary-nav, #tertiary-nav { justify-content: flex-start; }
+    #secondary-nav::before, #secondary-nav::after, #tertiary-nav::before, #tertiary-nav::after { 
         content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; 
     }
 }
 
-/* SEARCH - OPAQUE FIX */
+/* SEARCH */
 #search-controls { 
     position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
     display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; z-index: 1002; 
@@ -345,9 +364,6 @@ iframe { max-width: 100%; }
     
     /* Enable Momentum Scrolling on iOS */
     -webkit-overflow-scrolling: touch;
-    
-    /* KEY FIX: Remove smooth scroll to allow native bounce & overscroll glow */
-    /* scroll-behavior: smooth; */
     
     /* Allow native overscroll actions (bounce/glow) locally */
     overscroll-behavior-x: contain; 

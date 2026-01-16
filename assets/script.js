@@ -75,7 +75,6 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
-    // GOATCOUNTER TRACKING
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -172,30 +171,36 @@ function buildNav() {
     p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
 }
 
-function buildSubNav(top) {
-    const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
+function buildSecondaryNav(top) {
+    const n = document.getElementById('secondary-nav'), b = document.body; if(!n) return false; 
+    n.innerHTML = ''; 
+    // Note: Do not rely on attribute for style logic anymore, use classes.
+    b.setAttribute('data-page', top); 
     
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
     
+    if (subs.length === 0) return false;
+
     subs.forEach(x => { 
         const name = x.split('/')[1];
         const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    setTimeout(() => centerSubNav(document.getElementById('sub-nav'), true), 100);
+    return true;
 }
 
 function buildTertiaryNav(top, sub) {
     const n = document.getElementById('tertiary-nav'); 
-    if(!n) return; 
+    if(!n) return false; 
     n.innerHTML = ''; 
 
-    // If no Sub, we certainly don't have Tertiary
-    if (!sub) return;
+    if (!sub) return false;
 
     const prefix = `${top}/${sub}/`;
     const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix)).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
+
+    if (terts.length === 0) return false;
 
     terts.forEach(x => {
         const name = x.split('/')[2];
@@ -203,8 +208,7 @@ function buildTertiaryNav(top, sub) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
     });
 
-    // Smart Centering for Tertiary
-    setTimeout(() => centerSubNav(n, false), 100);
+    return true;
 }
 
 function centerSubNav(el, forceMiddleIfNone) {
@@ -220,6 +224,13 @@ function centerSubNav(el, forceMiddleIfNone) {
     }
 }
 
+function applyBodyPaddingClass(rows) {
+    document.body.classList.remove('rows-2', 'rows-3', 'rows-4');
+    if (rows === 2) document.body.classList.add('rows-2');
+    else if (rows === 3) document.body.classList.add('rows-3');
+    else document.body.classList.add('rows-4');
+}
+
 function handleRouting() { 
     if(isSearchActive) return; 
     window.scrollTo(0, 0); 
@@ -232,22 +243,40 @@ function handleRouting() {
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
-    // Breakdown Hash for Navigation Levels
     const parts = h.split('/');
     const top = parts[0]; 
     const sub = parts.length > 1 ? parts[1] : null;
 
-    // Level 1: Primary Nav Active State
+    // Active State L1
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
         const href = a.getAttribute('href'); 
         if(href) a.classList.toggle('active', href.replace('#', '') === top); 
     }); 
     
-    // Level 2: Build Sub Nav
-    buildSubNav(top); 
-    
-    // Level 3: Build Tertiary Nav
-    buildTertiaryNav(top, sub);
+    // Build Navs & Determine Existence
+    const hasSec = buildSecondaryNav(top); 
+    const hasTert = buildTertiaryNav(top, sub);
+
+    // Dynamic Padding & Rows Logic
+    let rowCount = 2; // Default (Brand + Main)
+    if (hasSec) rowCount = 3;
+    if (hasTert) rowCount = 4;
+    applyBodyPaddingClass(rowCount);
+
+    // Scroll Logic: Only the "lowest" active row gets the preview scroll (forceMiddleIfNone=true)
+    setTimeout(() => {
+        const secEl = document.getElementById('secondary-nav');
+        const tertEl = document.getElementById('tertiary-nav');
+        
+        if (hasTert) {
+            // Tert is last -> Center Tert (Preview), Center Sec (Active/Standard)
+            centerSubNav(tertEl, true);
+            centerSubNav(secEl, false);
+        } else if (hasSec) {
+            // Sec is last -> Center Sec (Preview)
+            centerSubNav(secEl, true);
+        }
+    }, 100);
 
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
@@ -292,9 +321,10 @@ function childrenPagesCheck(p) {
 function renderIndex() {
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
-    // Clear sub-navs
-    buildSubNav('Index'); 
+    
+    buildSecondaryNav('Index'); 
     buildTertiaryNav('Index', null);
+    applyBodyPaddingClass(3); // Index effectively uses 3 rows (Secondary is category headers)
 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
@@ -337,8 +367,11 @@ function renderIndex() {
 function renderTimeline() {
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
-    buildSubNav('Timeline');
+    
+    buildSecondaryNav('Timeline');
     buildTertiaryNav('Timeline', null);
+    applyBodyPaddingClass(2); // Timeline usually 2 rows (no sub-nav items)
+
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
     const app = document.getElementById('app');
@@ -386,16 +419,6 @@ function renderTimeline() {
         });
         init3DViewers();
     }, 100);
-}
-
-function checkFade(el) {
-    const wrapper = el.parentElement;
-    const tolerance = 5;
-    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - tolerance) {
-        wrapper.classList.remove('fade-active');
-    } else {
-        wrapper.classList.add('fade-active');
-    }
 }
 
 function renderHome() { 
