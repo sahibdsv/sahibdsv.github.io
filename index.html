@@ -38,9 +38,9 @@
             --accent-prof: #00ffff;
             --accent-projects: #ff9933;
             
-            /* DYNAMIC HEADER VARS */
+            /* METRICS */
             --brand-row-h: 36px; 
-            --nav-row-h: 26px; /* Uniform height for all nav levels */
+            --nav-row-h: 26px; /* Standard height for all nav rows */
             --gap: 1px;
             
             --card-radius: 18px;
@@ -52,20 +52,45 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+        html { 
+            scroll-behavior: smooth; 
+            overflow-x: hidden; 
+            width: 100%;
+        }
 
         body {
             background-color: var(--bg); color: var(--text-main); font-family: 'Jost', sans-serif; line-height: 1.5;
-            padding-top: 100px; /* Initial fallback, JS will correct this instantly */
+            /* Padding is set dynamically via JS to prevent overlap */
+            padding-top: 80px; 
+            transition: padding-top 0.3s var(--ease);
             display: flex; flex-direction: column; min-height: 100vh;
             width: 100%; position: relative; overflow-x: hidden; 
         }
         
-        body.search-active { padding-top: 140px !important; } /* Force clearance for search */
+        body.search-active {
+            padding-top: 140px !important;
+        }
 
         p, h1, h2, h3, a { overflow-wrap: break-word; word-wrap: break-word; }
+
         .no-transition * { transition: none !important; }
         .sk-line, .sk-img, .sk-box { animation-play-state: running !important; }
+
+        /* --- GLOBAL ANIMATION --- */
+        .fill-anim {
+            background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #888) 50.5%);
+            background-size: 100% 205%;
+            background-position: 0 0; 
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            transition: background-position 0.5s var(--ease);
+            text-decoration: none; display: inline-block; color: var(--text-base, #888); 
+        }
+
+        .fill-anim:hover, .clickable-block:hover .fill-anim, .fill-anim.active {
+            background-position: 0 100%; color: var(--text-hover, #fff);
+        }
+
+        h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 
         /* --- HEADER CONTAINER --- */
         #main-header {
@@ -74,195 +99,310 @@
             backdrop-filter: blur(12px); 
             z-index: 1000; 
             display: flex; flex-direction: column; 
-            justify-content: flex-start; align-items: center; 
-            gap: 0; /* JS handles gaps via padding */
+            justify-content: flex-start; 
+            align-items: center; 
+            gap: var(--gap); 
             border-bottom: 1px solid #1a1a1a; 
-            transition: all 0.3s var(--ease);
+            overflow: hidden; 
+            transition: transform 0.4s var(--ease);
+            /* Height is dynamic based on content */
         }
 
-        body.search-active #main-header { transform: translateY(-100%); }
+        body.search-active #main-header {
+            transform: translateY(-100%) !important; 
+        }
 
-        /* --- ROWS --- */
+        /* --- BRAND ROW --- */
         #brand-name {
             width: 100%; height: var(--brand-row-h); flex-shrink: 0; 
             display: flex; align-items: center; justify-content: center;
             font-size: 30px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; 
             line-height: 1; cursor: pointer; user-select: none;
             --text-base: #666; --text-hover: #fff; 
-            transition: height 0.4s var(--ease), opacity 0.3s var(--ease), margin 0.4s var(--ease);
+            transition: opacity 0.3s var(--ease);
             background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #666) 50.5%);
-            background-size: 100% 205%; background-position: 0 0;
+            background-size: 100% 205%;
+            background-position: 0 0;
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-            overflow: hidden; opacity: 1;
         }
         #brand-name:hover { background-position: 0 100%; }
 
-        /* Generic Nav Row Class (Replaces #primary-nav, #sub-nav etc) */
+        /* --- RECURSIVE NAV ROWS --- */
+        #nav-container {
+            width: 100%; display: flex; flex-direction: column; gap: var(--gap);
+        }
+
         .nav-row {
             width: 100%; height: var(--nav-row-h); flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; gap: 20px; 
-            margin: 0; padding: 0; 
-            transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
-            overflow: hidden; opacity: 1; border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: center; gap: 20px;
+            margin: 0; padding: 0;
+            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+            transition: opacity 0.3s;
         }
         
-        /* Only apply scroll mask to levels deeper than 0 */
-        .nav-row:not(.level-0) {
-            max-width: 900px;
-            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-            justify-content: center; /* Centered by default */
+        /* Level 0 (Primary) Styling */
+        .nav-row[data-level="0"] { gap: 30px; }
+        .nav-row[data-level="0"] .nav-link { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+        
+        /* Level 1+ (Children) Styling */
+        .nav-row[data-level]:not([data-level="0"]) {
+            font-size: 13px; font-weight: 700; letter-spacing: 1px;
             mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
         }
-        /* Mobile: Left align scrollable rows */
-        @media (max-width: 768px) {
-            .nav-row:not(.level-0) { justify-content: flex-start; }
-            .nav-row:not(.level-0)::before, .nav-row:not(.level-0)::after { content: ''; display: block; width: 20px; flex-shrink: 0; }
+        
+        /* Scroll Spacers for Children */
+        .nav-row[data-level]:not([data-level="0"])::before,
+        .nav-row[data-level]:not([data-level="0"])::after {
+            content: ''; display: none; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0;
         }
 
-        /* Nav Links */
         .nav-link {
-            font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-            line-height: 1; user-select: none; --text-base: #666; --text-hover: #fff;
-            text-decoration: none; color: #666; transition: color 0.2s;
+            text-transform: uppercase; line-height: 1; user-select: none; --text-base: #666; --text-hover: #fff;
+            flex-shrink: 0;
         }
-        /* Primary Level gets bigger font */
-        .nav-row.level-0 .nav-link { font-size: 15px; }
 
-        .fill-anim {
-            background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #888) 50.5%);
-            background-size: 100% 205%; background-position: 0 0; 
-            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-            transition: background-position 0.5s var(--ease);
-        }
-        .fill-anim:hover, .clickable-block:hover .fill-anim, .nav-link.active { background-position: 0 100%; color: var(--text-hover, #fff); }
-
-        /* Dynamic coloring based on link text */
+        /* Color Accents based on Href */
         .nav-link[href*="Projects"] { --text-hover: var(--accent-projects); }
-        .nav-link[href*="Projects"].active { --text-base: var(--accent-projects); }
+        .nav-link[href*="Projects"].active { --text-base: var(--accent-projects); --text-hover: var(--accent-projects); }
         .nav-link[href*="Professional"] { --text-hover: var(--accent-prof); }
-        .nav-link[href*="Professional"].active { --text-base: var(--accent-prof); }
+        .nav-link[href*="Professional"].active { --text-base: var(--accent-prof); --text-hover: var(--accent-prof); }
         .nav-link[href*="Personal"] { --text-hover: var(--accent-personal); }
-        .nav-link[href*="Personal"].active { --text-base: var(--accent-personal); }
+        .nav-link[href*="Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
-        /* --- COLLAPSED STATES (Handled via Classes now) --- */
-        .row-collapsed { height: 0 !important; opacity: 0 !important; margin: 0 !important; border: none !important; pointer-events: none; }
-
-        /* --- SEARCH --- */
+        /* --- SEARCH CONTROLS --- */
         #search-controls { 
             position: absolute; right: 10px; top: 0; 
             height: var(--brand-row-h); width: 60px; 
             display: flex; align-items: center; justify-content: center; 
             z-index: 1002; transition: opacity 0.2s; 
         }
-        /* Hide search icon when brand row collapses */
-        #main-header.brand-collapsed #search-controls { opacity: 0; pointer-events: none; }
+        
+        /* HIDE SEARCH WHEN SCROLLED DOWN */
+        #main-header.scrolled #search-controls { opacity: 0; pointer-events: none; }
+        /* HIDE BRAND WHEN SCROLLED DOWN */
+        #main-header.scrolled #brand-name { opacity: 0; pointer-events: none; }
 
-        .icon-btn { width: 44px; height: 44px; padding: 10px; cursor: pointer; fill: #666; transition: all 0.4s; }
+        .icon-btn { width: 44px; height: 44px; padding: 10px; cursor: pointer; fill: #666; transition: all 0.4s; position: relative; }
         .icon-btn:hover { fill: #fff; }
-        .close-icon  { display: none; } 
+        .search-icon { opacity: 1; }
+        .close-icon  { opacity: 0; display: none; } 
+
+        .icon-btn[data-tooltip]:hover::after {
+            content: attr(data-tooltip); position: absolute; top: 100%; right: 50%; transform: translateX(50%);
+            background: #222; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-family: 'Jost', sans-serif;
+            white-space: nowrap; pointer-events: none; opacity: 0; animation: fadeInTooltip 0.2s forwards 0.3s;
+            border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        @keyframes fadeInTooltip { to { opacity: 1; top: 110%; } }
 
         #search-overlay { 
             position: fixed; top: 40px; left: 50%; width: 400px; max-width: 90%; height: 50px; 
             transform-origin: center; transform: translate(-50%, -40px) scale(0.9);
             display: flex; align-items: center; justify-content: center; 
             background: linear-gradient(135deg, #151515 0%, #222 100%);
-            z-index: 2000; border-radius: var(--card-radius); border: 1px solid #333;
+            z-index: 2000; border-radius: var(--card-radius); 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid #333;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; visibility: hidden; pointer-events: none;
         }
+        
         #search-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0) scale(1); }
         #search-input { width: 100%; height: 100%; background: transparent; border: none; color: #fff; font-size: 20px; font-family: 'Jost', sans-serif; padding: 0 20px; outline: none; text-align: center; font-weight: 500; }
         #app.search-active { opacity: 0.3; transition: 0.4s; }
 
-        /* --- LAYOUT --- */
-        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 10px 20px 0; flex: 1; min-height: 80vh; position: relative; transition: 0.4s; }
-        .section { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.4s forwards; } 
+        @media (max-width: 768px) {
+            .nav-row[data-level]:not([data-level="0"]) { justify-content: flex-start; }
+            .nav-row[data-level]:not([data-level="0"])::before, 
+            .nav-row[data-level]:not([data-level="0"])::after { display: block; }
+            
+            .grid-container { grid-template-columns: 1fr; }
+            footer { flex-direction: column; gap: 20px; text-align: center; }
+            .content-container { padding: 10px 15px 0; }
+            .layout-hero h1 { font-size: 32px; }
+            .layout-404 h1 { font-size: 60px; }
+        }
+
+        /* --- CONTENT --- */
+        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 10px 20px 0; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; transition: 0.4s; }
+        .section { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.4s forwards; position: relative; } 
         @keyframes fadeIn { to { opacity: 1; } }
         .skeleton-visible { opacity: 1 !important; animation: none !important; }
 
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); column-gap: 20px; row-gap: 10px; margin-bottom: 15px; }
-        @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } }
+        p a:not(.wiki-link) { --text-base: #999; --text-hover: #fff; border-bottom: 1px dotted #444; }
+        p a:not(.wiki-link):hover { border-bottom-color: #fff; }
+        a[target="_blank"]:not(.clickable-block) { display: inline-flex; align-items: center; gap: 4px; }
+        a[target="_blank"]:not(.clickable-block)::after { content: ""; display: inline-block; width: 12px; height: 12px; background-color: currentColor; -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; }
 
+        ol, ul { padding-left: 25px; margin-top: 8px; margin-bottom: 12px; }
+        li { margin-bottom: 6px; padding-left: 5px; }
+        ol ol, ul ul, ol ul, ul ol { margin-top: 5px; margin-bottom: 5px; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); column-gap: 20px; row-gap: 10px; margin-bottom: 15px; }
+        
         .layout-grid { 
-            display: flex; flex-direction: column; gap: 3px; padding: var(--card-padding); border-radius: var(--card-radius); 
-            transition: background 0.2s; border: none; height: 100%; text-decoration: none; cursor: pointer;
+            display: flex; flex-direction: column; gap: 3px; 
+            padding: var(--card-padding); border-radius: var(--card-radius); 
+            transition: background 0.2s; border: none; height: 100%; position: relative; -webkit-tap-highlight-color: transparent; 
         }
+        .layout-grid.clickable-block, .layout-grid.clickable-block * { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        .layout-grid.clickable-block .chip { pointer-events: auto; }
         .layout-grid:hover { background: var(--card-bg-hover); }
+
         .layout-grid.cat-projects h3 { --text-hover: var(--accent-projects); }
         .layout-grid.cat-professional h3 { --text-hover: var(--accent-prof); }
         .layout-grid.cat-personal h3 { --text-hover: var(--accent-personal); }
 
-        .row-media { width: 100%; height: 160px; border-radius: var(--media-radius); overflow: hidden; background: #111; flex-shrink: 0; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
+        .row-media { 
+            width: 100%; height: 160px; border-radius: var(--media-radius); 
+            overflow: hidden; background: #111; flex-shrink: 0; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; 
+        }
         .row-media img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: filter 0.3s; }
         .layout-grid:hover .row-media img { filter: grayscale(0%); }
-        .row-media.placeholder { background: linear-gradient(135deg, #151515 0%, #222 100%); padding: 20px; text-align: center; }
-        .row-media.placeholder span { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #444; letter-spacing: 1px; transition: color 0.3s; }
-        .layout-grid:hover .row-media.placeholder span { color: var(--text-hover); }
 
+        .row-media.placeholder { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #151515 0%, #222 100%); border-bottom: 1px solid #222; padding: 20px; text-align: center; }
+        .row-media.placeholder span { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #444; letter-spacing: 1px; line-height: 1.3; transition: color 0.3s; }
+        .layout-grid.cat-projects:hover .row-media.placeholder span { color: var(--accent-projects); }
+        .layout-grid.cat-professional:hover .row-media.placeholder span { color: var(--accent-prof); }
+        .layout-grid.cat-personal:hover .row-media.placeholder span { color: var(--accent-personal); }
+
+        .embed-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: var(--media-radius); margin: 20px 0; background: #111; border: 1px solid #222; }
+        .embed-wrapper.video { padding-top: 56.25%; }
+        .embed-wrapper.doc { height: 600px; }
+        .embed-wrapper.map { height: 400px; }
+        .embed-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        iframe { max-width: 100%; }
+
+        .embed-wrapper.stl { height: 400px; background: radial-gradient(circle at center, #222 0%, #111 100%); cursor: grab; transition: background 0.3s; }
+        .embed-wrapper.stl:active { cursor: grabbing; }
+        .embed-wrapper.stl canvas { outline: none; opacity: 0; transition: opacity 0.6s ease-out; }
+        .embed-wrapper.stl.ready canvas { opacity: 1; }
+        .row-media .embed-wrapper.stl { height: 100% !important; width: 100% !important; background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%); border-radius: 0; border: none; margin: 0; }
+        .layout-grid .embed-wrapper { pointer-events: none; }
+        .layout-grid .inline-gallery, .layout-grid .inline-img { display: none !important; }
+
+        .row-media.article-mode { background: transparent; height: auto; max-height: 500px; width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+        .row-media.article-mode img { width: auto; max-width: 100%; height: auto; max-height: 500px; object-fit: contain; filter: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .row-media.article-mode .embed-wrapper.stl { height: 500px !important; aspect-ratio: 3/4; max-height: 70vh; }
+        @media (max-width: 768px) { .row-media.article-mode .embed-wrapper.stl { height: auto !important; aspect-ratio: 16/9; max-height: 300px; } }
+
+        .inline-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
+        .inline-img { width: 100%; border-radius: var(--media-radius); display: block; object-fit: cover; transition: transform 0.2s; }
+        .inline-img.zoomable { cursor: zoom-in; }
+        .inline-img.zoomable:hover { opacity: 0.9; }
+
+        .layout-grid.has-placeholder h3 { margin-top: 5px; }
         .layout-grid h3 { font-size: 20px; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 6px; --text-base: #eee; --text-hover: #fff; }
+        .layout-grid[data-target="_blank"] h3::after { content: ""; display: inline-block; width: 12px; height: 12px; background-color: currentColor; opacity: 0.7; -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; }
         .layout-grid p { font-size: 14px; margin: 0; color: var(--text-dim); font-weight: 400; line-height: 1.4; margin-bottom: 2px; }
 
         .meta-row { display: flex; gap: 6px; margin-top: auto; flex-wrap: wrap; align-items: center; padding-top: 4px; }
-        .chip { font-size: 11px; font-weight: 600; color: #777; background: #1a1a1a; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; white-space: nowrap; border: 1px solid transparent; }
-        .chip:hover { color: #fff; background: #333; border-color: #444; }
-        .chip.date { background: transparent; color: #666; font-weight: 500; border: 1px solid #333; }
+        .chip { font-size: 11px; font-weight: 600; color: #777; background: #1a1a1a; padding: 3px 8px; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; user-select: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
+        .chip:hover { color: #fff; background: #333; }
+        .chip.date { background: transparent; color: #666; font-weight: 500; border: 1px solid #333; padding: 3px 8px; }
         .chip.date:hover { color: #fff; background: #1a1a1a; border-color: #555; } 
 
-        .layout-hero { text-align: center; margin: 0 0 10px; }
+        .article-meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+        .author-link { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; color: #666; transition: color 0.2s; }
+        .author-link:hover { color: var(--accent-projects); }
+        .article-link-btn { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #222; fill: #999; transition: all 0.2s; text-decoration: none; }
+        .article-link-btn:hover { background: #fff; fill: #000; }
+        .article-tags { display: flex; gap: 6px; }
+
+        .layout-hero { text-align: center; margin: 0 0 10px; position: relative; }
         .layout-hero h1 { font-size: 46px; font-weight: 600; letter-spacing: -1px; margin-bottom: 5px; color: #fff; }
         .layout-hero p { font-size: 18px; color: #999; font-weight: 300; max-width: 650px; margin: 0 auto; line-height: 1.4; }
-        
+        .hero-meta { margin-bottom: 10px; display: flex; justify-content: center; }
+
         .layout-text { margin-bottom: 15px; }
         .layout-text h2 { font-size: 22px; font-weight: 400; margin-bottom: 8px; margin-top: 10px; color: #fff; }
         .layout-text p { margin-bottom: 12px; color: #d4d4d4; font-weight: 300; line-height: 1.5; }
-        
-        /* ARTICLE MODE STYLES */
-        .article-meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
-        .author-link { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; color: #666; transition: color 0.2s; }
-        .author-link:hover { color: var(--accent-projects); }
-        .row-media.article-mode { background: transparent; height: auto; max-height: 500px; margin-bottom: 15px; }
-        .row-media.article-mode img { filter: none; object-fit: contain; }
 
-        /* EMBEDS */
-        .embed-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: var(--media-radius); margin: 20px 0; background: #111; border: 1px solid #222; }
-        .embed-wrapper.video { padding-top: 56.25%; }
-        .embed-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        .embed-wrapper.stl { height: 400px; background: radial-gradient(circle at center, #222 0%, #111 100%); cursor: grab; }
-        .inline-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
-        .inline-img { width: 100%; border-radius: var(--media-radius); display: block; object-fit: cover; cursor: zoom-in; }
+        .layout-quote { padding: 0 20px; text-align: center; position: relative; margin: 0 auto 10px; min-height: 120px; height: auto; width: 100%; max-width: 800px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .layout-quote blockquote { font-family: 'Playfair Display', serif; font-style: italic; color: #eee; margin-bottom: 4px; line-height: 1.25; transition: font-size 0.3s; width: 100%; font-size: clamp(16px, 3vw, 24px); }
+        .layout-quote blockquote.short  { font-size: clamp(20px, 4vw, 32px); }
+        .layout-quote blockquote.medium { font-size: clamp(18px, 3.5vw, 26px); }
+        .layout-quote blockquote.long   { font-size: clamp(16px, 3vw, 22px); }
+        .layout-quote blockquote.xl     { font-size: clamp(15px, 2.5vw, 20px); }
+        .layout-quote blockquote.xxl    { font-size: clamp(14px, 2vw, 18px); line-height: 1.3; }
 
-        /* QUOTE CARD */
-        .layout-quote { padding: 0 20px; text-align: center; position: relative; margin: 0 auto 10px; min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .layout-quote blockquote { font-family: 'Playfair Display', serif; font-style: italic; color: #eee; margin-bottom: 4px; line-height: 1.25; width: 100%; }
-        .layout-quote blockquote.short { font-size: 24px; } .layout-quote blockquote.long { font-size: 18px; }
-        .quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; }
+        .quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; flex-shrink: 0; }
         .layout-quote .author { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
-        .layout-quote .refresh-btn { position: absolute; bottom: 10px; right: 10px; width: 24px; height: 24px; opacity: 0.3; cursor: pointer; fill: #fff; }
-        .layout-quote .refresh-btn:hover { opacity: 1; }
+        .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
+        
+        .layout-quote .refresh-btn { 
+            position: absolute; bottom: 18px; right: 18px; width: 26px; height: 26px; 
+            opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; 
+        }
+        .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg) scale(1.1); }
+        
+        .layout-quote.loading blockquote, .layout-quote.loading .quote-footer { opacity: 0.3; pointer-events: none; }
 
-        footer { text-align: center; padding: 30px 20px; border-top: 1px solid #1a1a1a; margin-top: 30px; }
-        footer a { color: #666; text-decoration: none; font-size: 14px; margin: 0 10px; }
-        footer a:hover { color: #fff; }
+        .layout-404 { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .layout-404 h1 { font-size: 80px; margin: 0; line-height: 1; color: #333; }
+        .layout-404 h2 { font-size: 24px; font-weight: 400; margin: 10px 0 20px; color: #fff; }
+        .layout-404 p { color: #888; max-width: 400px; margin-bottom: 30px; }
+        .btn-primary { display: inline-block; padding: 10px 25px; background: #fff; color: #000; text-decoration: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; border-radius: 4px; transition: opacity 0.2s; }
+        .btn-primary:hover { opacity: 0.8; }
+
+        /* --- INDEX --- */
+        .index-list { column-count: 2; column-gap: 40px; margin-top: 20px; }
+        .index-group { break-inside: avoid; margin-bottom: 30px; }
+        .index-group h3 { font-size: 14px; text-transform: uppercase; color: #666; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; }
+        .index-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
+        .index-link span { color: #444; font-size: 12px; margin-left: 8px; }
+        .index-link.depth-3 { padding-left: 20px; font-size: 15px; color: #888; }
+        .index-link.depth-3::before { content: "└ "; opacity: 0.5; margin-right: 5px; font-family: monospace; }
+
+        .index-group.cat-projects h3 { color: var(--accent-projects); border-color: var(--accent-projects); }
+        .index-group.cat-professional h3 { color: var(--accent-prof); border-color: var(--accent-prof); }
+        .index-group.cat-personal h3 { color: var(--accent-personal); border-color: var(--accent-personal); }
+        @media (max-width: 600px) { .index-list { column-count: 1; } }
+
+        footer { text-align: center; padding: 30px 20px; border-top: 1px solid #1a1a1a; margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px 30px; max-width: 1000px; margin-left: auto; margin-right: auto; width: 100%; }
+        footer .footer-links { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: center; }
+        footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; --text-hover: #fff; white-space: nowrap; }
+        #version-tag { font-size: 14px; font-weight: 400; color: #666; white-space: nowrap; font-family: 'Jost', sans-serif; --text-base: #666; --text-hover: #fff; }
+        #version-tag a { text-decoration: none; }
+        #version-tag a:hover { text-decoration: underline; }
 
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
         #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
-        #lightbox.active { display: flex; }
+        #lightbox.active { display: flex; animation: fadeIn 0.2s; }
 
-        .layout-404 { text-align: center; padding: 60px 0; }
-        .layout-404 h1 { font-size: 80px; margin: 0; color: #333; }
+        .sk-line, .sk-img, .sk-box { background: #1a1a1a; background-image: linear-gradient(90deg, #1a1a1a 0%, #333 50%, #1a1a1a 100%); background-size: 200% 100%; border-radius: 4px; animation: shimmer 1.5s infinite linear; display: block; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .sk-line { margin-bottom: 10px; }
+        .sk-line.title { height: 48px; width: 50%; margin: 0 auto 20px; }
+        .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
+        .sk-line.text { height: 20px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
+        .sk-line.text.short { width: 60%; }
+        .sk-box.quote { height: 100px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
+        .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 10px; border-radius: 4px; }
+        .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 10px; }
+        .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 6px; }
     </style>
     
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
     <script data-goatcounter="https://sahib.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
     <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
     </script>
 </head>
 <body class="no-transition">
     
-    <script>if(history.scrollRestoration)history.scrollRestoration='manual';</script>
+    <script>
+        if (history.scrollRestoration) { history.scrollRestoration = 'manual'; }
+    </script>
 
     <div id="search-overlay">
         <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
@@ -270,351 +410,713 @@
 
     <header id="main-header" class="no-transition">
         <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
-        <div id="nav-container"></div> <div id="search-controls">
-            <svg id="search-trigger" class="icon-btn search-icon" onclick="toggleSearch()" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        
+        <div id="nav-container"></div>
+        
+        <div id="search-controls">
+            <svg id="search-trigger" class="icon-btn search-icon" onclick="toggleSearch()" viewBox="0 0 24 24" data-tooltip="Search (/)">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <svg id="close-search" class="icon-btn close-icon" onclick="toggleSearch()" viewBox="0 0 24 24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
         </div>
     </header>
 
     <div class="content-container" id="app">
-        <div class="section layout-quote skeleton-visible"><div style="height:100px; background:#1a1a1a; border-radius:4px;"></div></div>
+        <div class="section layout-quote skeleton-visible"><div class="sk-box quote"></div></div>
+        <div class="grid-container section skeleton-visible">
+            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div></div>
+            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div></div>
+            <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div></div>
+        </div>
     </div>
 
-    <footer><div id="footer-links"></div></footer>
+    <footer>
+        <div class="footer-links" id="footer-links"></div>
+        <div id="version-tag"></div>
+    </footer>
+
     <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
 
     <script>
         let db = [], quotesDb = [], isSearchActive = false;
-        
-        // CONFIGURATION
+
         const CONFIG = {
-            main: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
-            quotes: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
+            main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
+            quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
         };
 
         const init = () => {
-            Promise.all([fetchCSV(CONFIG.main), fetchCSV(CONFIG.quotes).catch(()=>[])]).then(([m, q]) => {
-                db = m.filter(r => r.Title); quotesDb = q;
-                if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
-                initApp(); renderFooter();
+            fetchData().then(([m, q]) => {
+                db = m.filter(r => r.Title); 
+                quotesDb = q;
                 
-                // Initialize Header Observer for perfect padding
-                const header = document.getElementById('main-header');
-                new ResizeObserver(() => {
-                    document.body.style.paddingTop = (header.offsetHeight + 20) + 'px';
-                }).observe(header);
-
+                if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
+                
+                initApp(); 
+                renderFooter(); 
+                fetchGitHubStats();
+                
                 requestAnimationFrame(() => {
-                    document.body.classList.remove('no-transition');
-                    document.getElementById('main-header').classList.remove('no-transition');
+                    setTimeout(() => {
+                        document.body.classList.remove('no-transition');
+                        document.getElementById('main-header').classList.remove('no-transition');
+                        updateHeader();
+                    }, 50);
                 });
-            }).catch(e => console.error("Error:", e));
+            }).catch(e => {
+                console.error("Data Load Error:", e);
+                document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
+                    <h2>Unable to load content</h2>
+                    <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px; margin-top:20px;">${e.message}</p>
+                </div>`;
+            });
         };
 
-        function fetchCSV(u) { return new Promise((res, rej) => Papa.parse(u, { download: true, header: true, skipEmptyLines: true, complete: r => res(r.data), error: rej })); }
+        async function fetchData() {
+            const [main, quotes] = await Promise.all([
+                fetchCSV(CONFIG.main_sheet), 
+                fetchCSV(CONFIG.quotes_sheet).catch(()=>[])
+            ]);
+            return [main, quotes];
+        }
+
+        function fetchCSV(u) { 
+            return new Promise((res, rej) => {
+                if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded. Check internet."));
+                Papa.parse(u, { download: true, header: true, skipEmptyLines: true, complete: (r) => res(r.data), error: (e) => rej(new Error("CSV Error: " + e.message)) });
+            });
+        }
+
+        function safeHTML(html) {
+            if(typeof DOMPurify !== 'undefined') {
+                return DOMPurify.sanitize(html, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height'] });
+            }
+            return html; 
+        }
 
         function initApp() {
-            renderNav(); handleRouting();
+            handleRouting();
             window.addEventListener('hashchange', handleRouting);
             
-            // INFINITE NAV SCROLL LOGIC
-            window.addEventListener('scroll', () => { 
-                const h = document.getElementById('main-header');
-                const isScrolled = window.scrollY > 10;
-                
-                // Toggle Brand
-                const brand = document.getElementById('brand-name');
-                if(isScrolled) {
-                    brand.classList.add('row-collapsed');
-                    h.classList.add('brand-collapsed');
-                } else {
-                    brand.classList.remove('row-collapsed');
-                    h.classList.remove('brand-collapsed');
-                }
-
-                // Infinite Stack Logic: Keep only bottom 3 rows visible
-                const rows = document.querySelectorAll('.nav-row');
-                if(rows.length > 3 && isScrolled) {
-                    // Hide top rows (starting from index 0) until we have 3 left
-                    const rowsToHide = rows.length - 3;
-                    rows.forEach((row, index) => {
-                        if(index < rowsToHide) row.classList.add('row-collapsed');
-                        else row.classList.remove('row-collapsed');
-                    });
-                } else {
-                    // Show all rows if not scrolled or if few rows
-                    rows.forEach(r => r.classList.remove('row-collapsed'));
+            // Analytics
+            window.addEventListener('hashchange', function(e) {
+                if (window.goatcounter && window.goatcounter.count) {
+                    window.goatcounter.count({ path: location.pathname + location.search + location.hash, title: location.hash.substring(1) || 'Home', event: false });
                 }
             });
 
-            // Global Click Handlers
-            document.addEventListener('click', (e) => {
-                if(e.target.closest('.refresh-btn')) refreshQuote(e.target.closest('.layout-quote'));
-                if(e.target.classList.contains('zoomable')) { 
-                    document.getElementById('lightbox-img').src = e.target.src; 
-                    document.getElementById('lightbox').classList.add('active'); 
-                }
-                if(e.target.classList.contains('chip')) { 
-                    const f = e.target.dataset.filter;
-                    if(f) { window.location.hash = 'Filter:' + f; closeSearch(); }
-                }
-                const block = e.target.closest('.clickable-block');
-                if(block && !e.target.classList.contains('chip')) {
-                    const l = block.dataset.link;
-                    if(l) window.location.href = l;
-                }
-                if(document.getElementById('search-overlay').classList.contains('active') && !e.target.closest('#search-overlay') && !e.target.closest('#search-controls')) closeSearch();
-            });
+            // Scroll Logic (Aggressive Hiding)
+            window.addEventListener('scroll', handleScroll);
             
-            document.addEventListener('keydown', (e) => {
-                if((e.key==='/' || (e.metaKey && e.key==='k')) && !isSearchActive) { e.preventDefault(); toggleSearch(); }
-                if(e.key==='Escape') closeSearch();
-            });
+            // Event Delegation
+            document.addEventListener('click', handleGlobalClick);
+            document.getElementById('app').addEventListener('click', handleContentClick);
+            document.addEventListener('keydown', handleKeys);
         }
 
-        // --- CORE NAVIGATION ---
-        function renderNav() {
+        // --- RECURSIVE NAV ENGINE ---
+        function buildRecursiveNav() {
             const container = document.getElementById('nav-container');
-            container.innerHTML = '';
-            
-            let hash = window.location.hash.substring(1);
-            if(hash.startsWith('Filter:')) hash = ''; // Don't build nav for filters
-            
-            // Always build Level 0 (Primary)
-            const level0 = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x && x !== 'Home'))].sort();
-            appendNavRow(container, level0, hash.split('/')[0], 0);
+            if(!container) return;
+            container.innerHTML = ''; // Reset
 
-            // Build deeper levels if path exists
-            if(hash && hash !== 'Home') {
-                const parts = hash.split('/');
-                let currentPath = parts[0];
+            const hash = window.location.hash.substring(1);
+            let pathSegments = [];
+            
+            // If on home/index/filter, show Root level. If deep, splits path.
+            if(hash && hash !== 'Home' && hash !== 'Index' && !hash.startsWith('Filter:')) {
+                pathSegments = hash.split('/');
+            }
+
+            // Always generate at least 1 level (Root)
+            const maxLevel = pathSegments.length; 
+            
+            // Generate Level 0 (Root)
+            generateNavRow(container, 0, null, pathSegments[0]);
+
+            // Generate subsequent levels
+            for(let i = 0; i < maxLevel; i++) {
+                const parentPath = pathSegments.slice(0, i+1).join('/');
+                // Look ahead: Does this level have children?
+                const hasChildren = db.some(r => r.Page && r.Page.startsWith(parentPath + '/'));
                 
-                // Loop through parts to build children
-                for(let i = 0; i < parts.length; i++) {
-                    // Find children of currentPath
-                    const children = [...new Set(db.filter(r => r.Page && r.Page.startsWith(currentPath + '/'))
-                                      .map(r => r.Page.split('/')[i+1])
-                                      .filter(x => x))].sort();
-                    
-                    if(children.length > 0) {
-                        appendNavRow(container, children, parts[i+1], i+1);
-                    }
-                    if(parts[i+1]) currentPath += '/' + parts[i+1];
+                if (hasChildren) {
+                    generateNavRow(container, i + 1, parentPath, pathSegments[i+1]);
                 }
             }
+            
+            updateHeader(); // Recalculate dimensions
         }
 
-        function appendNavRow(container, items, activeItem, level) {
+        function generateNavRow(container, level, parentPath, activeItem) {
+            let items = [];
+            
+            if (level === 0) {
+                // Root Categories
+                items = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort();
+            } else {
+                // Children of parentPath
+                items = [...new Set(db.filter(r => r.Page && r.Page.startsWith(parentPath + '/'))
+                                      .map(r => r.Page.split('/').slice(0, level + 1).join('/')))].sort();
+            }
+
+            if (items.length === 0) return;
+
             const row = document.createElement('nav');
-            row.className = `nav-row level-${level}`;
-            items.forEach(x => {
-                // Construct link: iterate up to this level
-                // Simple hack: find first page that ends with this item to get full path
-                // Better: we need context. But for now, finding a match works for typical hierarchy
-                const match = db.find(r => r.Page.includes(`/${x}`) || r.Page.startsWith(x));
-                /* Correction: To generate the link properly, we need the parent path.
-                   Since we are generating sequentially, we could pass parent path.
-                   However, 'Slide Rule' relies on the text match mostly.
-                   We will construct href by finding a page that matches strictly.
-                */
-               // Find any page that has this segment at this specific level
-               const validPage = db.find(r => r.Page.split('/')[level] === x);
-               // We want to link to the "Category Root" if possible, e.g. #Projects/Aerospace
-               // If validPage is "Projects/Aerospace/Rocket", the link should be #Projects/Aerospace
-               const linkParts = validPage.Page.split('/').slice(0, level+1);
-               const link = linkParts.join('/');
-               
-               const isActive = x === activeItem;
-               row.innerHTML += `<a href="#${link}" class="nav-link fill-anim ${isActive ? 'active' : ''}">${x}</a>`;
+            row.className = 'nav-row';
+            row.setAttribute('data-level', level);
+            
+            // Calculate delay for cascade effect
+            row.style.transitionDelay = `${level * 50}ms`;
+
+            items.forEach(path => {
+                const name = path.split('/')[level]; // Get just the name for this level
+                const isActive = (name === activeItem) || (activeItem === undefined && level > 0 && path === parentPath); // Logic for highlighting
+                
+                // Active check: Exact match OR path starts with this segment
+                const isSelected = window.location.hash.startsWith(`#${path}`);
+                
+                const link = document.createElement('a');
+                link.href = `#${path}`;
+                link.className = `nav-link fill-anim ${isSelected ? 'active' : ''}`;
+                link.textContent = name;
+                link.onclick = () => closeSearch();
+                row.appendChild(link);
             });
+
             container.appendChild(row);
             
-            // Scroll to center active
+            // Center active item if scrolling is needed
             setTimeout(() => {
-                if(row.scrollWidth > row.clientWidth) {
-                    const active = row.querySelector('.active');
-                    if(active) row.scrollTo({ left: active.offsetLeft + active.offsetWidth/2 - row.clientWidth/2, behavior: 'smooth' });
+                const activeLink = row.querySelector('.active');
+                if (activeLink && row.scrollWidth > row.clientWidth) {
+                    const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (row.clientWidth / 2);
+                    row.scrollTo({ left: scrollTarget, behavior: 'smooth' });
                 }
-            }, 100);
+            }, 10);
         }
 
-        function handleRouting() {
-            if(isSearchActive) return;
-            window.scrollTo(0,0);
-            renderNav(); // Rebuild nav stack based on new hash
+        function updateHeader() {
+            const h = document.getElementById('main-header');
+            const navRows = document.querySelectorAll('.nav-row').length;
             
-            let hash = window.location.hash.substring(1) || 'Home';
-            if(hash.startsWith('Filter:')) { renderFiltered(decodeURIComponent(hash.split(':')[1])); return; }
+            // Base heights from CSS vars (approx)
+            const brandH = 36; 
+            const navRowH = 26; 
+            const gap = 1;
             
-            // Page Rendering
-            const rows = db.filter(r => r.Page === hash);
-            const app = document.getElementById('app'); app.innerHTML = '';
+            // Calculate total visible height
+            let totalH = brandH + gap + (navRows * (navRowH + gap));
             
-            // Detect if this is a "Parent" page (has children) or "Leaf" page
-            const isParent = !rows.length || db.some(r => r.Page.startsWith(hash + '/'));
+            // Update Body Padding to match
+            document.body.style.paddingTop = (totalH + 20) + 'px'; // +20 buffer
             
-            // 1. Render content specifically assigned to this page (if any)
-            if(rows.length > 0) {
-                // If it's a leaf page (Article), use Sheet Order. If Hub, use Date.
-                renderRows(rows, null, true, false, !isParent);
+            handleScroll(); // Re-trigger scroll logic to set initial transforms
+        }
+
+        // --- AGGRESSIVE SCROLL LOGIC ---
+        function handleScroll() {
+            const h = document.getElementById('main-header');
+            const scrollY = window.scrollY;
+            const rows = document.querySelectorAll('.nav-row');
+            const numRows = rows.length;
+            const brandH = 36;
+            const navRowH = 26;
+            const gap = 1;
+
+            if (scrollY > 10) {
+                h.classList.add('scrolled');
+                
+                // If deep (4+ rows), hide top rows too
+                if (numRows >= 4) {
+                    // We want bottom 2 visible.
+                    // Height to Hide = Brand + (NumRows - 2) * RowHeight
+                    const rowsToHide = numRows - 2;
+                    const translateY = brandH + gap + (rowsToHide * (navRowH + gap));
+                    h.style.transform = `translateY(-${translateY}px)`;
+                } else {
+                    // Standard: Hide only brand
+                    h.style.transform = `translateY(-${brandH + gap}px)`;
+                }
+            } else {
+                h.classList.remove('scrolled');
+                h.style.transform = `translateY(0)`;
+            }
+        }
+
+        // --- CORE ROUTING ---
+        function handleRouting() { 
+            if(isSearchActive) return; 
+            window.scrollTo(0, 0); 
+            
+            let hash = window.location.hash.substring(1) || 'Home'; 
+            if(hash === 'Index') { renderIndex(); buildRecursiveNav(); return; }
+            
+            // Regenerate Navigation based on current path
+            buildRecursiveNav();
+
+            if(hash.startsWith('Filter:')) { 
+                // e.g. Filter:2025-12
+                renderFiltered(decodeURIComponent(hash.split(':')[1])); 
+            } else { 
+                renderPage(hash); 
+            }
+        }
+
+        function renderFiltered(filter) { 
+            // Smart Filter: Checks if date string contains filter (e.g. "2025-12-15" contains "2025-12")
+            // OR if tag matches
+            const res = db.filter(r => {
+                const dateStr = r.Timestamp || '';
+                return (dateStr.includes(filter)) || (r.Tags && r.Tags.includes(filter));
+            });
+            renderRows(res, `Posts matching "${safeHTML(filter)}"`, false, true); 
+        }
+
+        function renderPage(p) { 
+            if(p === 'Home') { renderHome(); return; } 
+            
+            // Exact Match (Article)
+            const ex = db.filter(r => r.Page === p); 
+            const app = document.getElementById('app'); app.innerHTML = ''; 
+            
+            // Check if this page is a Parent Category (has children)
+            const children = db.filter(r => r.Page && r.Page.startsWith(p + '/'));
+            const isCategory = children.length > 0 && !p.includes('/'); // Root categories like "Projects"
+
+            if(ex.length > 0) { 
+                // Render Article. Pass 'true' for isArticleMode to respect Sheet Order
+                renderRows(ex, null, true, false, true); 
+            } else if(children.length > 0) {
+                // It's a category folder without a direct page row (e.g. just a grouper)
+            } else {
+                app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return Home</a></div>`;
+                return; 
             }
             
-            // 2. If it is a Parent, render children cards (Sorted by Date)
-            if(isParent) {
-                const children = [...new Set(db.filter(r => r.Page && r.Page.startsWith(hash + '/')).map(r => r.Page))];
-                const childRows = children.map(c => db.find(r => r.Page === c)).filter(r => r);
-                if(childRows.length > 0) renderRows(childRows, null, true, true);
+            // If it has children, render them below as a grid
+            if(children.length > 0) {
+                // Find "Main Card" rows for children (SectionType=card or empty)
+                // Filter out sub-rows of the children to avoid duplicates
+                const uniqueChildren = [...new Set(children.map(c => {
+                    const relPath = c.Page.replace(p + '/', '');
+                    const rootChild = relPath.split('/')[0];
+                    return p + '/' + rootChild;
+                }))];
+                
+                const overviewRows = uniqueChildren.map(page => db.find(r => r.Page === page && (r.SectionType === 'card' || !r.SectionType))).filter(r => r);
+                
+                if (overviewRows.length > 0) {
+                    renderRows(overviewRows, null, true, true, false); 
+                }
             }
-            
-            if(rows.length === 0 && !isParent) app.innerHTML = `<div class="layout-404"><h1>404</h1><p>Page not found.</p></div>`;
         }
 
         function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
-            const app = document.getElementById('app');
+            const app = document.getElementById('app'); if(!app) return; 
             
-            // SORTING LOGIC: Date for Grid/Home, Sheet Order for Articles
-            if(!isArticleMode) rows.sort((a, b) => new Date(b.Timestamp||0) - new Date(a.Timestamp||0));
-
-            let container = app.querySelector('.grid-container');
-            if(!container || !append) {
-                if(title) app.innerHTML += `<h2 class="fill-anim" style="text-align:center; margin:20px 0;">${title}</h2>`;
-                // Create grid if needed
-                const useGrid = forceGrid || (!isArticleMode && rows.some(r => !r.SectionType || r.SectionType === 'card'));
-                if(useGrid) {
-                    container = document.createElement('div'); container.className = 'grid-container section'; app.appendChild(container);
-                }
+            // SORTING LOGIC:
+            // If Grid/Home: Newest Date First.
+            // If Article: Maintain Sheet Order (Don't sort).
+            if (!isArticleMode) {
+                rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
             }
 
+            if(!append && title) {
+                app.innerHTML = `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
+            }
+
+            if(rows.length === 0 && !append) { 
+                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2></div>`; return; 
+            }
+            
+            let gc = app.querySelector('.grid-container');
+            if(append) {
+                gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
+            } else {
+                const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
+                if(hasGridItems && !gc) {
+                    gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
+                }
+            }
+            
             rows.forEach(r => {
-                if(!r.Page || r.Page === 'Footer') return;
-                let html = DOMPurify.sanitize(r.Content || '');
+                if(!r.Page || r.Page === 'Footer') return; 
                 
-                // Embed Handling
-                const model = html.match(/\{\{3D: (.*?)(?: \| (.*?))?\}\}/i);
-                if(model) {
-                    // Just a thumbnail logic for now, real loader calls later
-                    html = html.replace(model[0], ''); // Strip tag
-                }
-                
-                // Media HTML
-                let media = '';
-                if(model) media = `<div class="row-media ${isArticleMode?'article-mode':''}"><div class="embed-wrapper stl" data-src="${model[1]}" ${model[2]?`data-color="${model[2]}"`:''}></div></div>`;
-                else if(r.Media) media = `<div class="row-media ${isArticleMode?'article-mode':''}"><img src="${r.Media}" loading="lazy"></div>`;
-                else if(!isArticleMode) media = `<div class="row-media placeholder"><span>${r.Title}</span></div>`;
+                let contentHtml = processText(r.Content);
+                let mediaHtml = '';
+                let hasPlaceholder = false;
 
-                // Layout Decision
-                if(!forceGrid && isArticleMode && r.SectionType !== 'card') {
-                    // TEXT/ARTICLE ROW
-                    const div = document.createElement('div'); 
-                    if(r.SectionType === 'hero') {
-                        div.className = 'section layout-hero';
-                        const date = r.Timestamp ? `<div class="hero-meta">${makeDateChip(r.Timestamp)}</div>` : '';
-                        div.innerHTML = `<h1 class="fill-anim">${r.Title}</h1>${date}<p>${html}</p>`;
-                    } else if(r.SectionType === 'quote') {
-                        div.className = 'section layout-quote'; renderQuoteCard(div);
-                    } else {
-                        div.className = 'section layout-text';
-                        const h = r.Title ? `<h2 class="fill-anim">${r.Title}</h2>` : '';
-                        // META ROW FOR ARTICLE HEAD
-                        let meta = '';
-                        if(r.Timestamp || r.Tags) meta = `<div class="article-meta-row"><a href="#Personal/About" class="author-link">SAHIB VIRDEE</a>${makeLinkBtn(r.LinkURL)}<div class="article-tags">${makeDateChip(r.Timestamp)}${makeTagChips(r.Tags)}</div></div>`;
-                        div.innerHTML = `${media}${h}${meta}<p>${html}</p>`;
-                    }
-                    app.appendChild(div);
+                const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+
+                if (modelMatch) {
+                    const url = modelMatch[1].trim();
+                    const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+                    mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+                    contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
+                } else if (r.Media) {
+                    const thumb = getThumbnail(r.Media);
+                    if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
                 } else {
-                    // GRID CARD
-                    const card = document.createElement('div');
-                    card.className = `layout-grid clickable-block cat-${r.Page.split('/')[0].toLowerCase()}`;
-                    card.dataset.link = `#${r.Page}`;
-                    
-                    let meta = '';
-                    if(r.Timestamp || r.Tags) meta = `<div class="meta-row">${makeDateChip(r.Timestamp)}${makeTagChips(r.Tags)}</div>`;
-                    
-                    card.innerHTML = `${media}<h3 class="fill-anim">${r.Title}</h3><p>${html.substring(0,100)}...</p>${meta}`;
-                    if(container) container.appendChild(card);
+                    hasPlaceholder = true;
+                    mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
                 }
+
+                let catClass = '';
+                const pLower = r.Page.toLowerCase();
+                if(pLower.startsWith('projects')) catClass = 'cat-projects';
+                else if(pLower.startsWith('professional')) catClass = 'cat-professional';
+                else if(pLower.startsWith('personal')) catClass = 'cat-personal';
+
+                // ARTICLE MODE RENDER
+                if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
+                    const d = document.createElement('div'); d.className = 'section layout-text';
+                    
+                    if(modelMatch || r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+                    else mediaHtml = ''; 
+
+                    let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
+                    if(r.LinkURL) {
+                        metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+                    }
+
+                    // Date Chip in Article (Only if Timestamp exists)
+                    metaHtml += '<div class="article-tags">';
+                    if(r.Timestamp) {
+                        const dateObj = parseDate(r.Timestamp);
+                        if (dateObj) {
+                            const display = dateObj.display; // "15 DEC 2025"
+                            const filter = dateObj.filter;   // "2025-12"
+                            metaHtml += `<span class="chip date" data-filter="${filter}">${display}</span>`;
+                        }
+                    }
+                    if(r.Tags) {
+                        r.Tags.split(',').forEach(t => metaHtml += `<span class="chip" data-tag="${t.trim()}">${safeHTML(t.trim())}</span>`);
+                    }
+                    metaHtml += '</div></div>';
+
+                    d.innerHTML = `${mediaHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${contentHtml}</p>`;
+                    app.appendChild(d);
+                    return;
+                }
+
+                // NON-GRID ROWS
+                if(!forceGrid) {
+                    if(r.SectionType === 'quote') { 
+                        const d = document.createElement('div'); d.className = 'layout-quote section'; 
+                        renderQuoteCard(d); app.appendChild(d); return; 
+                    }
+                    if(r.SectionType === 'hero') {
+                        const d = document.createElement('div'); d.className = 'section layout-hero';
+                        let dateHtml = '';
+                        if(r.Timestamp) {
+                            const dateObj = parseDate(r.Timestamp);
+                            if (dateObj) dateHtml = `<div class="hero-meta"><span class="chip date" data-filter="${dateObj.filter}">${dateObj.display}</span></div>`;
+                        }
+                        d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
+                        app.appendChild(d); return;
+                    }
+                    if(r.SectionType === 'text') {
+                        const d = document.createElement('div'); d.className = 'section layout-text';
+                        d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+                        app.appendChild(d); return;
+                    }
+                }
+
+                // GRID CARD
+                const link = r.LinkURL || `#${r.Page}`;
+                const target = link.startsWith('#') ? '' : '_blank';
+                
+                let mh = '';
+                if(r.Timestamp || (r.Tags && r.Tags.length > 0)) {
+                    mh = `<div class="meta-row">`;
+                    if(r.Timestamp) {
+                        const dateObj = parseDate(r.Timestamp);
+                        if(dateObj) mh += `<span class="chip date" data-filter="${dateObj.filter}">${dateObj.display}</span>`; 
+                    }
+                    if (r.Tags) {
+                        r.Tags.split(',').forEach(t => mh += `<span class="chip" data-tag="${t.trim()}">${safeHTML(t.trim())}</span>`); 
+                    }
+                    mh += `</div>`;
+                }
+
+                const d = document.createElement('div'); 
+                d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
+                d.setAttribute('data-link', link); d.setAttribute('data-target', target);
+                
+                d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
+                
+                if(gc) gc.appendChild(d);
             });
-            setTimeout(init3DViewers, 200);
+            
+            if(window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
+            setTimeout(init3DViewers, 500);
         }
 
-        // --- HELPERS ---
-        function makeDateChip(ts) {
-            if(!ts) return '';
-            const d = new Date(ts); if(isNaN(d)) return '';
+        // --- UTILS ---
+        function parseDate(s) {
+            if(!s) return null;
+            // Handle "YYYY-MM-DD" -> Display "15 DEC 2025", Filter "2025-12"
+            const d = new Date(s);
+            if(isNaN(d.getTime())) return { display: s, filter: s }; // Fallback
+            
             const day = d.getDate();
-            const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+            const monthShort = d.toLocaleString('default', { month: 'short' }).toUpperCase();
             const year = d.getFullYear();
-            const display = `${day} ${month} ${year}`; // 15 DEC 2025
-            const filter = `${month} ${year}`;         // DEC 2025
-            return `<span class="chip date" data-filter="${filter}">${display}</span>`;
+            const monthNum = (d.getMonth() + 1).toString().padStart(2, '0');
+            
+            return {
+                display: `${day} ${monthShort} ${year}`,
+                filter: `${year}-${monthNum}` // Matches YYYY-MM
+            };
         }
-        function makeTagChips(tags) {
-            if(!tags) return '';
-            return tags.split(',').map(t => `<span class="chip" data-filter="${t.trim()}">${t.trim()}</span>`).join('');
-        }
-        function makeLinkBtn(url) {
-            if(!url) return '';
-            return `<a href="${url}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
-        }
-        
-        function renderQuoteCard(c) {
-            if(!quotesDb.length) return;
-            const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
-            const text = r.Quote.replace(/^"|"$/g, '');
-            const lenClass = text.length > 150 ? 'xl' : text.length > 100 ? 'long' : 'short';
-            c.innerHTML = `<blockquote class="${lenClass}">"${text}"</blockquote><div class="quote-footer"><div class="author">— ${r.Author}</div></div><svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.23 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
-        }
-        
-        function renderFiltered(f) {
-            const rows = db.filter(r => (r.Tags && r.Tags.includes(f)) || makeDateChip(r.Timestamp).includes(f));
-            const app = document.getElementById('app'); app.innerHTML = '';
-            renderRows(rows, `Filtered: ${f}`, true, true);
-        }
-        
-        function resetToHome() { window.location.hash = ''; }
-        function toggleSearch() { document.body.classList.toggle('search-active'); document.getElementById('search-overlay').classList.toggle('active'); if(document.body.classList.contains('search-active')) document.getElementById('search-input').focus(); }
-        function closeSearch() { document.body.classList.remove('search-active'); document.getElementById('search-overlay').classList.remove('active'); document.getElementById('search-input').value = ''; isSearchActive = false; }
-        function handleSearch(q) {
-            if(!q) return; isSearchActive = true;
-            const rows = db.filter(r => JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
-            const app = document.getElementById('app'); app.innerHTML = '';
-            renderRows(rows, `Search: ${q}`, true, true);
-        }
-        function renderFooter() {
-            const f = document.getElementById('footer-links');
-            f.innerHTML = `<a href="#">Home</a><a href="https://linkedin.com/in/sahibvirdee" target="_blank">LinkedIn</a><a href="mailto:sahibdsv+site@gmail.com">Contact</a>`;
-        }
-        function refreshQuote(el) { el.classList.add('loading'); setTimeout(()=>{ renderQuoteCard(el); el.classList.remove('loading'); }, 500); }
 
-        // 3D VIEWER LOGIC
+        function handleGlobalClick(e) {
+            const overlay = document.getElementById('search-overlay');
+            const controls = document.getElementById('search-controls');
+            if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
+                closeSearch();
+            }
+        }
+
+        function handleContentClick(e) {
+            if(e.target.closest('.refresh-btn')) { 
+                const qc = e.target.closest('.layout-quote');
+                if(qc && !qc.classList.contains('loading')) {
+                    qc.classList.add('loading');
+                    qc.innerHTML = `<div class="sk-box quote" style="height:100px;width:100%;margin:0 auto;"></div>`;
+                    setTimeout(() => { renderQuoteCard(qc); qc.classList.remove('loading'); }, 600); 
+                }
+                e.stopPropagation(); return; 
+            }
+            if(e.target.classList.contains('zoomable')) { 
+                if(e.target.parentElement.tagName === 'A') return;
+                document.getElementById('lightbox-img').src = e.target.src; 
+                document.getElementById('lightbox').classList.add('active'); 
+                e.stopPropagation(); return; 
+            }
+            if(e.target.classList.contains('chip')) { 
+                e.stopPropagation();
+                if(isSearchActive) closeSearch();
+                const filter = e.target.getAttribute('data-filter'); // Date Filter
+                const tag = e.target.getAttribute('data-tag');       // Tag Filter
+                
+                if(filter) window.location.hash = 'Filter:' + filter;
+                else if(tag) window.location.hash = 'Filter:' + tag;
+                return; 
+            }
+            const block = e.target.closest('.clickable-block');
+            if(block && !e.target.classList.contains('chip')) {
+                const link = block.getAttribute('data-link'), target = block.getAttribute('data-target');
+                if(link) { 
+                    if(target === '_blank') window.open(link, '_blank'); 
+                    else { window.location.href = link; if(isSearchActive) closeSearch(); } 
+                }
+            }
+        }
+
+        function handleKeys(e) {
+            if ((e.key === '/' || (e.metaKey && e.key === 'k') || (e.ctrlKey && e.key === 'k')) && !isSearchActive) {
+                e.preventDefault(); toggleSearch();
+            }
+            if (e.key === 'Escape') {
+                if(isSearchActive || document.getElementById('search-overlay').classList.contains('active')) closeSearch();
+            }
+        }
+
+        function resetToHome() { closeSearch(); window.location.hash = ''; }
+        function closeSearch() { 
+            document.getElementById('search-overlay').classList.remove('active'); 
+            document.body.classList.remove('search-active'); 
+            const input = document.getElementById('search-input'); input.value = ''; input.blur(); 
+            if(isSearchActive) { isSearchActive = false; handleRouting(); } 
+            isSearchActive = false; 
+        }
+        function toggleSearch() { 
+            const a = document.getElementById('search-overlay').classList.toggle('active'); 
+            document.body.classList.toggle('search-active');
+            if(a) setTimeout(() => document.getElementById('search-input').focus(), 100); else closeSearch(); 
+        }
+        function handleSearch(q) { 
+            if(!document.getElementById('search-overlay').classList.contains('active')) return;
+            isSearchActive = true; 
+            if(!q) { 
+                document.getElementById('app').innerHTML = '<div class="layout-404" style="padding:40px 0;"><h2>Search</h2><p>Type to find projects...</p></div>';
+                return;
+            } 
+            const t = q.toLowerCase();
+            const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
+            renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
+        }
+
+        function renderIndex() {
+            document.getElementById('nav-container').innerHTML = ''; // Clear nav
+            document.body.classList.remove('has-sub-nav', 'has-tertiary-nav');
+            updateHeader();
+
+            const app = document.getElementById('app'); 
+            app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
+            const list = app.querySelector('.index-list');
+            const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
+            const groups = {};
+            pages.forEach(p => {
+                const cat = p.split('/')[0];
+                if(!groups[cat]) groups[cat] = [];
+                groups[cat].push(p);
+            });
+            for(const [cat, items] of Object.entries(groups)) {
+                let catClass = '';
+                const cLower = cat.toLowerCase();
+                if(cLower === 'projects') catClass = 'cat-projects'; else if(cLower === 'professional') catClass = 'cat-professional'; else if(cLower === 'personal') catClass = 'cat-personal';
+                let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
+                items.forEach(p => {
+                    const row = db.find(r => r.Page === p);
+                    const title = row ? row.Title : p.split('/').pop();
+                    const depth = p.split('/').length;
+                    const indentClass = depth > 2 ? 'depth-3' : '';
+                    html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title}</a>`;
+                });
+                html += `</div>`; list.innerHTML += html;
+            }
+        }
+
+        function renderHome() { 
+            const hr = db.filter(r => r.Page === 'Home');
+            const app = document.getElementById('app'); app.innerHTML = ''; 
+            renderRows(hr, null, true); 
+            const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
+                            .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
+                            .slice(0, 6);
+            if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
+        }
+
+        function renderQuoteCard(c) {
+            if(quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
+            const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
+            let auth = r.Author || 'Unknown'; 
+            if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`; 
+            else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
+            const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
+            const len = text.length;
+            let sizeClass = 'short';
+            if(len > 230) sizeClass = 'xxl'; else if(len > 150) sizeClass = 'xl'; else if(len > 100) sizeClass = 'long'; else if(len > 50) sizeClass = 'medium';
+            c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote><div class="quote-footer"><div class="author">— ${auth}</div></div><svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.23 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
+        }
+
+        function renderFooter() { 
+            const fd = document.getElementById('footer-links');
+            const fr = db.filter(r => r.Page === 'Footer' || r.Title === 'LinkedIn' || r.Title === 'Contact'); 
+            fd.innerHTML = ''; 
+            fr.forEach(r => { 
+                let link = r.LinkURL;
+                if(r.Title === 'Contact') link = 'mailto:sahibdsv+site@gmail.com';
+                if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
+            }); 
+            fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="resetToHome(); window.location.hash='Index'">Index</a>`;
+            fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
+        }
+
+        function fetchGitHubStats() { 
+            const r = "sahibdsv/sahibdsv.github.io"; 
+            fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
+                if(d.pushed_at) {
+                    const rel = Math.floor((new Date() - new Date(d.pushed_at)) / 86400000);
+                    const txt = rel === 0 ? "today" : rel + " days ago";
+                    document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Updated ${txt}</a>`;
+                } 
+            }).catch(()=>{}); 
+        }
+
+        function getThumbnail(u) { if(!u) return null; if(u.includes('youtube.com')||u.includes('youtu.be')) { let v = u.split('v=')[1]; if(v&&v.includes('&')) v=v.split('&')[0]; if(!v&&u.includes('youtu.be')) v=u.split('/').pop(); return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; } if(u.endsWith('.mp4')) return null; return u; }
+
+        function processText(t) { 
+            if(!t) return ''; 
+            let clean = safeHTML(t);
+            clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
+                const colorAttr = color ? `data-color="${color.trim()}"` : '';
+                return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
+            });
+            clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
+                const urls = content.split(',').map(u => u.trim());
+                const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
+                if (!isPureGallery) return match; 
+                const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join('');
+                return `<div class="inline-gallery">${imgs}</div>`;
+            });
+            clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
+            clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
+            clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
+            clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
+            clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
+            clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
+            return clean; 
+        }
+
+        // 3D VIEWER (With imports)
         function init3DViewers() {
             const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-            if(!containers.length) return;
-            Promise.all([import('three'), import('three/addons/loaders/STLLoader.js'), import('three/addons/controls/OrbitControls.js')]).then(([THREE, {STLLoader}, {OrbitControls}]) => {
-                const obs = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) { loadModel(e.target, THREE, STLLoader, OrbitControls); obs.unobserve(e.target); } }), {rootMargin: "200px"});
-                containers.forEach(c => obs.observe(c));
-            });
-        }
-        function loadModel(c, THREE, STLLoader, OrbitControls) {
-            c.classList.add('loaded');
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(45, c.clientWidth/c.clientHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({alpha:true, antialias:true});
-            renderer.setSize(c.clientWidth, c.clientHeight); c.appendChild(renderer.domElement);
-            const controls = new OrbitControls(camera, renderer.domElement); controls.enablePan = false; controls.autoRotate = true;
-            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-            const l = new THREE.DirectionalLight(0xffffff, 1); l.position.set(1,1,1); scene.add(l);
-            new STLLoader().load(c.dataset.src, geo => {
-                const mat = new THREE.MeshPhongMaterial({color: c.dataset.color || 0xaaaaaa, specular: 0x111111, shininess: 200});
-                const mesh = new THREE.Mesh(geo, mat);
-                const box = new THREE.Box3().setFromObject(mesh); const center = new THREE.Vector3(); box.getCenter(center); mesh.position.sub(center);
-                scene.add(mesh);
-                const size = box.getSize(new THREE.Vector3()).length();
-                camera.position.set(size, size*0.5, size); camera.lookAt(0,0,0);
-                function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); } animate();
+            if(containers.length === 0) return;
+            Promise.all([
+                import('three'), import('three/addons/loaders/STLLoader.js'), import('three/addons/loaders/GLTFLoader.js'), import('three/addons/controls/OrbitControls.js')
+            ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { rootMargin: "200px" });
+                containers.forEach(c => observer.observe(c));
             });
         }
 
-        document.addEventListener('DOMContentLoaded', init);
+        function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
+            container.classList.add('loaded');
+            const url = container.getAttribute('data-src');
+            const customColor = container.getAttribute('data-color');
+            const ext = url.split('.').pop().toLowerCase();
+            const scene = new THREE.Scene(); scene.background = null; 
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.outputColorSpace = THREE.SRGBColorSpace; 
+            renderer.physicallyCorrectLights = true; 
+            container.appendChild(renderer.domElement);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); scene.add(ambientLight);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.2); keyLight.position.set(5, 10, 7); scene.add(keyLight);
+            const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0); rimLight.position.set(-5, 5, -5); scene.add(rimLight);
+            const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5); fillLight.position.set(-5, 0, 5); scene.add(fillLight);
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; controls.dampingFactor = 0.05; controls.enablePan = false; 
+            controls.autoRotate = true; controls.autoRotateSpeed = 2.0;
+            let restartTimer;
+            controls.addEventListener('start', () => { clearTimeout(restartTimer); controls.autoRotate = false; });
+            controls.addEventListener('end', () => { restartTimer = setTimeout(() => { controls.autoRotate = true; }, 5000); });
+            const onLoad = (object) => {
+                container.classList.add('ready'); 
+                const box = new THREE.Box3().setFromObject(object);
+                const center = new THREE.Vector3(); box.getCenter(center); object.position.sub(center); scene.add(object);
+                if (customColor) { object.traverse((child) => { if (child.isMesh) { child.material = new THREE.MeshPhongMaterial({ color: customColor, specular: 0x111111, shininess: 100 }); } }); }
+                const size = box.getSize(new THREE.Vector3()).length();
+                const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
+                camera.position.set(dist, dist * 0.4, dist * 0.8); camera.lookAt(0, 0, 0);
+                controls.minDistance = size * 0.2; controls.maxDistance = size * 5;
+                function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+                animate();
+            };
+            const onError = (e) => { console.error(e); container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>'; };
+            if (ext === 'glb' || ext === 'gltf') { const loader = new GLTFLoader(); loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError); } 
+            else { const loader = new STLLoader(); loader.load(url, (geometry) => { const mat = new THREE.MeshPhongMaterial({ color: customColor || 0xaaaaaa, specular: 0x111111, shininess: 200 }); const mesh = new THREE.Mesh(geometry, mat); onLoad(mesh); }, undefined, onError); }
+            window.addEventListener('resize', () => { if(!container.isConnected) return; camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(typeof Papa === 'undefined') { window.addEventListener('load', init); } else { init(); }
+        });
     </script>
 </body>
 </html>
