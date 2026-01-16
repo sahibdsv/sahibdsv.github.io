@@ -175,7 +175,7 @@ function buildNav() {
 }
 
 function buildSubNav(top) {
-    const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
+    const n = document.getElementById('sub-nav'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
     
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
     
@@ -186,12 +186,34 @@ function buildSubNav(top) {
     });
 
     // Center ONLY when the sub-nav is first built (Navigation event)
-    setTimeout(() => centerSubNav(true), 100);
+    setTimeout(() => centerNav('sub-nav', true), 100);
+}
+
+function buildTertiaryNav(top, mid) {
+    const n = document.getElementById('tertiary-nav');
+    if(!n) return false;
+    n.innerHTML = '';
+    
+    if(!mid) return false;
+
+    const prefix = `${top}/${mid}/`;
+    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix)).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
+
+    if(subs.length === 0) return false;
+
+    subs.forEach(x => {
+        const name = x.split('/')[2];
+        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`);
+        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
+    });
+
+    setTimeout(() => centerNav('tertiary-nav', true), 100);
+    return true;
 }
 
 // SMART CENTERING LOGIC
-function centerSubNav(forceMiddleIfNone) {
-    const n = document.getElementById('sub-nav');
+function centerNav(id, forceMiddleIfNone) {
+    const n = document.getElementById(id);
     if(!n) return;
     const activeLink = n.querySelector('.active');
     
@@ -224,6 +246,13 @@ function handleRouting() {
     
     buildSubNav(top); 
     
+    // Handle Tertiary Nav (3rd Level)
+    const mid = h.split('/')[1];
+    const hasTertiary = buildTertiaryNav(top, mid);
+    
+    document.body.classList.toggle('has-tertiary', hasTertiary);
+    document.getElementById('main-header').classList.toggle('has-tertiary', hasTertiary);
+
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
 }
@@ -268,8 +297,11 @@ function renderIndex() {
     // 1. Collapse & Reset UI State (Enforce Constraints)
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
-    // Clear Sub-nav
+    // Clear Sub-navs
     buildSubNav('Index'); 
+    document.body.classList.remove('has-tertiary');
+    document.getElementById('main-header').classList.remove('has-tertiary');
+
     // Deactivate Main Nav
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
