@@ -61,6 +61,7 @@ function fetchCSV(u) {
     });
 }
 
+// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -75,6 +76,7 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
+    // GOATCOUNTER TRACKING
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -85,6 +87,7 @@ function initApp() {
         }
     });
 
+    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -157,11 +160,9 @@ function toggleSearch() {
 function handleSearch(q) { 
     if(!q) return; 
     isSearchActive = true; 
-    document.body.classList.remove('header-expanded');
-    document.body.classList.remove('header-deep');
-    document.getElementById('main-header').classList.remove('expanded');
-    document.getElementById('main-header').classList.remove('deep');
-
+    // Clear styles that assume navigation
+    document.body.classList.remove('header-1-row', 'header-2-rows');
+    
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
     renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
@@ -173,44 +174,61 @@ function buildNav() {
     p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
 }
 
-function buildSubNav(top) {
-    const n = document.getElementById('sub-nav'); if(!n) return; n.innerHTML = ''; 
-    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
+function buildSubNavs(path) {
+    const subN = document.getElementById('sub-nav');
+    const tertN = document.getElementById('tertiary-nav');
+    const parts = path.split('/');
+    const top = parts[0];
+    const sub = parts.length > 1 ? parts[1] : null;
+
+    // Reset
+    subN.innerHTML = ''; tertN.innerHTML = '';
     
-    subs.forEach(x => { 
-        const name = x.split('/')[1];
-        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
-        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
-    });
-    setTimeout(() => centerNav(n, true), 100);
+    // 1. Build Sub Nav (Children of Top)
+    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/')[1]))].sort();
+    
+    if(subs.length > 0) {
+        document.body.classList.add('header-1-row');
+        document.body.classList.remove('header-2-rows');
+        
+        subs.forEach(x => {
+            const full = `${top}/${x}`;
+            const active = path === full || path.startsWith(full + '/');
+            subN.innerHTML += `<a href="#${full}" class="fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(x)}</a>`;
+        });
+        setTimeout(() => centerNav(subN), 100);
+        
+        // 2. Build Tertiary Nav (Children of Top/Sub)
+        if(sub) {
+            const subPrefix = `${top}/${sub}/`;
+            const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(subPrefix)).map(r => r.Page.split('/')[2]))].sort();
+            
+            if(terts.length > 0) {
+                document.body.classList.remove('header-1-row');
+                document.body.classList.add('header-2-rows');
+                
+                terts.forEach(x => {
+                    const full = `${subPrefix}${x}`;
+                    const active = path === full;
+                    tertN.innerHTML += `<a href="#${full}" class="fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(x)}</a>`;
+                });
+                setTimeout(() => centerNav(tertN), 100);
+            }
+        }
+    } else {
+        document.body.classList.remove('header-1-row', 'header-2-rows');
+    }
 }
 
-function buildTertiaryNav(parentPath) {
-    const n = document.getElementById('tertiary-nav'); if(!n) return; n.innerHTML = '';
-    
-    const prefix = parentPath + '/';
-    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix))
-        .map(r => r.Page.split('/').slice(0, 3).join('/')))] // Get first 3 parts
-        .sort();
-
-    subs.forEach(x => {
-        const name = x.split('/')[2];
-        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`);
-        n.innerHTML += `<a href="#${x}" class="tert-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
-    });
-    setTimeout(() => centerNav(n, true), 100);
-}
-
-function centerNav(navEl, forceMiddleIfNone) {
-    if(!navEl) return;
-    const activeLink = navEl.querySelector('.active');
-    
+function centerNav(n) {
+    if(!n) return;
+    const activeLink = n.querySelector('.active');
     if (activeLink) {
-        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (navEl.clientWidth / 2);
-        navEl.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-    } else if (forceMiddleIfNone) {
-        const middle = (navEl.scrollWidth - navEl.clientWidth) / 2;
-        navEl.scrollTo({ left: middle, behavior: 'smooth' });
+        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
+        n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+    } else {
+        const middle = (n.scrollWidth - n.clientWidth) / 2;
+        n.scrollTo({ left: middle, behavior: 'smooth' });
     }
 }
 
@@ -219,36 +237,34 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
+    // SPECIAL PAGES
     if(h === 'Index') { renderIndex(); return; }
+    if(h === 'Timeline') { renderTimeline(); return; }
     
-    const parts = h.split('/');
-    const top = parts[0]; 
-    const sub = parts.length >= 2 ? parts.slice(0, 2).join('/') : null;
-    
-    // STATE LOGIC
-    const isHome = (h === 'Home' || h === '' || h.startsWith('Filter:'));
-    const hasSub = parts.length >= 1 && !isHome; 
-    const hasTert = parts.length >= 2 && !isHome; 
+    // Check if Filtering
+    if(h.startsWith('Filter:')) { 
+        document.body.classList.remove('header-1-row', 'header-2-rows');
+        renderFiltered(decodeURIComponent(h.split(':')[1])); 
+        return;
+    }
 
-    // Header Expansion State
-    document.body.classList.toggle('header-expanded', hasSub);
-    document.body.classList.toggle('header-deep', hasTert);
+    // Standard Page Routing
+    const top = h.split('/')[0]; 
     
-    const header = document.getElementById('main-header');
-    header.classList.toggle('expanded', hasSub);
-    header.classList.toggle('deep', hasTert);
-    
-    // Primary Highlight
+    // Highlight Main Nav
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
         const href = a.getAttribute('href'); 
         if(href) a.classList.toggle('active', href.replace('#', '') === top); 
     }); 
     
-    if(hasSub) buildSubNav(top);
-    if(hasTert) buildTertiaryNav(sub);
-    
-    if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
-    else { renderPage(h); }
+    // Build Sub & Tertiary Navs
+    if(top !== 'Home') {
+        buildSubNavs(h); 
+    } else {
+        document.body.classList.remove('header-1-row', 'header-2-rows');
+    }
+
+    renderPage(h);
 }
 
 function renderFiltered(t) { 
@@ -288,12 +304,8 @@ function childrenPagesCheck(p) {
 }
 
 function renderIndex() {
-    document.body.classList.remove('header-expanded');
-    document.body.classList.remove('header-deep');
-    document.getElementById('main-header').classList.remove('expanded');
-    document.getElementById('main-header').classList.remove('deep');
-    
-    buildSubNav('Index'); 
+    // Reset UI State
+    document.body.classList.remove('header-1-row', 'header-2-rows');
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
     const app = document.getElementById('app'); 
@@ -321,11 +333,106 @@ function renderIndex() {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
             const title = row ? row.Title : p.split('/').pop();
-            html += `<a href="#${p}" class="index-link fill-anim">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
+            const indentClass = p.split('/').length > 2 ? 'indent' : '';
+            html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
         });
         html += `</div>`;
         list.innerHTML += html;
     }
+}
+
+function renderTimeline() {
+    // Reset UI State
+    document.body.classList.remove('header-1-row', 'header-2-rows');
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+
+    const app = document.getElementById('app');
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="timeline-container"></div>';
+    const container = app.querySelector('.timeline-container');
+
+    // Get all items with dates
+    const items = db.filter(r => r.Timestamp && r.Page !== 'Home' && r.Page !== 'Footer');
+    
+    // Sort by Date Descending
+    items.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+
+    // Group by Month Year
+    const groups = {};
+    items.forEach(r => {
+        const d = formatDate(r.Timestamp);
+        if(!groups[d]) groups[d] = [];
+        groups[d].push(r);
+    });
+
+    for(const [dateStr, rows] of Object.entries(groups)) {
+        // Sort rows alphabetically within month
+        rows.sort((a, b) => a.Title.localeCompare(b.Title));
+
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'timeline-row section';
+        
+        let cardsHtml = '';
+        // We'll reuse renderRows logic but manually constructed to fit the scroller
+        // However, renderRows targets #app. We need manual card creation here.
+        // Let's make a mini helper for card creation or extract logic.
+        // For simplicity and robustness, I will recreate the card HTML here using a simplified version of the logic.
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'timeline-content';
+        
+        rows.forEach(r => {
+            const card = createCardElement(r);
+            contentDiv.appendChild(card);
+        });
+
+        rowDiv.innerHTML = `<div class="timeline-date">${dateStr}</div>`;
+        rowDiv.appendChild(contentDiv);
+        container.appendChild(rowDiv);
+    }
+}
+
+function createCardElement(r) {
+    let contentHtml = processText(r.Content);
+    let mediaHtml = '';
+    let hasPlaceholder = false;
+    
+    const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+    
+    if (modelMatch) {
+        const url = modelMatch[1].trim();
+        const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+        mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+        contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
+    } else if (r.Media) {
+        const thumb = getThumbnail(r.Media);
+        if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+    } else {
+        hasPlaceholder = true;
+        mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+    }
+
+    let catClass = '';
+    const pLower = r.Page.toLowerCase();
+    if(pLower.startsWith('projects')) catClass = 'cat-projects';
+    else if(pLower.startsWith('professional')) catClass = 'cat-professional';
+    else if(pLower.startsWith('personal')) catClass = 'cat-personal';
+
+    const d = document.createElement('div'); 
+    d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
+    let l = r.LinkURL || `#${r.Page}`;
+    const target = l.startsWith('#') ? '' : '_blank';
+    d.setAttribute('data-link', l); d.setAttribute('data-target', target);
+    
+    let mh = '';
+    if(r.Tags) {
+         mh = `<div class="meta-row">`;
+         const tags = r.Tags.split(',').map(x => x.trim());
+         tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
+         mh += `</div>`;
+    }
+
+    d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
+    return d;
 }
 
 function renderHome() { 
@@ -333,9 +440,20 @@ function renderHome() {
     const app = document.getElementById('app'); app.innerHTML = ''; 
     renderRows(hr, null, true); 
     
-    const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
+    // Featured Items
+    const featured = db.filter(r => r.Tags && r.Tags.includes('Featured'));
+    if(featured.length > 0) {
+        renderRows(featured, "Featured", true, true);
+    }
+
+    // Recent Activity (excluding Home, Footer, and Featured to avoid dupes if desired, but request didn't specify excluding featured from recent)
+    // We will exclude featured from recent just to keep it clean, or keep them. Let's keep them but remove duplicates if any.
+    // Actually, "Featured" implies pinned.
+    
+    const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && (!r.Tags || !r.Tags.includes('Featured')))
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                       .slice(0, 6);
+                      
     if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
 }
 
@@ -355,7 +473,10 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         return; 
     }
     
-    let gc = app.querySelector('.grid-container');
+    let gc = app.querySelector('.grid-container:last-child'); // Append to last grid if exists? No, logic below creates new one.
+    
+    // Logic to attach to existing grid if we are just appending more items? 
+    // The previous code always created a new grid container if append was true.
     if(append) {
         gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
     } else {
@@ -511,6 +632,7 @@ function renderFooter() {
     }); 
     
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
+    fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="closeSearch()">Timeline</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
@@ -586,6 +708,7 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
+// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
     
