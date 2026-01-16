@@ -12,7 +12,9 @@
     <meta property="og:url" content="https://sahibvirdee.com/">
     <meta property="og:title" content="Sahib Virdee | Engineering Portfolio">
     <meta property="og:description" content="Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.">
-    <meta property="og:image" content="https://placehold.co/1200x630/050505/FFF?text=Sahib+Virdee"> <meta property="twitter:card" content="summary_large_image">
+    <meta property="og:image" content="https://placehold.co/1200x630/050505/FFF?text=Sahib+Virdee">
+
+    <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://sahibvirdee.com/">
     <meta property="twitter:title" content="Sahib Virdee | Engineering Portfolio">
     <meta property="twitter:description" content="Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.">
@@ -38,8 +40,8 @@
             
             /* --- HEADER METRICS --- */
             --brand-row-h: 36px; 
-            --main-row-h: 26px;
-            --sub-row-h: 24px;
+            --main-row-h: 26px; /* Level 1 Height */
+            --sub-row-h: 24px;  /* Level 2+ Height (Uniform) */
             --gap: 1px;
             
             /* --- RADIUS SYSTEM --- */
@@ -60,8 +62,8 @@
 
         body {
             background-color: var(--bg); color: var(--text-main); font-family: 'Jost', sans-serif; line-height: 1.5;
-            padding-top: calc(var(--brand-row-h) + var(--main-row-h) + var(--gap) + 10px); 
-            transition: padding-top 0.3s var(--ease);
+            /* Padding top is handled dynamically by JS to prevent jitter */
+            padding-top: 80px; 
             display: flex; flex-direction: column; min-height: 100vh;
             width: 100%; position: relative; overflow-x: hidden; 
         }
@@ -103,8 +105,8 @@
             gap: var(--gap); 
             border-bottom: 1px solid #1a1a1a; 
             overflow: hidden; 
-            transition: height 0.4s var(--ease), transform 0.4s var(--ease);
-            height: calc(var(--brand-row-h) + var(--main-row-h) + var(--gap));
+            /* Transition purely visual properties, NOT height (height is handled by specific row collapsing) */
+            transition: transform 0.4s var(--ease);
         }
 
         body.search-active #main-header {
@@ -130,17 +132,44 @@
         
         #brand-name:hover { background-position: 0 100%; }
 
-        #primary-nav { 
-            width: 100%; height: var(--main-row-h); flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; gap: 30px; 
-            margin: 0; padding: 0; 
+        /* --- DYNAMIC NAV CONTAINER --- */
+        #nav-container {
+            width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--gap);
+            transition: gap 0.4s var(--ease);
+        }
+        
+        /* GENERIC NAV ROW (Shared Physics) */
+        .nav-row {
+            width: 100%; max-width: 900px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; gap: 20px;
+            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+            transition: height 0.4s var(--ease), opacity 0.4s var(--ease), margin 0.4s var(--ease);
+            opacity: 1;
         }
 
-        .nav-link {
+        /* LEVEL 1: PRIMARY (Distinct Style) */
+        .nav-row.level-1 {
+            height: var(--main-row-h); gap: 30px;
+        }
+        .nav-row.level-1 .nav-link {
             font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
             line-height: 1; user-select: none; --text-base: #666; --text-hover: #fff;
         }
 
+        /* LEVEL 2+: SUB/TERTIARY (Uniform Style) */
+        .nav-row.level-n {
+            height: var(--sub-row-h);
+            font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1;
+            mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
+        }
+        /* Scroll Spacers for Level 2+ */
+        .nav-row.level-n::before, .nav-row.level-n::after { 
+            content: ''; display: none; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0; 
+        }
+        .nav-row.level-n > * { flex-shrink: 0; }
+
+        /* ACCENT COLORS (Level 1 Only) */
         .nav-link[href="#Projects"] { --text-hover: var(--accent-projects); }
         .nav-link[href="#Projects"].active { --text-base: var(--accent-projects); --text-hover: var(--accent-projects); }
         .nav-link[href="#Professional"] { --text-hover: var(--accent-prof); }
@@ -148,39 +177,23 @@
         .nav-link[href="#Personal"] { --text-hover: var(--accent-personal); }
         .nav-link[href="#Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
-        #sub-nav, #tertiary-nav { 
-            width: 100%; max-width: 900px; height: 0; flex-shrink: 0;
-            /* DEFAULT (DESKTOP): CENTERED, NO SCROLL */
-            display: flex; align-items: center; justify-content: center; gap: 20px; 
-            font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1;
-            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-            mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            opacity: 0; pointer-events: none;
-            transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
-        }
+        /* --- SCROLL LOGIC --- */
         
-        /* SCROLL SPACERS: HIDDEN BY DEFAULT (DESKTOP) */
-        #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { 
-            content: ''; display: none; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0; 
-        }
-        
-        #sub-nav > *, #tertiary-nav > * { flex-shrink: 0; }
-
-        body.has-sub-nav #sub-nav { height: var(--sub-row-h); opacity: 1; pointer-events: auto; }
-        body.has-terti-nav #sub-nav { height: var(--sub-row-h); opacity: 1; pointer-events: auto; }
-        body.has-tertiary-nav #tertiary-nav { height: var(--sub-row-h); opacity: 1; pointer-events: auto; }
-
+        /* STANDARD: Hide Brand */
         #main-header.scrolled #brand-name {
             height: 0; opacity: 0; margin-bottom: -1px; 
             transform: translateY(-20px); pointer-events: none;
         }
+        #main-header.scrolled { gap: 0; }
+        #main-header.scrolled #nav-container { gap: 0; }
 
-        #main-header.scrolled {
-            gap: 0; justify-content: center; 
+        /* AGGRESSIVE DEEP SCROLL: Hide Brand + Top Rows, Keep Bottom 2 */
+        /* Applied when #main-header has class 'deep-nav' */
+        #main-header.scrolled.deep-nav .nav-row:not(:nth-last-child(-n+2)) {
+            height: 0; opacity: 0; margin: 0; pointer-events: none; overflow: hidden;
         }
 
-        /* --- SEARCH CONTROLS & TOOLTIP --- */
+        /* --- SEARCH CONTROLS --- */
         #search-controls { 
             position: absolute; right: 10px; top: 0; 
             height: var(--brand-row-h); width: 60px; 
@@ -195,51 +208,35 @@
         }
         .icon-btn:hover { fill: #fff; }
         .search-icon { opacity: 1; }
-        .close-icon  { opacity: 0; display: none; } 
-
-        /* CUSTOM CSS TOOLTIP */
+        
+        /* Tooltip */
         .icon-btn[data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            top: 100%;
-            right: 50%;
-            transform: translateX(50%);
-            background: #222;
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-family: 'Jost', sans-serif;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0;
-            animation: fadeInTooltip 0.2s forwards 0.3s; /* Delay for polish */
-            border: 1px solid #333;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            content: attr(data-tooltip); position: absolute; top: 100%; right: 50%; transform: translateX(50%);
+            background: #222; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-family: 'Jost', sans-serif;
+            white-space: nowrap; pointer-events: none; opacity: 0; animation: fadeInTooltip 0.2s forwards 0.3s;
+            border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         @keyframes fadeInTooltip { to { opacity: 1; top: 110%; } }
 
-        /* --- FIXED FLOATING SEARCH BUBBLE --- */
+        /* --- SEARCH BUBBLE --- */
         #search-overlay { 
             position: fixed; top: 40px; left: 50%; width: 400px; max-width: 90%; height: 50px; 
             transform-origin: center; transform: translate(-50%, -40px) scale(0.9);
             display: flex; align-items: center; justify-content: center; 
             background: linear-gradient(135deg, #151515 0%, #222 100%);
-            z-index: 2000; 
-            border-radius: var(--card-radius); 
+            z-index: 2000; border-radius: var(--card-radius); 
             box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid #333;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; visibility: hidden; pointer-events: none;
         }
-        
         #search-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0) scale(1); }
         #search-input { width: 100%; height: 100%; background: transparent; border: none; color: #fff; font-size: 20px; font-family: 'Jost', sans-serif; padding: 0 20px; outline: none; text-align: center; font-weight: 500; }
         #app.search-active { opacity: 0.3; transition: 0.4s; }
 
         /* MOBILE OPTIMIZATIONS */
         @media (max-width: 768px) {
-            /* Enable horizontal scrolling mechanics on Mobile */
-            #sub-nav, #tertiary-nav { justify-content: flex-start; }
-            #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { display: block; }
+            /* Fix: Level 1 stays centered, Level 2+ aligns left for scrolling */
+            .nav-row:not(.level-1) { justify-content: flex-start; }
+            .nav-row:not(.level-1)::before, .nav-row:not(.level-1)::after { display: block; }
 
             .grid-container { grid-template-columns: 1fr; }
             footer { flex-direction: column; gap: 20px; text-align: center; }
@@ -357,9 +354,8 @@
         .layout-quote .author { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
         .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
         
-        /* CONCENTRIC REFRESH BUTTON */
         .layout-quote .refresh-btn { 
-            position: absolute; bottom: 18px; right: 18px; /* ALIGNED TO CONCENTRIC CENTER (18px Radius) */
+            position: absolute; bottom: 18px; right: 18px; 
             width: 26px; height: 26px; 
             opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; 
         }
@@ -381,7 +377,6 @@
         .index-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
         .index-link span { color: #444; font-size: 12px; margin-left: 8px; }
         
-        /* Indent styling for Tertiary pages */
         .index-link.depth-3 { padding-left: 20px; font-size: 15px; color: #888; }
         .index-link.depth-3::before { content: "└ "; opacity: 0.5; margin-right: 5px; font-family: monospace; }
 
@@ -444,16 +439,11 @@
 
     <header id="main-header" class="no-transition">
         <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
-        <nav id="primary-nav"></nav>
-        <nav id="sub-nav"></nav>
-        <nav id="tertiary-nav"></nav>
+        <div id="nav-container"></div>
         
         <div id="search-controls">
             <svg id="search-trigger" class="icon-btn search-icon" onclick="toggleSearch()" viewBox="0 0 24 24" data-tooltip="Search (/)">
                 <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
-            <svg id="close-search" class="icon-btn close-icon" onclick="toggleSearch()" viewBox="0 0 24 24">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
             </svg>
         </div>
     </header>
@@ -500,8 +490,9 @@
 
     <script>
         let db = [], quotesDb = [], isSearchActive = false;
+        // State to track previous nav depth for animation direction logic (optional, but good for robust rendering)
+        let previousNavState = []; 
 
-        // INLINED CONFIGURATION
         const CONFIG = {
             main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
             quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
@@ -522,7 +513,8 @@
                     setTimeout(() => {
                         document.body.classList.remove('no-transition');
                         document.getElementById('main-header').classList.remove('no-transition');
-                        updatePadding(); // Initial sizing
+                        // Force initial calculation
+                        handleRouting();
                     }, 50);
                 });
             }).catch(e => {
@@ -565,10 +557,11 @@
         }
 
         function initApp() {
-            buildNav(); handleRouting();
+            // Initial call is handled in init() via handleRouting()
+            // buildNav(); // Replaced by recursive logic in handleRouting
+            
             window.addEventListener('hashchange', handleRouting);
             
-            // GOATCOUNTER TRACKING
             window.addEventListener('hashchange', function(e) {
                 if (window.goatcounter && window.goatcounter.count) {
                     window.goatcounter.count({
@@ -579,14 +572,11 @@
                 }
             });
 
-            // SCROLL LOGIC: Only affects Header Class, NOT Body Padding
             window.addEventListener('scroll', () => { 
                 const h = document.getElementById('main-header'); 
                 const isScrolled = window.scrollY > 10; 
                 h.classList.toggle('scrolled', isScrolled);
-                
-                // Recalculate header height physically so the border moves
-                updateHeaderHeight(isScrolled);
+                // Note: We do NOT update padding here. Layout stability guaranteed by static calculation.
             });
             
             document.addEventListener('click', (e) => {
@@ -623,7 +613,12 @@
                     if(isSearchActive) closeSearch();
                     const tag = e.target.getAttribute('data-tag');
                     const date = e.target.getAttribute('data-date');
-                    if(date) window.location.hash = 'Filter:' + date;
+                    // Logic: Chip contains full date (YYYY-MM-DD), filter needs Month (YYYY-MM)
+                    if(date) {
+                         // Extract YYYY-MM from YYYY-MM-DD
+                         const filterVal = date.substring(0, 7); 
+                         window.location.hash = 'Filter:' + filterVal;
+                    }
                     else if(tag) window.location.hash = 'Filter:' + tag;
                     return; 
                 }
@@ -641,14 +636,11 @@
                 }
             });
             
-            // KEYBOARD SHORTCUTS
             document.addEventListener('keydown', (e) => {
-                // Check for "/" or "Cmd+K"
                 if ((e.key === '/' || (e.metaKey && e.key === 'k') || (e.ctrlKey && e.key === 'k')) && !isSearchActive) {
-                    e.preventDefault(); // Prevent "/" from being typed into the input immediately if focused later
+                    e.preventDefault(); 
                     toggleSearch();
                 }
-                // Esc to close
                 if (e.key === 'Escape') {
                     if(isSearchActive || document.getElementById('search-overlay').classList.contains('active')) {
                         closeSearch();
@@ -657,204 +649,275 @@
             });
         }
         
-        // NEW: Calculation for Body Padding (Fixed per page) vs Header Height (Dynamic per scroll)
-        function updatePadding() {
-            // MATCHED TO CSS VARIABLES
-            const brandH = 36; 
-            const mainH = 26;  
-            const subH = 24;    
-            const gap = 1;      
-            
-            // Calculate Active Hierarchy Level
-            let totalH = brandH + mainH + gap; 
-            if(document.body.classList.contains('has-sub-nav')) totalH += subH + gap;
-            if(document.body.classList.contains('has-tertiary-nav')) totalH += subH + gap;
+        // --- CORE NAVIGATION LOGIC ---
 
-            // Set Body Padding (Fixed) + Buffer
-            document.body.style.paddingTop = (totalH + 10) + 'px';
+        function handleRouting() { 
+            if(isSearchActive) return; 
             
-            // Set Initial Header Height (Expanded)
-            updateHeaderHeight(false);
+            // 1. Reset Scroll & Header State Synchronously
+            window.scrollTo(0, 0); 
+            const h = document.getElementById('main-header');
+            if(h) h.classList.remove('scrolled', 'deep-nav');
+
+            let hash = window.location.hash.substring(1) || 'Home'; 
+            
+            // 2. Render Recursively based on Path
+            const parts = (hash === 'Index' || hash.startsWith('Filter:')) ? [] : hash.split('/');
+            
+            // Special handling: 'Index' acts like root for nav
+            if(hash === 'Index') {
+                renderNavigation(['Index']);
+                renderIndex();
+                calculateAndSetBodyPadding();
+                return;
+            }
+
+            if(hash.startsWith('Filter:')) {
+                renderNavigation([]); // Empty nav for filter view (or just root)
+                renderFiltered(decodeURIComponent(hash.split(':')[1])); 
+                calculateAndSetBodyPadding();
+                return;
+            }
+
+            // Normal Page Routing
+            renderNavigation(parts);
+            renderPage(hash);
+            
+            // 3. Final Layout Calculation
+            calculateAndSetBodyPadding();
         }
 
-        function updateHeaderHeight(isScrolled) {
-            const h = document.getElementById('main-header');
-            const brandH = 36; 
-            const mainH = 26;  
-            const subH = 24;    
-            const gap = 1;
+        // Recursive Navigation Renderer
+        function renderNavigation(pathParts) {
+            const container = document.getElementById('nav-container');
+            if(!container) return;
             
-            let visibleH = 0;
+            // Determine active roots
+            // Level 1 roots: Unique set of all top-level pages
+            const roots = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort();
             
-            // Brand is only visible if NOT scrolled
-            if(!isScrolled) visibleH += brandH + gap;
+            // We need to render Level 1 + (Depth) Levels
+            // Depth of pathParts: [] = 0 (Just Roots), ['Projects'] = 1 level active, look for children of Projects
             
-            // Main Nav always visible
-            visibleH += mainH;
+            // Strategy: Render Level 1. Then iterate pathParts to render children.
+            // Always try to render one level deeper than current path to show options.
             
-            // Sub/Tertiary based on Classes
-            if(document.body.classList.contains('has-sub-nav')) visibleH += subH + gap;
-            if(document.body.classList.contains('has-tertiary-nav')) visibleH += subH + gap;
+            const currentRenderedRows = [];
+            
+            // --- LEVEL 1 (PRIMARY) ---
+            const level1HTML = generateNavRowHTML(roots, pathParts[0], 1);
+            updateOrInsertRow(container, 1, level1HTML);
+            currentRenderedRows.push(1);
 
-            h.style.height = visibleH + 'px';
+            // --- LEVEL 2+ (RECURSIVE) ---
+            let currentPath = "";
+            for (let i = 0; i < pathParts.length; i++) {
+                const segment = pathParts[i];
+                currentPath = currentPath ? `${currentPath}/${segment}` : segment;
+                
+                // Find children of currentPath
+                const prefix = currentPath + '/';
+                const children = [...new Set(db
+                    .filter(r => r.Page && r.Page.startsWith(prefix))
+                    .map(r => r.Page.substring(prefix.length).split('/')[0])
+                    .filter(x => x)
+                )].sort();
+
+                if (children.length > 0) {
+                    const level = i + 2;
+                    const activeChild = pathParts[i+1]; // May be undefined if at end of path
+                    const html = generateNavRowHTML(children, activeChild, level, currentPath);
+                    updateOrInsertRow(container, level, html);
+                    currentRenderedRows.push(level);
+                }
+            }
+
+            // Cleanup: Remove rows that are no longer needed (e.g., navigated up)
+            const existingRows = container.querySelectorAll('.nav-row');
+            existingRows.forEach(row => {
+                const lvl = parseInt(row.getAttribute('data-level'));
+                if (!currentRenderedRows.includes(lvl)) {
+                    row.remove();
+                }
+            });
+
+            // Handle Deep Nav Class
+            const h = document.getElementById('main-header');
+            if(currentRenderedRows.length > 3) {
+                h.classList.add('deep-nav');
+                h.setAttribute('data-depth', currentRenderedRows.length);
+            } else {
+                h.classList.remove('deep-nav');
+                h.removeAttribute('data-depth');
+            }
+            
+            // Center active items (Sync logic)
+            setTimeout(() => {
+                currentRenderedRows.forEach(lvl => {
+                    centerNavRow(lvl, previousNavState.includes(lvl)); // Pass flag if row existed
+                });
+                previousNavState = [...currentRenderedRows];
+            }, 0);
+        }
+
+        function generateNavRowHTML(items, activeItem, level, parentPath = "") {
+            const isLevel1 = level === 1;
+            const className = isLevel1 ? 'level-1' : 'level-n';
+            
+            let links = items.map(item => {
+                // Construct HREF. For Level 1, it's just #Item. For others, #Parent/Item
+                const href = isLevel1 ? `#${item}` : `#${parentPath}/${item}`;
+                // Active check
+                const isActive = item === activeItem;
+                
+                // Class generation
+                // Level 1: nav-link. Level 2+: sub-link (matches CSS for tertiary style)
+                // Note: CSS uses .nav-link for L1 and .sub-link logic is merged into .nav-row.level-n styles mostly
+                // But we keep class names for accent color hooks if needed
+                const linkClass = isLevel1 ? 'nav-link' : 'sub-link'; 
+                
+                return `<a href="${href}" class="${linkClass} fill-anim ${isActive ? 'active' : ''}" onclick="closeSearch()">${safeHTML(item)}</a>`;
+            }).join('');
+
+            return `<div class="nav-row ${className}" data-level="${level}">${links}</div>`;
+        }
+
+        function updateOrInsertRow(container, level, html) {
+            let row = container.querySelector(`.nav-row[data-level="${level}"]`);
+            if (row) {
+                // If content changed, update it. If exact match, leave it (preserves scroll?)
+                // Actually, for active state changes, we must update innerHTML or class
+                if (row.innerHTML !== html.replace(/<div.*?>|<\/div>/g, '')) { // Simple check
+                     row.outerHTML = html;
+                }
+            } else {
+                // Insert in correct order
+                const allRows = Array.from(container.children);
+                const prevRow = allRows.reverse().find(r => parseInt(r.getAttribute('data-level')) < level);
+                if (prevRow) {
+                    prevRow.insertAdjacentHTML('afterend', html);
+                } else {
+                    container.insertAdjacentHTML('afterbegin', html); // Level 1 usually
+                }
+            }
+        }
+
+        function centerNavRow(level, rowExisted) {
+            const row = document.querySelector(`.nav-row[data-level="${level}"]`);
+            if (!row) return;
+
+            // SCROLL LOGIC
+            const activeLink = row.querySelector('.active');
+            
+            if (activeLink) {
+                // SELECTION: Instant/Smooth center
+                const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (row.clientWidth / 2);
+                
+                // If row existed (user clicked existing item), just slide center. NO BOUNCE.
+                // If row IS NEW (user clicked parent, this appeared), trigger PREVIEW BOUNCE? 
+                // Actually, usually new rows don't have an active item yet unless deep linking.
+                // If deep linking, just center.
+                row.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+                
+            } else {
+                // NO ACTIVE ITEM (Discovery or Reset)
+                
+                if (!rowExisted) {
+                    // NEW ROW: Preview Bounce
+                    // Center first
+                    const middle = (row.scrollWidth - row.clientWidth) / 2;
+                    row.scrollTo({ left: middle, behavior: 'auto' }); // Snap to middle
+                    
+                    // Trigger Bounce (Scroll right a bit then back)
+                    if(row.scrollWidth > row.clientWidth) {
+                         setTimeout(() => {
+                             row.scrollTo({ left: middle + 50, behavior: 'smooth' });
+                             setTimeout(() => {
+                                 row.scrollTo({ left: middle, behavior: 'smooth' });
+                             }, 300);
+                         }, 100);
+                    }
+                } else {
+                    // EXISTING ROW RESET (Navigated Up)
+                    // Reset to dead center
+                    const middle = (row.scrollWidth - row.clientWidth) / 2;
+                    row.scrollTo({ left: middle, behavior: 'smooth' });
+                }
+            }
+        }
+
+        function calculateAndSetBodyPadding() {
+            // Metrics match CSS
+            const brandH = 36;
+            const mainH = 26;
+            const subH = 24;
+            const gap = 1;
+
+            let totalH = brandH; // Brand always physically there in DOM structure
+            
+            const rows = document.querySelectorAll('.nav-row');
+            rows.forEach(r => {
+                if (r.classList.contains('level-1')) totalH += mainH + gap;
+                else totalH += subH + gap;
+            });
+            
+            // Add buffer
+            totalH += 10;
+            
+            document.body.style.paddingTop = totalH + 'px';
         }
 
         function resetToHome() { closeSearch(); window.location.hash = ''; }
         function closeSearch() { 
             document.getElementById('search-overlay').classList.remove('active'); 
-            document.body.classList.remove('search-active'); // Remove class from body
+            document.body.classList.remove('search-active'); 
             const input = document.getElementById('search-input');
             input.value = ''; 
-            input.blur(); // Unfocus to prevent further keyup events
+            input.blur(); 
             if(isSearchActive) { isSearchActive = false; handleRouting(); } 
             isSearchActive = false; 
         }
 
         function toggleSearch() { 
             const a = document.getElementById('search-overlay').classList.toggle('active'); 
-            document.body.classList.toggle('search-active'); // Toggle class on body
+            document.body.classList.toggle('search-active'); 
             if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
             else closeSearch(); 
         }
 
         function handleSearch(q) { 
-            // PREVENT ZOMBIE SEARCH STATE if triggered by ESC keyup after search was closed
             if(!document.getElementById('search-overlay').classList.contains('active')) return;
-
             isSearchActive = true; 
-            
-            // FIXED: If empty, show placeholder instead of closing
             if(!q) { 
                 const app = document.getElementById('app');
                 app.innerHTML = '<div class="layout-404" style="padding:40px 0;"><h2>Search</h2><p>Type to find projects and posts...</p></div>';
                 return;
             } 
-
             const t = q.toLowerCase();
             const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
             renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
         }
 
-        function buildNav() { 
-            const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
-            const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
-            p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
-        }
-
-        function buildSubNav(top) {
-            const n = document.getElementById('sub-nav'); if(!n) return; n.innerHTML = '';
-            
-            if(!top || top === 'Home') {
-                document.body.classList.remove('has-sub-nav');
-                updatePadding();
-                return;
-            }
-
-            const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
-            
-            if(subs.length === 0) {
-                 document.body.classList.remove('has-sub-nav');
-            } else {
-                 document.body.classList.add('has-sub-nav');
-                 subs.forEach(x => { 
-                    const name = x.split('/')[1];
-                    const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
-                    n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
-                });
-                setTimeout(() => centerSubNav(true), 100);
-            }
-            updatePadding();
-        }
-
-        function buildTertiaryNav(secondaryPath) {
-            const n = document.getElementById('tertiary-nav'); if(!n) return; n.innerHTML = '';
-            
-            if (!secondaryPath) {
-                document.body.classList.remove('has-tertiary-nav');
-                updatePadding();
-                return;
-            }
-
-            const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(secondaryPath + '/')).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
-
-            if (terts.length === 0) {
-                document.body.classList.remove('has-tertiary-nav');
-            } else {
-                document.body.classList.add('has-tertiary-nav');
-                terts.forEach(x => { 
-                    const name = x.split('/')[2];
-                    const active = window.location.hash === `#${x}`; 
-                    n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
-                });
-                setTimeout(() => centerTertiaryNav(true), 100);
-            }
-            updatePadding();
-        }
-
-        function centerSubNav(forceMiddleIfNone) {
-            const n = document.getElementById('sub-nav'); if(!n) return;
-            // ONLY SCROLL IF CONTENT OVERFLOWS (PREVENTS JITTER ON DESKTOP)
-            if(n.scrollWidth <= n.clientWidth + 5) return;
-
-            const activeLink = n.querySelector('.active');
-            if (activeLink) {
-                const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
-                n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-            } else if (forceMiddleIfNone) {
-                const middle = (n.scrollWidth - n.clientWidth) / 2;
-                n.scrollTo({ left: middle, behavior: 'smooth' });
-            }
-        }
-        
-        function centerTertiaryNav(forceMiddleIfNone) {
-            const n = document.getElementById('tertiary-nav'); if(!n) return;
-            // ONLY SCROLL IF CONTENT OVERFLOWS
-            if(n.scrollWidth <= n.clientWidth + 5) return;
-
-            const activeLink = n.querySelector('.active');
-            if (activeLink) {
-                const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
-                n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-            } else if (forceMiddleIfNone) {
-                const middle = (n.scrollWidth - n.clientWidth) / 2;
-                n.scrollTo({ left: middle, behavior: 'smooth' });
-            }
-        }
-
-        function handleRouting() { 
-            if(isSearchActive) return; 
-            window.scrollTo(0, 0); 
-            
-            // Force Header Reset on Route Change
-            const h = document.getElementById('main-header');
-            if(h) {
-                h.classList.remove('scrolled');
-                updateHeaderHeight(false);
-            }
-
-            let hash = window.location.hash.substring(1) || 'Home'; 
-            
-            if(hash === 'Index') { renderIndex(); return; }
-            
-            const parts = hash.split('/');
-            const top = parts[0]; 
-            const secondary = parts.length > 1 ? parts.slice(0, 2).join('/') : null;
-
-            document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
-            
-            buildSubNav(top); 
-            buildTertiaryNav(secondary); 
-            
-            if(hash.startsWith('Filter:')) { renderFiltered(decodeURIComponent(hash.split(':')[1])); } 
-            else { renderPage(hash); }
-        }
-
         function renderFiltered(t) { 
+            const dateMatch = t.match(/^\d{4}-\d{2}/); // YYYY-MM
+            let displayTitle = t;
+            
+            if (dateMatch) {
+                // Convert 2025-12 to DEC 2025
+                const [y, m] = t.split('-');
+                const dateObj = new Date(y, m - 1);
+                const mo = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
+                displayTitle = `Posts from ${mo} ${y}`;
+            }
+
             const res = db.filter(r => {
-                const dateStr = formatDate(r.Timestamp);
-                return (dateStr === t) || (r.Tags && r.Tags.includes(t));
+                const rowDate = r.Timestamp || "";
+                // If t is 2025-12, checking if 2025-12-15 starts with it
+                const dateHit = rowDate.startsWith(t);
+                return dateHit || (r.Tags && r.Tags.includes(t));
             });
-            renderRows(res, `Posts tagged "${safeHTML(t)}"`, false, true); 
+            
+            renderRows(res, displayTitle, false, true); 
         }
 
         function renderPage(p) { 
@@ -864,6 +927,7 @@
             
             const isMainPage = !p.includes('/');
             
+            // Pass article mode flag
             if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
             else if(childrenPagesCheck(p)) { }
             else {
@@ -886,11 +950,7 @@
         }
 
         function renderIndex() {
-            document.body.classList.remove('has-sub-nav', 'has-tertiary-nav');
-            buildSubNav('Index'); 
-            buildTertiaryNav(null); 
-            document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-
+            // Index logic remains mostly same, just updating how we display it
             const app = document.getElementById('app'); 
             app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
             
@@ -916,11 +976,8 @@
                     const row = db.find(r => r.Page === p);
                     const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
                     const title = row ? row.Title : p.split('/').pop();
-                    
-                    // --- INDEX INDENTATION LOGIC ---
                     const depth = p.split('/').length;
                     const indentClass = depth > 2 ? 'depth-3' : '';
-                    
                     html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
                 });
                 html += `</div>`;
@@ -942,10 +999,12 @@
         function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
             const app = document.getElementById('app'); if(!app) return; 
             
-            rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
+            // FIX: Only sort by date for Grids/Home. For Articles, respect Sheet Order.
+            if (!isArticleMode) {
+                rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
+            }
 
             if(!append) {
-                // ADDED FONT WEIGHT TO CMS TITLES
                 app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
             } else if(title) {
                 app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
@@ -1010,7 +1069,9 @@
                     metaHtml += '<div class="article-tags">';
                     if(r.Timestamp) {
                         const dateVal = formatDate(r.Timestamp);
-                        metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
+                        // Store full date for display, but chip data uses it too. 
+                        // The Click Handler in initApp converts it to YYYY-MM for filtering.
+                        metaHtml += `<span class="chip date" data-date="${r.Timestamp}" data-val="${dateVal}">${dateVal}</span>`;
                     }
                     if(r.Tags) {
                         const tags = r.Tags.split(',').map(x => x.trim());
@@ -1033,7 +1094,7 @@
                         let dateHtml = '';
                         if(r.Timestamp) {
                             let dateVal = formatDate(r.Timestamp);
-                            dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
+                            dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${r.Timestamp}" onclick="event.stopPropagation(); window.location.hash='Filter:${r.Timestamp.substring(0,7)}'">${dateVal}</span></div>`;
                         }
                         d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                         app.appendChild(d); return;
@@ -1055,7 +1116,7 @@
                     mh = `<div class="meta-row">`;
                     if(r.Timestamp) {
                         let dateVal = formatDate(r.Timestamp);
-                        mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
+                        mh += `<span class="chip date" data-date="${r.Timestamp}" data-val="${dateVal}">${dateVal}</span>`; 
                     }
                     tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
                     mh += `</div>`;
@@ -1085,7 +1146,6 @@
             else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
             
             const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
-            
             const len = text.length;
             let sizeClass = 'short';
             
@@ -1166,19 +1226,24 @@
         }
 
         function formatDate(s) {
+            // UPDATED: Now returns DD MMM YYYY (e.g., 15 DEC 2025)
             if(!s) return '';
             if(s.length === 8 && !isNaN(s)) {
+                // Legacy support for YYYYMMDD
                 const y = s.substring(0, 4);
                 const m = s.substring(4, 6);
                 const d = s.substring(6, 8);
                 const dateObj = new Date(`${y}-${m}-${d}`);
-                return `${dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()} ${y}`;
+                const day = dateObj.getDate();
+                const mo = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
+                return `${day} ${mo} ${y}`;
             }
-            const d = new Date(s);
+            const d = new Date(s); // Standard YYYY-MM-DD
             if(isNaN(d.getTime())) return s;
+            const day = d.getDate();
             const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
             const yr = d.getFullYear();
-            return `${mo} ${yr}`;
+            return `${day} ${mo} ${yr}`;
         }
 
         function init3DViewers() {
