@@ -3,12 +3,15 @@ category: Projects
 date: '2023-11-01'
 hierarchy: Projects/CubeSat
 layout: default
+permalink: /Projects/CubeSat/
 tags:
 - SolidWorks
 - Ansys
 - Aerospace
 title: CubeSat Structure
 ---
+
+## CubeSat Structure
 
 Structural and component design for a research satellite prototype. Validated for launch loads and orbital thermal conditions.
 
@@ -22,6 +25,4 @@ Simulated LEO thermal cycling (-150°C to +120°C) to verify component survivabi
 
 ## Integration
 
-Precision assembly and contamination control. Integration sequence: 
-<div class="inline-gallery"><img src="https://placehold.co/350/2563eb/FFF?text=Assembly+1" class="inline-img zoomable" loading="lazy" alt="Gallery Image"><img src="https://placehold.co/350/7c3aed/FFF?text=Assembly+2" class="inline-img zoomable" loading="lazy" alt="Gallery Image"><img src="https://placehold.co/350/db2777/FFF?text=Assembly+3" class="inline-img zoomable" loading="lazy" alt="Gallery Image"></div>
- Mission patch designed with York Space Engineering.
+Precision assembly and contamination control. Integration sequence: [https://placehold.co/350/2563eb/FFF?text=Assembly+1, https://placehold.co/350/7c3aed/FFF?text=Assembly+2, https://placehold.co/350/db2777/FFF?text=Assembly+3] Mission patch designed with York Space Engineering.

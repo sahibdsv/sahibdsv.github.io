@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>{% if page.url == "/" %}Sahib Virdee | Engineering Portfolio{% else %}{{ page.title }} | Sahib Virdee{% endif %}</title>
+    <title>{{ page.title }} | Sahib Virdee</title>
     
     <meta name="author" content="Sahib Virdee">
     <meta property="og:type" content="website">
@@ -12,7 +11,6 @@
     <meta property="og:description" content="{{ page.content | strip_html | truncatewords: 30 }}">
     {% if page.image %}
     <meta property="og:image" content="{{ page.image }}">
-    <meta property="twitter:image" content="{{ page.image }}">
     {% else %}
     <meta property="og:image" content="https://placehold.co/1200x630/050505/FFF?text=Sahib+Virdee">
     {% endif %}
@@ -22,102 +20,51 @@
     <link rel="shortcut icon" href="/assets/favicon.ico" />
     
     <style>
-        /* --- DESIGN SYSTEM --- */
         @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap');
 
         :root {
-            --bg: #050505;
-            --card-bg-hover: #111;
-            --text-main: #d4d4d4;
-            --text-dim: #999;
-            
-            --accent-personal: #4dff88;
-            --accent-prof: #00ffff;
-            --accent-projects: #ff9933;
-            
-            --brand-row-h: 36px; 
-            --main-row-h: 26px;
-            --sub-row-h: 24px;
-            --gap: 1px;
-            
-            --card-radius: 18px;
-            --card-padding: 12px;
-            --media-radius: calc(var(--card-radius) - var(--card-padding)); 
-            
+            --bg: #050505; --card-bg-hover: #111; --text-main: #d4d4d4; --text-dim: #999;
+            --accent-personal: #4dff88; --accent-prof: #00ffff; --accent-projects: #ff9933;
+            --brand-row-h: 36px; --main-row-h: 26px; --sub-row-h: 24px; --gap: 1px;
+            --card-radius: 18px; --card-padding: 12px; --media-radius: calc(var(--card-radius) - var(--card-padding)); 
             --ease: cubic-bezier(0.25, 1, 0.5, 1);
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html { 
-            scroll-behavior: smooth; 
-            overflow-x: hidden; 
-            width: 100%;
-        }
-
+        html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
         body {
             background-color: var(--bg); color: var(--text-main); font-family: 'Jost', sans-serif; line-height: 1.5;
             padding-top: calc(var(--brand-row-h) + var(--main-row-h) + var(--gap) + 10px); 
             transition: padding-top 0.3s var(--ease);
-            display: flex; flex-direction: column; min-height: 100vh;
-            width: 100%; position: relative; overflow-x: hidden; 
+            display: flex; flex-direction: column; min-height: 100vh; width: 100%; position: relative; overflow-x: hidden; 
         }
-        
-        body.search-active {
-            padding-top: 140px !important;
-        }
-
+        body.search-active { padding-top: 140px !important; }
         p, h1, h2, h3, a { overflow-wrap: break-word; word-wrap: break-word; }
-
         .no-transition * { transition: none !important; }
-        .sk-line, .sk-img, .sk-box { animation-play-state: running !important; }
+        
+        /* SWUP Transition */
+        .transition-fade { transition: opacity 0.2s; opacity: 1; }
+        html.is-animating .transition-fade { opacity: 0; }
 
-        /* --- SWUP TRANSITIONS --- */
-        .transition-fade {
-            transition: opacity 0.2s;
-            opacity: 1;
-        }
-        html.is-animating .transition-fade {
-            opacity: 0;
-        }
-
-        /* --- GLOBAL ANIMATION --- */
         .fill-anim {
             background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #888) 50.5%);
-            background-size: 100% 205%;
-            background-position: 0 0; 
+            background-size: 100% 205%; background-position: 0 0; 
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
             transition: background-position 0.5s var(--ease);
             text-decoration: none; display: inline-block; color: var(--text-base, #888); 
         }
-
-        .fill-anim:hover, .clickable-block:hover .fill-anim, .fill-anim.active {
-            background-position: 0 100%; color: var(--text-hover, #fff);
-        }
-
+        .fill-anim:hover, .clickable-block:hover .fill-anim, .fill-anim.active { background-position: 0 100%; color: var(--text-hover, #fff); }
         h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 
-        /* --- HEADER CONTAINER --- */
         #main-header {
             position: fixed; top: 0; left: 0; width: 100%; 
-            background: rgba(5,5,5,0.98); 
-            backdrop-filter: blur(12px); 
-            z-index: 1000; 
-            display: flex; flex-direction: column; 
-            justify-content: flex-start; 
-            align-items: center; 
-            gap: var(--gap); 
-            border-bottom: 1px solid #1a1a1a; 
-            overflow: hidden; 
+            background: rgba(5,5,5,0.98); backdrop-filter: blur(12px); 
+            z-index: 1000; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; 
+            gap: var(--gap); border-bottom: 1px solid #1a1a1a; overflow: hidden; 
             transition: height 0.4s var(--ease), transform 0.4s var(--ease);
             height: calc(var(--brand-row-h) + var(--main-row-h) + var(--gap));
         }
+        body.search-active #main-header { transform: translateY(-100%); }
 
-        body.search-active #main-header {
-            transform: translateY(-100%); 
-        }
-
-        /* --- HEADER ROWS --- */
         #brand-name {
             width: 100%; height: var(--brand-row-h); flex-shrink: 0; 
             display: flex; align-items: center; justify-content: center;
@@ -125,25 +72,14 @@
             line-height: 1; cursor: pointer; user-select: none;
             --text-base: #666; --text-hover: #fff; 
             transition: height 0.4s var(--ease), opacity 0.3s var(--ease), transform 0.4s var(--ease), margin 0.4s var(--ease), background-position 0.5s var(--ease);
-            opacity: 1; transform: translateY(0); margin-bottom: 0;
             background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #666) 50.5%);
-            background-size: 100% 205%;
-            background-position: 0 0;
+            background-size: 100% 205%; background-position: 0 0;
             -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
         #brand-name:hover { background-position: 0 100%; }
 
-        #primary-nav { 
-            width: 100%; height: var(--main-row-h); flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; gap: 30px; 
-            margin: 0; padding: 0; 
-        }
-
-        .nav-link {
-            font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-            line-height: 1; user-select: none; --text-base: #666; --text-hover: #fff;
-        }
-
+        #primary-nav { width: 100%; height: var(--main-row-h); flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 30px; margin: 0; padding: 0; }
+        .nav-link { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1; user-select: none; --text-base: #666; --text-hover: #fff; }
         .nav-link[href*="Projects"] { --text-hover: var(--accent-projects); }
         .nav-link[href*="Projects"].active { --text-base: var(--accent-projects); --text-hover: var(--accent-projects); }
         .nav-link[href*="Professional"] { --text-hover: var(--accent-prof); }
@@ -158,65 +94,35 @@
             overflow-x: auto; white-space: nowrap; scrollbar-width: none;
             mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            opacity: 0; pointer-events: none;
-            transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
+            opacity: 0; pointer-events: none; transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
         }
-        
-        #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { 
-            content: ''; display: none; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0; 
-        }
+        #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { content: ''; display: none; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0; }
         #sub-nav > *, #tertiary-nav > * { flex-shrink: 0; }
-
         body.has-sub-nav #sub-nav { height: var(--sub-row-h); opacity: 1; pointer-events: auto; }
         body.has-terti-nav #sub-nav { height: var(--sub-row-h); opacity: 1; pointer-events: auto; }
         body.has-tertiary-nav #tertiary-nav { height: var(--sub-row-h); opacity: 1; pointer-events: auto; }
 
-        #main-header.scrolled #brand-name {
-            height: 0; opacity: 0; margin-bottom: -1px; 
-            transform: translateY(-20px); pointer-events: none;
-        }
+        #main-header.scrolled #brand-name { height: 0; opacity: 0; margin-bottom: -1px; transform: translateY(-20px); pointer-events: none; }
+        #main-header.scrolled { gap: 0; justify-content: center; }
 
-        #main-header.scrolled {
-            gap: 0; justify-content: center; 
-        }
-
-        #search-controls { 
-            position: absolute; right: 10px; top: 0; 
-            height: var(--brand-row-h); width: 60px; 
-            display: flex; align-items: center; justify-content: center; 
-            z-index: 1002; transition: top 0.4s var(--ease), opacity 0.2s; 
-        }
+        #search-controls { position: absolute; right: 10px; top: 0; height: var(--brand-row-h); width: 60px; display: flex; align-items: center; justify-content: center; z-index: 1002; transition: top 0.4s var(--ease), opacity 0.2s; }
         #main-header.scrolled #search-controls { opacity: 0; pointer-events: none; }
-
-        .icon-btn { 
-            width: 44px; height: 44px; padding: 10px; 
-            cursor: pointer; fill: #666; transition: all 0.4s; transform-origin: center; position: relative;
-        }
+        .icon-btn { width: 44px; height: 44px; padding: 10px; cursor: pointer; fill: #666; transition: all 0.4s; transform-origin: center; position: relative; }
         .icon-btn:hover { fill: #fff; }
-        .search-icon { opacity: 1; }
-        .close-icon  { opacity: 0; display: none; } 
-
         .icon-btn[data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            top: 100%; right: 50%; transform: translateX(50%);
-            background: #222; color: #fff; padding: 4px 8px; border-radius: 4px;
-            font-size: 11px; font-family: 'Jost', sans-serif; white-space: nowrap; pointer-events: none;
-            opacity: 0; animation: fadeInTooltip 0.2s forwards 0.3s;
-            border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            content: attr(data-tooltip); position: absolute; top: 100%; right: 50%; transform: translateX(50%);
+            background: #222; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-family: 'Jost', sans-serif;
+            white-space: nowrap; pointer-events: none; opacity: 0; animation: fadeInTooltip 0.2s forwards 0.3s; border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         @keyframes fadeInTooltip { to { opacity: 1; top: 110%; } }
 
         #search-overlay { 
             position: fixed; top: 40px; left: 50%; width: 400px; max-width: 90%; height: 50px; 
             transform-origin: center; transform: translate(-50%, -40px) scale(0.9);
-            display: flex; align-items: center; justify-content: center; 
-            background: linear-gradient(135deg, #151515 0%, #222 100%);
-            z-index: 2000; border-radius: var(--card-radius); 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid #333;
+            display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #151515 0%, #222 100%);
+            z-index: 2000; border-radius: var(--card-radius); box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid #333;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; visibility: hidden; pointer-events: none;
         }
-        
         #search-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0) scale(1); }
         #search-input { width: 100%; height: 100%; background: transparent; border: none; color: #fff; font-size: 20px; font-family: 'Jost', sans-serif; padding: 0 20px; outline: none; text-align: center; font-weight: 500; }
         #app.search-active { opacity: 0.3; transition: 0.4s; }
@@ -248,11 +154,8 @@
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); column-gap: 20px; row-gap: 10px; margin-bottom: 15px; }
         
         .layout-grid { 
-            display: flex; flex-direction: column; gap: 3px; 
-            padding: var(--card-padding); 
-            border-radius: var(--card-radius); 
-            transition: background 0.2s; border: none; height: 100%; position: relative; -webkit-tap-highlight-color: transparent; 
-            text-decoration: none; 
+            display: flex; flex-direction: column; gap: 3px; padding: var(--card-padding); border-radius: var(--card-radius); 
+            transition: background 0.2s; border: none; height: 100%; position: relative; -webkit-tap-highlight-color: transparent; text-decoration: none; 
         }
         .layout-grid.clickable-block, .layout-grid.clickable-block * { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         .layout-grid.clickable-block .chip { pointer-events: auto; }
@@ -262,11 +165,7 @@
         .layout-grid.cat-professional h3 { --text-hover: var(--accent-prof); }
         .layout-grid.cat-personal h3 { --text-hover: var(--accent-personal); }
 
-        .row-media { 
-            width: 100%; height: 160px; 
-            border-radius: var(--media-radius); 
-            overflow: hidden; background: #111; flex-shrink: 0; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; 
-        }
+        .row-media { width: 100%; height: 160px; border-radius: var(--media-radius); overflow: hidden; background: #111; flex-shrink: 0; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
         .row-media img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: filter 0.3s; }
         .layout-grid:hover .row-media img { filter: grayscale(0%); }
 
@@ -328,6 +227,21 @@
         .layout-text h2 { font-size: 22px; font-weight: 400; margin-bottom: 8px; margin-top: 10px; color: #fff; }
         .layout-text p { margin-bottom: 12px; color: #d4d4d4; font-weight: 300; line-height: 1.5; }
 
+        /* QUOTES */
+        .layout-quote { padding: 0 20px; text-align: center; position: relative; margin: 0 auto 10px; min-height: 120px; height: auto; width: 100%; max-width: 800px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .layout-quote blockquote { font-family: 'Playfair Display', serif; font-style: italic; color: #eee; margin-bottom: 4px; line-height: 1.25; transition: font-size 0.3s; width: 100%; font-size: clamp(16px, 3vw, 24px); }
+        .layout-quote blockquote.short  { font-size: clamp(20px, 4vw, 32px); }
+        .layout-quote blockquote.medium { font-size: clamp(18px, 3.5vw, 26px); }
+        .layout-quote blockquote.long   { font-size: clamp(16px, 3vw, 22px); }
+        .layout-quote blockquote.xl     { font-size: clamp(15px, 2.5vw, 20px); }
+        .layout-quote blockquote.xxl    { font-size: clamp(14px, 2vw, 18px); line-height: 1.3; }
+        .quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; flex-shrink: 0; }
+        .layout-quote .author { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
+        .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
+        .layout-quote .refresh-btn { position: absolute; bottom: 18px; right: 18px; width: 26px; height: 26px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; }
+        .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg) scale(1.1); }
+        .layout-quote.loading blockquote, .layout-quote.loading .quote-footer { opacity: 0.3; pointer-events: none; }
+
         .layout-404 { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .layout-404 h1 { font-size: 80px; margin: 0; line-height: 1; color: #333; }
         .layout-404 h2 { font-size: 24px; font-weight: 400; margin: 10px 0 20px; color: #fff; }
@@ -335,7 +249,7 @@
         .btn-primary { display: inline-block; padding: 10px 25px; background: #fff; color: #000; text-decoration: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; border-radius: 4px; transition: opacity 0.2s; }
         .btn-primary:hover { opacity: 0.8; }
 
-        /* --- INDEX LIST STYLE --- */
+        /* INDEX STYLE */
         .index-list { column-count: 2; column-gap: 40px; margin-top: 20px; }
         .index-group { break-inside: avoid; margin-bottom: 30px; }
         .index-group h3 { font-size: 14px; text-transform: uppercase; color: #666; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; }
@@ -378,11 +292,8 @@
     </script>
 </head>
 <body class="no-transition">
-    
     <script>
-        if (history.scrollRestoration) {
-            history.scrollRestoration = 'manual';
-        }
+        if (history.scrollRestoration) { history.scrollRestoration = 'manual'; }
     </script>
 
     <div id="search-overlay">
@@ -407,75 +318,20 @@
 
     <div class="content-container transition-fade" id="swup">
         <script>
-            // Reset DB with the content available on this new page context if needed, 
-            // but for a static site, 'db' should be global.
-            // Since we use Swup, the <script> tags inside the body are NOT re-executed by default 
-            // unless we tell Swup to do so. We will handle re-init in the main script.
-            
-            // However, we need to update CURRENT_PAGE context for Nav logic
-            {% if page.hierarchy %}
-            window.CURRENT_HIERARCHY = "{{ page.hierarchy }}";
+            {% if page.url == "/" %}
+                window.CURRENT_HIERARCHY = "Home";
+            {% elsif page.hierarchy %}
+                window.CURRENT_HIERARCHY = "{{ page.hierarchy }}";
             {% else %}
-            window.CURRENT_HIERARCHY = "{{ page.url | remove_first: '/' | remove_last: '/' }}";
+                window.CURRENT_HIERARCHY = "{{ page.url | remove_first: '/' | remove_last: '/' }}";
             {% endif %}
         </script>
 
         {% if page.url == "/" %}
-            <div class="section layout-hero">
-                <h1 class="fill-anim">Engineering Portfolio</h1>
-                <p>Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.</p>
-            </div>
-            
-            <h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">Recent Projects</h2>
-            
-            <div class="grid-container section">
-            {% for item in site.content limit:12 %}
-                {% if item.section_type != 'hidden' and item.category != 'System' and item.category != 'Footer' %}
-                
-                {% assign catClass = 'cat-projects' %}
-                {% if item.category contains 'Professional' %}{% assign catClass = 'cat-professional' %}{% endif %}
-                {% if item.category contains 'Personal' %}{% assign catClass = 'cat-personal' %}{% endif %}
-                
-                {% assign hasPlaceholder = true %}
-                {% if item.image or item.model %}
-                    {% assign hasPlaceholder = false %}
-                {% endif %}
-
-                <a href="{{ item.url }}" class="layout-grid clickable-block {{ catClass }} {% if hasPlaceholder %}has-placeholder{% endif %}">
-                    {% if item.model %}
-                        <div class="row-media">
-                            <div class="embed-wrapper stl" data-src="{{ item.model }}"></div>
-                        </div>
-                    {% elsif item.image %}
-                        <div class="row-media">
-                            <img src="{{ item.image }}" loading="lazy" alt="{{ item.title }}">
-                        </div>
-                    {% else %}
-                        <div class="row-media placeholder">
-                            <span>{{ item.title }}</span>
-                        </div>
-                    {% endif %}
-                    
-                    <h3 class="fill-anim">{{ item.title }}</h3>
-                    <p>{{ item.content | strip_html | truncatewords: 20 }}</p>
-                    
-                    <div class="meta-row">
-                        {% if item.date %}
-                        <span class="chip date">{{ item.date | date: "%b %Y" }}</span>
-                        {% endif %}
-                        {% for tag in item.tags %}
-                        <span class="chip">{{ tag }}</span>
-                        {% endfor %}
-                    </div>
-                </a>
-                {% endif %}
-            {% endfor %}
-            </div>
-
+            <div id="home-container"></div>
         {% elsif page.title == "Index" %}
              <div class="section layout-hero"><h1 class="fill-anim">Index</h1></div>
              <div class="section index-list"></div>
-
         {% else %}
             <div class="section layout-text">
                 
@@ -502,7 +358,7 @@
                         <span class="chip date">{{ page.date | date: "%b %Y" }}</span>
                         {% endif %}
                         {% for tag in page.tags %}
-                        <span class="chip">{{ tag }}</span>
+                        <span class="chip" data-tag="{{ tag }}">{{ tag }}</span>
                         {% endfor %}
                     </div>
                 </div>
@@ -519,9 +375,10 @@
 
     <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
 
-   <script>
+    <script>
         const db = [
             {% for item in site.content %}
+            {% if item.title != "Home" %} 
             {
                 "Title": {{ item.title | jsonify }},
                 "Page": "{{ item.hierarchy | default: item.category | append: '/' | append: item.title }}",
@@ -529,10 +386,15 @@
                 "LinkURL": "{{ item.url }}", 
                 "Tags": "{{ item.tags | join: ',' }}",
                 "Content": {{ item.content | strip_newlines | jsonify }},
-                "Links": {{ item.links | jsonify }}
+                "Links": {{ item.links | jsonify }},
+                "Image": "{{ item.image }}",
+                "Model": "{{ item.model }}",
+                "Timestamp": "{{ item.date | date: '%Y-%m-%d' }}"
             },
+            {% endif %}
             {% endfor %}
         ];
+        const quotesDb = {{ site.data.quotes | jsonify }};
     </script>
 
     <script>
@@ -540,14 +402,17 @@
         let swup;
 
         const init = () => {
-            initApp(); 
+            if(window.location.pathname === '/' || window.location.pathname === '/index.html') {
+                renderHome();
+            } else {
+                init3DViewers();
+            }
+            
+            buildNav(); 
             renderFooter();
             fetchGitHubStats();
             
-            // Check if we are on the Index page
-            if (document.querySelector('.index-list')) {
-                renderIndex();
-            }
+            if (document.querySelector('.index-list')) renderIndex();
 
             requestAnimationFrame(() => {
                 setTimeout(() => {
@@ -556,205 +421,122 @@
                     updatePadding(); 
                 }, 50);
             });
-            
-            setTimeout(init3DViewers, 100);
         };
 
-        function initApp() {
-            buildNav(); 
+        function renderHome() {
+            const container = document.getElementById('home-container');
+            if(!container) return;
+            container.innerHTML = '';
             
-            window.addEventListener('resize', updatePadding);
-            window.addEventListener('scroll', () => { 
-                const h = document.getElementById('main-header'); 
-                const isScrolled = window.scrollY > 10; 
-                h.classList.toggle('scrolled', isScrolled);
-                updateHeaderHeight(isScrolled);
-            });
+            // HERO
+            const heroDiv = document.createElement('div'); heroDiv.className = 'section layout-hero';
+            heroDiv.innerHTML = `<h1 class="fill-anim">Engineering Portfolio</h1><p>Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.</p>`;
+            container.appendChild(heroDiv);
             
-            document.addEventListener('click', (e) => {
-                const overlay = document.getElementById('search-overlay');
-                const controls = document.getElementById('search-controls');
-                if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
-                    closeSearch();
+            // QUOTE
+            const quoteDiv = document.createElement('div'); quoteDiv.className = 'layout-quote section';
+            renderQuoteCard(quoteDiv);
+            container.appendChild(quoteDiv);
+            
+            // RECENT PROJECTS
+            const title = document.createElement('h2'); 
+            title.className = "fill-anim";
+            title.style.cssText = "display:block; text-align:center; margin-bottom:20px; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;";
+            title.innerText = "Recent Projects";
+            container.appendChild(title);
+            
+            const gc = document.createElement('div'); gc.className = 'grid-container section';
+            
+            // Filter and sort items for home grid
+            const items = db.filter(r => r.Category !== 'System' && r.Category !== 'Footer').slice(0, 12);
+            
+            items.forEach(item => {
+                let catClass = 'cat-projects';
+                if(item.Category.includes('Professional')) catClass = 'cat-professional';
+                if(item.Category.includes('Personal')) catClass = 'cat-personal';
+                
+                let hasPlaceholder = true;
+                let mediaHtml = `<div class="row-media placeholder"><span>${item.Title}</span></div>`;
+                
+                if(item.Image) {
+                    hasPlaceholder = false;
+                    mediaHtml = `<div class="row-media"><img src="${item.Image}" loading="lazy" alt="${item.Title}"></div>`;
+                } else if(item.Model) {
+                    hasPlaceholder = false;
+                    mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${item.Model}"></div></div>`;
                 }
                 
-                if(e.target.classList.contains('zoomable')) { 
-                    document.getElementById('lightbox-img').src = e.target.src; 
-                    document.getElementById('lightbox').classList.add('active'); 
-                    e.stopPropagation(); 
+                let tagsHtml = '';
+                if(item.Tags) {
+                    tagsHtml = '<div class="meta-row">';
+                    if(item.Timestamp) tagsHtml += `<span class="chip date">${formatDate(item.Timestamp)}</span>`;
+                    item.Tags.split(',').forEach(t => tagsHtml += `<span class="chip" data-tag="${t}">${t}</span>`);
+                    tagsHtml += '</div>';
                 }
-            });
 
-            document.addEventListener('keydown', (e) => {
-                if ((e.key === '/' || (e.metaKey && e.key === 'k') || (e.ctrlKey && e.key === 'k')) && !isSearchActive) {
-                    e.preventDefault(); toggleSearch();
-                }
-                if (e.key === 'Escape') closeSearch();
-            });
-        }
-        
-        // --- SWUP INIT ---
-        window.addEventListener('DOMContentLoaded', () => {
-             swup = new Swup({
-                containers: ["#swup"]
-             });
-             
-             // RE-RUN LOGIC AFTER PAGE SWAP
-             swup.hooks.on('content:replace', () => {
-                 window.scrollTo(0, 0);
-                 init(); // Re-init Nav, Viewers, etc.
-             });
-             
-             init(); // Run once on first load
-        });
-
-        function updatePadding() {
-            const brandH = 36, mainH = 26, subH = 24, gap = 1; 
-            let totalH = brandH + mainH + gap; 
-            if(document.body.classList.contains('has-sub-nav')) totalH += subH + gap;
-            if(document.body.classList.contains('has-tertiary-nav')) totalH += subH + gap;
-            document.body.style.paddingTop = (totalH + 10) + 'px';
-            updateHeaderHeight(false);
-        }
-
-        function updateHeaderHeight(isScrolled) {
-            const h = document.getElementById('main-header');
-            const brandH = 36, mainH = 26, subH = 24, gap = 1;
-            let visibleH = 0;
-            if(!isScrolled) visibleH += brandH + gap;
-            visibleH += mainH;
-            if(document.body.classList.contains('has-sub-nav')) visibleH += subH + gap;
-            if(document.body.classList.contains('has-tertiary-nav')) visibleH += subH + gap;
-            h.style.height = visibleH + 'px';
-        }
-
-        function closeSearch() { 
-            document.getElementById('search-overlay').classList.remove('active'); 
-            document.body.classList.remove('search-active');
-            const input = document.getElementById('search-input');
-            input.value = ''; input.blur(); 
-            isSearchActive = false; 
-        }
-
-        function toggleSearch() { 
-            const a = document.getElementById('search-overlay').classList.toggle('active'); 
-            document.body.classList.toggle('search-active');
-            if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
-            else closeSearch(); 
-        }
-
-        function handleSearch(q) { 
-            if(!document.getElementById('search-overlay').classList.contains('active')) return;
-            isSearchActive = true; 
-            
-            const app = document.getElementById('swup'); // Changed ID to match container
-            if(!q) { 
-                // We'd ideally restore the original content here, but for now show placeholder
-                app.innerHTML = '<div class="layout-404" style="padding:40px 0;"><h2>Search</h2><p>Type to find projects...</p></div>';
-                return;
-            } 
-
-            const t = q.toLowerCase();
-            const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
-            
-            renderSearchResults(res, q); 
-        }
-        
-        function renderSearchResults(rows, q) {
-            const app = document.getElementById('swup');
-            app.innerHTML = `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px;">Search results for "${q}"</h2>`;
-            
-            if(rows.length === 0) { 
-                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2></div>`; 
-                return; 
-            }
-            
-            const gc = document.createElement('div'); gc.className = 'grid-container section skeleton-visible';
-            
-            rows.forEach(r => {
-                let l = r.LinkURL || '#';
-                let mh = '';
-                if(r.Tags) {
-                    mh = `<div class="meta-row">`;
-                    r.Tags.split(',').forEach(t => mh += `<span class="chip">${t}</span>`); 
-                    mh += `</div>`;
-                }
+                const d = document.createElement('a');
+                d.href = item.LinkURL;
+                d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
                 
-                const d = document.createElement('a'); 
-                d.className = `layout-grid clickable-block cat-projects has-placeholder`;
-                d.href = l;
-                d.innerHTML = `<div class="row-media placeholder"><span>${r.Title}</span></div><h3 class="fill-anim">${r.Title}</h3><p>...</p>${mh}`;
+                // Extract clean text preview from HTML content (simplified)
+                const tempDiv = document.createElement('div'); tempDiv.innerHTML = item.Content;
+                let textPreview = tempDiv.innerText.substring(0, 120) + '...';
+                
+                d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${item.Title}</h3><p>${textPreview}</p>${tagsHtml}`;
                 gc.appendChild(d);
             });
-            app.appendChild(gc);
+            container.appendChild(gc);
+            setTimeout(init3DViewers, 100);
         }
 
-        function renderIndex() {
-            const list = document.querySelector('.index-list');
-            if(!list) return;
-            list.innerHTML = '';
-
-            const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home'))].sort();
-            const groups = {};
-            
-            // Group pages by their Top Level Category
-            pages.forEach(p => {
-                const cat = p.split('/')[0];
-                if(cat === 'System' || cat === 'Footer') return; // Skip system pages
-                if(!groups[cat]) groups[cat] = [];
-                groups[cat].push(p);
-            });
-            
-            for(const [cat, items] of Object.entries(groups)) {
-                let catClass = '';
-                const cLower = cat.toLowerCase();
-                if(cLower === 'projects') catClass = 'cat-projects';
-                else if(cLower === 'professional') catClass = 'cat-professional';
-                else if(cLower === 'personal') catClass = 'cat-personal';
-
-                let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
-                items.forEach(p => {
-                    const row = db.find(r => r.Page === p);
-                    const title = row ? row.Title : p.split('/').pop();
-                    
-                    const depth = p.split('/').length;
-                    const indentClass = depth > 2 ? 'depth-3' : '';
-                    
-                    html += `<a href="${row.LinkURL}" class="index-link fill-anim ${indentClass}">${title}</a>`;
-                });
-                html += `</div>`;
-                list.innerHTML += html;
-            }
+        function formatDate(s) {
+            if(!s) return '';
+            const d = new Date(s);
+            if(isNaN(d.getTime())) return s;
+            return d.toLocaleString('default', { month: 'short', year: 'numeric' });
         }
 
+        function renderQuoteCard(c) {
+            if(!quotesDb || quotesDb.length === 0) { c.innerHTML = ""; return; }
+            const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
+            let auth = r.author || 'Unknown'; 
+            if(r.source && r.source.startsWith('http')) auth = `<a href="${r.source}" target="_blank" class="fill-anim">${auth}</a>`; 
+            else if(r.source) auth += ` • ${r.source}`;
+            const text = r.quote.trim().replace(/^"|"$/g, '');
+            const len = text.length;
+            let sizeClass = 'short';
+            if(len > 230) sizeClass = 'xxl';
+            else if(len > 150) sizeClass = 'xl';
+            else if(len > 100) sizeClass = 'long';
+            else if(len > 50) sizeClass = 'medium';
+            c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
+                        <div class="quote-footer"><div class="author">— ${auth}</div></div>
+                        <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.23 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
+        }
+
+        // --- NAVIGATION (RESTORED LOGIC) ---
         function buildNav() { 
             const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
-            
-            const categories = [...new Set(db.map(r => r.Page.split('/')[0]).filter(x => x))].sort();
-            
-            // CURRENT_HIERARCHY is updated by the inline script inside #swup
+            const categories = [...new Set(db.map(r => r.Category).filter(x => x && x !== 'Root' && x !== 'System' && x !== 'Footer'))].sort();
             const parts = (window.CURRENT_HIERARCHY || "").split('/');
             const activeTop = parts[0];
             const activeSub = parts.length > 1 ? parts.slice(0, 2).join('/') : null;
             const activeTert = parts.length > 2 ? parts.slice(0, 3).join('/') : null;
 
             categories.forEach(x => { 
-                if(x === 'Home' || x === 'System' || x === 'Footer') return; 
-                
-                const first = db.find(r => r.Page.startsWith(x));
+                // Link to the first project in category OR construct a filter link
+                const first = db.find(r => r.Category === x);
                 const link = first ? first.LinkURL : '#';
-                
                 const isActive = x === activeTop;
                 n.innerHTML += `<a href="${link}" class="nav-link fill-anim ${isActive ? 'active' : ''}">${x}</a>`; 
             }); 
-            
             buildSubNav(activeTop, activeSub);
             buildTertiaryNav(activeSub, activeTert);
         }
 
         function buildSubNav(top, activeSubPath) {
             const n = document.getElementById('sub-nav'); if(!n) return; n.innerHTML = '';
-            if(!top) { document.body.classList.remove('has-sub-nav'); return; }
+            if(!top || top === "Home") { document.body.classList.remove('has-sub-nav'); return; }
 
             const subs = [...new Set(db.filter(r => r.Page.startsWith(top + '/'))
                                       .map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
@@ -767,7 +549,6 @@
                     const isActive = activeSubPath === x;
                     const first = db.find(r => r.Page.startsWith(x));
                     const link = first ? first.LinkURL : '#';
-                    
                     n.innerHTML += `<a href="${link}" class="sub-link fill-anim ${isActive ? 'active' : ''}">${name}</a>`; 
                 });
                 setTimeout(() => centerNav(n), 100);
@@ -789,7 +570,6 @@
                     const isActive = activeTertPath === x;
                     const first = db.find(r => r.Page.startsWith(x));
                     const link = first ? first.LinkURL : '#';
-
                     n.innerHTML += `<a href="${link}" class="sub-link fill-anim ${isActive ? 'active' : ''}">${name}</a>`; 
                 });
                 setTimeout(() => centerNav(n), 100);
@@ -804,21 +584,16 @@
                 n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
             }
         }
-        
+
         function renderFooter() { 
             const fd = document.getElementById('footer-links');
             fd.innerHTML = '';
-            
-            const footerData = db.find(r => r.Category === 'System' && r.Title === 'Footer'); // Updated match logic
-            
+            const footerData = db.find(r => r.Category === 'System' && r.Title === 'Footer'); 
             if (footerData && footerData.Links) {
                 footerData.Links.forEach(link => {
                     fd.innerHTML += `<a href="${link.url}" target="_blank" class="fill-anim">${link.title}</a>`;
                 });
-            } else {
-                 // Fallback if footer file missing
-                 fd.innerHTML = `<a href="#" class="fill-anim">Sahib Virdee</a>`;
-            }
+            } else { fd.innerHTML = `<a href="#" class="fill-anim">Sahib Virdee</a>`; }
         }
 
         function fetchGitHubStats() { 
@@ -833,17 +608,64 @@
             }).catch(()=>{}); 
         }
 
+        function initApp() {
+            window.addEventListener('resize', updatePadding);
+            window.addEventListener('scroll', () => { 
+                const h = document.getElementById('main-header'); 
+                const isScrolled = window.scrollY > 10; 
+                h.classList.toggle('scrolled', isScrolled);
+                updateHeaderHeight(isScrolled);
+            });
+            document.addEventListener('click', (e) => {
+                const overlay = document.getElementById('search-overlay');
+                if (overlay.classList.contains('active') && !overlay.contains(e.target) && !document.getElementById('search-controls').contains(e.target)) {
+                    closeSearch();
+                }
+                if(e.target.classList.contains('zoomable')) { 
+                    document.getElementById('lightbox-img').src = e.target.src; 
+                    document.getElementById('lightbox').classList.add('active'); 
+                    e.stopPropagation(); 
+                }
+                // Tag Filter
+                if(e.target.classList.contains('chip') && e.target.dataset.tag) {
+                    e.preventDefault(); e.stopPropagation();
+                    const tag = e.target.dataset.tag;
+                    if(isSearchActive) closeSearch();
+                    toggleSearch();
+                    document.getElementById('search-input').value = tag;
+                    handleSearch(tag);
+                }
+                // Quote Refresh
+                if(e.target.closest('.refresh-btn')) { 
+                    const quoteContainer = e.target.closest('.layout-quote');
+                    if(quoteContainer && !quoteContainer.classList.contains('loading')) {
+                        quoteContainer.classList.add('loading');
+                        quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
+                        setTimeout(() => { renderQuoteCard(quoteContainer); quoteContainer.classList.remove('loading'); }, 600); 
+                    }
+                    e.stopPropagation(); 
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if ((e.key === '/' || (e.metaKey && e.key === 'k') || (e.ctrlKey && e.key === 'k')) && !isSearchActive) { e.preventDefault(); toggleSearch(); }
+                if (e.key === 'Escape') closeSearch();
+            });
+        }
+
+        // SWUP
+        window.addEventListener('DOMContentLoaded', () => {
+             swup = new Swup({ containers: ["#swup"] });
+             swup.hooks.on('content:replace', () => { window.scrollTo(0, 0); init(); });
+             init(); 
+        });
+
+        // 3D VIEWER LOGIC (Standard)
         function init3DViewers() {
             const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
             if(containers.length === 0) return;
-
             Promise.all([
-                import('three'),
-                import('three/addons/loaders/STLLoader.js'),
-                import('three/addons/loaders/GLTFLoader.js'),
-                import('three/addons/controls/OrbitControls.js')
+                import('three'), import('three/addons/loaders/STLLoader.js'), import('three/addons/loaders/GLTFLoader.js'), import('three/addons/controls/OrbitControls.js')
             ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
-                
                 const visibilityObserver = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         const container = entry.target;
@@ -851,7 +673,6 @@
                         else container.setAttribute('data-visible', 'false');
                     });
                 });
-
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -861,127 +682,127 @@
                         }
                     });
                 }, { rootMargin: "200px" });
-
                 containers.forEach(c => observer.observe(c));
             });
         }
 
         function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
             container.classList.add('loaded');
-            
             const url = container.getAttribute('data-src');
             const customColor = container.getAttribute('data-color');
             const ext = url.split('.').pop().toLowerCase();
-            
-            const scene = new THREE.Scene();
-            scene.background = null; 
-
+            const scene = new THREE.Scene(); scene.background = null; 
             const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.setSize(container.clientWidth, container.clientHeight);
             renderer.outputColorSpace = THREE.SRGBColorSpace; 
             renderer.physicallyCorrectLights = true; 
-            
             container.appendChild(renderer.domElement);
-
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-            scene.add(ambientLight);
-            
-            const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
-            keyLight.position.set(5, 10, 7);
-            scene.add(keyLight);
-
-            const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
-            rimLight.position.set(-5, 5, -5);
-            scene.add(rimLight);
-
-            const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
-            fillLight.position.set(-5, 0, 5);
-            scene.add(fillLight);
-
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); scene.add(ambientLight);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.2); keyLight.position.set(5, 10, 7); scene.add(keyLight);
+            const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0); rimLight.position.set(-5, 5, -5); scene.add(rimLight);
+            const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5); fillLight.position.set(-5, 0, 5); scene.add(fillLight);
             const controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.enablePan = false; 
-            controls.autoRotate = true; 
-            controls.autoRotateSpeed = 2.0;
-
+            controls.enableDamping = true; controls.dampingFactor = 0.05; controls.enablePan = false; 
+            controls.autoRotate = true; controls.autoRotateSpeed = 2.0;
             let restartTimer;
-            controls.addEventListener('start', () => {
-                clearTimeout(restartTimer);
-                controls.autoRotate = false;
-            });
-            controls.addEventListener('end', () => {
-                restartTimer = setTimeout(() => {
-                    controls.autoRotate = true;
-                }, 5000); 
-            });
-
+            controls.addEventListener('start', () => { clearTimeout(restartTimer); controls.autoRotate = false; });
+            controls.addEventListener('end', () => { restartTimer = setTimeout(() => { controls.autoRotate = true; }, 5000); });
             const onLoad = (object) => {
                 container.classList.add('ready'); 
-
                 const box = new THREE.Box3().setFromObject(object);
-                const center = new THREE.Vector3();
-                box.getCenter(center);
-                object.position.sub(center);
-                scene.add(object);
-
-                if (customColor) {
-                    object.traverse((child) => {
-                        if (child.isMesh) {
-                            child.material = new THREE.MeshPhongMaterial({ 
-                                color: customColor, 
-                                specular: 0x111111, 
-                                shininess: 100 
-                            });
-                        }
-                    });
-                }
-
+                const center = new THREE.Vector3(); box.getCenter(center); object.position.sub(center); scene.add(object);
+                if (customColor) { object.traverse((child) => { if (child.isMesh) { child.material = new THREE.MeshPhongMaterial({ color: customColor, specular: 0x111111, shininess: 100 }); } }); }
                 const size = box.getSize(new THREE.Vector3()).length();
                 const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
-                camera.position.set(dist, dist * 0.4, dist * 0.8); 
-                camera.lookAt(0, 0, 0);
-                controls.minDistance = size * 0.2; 
-                controls.maxDistance = size * 5;
-
-                function animate() {
-                    requestAnimationFrame(animate);
-                    if (container.getAttribute('data-visible') === 'false') return;
-                    controls.update();
-                    renderer.render(scene, camera);
-                }
+                camera.position.set(dist, dist * 0.4, dist * 0.8); camera.lookAt(0, 0, 0);
+                controls.minDistance = size * 0.2; controls.maxDistance = size * 5;
+                function animate() { requestAnimationFrame(animate); if (container.getAttribute('data-visible') === 'false') return; controls.update(); renderer.render(scene, camera); }
                 animate();
             };
+            const onError = (e) => { console.error(e); container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>'; };
+            if (ext === 'glb' || ext === 'gltf') { const loader = new GLTFLoader(); loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError); } 
+            else { const loader = new STLLoader(); loader.load(url, (geometry) => { const mat = new THREE.MeshPhongMaterial({ color: customColor || 0xaaaaaa, specular: 0x111111, shininess: 200 }); const mesh = new THREE.Mesh(geometry, mat); onLoad(mesh); }, undefined, onError); }
+            window.addEventListener('resize', () => { if(!container.isConnected) return; camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); });
+        }
 
-            const onError = (e) => {
-                console.error(e);
-                container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
-            };
-
-            if (ext === 'glb' || ext === 'gltf') {
-                const loader = new GLTFLoader();
-                loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
-            } else {
-                const loader = new STLLoader();
-                loader.load(url, (geometry) => {
-                    const mat = new THREE.MeshPhongMaterial({ 
-                        color: customColor || 0xaaaaaa, 
-                        specular: 0x111111, 
-                        shininess: 200 
-                    });
-                    const mesh = new THREE.Mesh(geometry, mat);
-                    onLoad(mesh);
-                }, undefined, onError);
-            }
-
-            window.addEventListener('resize', () => {
-                if(!container.isConnected) return; 
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
+        // --- UI HELPERS ---
+        function updatePadding() {
+            const brandH = 36, mainH = 26, subH = 24, gap = 1; 
+            let totalH = brandH + mainH + gap; 
+            if(document.body.classList.contains('has-sub-nav')) totalH += subH + gap;
+            if(document.body.classList.contains('has-tertiary-nav')) totalH += subH + gap;
+            document.body.style.paddingTop = (totalH + 10) + 'px';
+            updateHeaderHeight(false);
+        }
+        function updateHeaderHeight(isScrolled) {
+            const h = document.getElementById('main-header');
+            const brandH = 36, mainH = 26, subH = 24, gap = 1;
+            let visibleH = 0;
+            if(!isScrolled) visibleH += brandH + gap;
+            visibleH += mainH;
+            if(document.body.classList.contains('has-sub-nav')) visibleH += subH + gap;
+            if(document.body.classList.contains('has-tertiary-nav')) visibleH += subH + gap;
+            h.style.height = visibleH + 'px';
+        }
+        function closeSearch() { 
+            document.getElementById('search-overlay').classList.remove('active'); 
+            document.body.classList.remove('search-active');
+            const input = document.getElementById('search-input'); input.value = ''; input.blur(); isSearchActive = false; 
+        }
+        function toggleSearch() { 
+            const a = document.getElementById('search-overlay').classList.toggle('active'); 
+            document.body.classList.toggle('search-active');
+            if(a) setTimeout(() => document.getElementById('search-input').focus(), 100); else closeSearch(); 
+        }
+        function handleSearch(q) { 
+            if(!document.getElementById('search-overlay').classList.contains('active')) return;
+            isSearchActive = true; 
+            const app = document.getElementById('swup'); 
+            if(!q) { app.innerHTML = '<div class="layout-404" style="padding:40px 0;"><h2>Search</h2><p>Type to find projects...</p></div>'; return; } 
+            const t = q.toLowerCase();
+            const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
+            renderSearchResults(res, q); 
+        }
+        function renderSearchResults(rows, q) {
+            const app = document.getElementById('swup');
+            app.innerHTML = `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px;">Search results for "${q}"</h2>`;
+            if(rows.length === 0) { app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2></div>`; return; }
+            const gc = document.createElement('div'); gc.className = 'grid-container section skeleton-visible';
+            rows.forEach(r => {
+                let l = r.LinkURL || '#';
+                let mh = '';
+                if(r.Tags) { mh = `<div class="meta-row">`; r.Tags.split(',').forEach(t => mh += `<span class="chip">${t}</span>`); mh += `</div>`; }
+                const d = document.createElement('a'); d.className = `layout-grid clickable-block cat-projects has-placeholder`; d.href = l;
+                d.innerHTML = `<div class="row-media placeholder"><span>${r.Title}</span></div><h3 class="fill-anim">${r.Title}</h3><p>...</p>${mh}`;
+                gc.appendChild(d);
             });
+            app.appendChild(gc);
+        }
+        function renderIndex() {
+            const list = document.querySelector('.index-list'); if(!list) return; list.innerHTML = '';
+            const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home'))].sort();
+            const groups = {};
+            pages.forEach(p => {
+                const cat = p.split('/')[0];
+                if(cat === 'System' || cat === 'Footer') return; 
+                if(!groups[cat]) groups[cat] = []; groups[cat].push(p);
+            });
+            for(const [cat, items] of Object.entries(groups)) {
+                let catClass = '';
+                const cLower = cat.toLowerCase();
+                if(cLower === 'projects') catClass = 'cat-projects'; else if(cLower === 'professional') catClass = 'cat-professional'; else if(cLower === 'personal') catClass = 'cat-personal';
+                let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
+                items.forEach(p => {
+                    const row = db.find(r => r.Page === p);
+                    const title = row ? row.Title : p.split('/').pop();
+                    const depth = p.split('/').length;
+                    const indentClass = depth > 2 ? 'depth-3' : '';
+                    html += `<a href="${row.LinkURL}" class="index-link fill-anim ${indentClass}">${title}</a>`;
+                });
+                html += `</div>`; list.innerHTML += html;
+            }
         }
     </script>
 </body>
