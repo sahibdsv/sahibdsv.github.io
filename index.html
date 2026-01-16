@@ -38,16 +38,13 @@
             --accent-prof: #00ffff;
             --accent-projects: #ff9933;
             
-            /* --- ULTRA TIGHT HEADER METRICS --- */
-            /* Height is barely larger than font size to remove "air" */
-            --brand-row-h: 34px; 
-            --main-row-h: 22px;
-            --sub-row-h: 22px;
+            /* --- FIXED DIMENSIONS (ULTRA-COMPACT) --- */
+            /* Height is barely larger than font size to remove gaps */
+            --brand-h: 34px;   /* Font: 26px */
+            --nav-h: 24px;     /* Font: 16px */
+            --sub-h: 22px;     /* Font: 14px */
             
-            /* Strict 1px Gap */
-            --gap: 1px;
-            
-            --ease: cubic-bezier(0.25, 1, 0.5, 1);
+            --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,11 +57,10 @@
 
         body {
             background-color: var(--bg); color: var(--text-main); font-family: 'Jost', sans-serif; line-height: 1.5;
-            /* Initial Padding: Brand + Main + Gap + Buffer */
-            padding-top: calc(var(--brand-row-h) + var(--main-row-h) + var(--gap) + 10px); 
-            transition: padding-top 0.3s var(--ease);
             display: flex; flex-direction: column; min-height: 100vh;
             width: 100%; position: relative; overflow-x: hidden; 
+            /* Padding managed by JS to match header "Expanded" state exactly */
+            padding-top: calc(var(--brand-h) + var(--nav-h)); 
         }
 
         p, h1, h2, h3, a { overflow-wrap: break-word; word-wrap: break-word; }
@@ -88,61 +84,73 @@
 
         h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 
-        /* --- HEADER CONTAINER --- */
+        /* --- HEADER STRUCTURE --- */
         #main-header {
             position: fixed; top: 0; left: 0; width: 100%; 
             background: rgba(5,5,5,0.98); 
-            backdrop-filter: blur(12px); 
+            backdrop-filter: blur(16px); 
             z-index: 1000; 
             
-            /* TIGHT STACKING WITH 1PX GAP */
             display: flex; flex-direction: column; 
             justify-content: flex-start; 
-            align-items: center; 
-            gap: var(--gap); 
+            align-items: center;
+            gap: 0; /* ABSOLUTELY NO GAP */
             
             border-bottom: 1px solid #1a1a1a; 
-            overflow: hidden; 
-            transition: height 0.4s var(--ease);
             
-            height: calc(var(--brand-row-h) + var(--main-row-h) + var(--gap));
+            /* ANIMATION STRATEGY: Transform TranslateY */
+            transform: translateY(0);
+            transition: transform 0.4s var(--ease);
+        }
+
+        /* SCROLLED STATE: Move the whole header up by the height of the brand row */
+        #main-header.scrolled {
+            transform: translateY(calc(var(--brand-h) * -1));
         }
 
         /* --- HEADER ROWS --- */
-        
-        /* 1. BRAND ROW */
-        #brand-name {
+        .header-row {
             width: 100%;
-            height: var(--brand-row-h); 
-            flex-shrink: 0; 
-            
             display: flex; align-items: center; justify-content: center;
-            /* Dense Typography */
-            font-size: 30px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; 
-            line-height: 1; 
-            cursor: pointer; user-select: none;
-            /* CHANGED TO HUMBLE GREY BASE */
-            --text-base: #666; --text-hover: #fff; 
-            
-            transition: height 0.4s var(--ease), opacity 0.3s var(--ease), transform 0.4s var(--ease), margin 0.4s var(--ease);
-            opacity: 1; transform: translateY(0); margin-bottom: 0;
-        }
-
-        /* 2. PRIMARY NAV */
-        #primary-nav { 
-            width: 100%;
-            height: var(--main-row-h);
             flex-shrink: 0;
-            
-            display: flex; align-items: center; justify-content: center; gap: 30px; 
-            margin: 0; padding: 0; 
+            margin: 0; 
+            padding: 0; 
+            transition: opacity 0.3s var(--ease);
         }
 
+        /* ROW 1: BRAND */
+        #row-brand {
+            height: var(--brand-h);
+            position: relative;
+            z-index: 2;
+            /* Tiny padding to center text visually */
+            padding-top: 4px; 
+        }
+
+        #brand-name {
+            font-size: 26px; 
+            font-weight: 700; text-transform: uppercase; letter-spacing: 2px; cursor: pointer;
+            /* FIXED: Use humble grey #666 as base */
+            user-select: none; --text-base: #666; --text-hover: #fff; line-height: 1;
+        }
+        
+        #main-header.scrolled #brand-name {
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease-out;
+        }
+
+        /* ROW 2: PRIMARY NAV */
+        #row-primary {
+            height: var(--nav-h);
+            border-top: 1px solid transparent; 
+        }
+
+        #primary-nav { display: flex; gap: 30px; line-height: 1; }
+        
         .nav-link {
-            font-size: 14px; 
+            font-size: 16px; 
             font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-            line-height: 1; 
             user-select: none; --text-base: #666; --text-hover: #fff;
+            line-height: 1; 
         }
 
         .nav-link[href="#Projects"] { --text-hover: var(--accent-projects); }
@@ -152,132 +160,106 @@
         .nav-link[href="#Personal"] { --text-hover: var(--accent-personal); }
         .nav-link[href="#Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
-        /* 3. SUB NAV */
-        #sub-nav { 
+        /* ROW 3 & 4: SUB & TERTIARY NAVS */
+        .nav-container-scroll {
             width: 100%; max-width: 900px;
-            height: 0; flex-shrink: 0;
-            
-            display: flex; align-items: center; justify-content: center; gap: 20px; 
-            font-size: 13px; 
-            line-height: 1;
-            
-            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+            overflow-x: auto; white-space: nowrap;
+            scrollbar-width: none;
+            display: flex; justify-content: center;
             mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            
-            opacity: 0; pointer-events: none;
-            transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
-        }
-
-        /* 4. TERTIARY NAV */
-        #tertiary-nav { 
-            width: 100%; max-width: 900px;
-            height: 0; flex-shrink: 0;
-            
-            display: flex; align-items: center; justify-content: center; gap: 20px; 
-            font-size: 13px; 
-            line-height: 1;
-            
-            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-            mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            
-            opacity: 0; pointer-events: none;
-            transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
         }
         
+        .sub-nav-row {
+            height: 0; opacity: 0; pointer-events: none; overflow: hidden;
+            padding: 0; 
+            transition: height 0.4s var(--ease), opacity 0.3s var(--ease);
+            display: flex; align-items: center; justify-content: center;
+            width: 100%;
+        }
+        
+        /* Active States for Rows */
+        .sub-nav-row.active {
+            height: var(--sub-h);
+            opacity: 1; pointer-events: auto;
+        }
+
+        /* 14px font inside 22px container = very tight vertical spacing */
+        #sub-nav, #tertiary-nav { display: flex; gap: 20px; font-size: 14px; padding: 0 50px; line-height: 1; } 
         #sub-nav > *, #tertiary-nav > * { flex-shrink: 0; }
 
-        /* --- ACTIVE STATES (Hierarchy) --- */
-        body.has-sub-nav #sub-nav { height: var(--sub-row-h); opacity: 1; pointer-events: auto; }
-        
-        body.has-tertiary-nav #sub-nav { height: var(--sub-row-h); opacity: 1; pointer-events: auto; }
-        body.has-tertiary-nav #tertiary-nav { height: var(--sub-row-h); opacity: 1; pointer-events: auto; }
-
-
-        /* --- SCROLL COLLAPSE STATE --- */
-        #main-header.scrolled #brand-name {
-            height: 0; 
-            opacity: 0; 
-            margin-bottom: -1px; /* Absorb the gap */
-            transform: translateY(-20px);
-            pointer-events: none;
+        @media (max-width: 900px) {
+            .nav-container-scroll { justify-content: flex-start; }
+            #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { content: ''; display: block; width: 20px; flex-shrink: 0; }
         }
 
-        #main-header.scrolled {
-            gap: 0; /* Remove gap when collapsed to 1 row */
-        }
-
-        /* --- SEARCH CONTROLS --- */
+        /* --- SEARCH CONTROLS (FLOATING FIXED) --- */
+        /* FIXED: Position fixed relative to viewport, NOT header */
         #search-controls { 
-            position: absolute; right: 10px; 
-            top: 0; 
-            height: var(--brand-row-h); 
-            width: 60px; 
+            position: fixed; 
+            top: 5px; /* Fixed distance from top of screen */
+            right: 15px; 
+            width: 44px; height: 44px; /* Large Hitbox */
             display: flex; align-items: center; justify-content: center; 
-            z-index: 1002; transition: top 0.4s var(--ease), opacity 0.2s; 
+            z-index: 2002; /* Above everything */
+            transition: opacity 0.2s; cursor: pointer;
         }
-        #main-header.scrolled #search-controls { opacity: 0; pointer-events: none; }
+        
+        /* Removed the rule that hid it on scroll */
 
-        .icon-btn { 
-            width: 44px; height: 44px; 
-            padding: 10px; 
-            cursor: pointer; fill: #666; transition: all 0.4s; transform-origin: center; 
-        }
-        .icon-btn:hover { fill: #fff; }
-        .search-icon { opacity: 1; }
+        .icon-btn { position: relative; width: 24px; height: 24px; fill: #666; transition: all 0.4s var(--ease); }
+        #search-controls:hover .icon-btn { fill: #fff; }
+
+        .search-icon { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
         .close-icon  { opacity: 0; display: none; } 
 
-        /* --- FIXED FLOATING SEARCH OVERLAY --- */
+        /* FLOATING SEARCH BUBBLE (FIXED) */
         #search-overlay { 
-            position: fixed; /* FIXED TO VIEWPORT */
-            top: 20px; left: 50%; width: 320px; max-width: 80%; height: 40px; 
-            transform-origin: center; 
+            position: fixed; /* FIXED relative to viewport */
+            top: 10px;       /* Fixed distance from top */
+            left: 50%; 
+            width: 320px; max-width: 80%; height: 36px; 
+            transform-origin: center top;
             transform: translate(-50%, -20px) scale(0.9);
             display: flex; align-items: center; justify-content: center; 
-            background-color: rgba(20,20,20,0.98); backdrop-filter: blur(16px); 
-            z-index: 2000; /* Above Header */
-            border-radius: 22px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid #333;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            background-color: rgba(15,15,15,0.98); 
+            backdrop-filter: blur(20px); 
+            z-index: 2001; /* Above Header */
+            border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
+            border: 1px solid #333;
+            overflow: hidden; 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0; visibility: hidden; pointer-events: none;
         }
         
-        #search-overlay.active { 
-            opacity: 1; visibility: visible; pointer-events: auto; 
-            transform: translate(-50%, 0) scale(1); 
-        }
-        
+        #search-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0) scale(1); }
         #search-input { width: 100%; height: 100%; background: transparent; border: none; color: #fff; font-size: 16px; font-family: 'Jost', sans-serif; padding: 0 20px; outline: none; text-align: center; }
         
-        /* Blur background when search is active */
-        #main-header.search-mode { opacity: 0.3; filter: blur(2px); transition: 0.4s; }
-        #app.search-active { opacity: 0.3; filter: blur(2px); transition: 0.4s; }
-
-
-        /* MOBILE SPRINGS */
-        @media (max-width: 900px) {
-            #sub-nav, #tertiary-nav { justify-content: flex-start; }
-            #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; }
-        }
+        /* Blur Header when search is active */
+        #main-header.search-mode > * { opacity: 0.3; filter: blur(2px); transition: 0.3s; }
 
         /* --- CONTENT --- */
-        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 10px 20px 0; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; transition: 0.4s; }
+        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 20px 20px 0; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; }
         .section { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.4s forwards; position: relative; } 
         @keyframes fadeIn { to { opacity: 1; } }
         .skeleton-visible { opacity: 1 !important; animation: none !important; }
 
         p a:not(.wiki-link) { --text-base: #999; --text-hover: #fff; border-bottom: 1px dotted #444; }
         p a:not(.wiki-link):hover { border-bottom-color: #fff; }
+
         a[target="_blank"]:not(.clickable-block) { display: inline-flex; align-items: center; gap: 4px; }
         a[target="_blank"]:not(.clickable-block)::after { content: ""; display: inline-block; width: 12px; height: 12px; background-color: currentColor; -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; }
 
+        /* --- TYPOGRAPHY & LISTS --- */
         ol, ul { padding-left: 25px; margin-top: 8px; margin-bottom: 12px; }
         li { margin-bottom: 6px; padding-left: 5px; }
         ol ol, ul ul, ol ul, ul ol { margin-top: 5px; margin-bottom: 5px; }
 
+        /* --- CARDS & GRID --- */
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); column-gap: 20px; row-gap: 10px; margin-bottom: 15px; }
         .layout-grid { display: flex; flex-direction: column; gap: 3px; padding: 12px; border-radius: 6px; transition: background 0.2s; border: none; height: 100%; position: relative; -webkit-tap-highlight-color: transparent; }
-        .layout-grid.clickable-block, .layout-grid.clickable-block * { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        .layout-grid.clickable-block, .layout-grid.clickable-block * { cursor: pointer; user-select: none; }
         .layout-grid.clickable-block .chip { pointer-events: auto; }
         .layout-grid:hover { background: var(--card-bg-hover); }
 
@@ -295,6 +277,7 @@
         .layout-grid.cat-professional:hover .row-media.placeholder span { color: var(--accent-prof); }
         .layout-grid.cat-personal:hover .row-media.placeholder span { color: var(--accent-personal); }
 
+        /* --- EMBEDS --- */
         .embed-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: 6px; margin: 20px 0; background: #111; border: 1px solid #222; }
         .embed-wrapper.video { padding-top: 56.25%; }
         .embed-wrapper.doc { height: 600px; }
@@ -306,6 +289,7 @@
         .embed-wrapper.stl:active { cursor: grabbing; }
         .embed-wrapper.stl canvas { outline: none; opacity: 0; transition: opacity 0.6s ease-out; }
         .embed-wrapper.stl.ready canvas { opacity: 1; }
+
         .row-media .embed-wrapper.stl { height: 100% !important; width: 100% !important; background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%); border-radius: 0; border: none; margin: 0; }
         .layout-grid .embed-wrapper { pointer-events: none; }
         .layout-grid .inline-gallery, .layout-grid .inline-img { display: none !important; }
@@ -369,16 +353,16 @@
         .btn-primary { display: inline-block; padding: 10px 25px; background: #fff; color: #000; text-decoration: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; border-radius: 4px; transition: opacity 0.2s; }
         .btn-primary:hover { opacity: 0.8; }
 
-        /* --- INDEX INDENTATION --- */
+        /* --- INDEX LIST --- */
         .index-list { column-count: 2; column-gap: 40px; margin-top: 20px; }
         .index-group { break-inside: avoid; margin-bottom: 30px; }
         .index-group h3 { font-size: 14px; text-transform: uppercase; color: #666; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; }
         .index-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
         .index-link span { color: #444; font-size: 12px; margin-left: 8px; }
         
-        /* Indent styling for Tertiary pages */
-        .index-link.depth-3 { padding-left: 20px; font-size: 15px; color: #888; }
-        .index-link.depth-3::before { content: "└ "; opacity: 0.5; margin-right: 5px; font-family: monospace; }
+        /* TERTIARY INDENTATION */
+        .index-link.is-tertiary { padding-left: 15px; border-left: 1px solid #222; margin-left: 5px; color: #999; }
+        .index-link.is-tertiary:hover { border-color: #555; }
 
         .index-group.cat-projects h3 { color: var(--accent-projects); border-color: var(--accent-projects); }
         .index-group.cat-professional h3 { color: var(--accent-prof); border-color: var(--accent-prof); }
@@ -388,7 +372,7 @@
         footer { text-align: center; padding: 30px 20px; border-top: 1px solid #1a1a1a; margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px 30px; max-width: 1000px; margin-left: auto; margin-right: auto; width: 100%; }
         footer .footer-links { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: center; }
         footer .footer-links a { font-size: 14px; font-weight: 400; --text-base: #777; --text-hover: #fff; white-space: nowrap; }
-        #version-tag { font-size: 14px; font-weight: 400; color: #666; white-space: nowrap; font-family: 'Jost', sans-serif; --text-base: #666; --text-hover: #fff; }
+        #version-tag { font-size: 14px; color: #666; white-space: nowrap; font-family: 'Jost', sans-serif; --text-base: #666; --text-hover: #fff; }
         #version-tag a { text-decoration: none; }
         #version-tag a:hover { text-decoration: underline; }
 
@@ -441,23 +425,34 @@
         }
     </script>
 
-    <div id="search-overlay">
-        <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
-    </div>
-
     <header id="main-header" class="no-transition">
-        <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
-        <nav id="primary-nav"></nav>
-        <nav id="sub-nav"></nav>
-        <nav id="tertiary-nav"></nav>
+        <div id="row-brand" class="header-row">
+            <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
+        </div>
         
-        <div id="search-controls">
-            <svg id="search-trigger" class="icon-btn search-icon" onclick="toggleSearch()" viewBox="0 0 24 24">
+        <div id="row-primary" class="header-row">
+            <nav id="primary-nav"></nav>
+        </div>
+
+        <div id="row-sub" class="header-row sub-nav-row">
+            <nav id="sub-nav" class="nav-container-scroll"></nav>
+        </div>
+
+        <div id="row-tertiary" class="header-row sub-nav-row">
+            <nav id="tertiary-nav" class="nav-container-scroll"></nav>
+        </div>
+        
+        <div id="search-controls" onclick="toggleSearch()">
+            <svg id="search-trigger" class="icon-btn search-icon" viewBox="0 0 24 24">
                 <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
             </svg>
-            <svg id="close-search" class="icon-btn close-icon" onclick="toggleSearch()" viewBox="0 0 24 24">
+            <svg id="close-search" class="icon-btn close-icon" viewBox="0 0 24 24">
                 <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
             </svg>
+        </div>
+        
+        <div id="search-overlay">
+            <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
         </div>
     </header>
 
@@ -504,7 +499,6 @@
     <script>
         let db = [], quotesDb = [], isSearchActive = false;
 
-        // INLINED CONFIGURATION
         const CONFIG = {
             main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
             quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
@@ -525,7 +519,6 @@
                     setTimeout(() => {
                         document.body.classList.remove('no-transition');
                         document.getElementById('main-header').classList.remove('no-transition');
-                        updatePadding(); // Initial sizing
                     }, 50);
                 });
             }).catch(e => {
@@ -571,7 +564,6 @@
             buildNav(); handleRouting();
             window.addEventListener('hashchange', handleRouting);
             
-            // GOATCOUNTER TRACKING
             window.addEventListener('hashchange', function(e) {
                 if (window.goatcounter && window.goatcounter.count) {
                     window.goatcounter.count({
@@ -582,14 +574,13 @@
                 }
             });
 
-            // SCROLL LOGIC: Only affects Header Class, NOT Body Padding
+            // FIXED: SCROLL BEHAVIOR
+            // Instead of animating padding (which pushes content), we stick the body padding 
+            // to the expanded height and translate the header up visually.
             window.addEventListener('scroll', () => { 
                 const h = document.getElementById('main-header'); 
                 const isScrolled = window.scrollY > 10; 
                 h.classList.toggle('scrolled', isScrolled);
-                
-                // Recalculate header height physically so the border moves
-                updateHeaderHeight(isScrolled);
             });
             
             document.addEventListener('click', (e) => {
@@ -644,76 +635,30 @@
                 }
             });
         }
-        
-        // NEW: Calculation for Body Padding (Fixed per page) vs Header Height (Dynamic per scroll)
-        function updatePadding() {
-            // MATCHED TO CSS VARIABLES
-            const brandH = 34; 
-            const mainH = 22;  
-            const subH = 22;   
-            const gap = 1;     
-            
-            // Calculate Active Hierarchy Level
-            let totalH = brandH + mainH + gap; 
-            if(document.body.classList.contains('has-sub-nav')) totalH += subH + gap;
-            if(document.body.classList.contains('has-tertiary-nav')) totalH += subH + gap;
-
-            // Set Body Padding (Fixed) + Buffer
-            document.body.style.paddingTop = (totalH + 10) + 'px';
-            
-            // Set Initial Header Height (Expanded)
-            updateHeaderHeight(false);
-        }
-
-        function updateHeaderHeight(isScrolled) {
-            const h = document.getElementById('main-header');
-            const brandH = 34; 
-            const mainH = 22;  
-            const subH = 22;   
-            const gap = 1;
-            
-            let visibleH = 0;
-            
-            // Brand is only visible if NOT scrolled
-            if(!isScrolled) visibleH += brandH + gap;
-            
-            // Main Nav always visible
-            visibleH += mainH;
-            
-            // Sub/Tertiary based on Classes
-            if(document.body.classList.contains('has-sub-nav')) visibleH += subH + gap;
-            if(document.body.classList.contains('has-tertiary-nav')) visibleH += subH + gap;
-
-            h.style.height = visibleH + 'px';
-        }
 
         function resetToHome() { closeSearch(); window.location.hash = ''; }
-        function closeSearch() { 
-            document.getElementById('search-overlay').classList.remove('active'); 
-            document.getElementById('main-header').classList.remove('search-mode'); 
-            document.getElementById('app').classList.remove('search-active');
-            document.getElementById('search-input').value = ''; 
-            if(isSearchActive) { isSearchActive = false; handleRouting(); } 
-            isSearchActive = false; 
-        }
+        function closeSearch() { document.getElementById('search-overlay').classList.remove('active'); document.getElementById('main-header').classList.remove('search-mode'); document.getElementById('search-input').value = ''; if(isSearchActive) { isSearchActive = false; handleRouting(); } isSearchActive = false; }
 
         function toggleSearch() { 
             const a = document.getElementById('search-overlay').classList.toggle('active'); 
             document.getElementById('main-header').classList.toggle('search-mode'); 
-            document.getElementById('app').classList.toggle('search-active');
             if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
             else closeSearch(); 
         }
 
         function handleSearch(q) { 
+            // FIXED: If search is empty, do NOT close it. Just stay in search mode.
+            if(!q) { 
+                isSearchActive = true; 
+                // Optionally clear results or show a "Type something..." message if preferred,
+                // but strictly do not call closeSearch()
+                return; 
+            }
             isSearchActive = true; 
             
-            // FIXED: If empty, show placeholder instead of closing
-            if(!q) { 
-                const app = document.getElementById('app');
-                app.innerHTML = '<div class="layout-404" style="padding:40px 0;"><h2>Search</h2><p>Type to find projects and posts...</p></div>';
-                return;
-            } 
+            // Force collapse sub-navs during search
+            document.getElementById('row-sub').classList.remove('active');
+            document.getElementById('row-tertiary').classList.remove('active');
 
             const t = q.toLowerCase();
             const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
@@ -728,104 +673,105 @@
 
         function buildSubNav(top) {
             const n = document.getElementById('sub-nav'); if(!n) return; n.innerHTML = ''; 
-            
-            if(!top || top === 'Home') {
-                document.body.classList.remove('has-sub-nav');
-                updatePadding();
-                return;
-            }
-
             const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
             
-            if(subs.length === 0) {
-                 document.body.classList.remove('has-sub-nav');
-            } else {
-                 document.body.classList.add('has-sub-nav');
-                 subs.forEach(x => { 
-                    const name = x.split('/')[1];
-                    const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
-                    n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
-                });
-                setTimeout(() => centerSubNav(true), 100);
-            }
-            updatePadding();
+            subs.forEach(x => { 
+                const name = x.split('/')[1];
+                const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
+                n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
+            });
+
+            // Center ONLY when the sub-nav is first built (Navigation event)
+            setTimeout(() => centerSubNav(true), 100);
+            return subs.length > 0;
         }
 
         function buildTertiaryNav(secondaryPath) {
-            const n = document.getElementById('tertiary-nav'); if(!n) return; n.innerHTML = '';
-            
-            if (!secondaryPath) {
-                document.body.classList.remove('has-tertiary-nav');
-                updatePadding();
-                return;
-            }
+            const n = document.getElementById('tertiary-nav'); if(!n) return false; n.innerHTML = '';
+            if (!secondaryPath) return false;
 
             const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(secondaryPath + '/')).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
 
-            if (terts.length === 0) {
-                document.body.classList.remove('has-tertiary-nav');
-            } else {
-                document.body.classList.add('has-tertiary-nav');
-                terts.forEach(x => { 
-                    const name = x.split('/')[2];
-                    const active = window.location.hash === `#${x}`; 
-                    n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
-                });
-                setTimeout(() => centerTertiaryNav(true), 100);
-            }
-            updatePadding();
+            if (terts.length === 0) return false;
+
+            terts.forEach(x => { 
+                const name = x.split('/')[2];
+                const active = window.location.hash === `#${x}`; 
+                n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
+            });
+
+            setTimeout(() => centerTertiaryNav(true), 100);
+            return true;
         }
 
-        function centerSubNav(forceMiddleIfNone) {
+        function centerSubNav(force) {
             const n = document.getElementById('sub-nav'); if(!n) return;
             const activeLink = n.querySelector('.active');
             if (activeLink) {
                 const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
                 n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-            } else if (forceMiddleIfNone) {
-                const middle = (n.scrollWidth - n.clientWidth) / 2;
-                n.scrollTo({ left: middle, behavior: 'smooth' });
+            } else if (force) {
+                n.scrollTo({ left: (n.scrollWidth - n.clientWidth) / 2, behavior: 'smooth' });
             }
         }
         
-        function centerTertiaryNav(forceMiddleIfNone) {
+        function centerTertiaryNav(force) {
             const n = document.getElementById('tertiary-nav'); if(!n) return;
             const activeLink = n.querySelector('.active');
             if (activeLink) {
                 const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
                 n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-            } else if (forceMiddleIfNone) {
-                const middle = (n.scrollWidth - n.clientWidth) / 2;
-                n.scrollTo({ left: middle, behavior: 'smooth' });
+            } else if (force) {
+                n.scrollTo({ left: (n.scrollWidth - n.clientWidth) / 2, behavior: 'smooth' });
             }
         }
 
         function handleRouting() { 
             if(isSearchActive) return; 
             window.scrollTo(0, 0); 
+            let h = window.location.hash.substring(1) || 'Home'; 
             
-            // Force Header Reset on Route Change
-            const h = document.getElementById('main-header');
-            if(h) {
-                h.classList.remove('scrolled');
-                updateHeaderHeight(false);
+            // Reset UI for Index
+            if(h === 'Index') { 
+                document.getElementById('row-sub').classList.remove('active');
+                document.getElementById('row-tertiary').classList.remove('active');
+                updateBodyPadding(false, false);
+                renderIndex(); 
+                return; 
             }
-
-            let hash = window.location.hash.substring(1) || 'Home'; 
             
-            if(hash === 'Index') { renderIndex(); return; }
-            
-            const parts = hash.split('/');
+            const parts = h.split('/');
             const top = parts[0]; 
             const secondary = parts.length > 1 ? parts.slice(0, 2).join('/') : null;
 
             document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
             
-            buildSubNav(top); 
-            buildTertiaryNav(secondary); 
+            // BUILD AND ACTIVATE NAV ROWS
+            // Important: We activate them immediately based on content presence
+            const hasSub = buildSubNav(top); 
+            const hasTert = buildTertiaryNav(secondary);
             
-            if(hash.startsWith('Filter:')) { renderFiltered(decodeURIComponent(hash.split(':')[1])); } 
-            else { renderPage(hash); }
+            document.getElementById('row-sub').classList.toggle('active', hasSub);
+            document.getElementById('row-tertiary').classList.toggle('active', hasTert);
+            
+            // FIXED: Update Padding Immediately based on active rows
+            updateBodyPadding(hasSub, hasTert);
+            
+            if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
+            else { renderPage(h); }
+        }
+
+        // NEW: Explicitly calculate padding to prevent overlap
+        function updateBodyPadding(hasSub, hasTert) {
+            const brandH = 40; // UPDATED to match CSS var
+            const navH = 30;   // UPDATED to match CSS var
+            const subH = 26;   // UPDATED to match CSS var
+            
+            let totalH = brandH + navH;
+            if(hasSub) totalH += subH;
+            if(hasTert) totalH += subH;
+            
+            document.body.style.paddingTop = totalH + 'px';
         }
 
         function renderFiltered(t) { 
@@ -865,11 +811,7 @@
         }
 
         function renderIndex() {
-            document.body.classList.remove('has-sub-nav', 'has-tertiary-nav');
-            buildSubNav('Index'); 
-            buildTertiaryNav(null); 
             document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-
             const app = document.getElementById('app'); 
             app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
             
@@ -896,9 +838,9 @@
                     const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
                     const title = row ? row.Title : p.split('/').pop();
                     
-                    // --- INDEX INDENTATION LOGIC ---
-                    const depth = p.split('/').length;
-                    const indentClass = depth > 2 ? 'depth-3' : '';
+                    // NEW: Indentation Logic
+                    const isTertiary = p.split('/').length > 2;
+                    const indentClass = isTertiary ? 'is-tertiary' : '';
                     
                     html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
                 });
@@ -1169,12 +1111,14 @@
                 import('three/addons/loaders/GLTFLoader.js'),
                 import('three/addons/controls/OrbitControls.js')
             ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
-                
                 const visibilityObserver = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         const container = entry.target;
-                        if (entry.isIntersecting) container.setAttribute('data-visible', 'true');
-                        else container.setAttribute('data-visible', 'false');
+                        if (entry.isIntersecting) {
+                            container.setAttribute('data-visible', 'true');
+                        } else {
+                            container.setAttribute('data-visible', 'false');
+                        }
                     });
                 });
 
@@ -1203,6 +1147,7 @@
             scene.background = null; 
 
             const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
+            
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.setSize(container.clientWidth, container.clientHeight);
@@ -1246,10 +1191,10 @@
 
             const onLoad = (object) => {
                 container.classList.add('ready'); 
-
                 const box = new THREE.Box3().setFromObject(object);
                 const center = new THREE.Vector3();
                 box.getCenter(center);
+                
                 object.position.sub(center);
                 scene.add(object);
 
@@ -1267,8 +1212,10 @@
 
                 const size = box.getSize(new THREE.Vector3()).length();
                 const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
+                
                 camera.position.set(dist, dist * 0.4, dist * 0.8); 
                 camera.lookAt(0, 0, 0);
+                
                 controls.minDistance = size * 0.2; 
                 controls.maxDistance = size * 5;
 
@@ -1310,13 +1257,7 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if(typeof Papa === 'undefined') {
-                window.addEventListener('load', init);
-            } else {
-                init();
-            }
-        });
+        init();
     </script>
 </body>
 </html>
