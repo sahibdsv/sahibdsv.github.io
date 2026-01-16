@@ -39,11 +39,14 @@
             --accent-projects: #ff9933;
             
             /* Header Variables - TIGHTENED EXTREMELY as requested */
-            --header-h-default: 72px; /* Reduced from 90px */
-            --header-h-shrink: 50px;  /* Reduced from 60px */
-            --header-h-expanded: 92px; /* Reduced from 105px */
+            --header-h-default: 72px; 
+            --header-h-shrink: 50px;  
+            --header-h-expanded: 92px; 
             --header-h-expanded-shrink: 72px;
             
+            /* Tertiary Row Height */
+            --header-row-h: 26px;
+
             --ease: cubic-bezier(0.25, 1, 0.5, 1);
         }
 
@@ -65,7 +68,12 @@
 
         p, h1, h2, h3, a { overflow-wrap: break-word; word-wrap: break-word; }
 
+        /* HEADER STATES with TERTIARY SUPPORT */
         body.header-expanded { padding-top: var(--header-h-expanded); }
+        
+        /* When Tertiary is Active, we add the row height to the padding */
+        body.tertiary-active { padding-top: calc(var(--header-h-default) + var(--header-row-h)); }
+        body.tertiary-active.header-expanded { padding-top: calc(var(--header-h-expanded) + var(--header-row-h)); }
 
         .no-transition * { transition: none !important; }
         .sk-line, .sk-img, .sk-box { animation-play-state: running !important; }
@@ -91,11 +99,11 @@
             position: fixed; top: 0; left: 0; width: 100%; background: rgba(5,5,5,0.95); 
             backdrop-filter: blur(12px); z-index: 1000; 
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-            padding-top: 5px; /* Reduced from 15px to bring top row up */
+            padding-top: 5px; 
             height: var(--header-h-default); 
             transition: height 0.4s var(--ease), padding 0.4s var(--ease); 
             overflow: hidden; border-bottom: 1px solid #1a1a1a; 
-            gap: 0px; /* Force zero gap between flex items */
+            gap: 0px; 
         }
 
         #main-header.shrink { height: var(--header-h-shrink); padding-top: 2px; }
@@ -103,27 +111,33 @@
         #main-header.expanded.shrink { height: var(--header-h-expanded-shrink); }
         #main-header.search-mode { height: 90px; }
 
+        /* Tertiary Header Height Calculations */
+        #main-header.tertiary-active { height: calc(var(--header-h-default) + var(--header-row-h)); }
+        #main-header.tertiary-active.shrink { height: calc(var(--header-h-shrink) + var(--header-row-h)); }
+        #main-header.tertiary-active.expanded { height: calc(var(--header-h-expanded) + var(--header-row-h)); }
+        #main-header.tertiary-active.expanded.shrink { height: calc(var(--header-h-expanded-shrink) + var(--header-row-h)); }
+
         #brand-name {
             font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
-            margin-bottom: 0px; /* REMOVED MARGIN for tight stacking */
-            padding: 1px 0; /* Consistent 1px padding */
+            margin-bottom: 0px; 
+            padding: 1px 0; 
             transition: all 0.4s var(--ease); user-select: none;
             --text-base: #666; --text-hover: #fff; z-index: 1003; 
-            line-height: 1.2; /* Tighter line height */
+            line-height: 1.2; 
         }
         #main-header.shrink #brand-name { font-size: 16px; margin-bottom: 0px; }
 
         #primary-nav { 
             display: flex; gap: 30px; 
-            margin-bottom: 0px; /* REMOVED MARGIN for tight stacking */
-            padding: 1px 0; /* Consistent 1px padding */
+            margin-bottom: 0px; 
+            padding: 1px 0; 
             transition: all 0.4s var(--ease); 
             line-height: 1.2;
         }
         #main-header.shrink #primary-nav { margin-bottom: 0px; gap: 20px; }
 
         .nav-link {
-            font-size: 15px; /* INCREASED from 14px as requested */
+            font-size: 15px; 
             font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
             user-select: none; --text-base: #666; --text-hover: #fff;
         }
@@ -138,36 +152,62 @@
 
         /* --- SUB-NAV --- */
         #sub-nav { 
-            display: flex; gap: 25px; font-size: 14px; /* INCREASED from 13px */
+            display: flex; gap: 25px; font-size: 14px; 
             transition: opacity 0.4s var(--ease); opacity: 1;
             overflow-x: auto; white-space: nowrap; 
             width: 100%; max-width: 900px;
             justify-content: center;
             
-            padding: 1px 0 0 0; /* Tightened bottom padding */
+            padding: 1px 0; 
+            padding-bottom: 2px; 
             scrollbar-width: none;
-            height: 26px; /* Adjusted for slightly larger font */
+            height: var(--header-row-h); 
             
             mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
             
-            margin: 0; /* Zero margin */
+            margin: 0; 
         }
 
         #sub-nav > * { flex-shrink: 0; }
 
         body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
 
+        /* --- TERTIARY NAV (NEW) --- */
+        #tertiary-nav { 
+            display: flex; gap: 25px; font-size: 14px; 
+            transition: opacity 0.4s var(--ease), height 0.4s var(--ease); opacity: 1;
+            overflow-x: auto; white-space: nowrap; 
+            width: 100%; max-width: 900px;
+            justify-content: center;
+            
+            padding: 1px 0; 
+            padding-bottom: 2px; 
+            scrollbar-width: none;
+            height: var(--header-row-h); 
+            
+            mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
+            
+            margin: 0; 
+        }
+
+        #tertiary-nav > * { flex-shrink: 0; }
+
+        /* Collapse Tertiary if not active */
+        body:not(.tertiary-active) #tertiary-nav { height: 0; padding: 0; opacity: 0; pointer-events: none; }
+
+
         /* MOBILE SPRINGS */
         @media (max-width: 900px) {
-            #sub-nav { justify-content: flex-start; }
-            #sub-nav::before, #sub-nav::after { content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; }
+            #sub-nav, #tertiary-nav { justify-content: flex-start; }
+            #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; }
         }
 
         /* --- SEARCH --- */
         #search-controls { 
             position: absolute; right: 20px; 
-            top: 5px; /* MOVED UP to align with Brand Name (5px padding + visual center) */
+            top: 5px; 
             display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; z-index: 1002; transition: top 0.4s var(--ease); 
         }
         #main-header.shrink #search-controls { top: 2px; }
@@ -434,6 +474,7 @@
         <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
         <nav id="primary-nav"></nav>
         <nav id="sub-nav"></nav>
+        <nav id="tertiary-nav"></nav>
         
         <div id="search-controls">
             <svg id="search-trigger" class="icon-btn search-icon" onclick="toggleSearch()" viewBox="0 0 24 24">
@@ -674,6 +715,48 @@
             setTimeout(() => centerSubNav(true), 100);
         }
 
+        // NEW: TERTIARY NAV LOGIC
+        function buildTertiaryNav(secondaryPath) {
+            const n = document.getElementById('tertiary-nav'); 
+            if(!n) return; 
+            n.innerHTML = '';
+            
+            // Determine if Tertiary should exist
+            if (!secondaryPath) {
+                deactivateTertiary();
+                return;
+            }
+
+            // Find pages that are exactly 3 levels deep and start with the secondary path
+            const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(secondaryPath + '/')).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
+
+            if (terts.length === 0) {
+                deactivateTertiary();
+                return;
+            }
+
+            // Populate Tertiary Nav
+            terts.forEach(x => { 
+                const name = x.split('/')[2];
+                const active = window.location.hash === `#${x}`; 
+                n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
+            });
+
+            activateTertiary();
+            setTimeout(() => centerTertiaryNav(true), 100);
+        }
+
+        function activateTertiary() {
+            document.body.classList.add('tertiary-active');
+            document.getElementById('main-header').classList.add('tertiary-active');
+        }
+
+        function deactivateTertiary() {
+            document.body.classList.remove('tertiary-active');
+            document.getElementById('main-header').classList.remove('tertiary-active');
+        }
+
+
         // SMART CENTERING LOGIC
         function centerSubNav(forceMiddleIfNone) {
             const n = document.getElementById('sub-nav');
@@ -686,6 +769,19 @@
                 n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
             } else if (forceMiddleIfNone) {
                 // If Main Page Load: Scroll to MIDDLE to hint content
+                const middle = (n.scrollWidth - n.clientWidth) / 2;
+                n.scrollTo({ left: middle, behavior: 'smooth' });
+            }
+        }
+        
+        function centerTertiaryNav(forceMiddleIfNone) {
+            const n = document.getElementById('tertiary-nav');
+            if(!n) return;
+            const activeLink = n.querySelector('.active');
+            if (activeLink) {
+                const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
+                n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+            } else if (forceMiddleIfNone) {
                 const middle = (n.scrollWidth - n.clientWidth) / 2;
                 n.scrollTo({ left: middle, behavior: 'smooth' });
             }
@@ -704,10 +800,14 @@
             document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
             
             // Deactivate Main Nav Highlights if Index (or non-matching top)
-            const top = h.split('/')[0]; 
+            const parts = h.split('/');
+            const top = parts[0]; 
+            const secondary = parts.length > 1 ? parts.slice(0, 2).join('/') : null;
+
             document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
             
             buildSubNav(top); 
+            buildTertiaryNav(secondary); // NEW
             
             if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
             else { renderPage(h); }
@@ -755,6 +855,7 @@
             document.getElementById('main-header').classList.remove('expanded');
             // Clear Sub-nav
             buildSubNav('Index'); 
+            buildTertiaryNav(null); // Clear Tertiary
             // Deactivate Main Nav
             document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
