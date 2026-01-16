@@ -125,7 +125,7 @@ body:not(.header-expanded) #header-row-3 { height: 0; }
     #sub-nav::before, #sub-nav::after { content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; }
 }
 
-/* SEARCH */
+/* SEARCH - OPAQUE FIX */
 #search-controls { 
     position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
     display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; z-index: 1002; 
@@ -143,7 +143,9 @@ body:not(.header-expanded) #header-row-3 { height: 0; }
 #search-overlay { 
     position: absolute; top: 50%; right: 60px; transform: translateY(-50%);
     height: 100%; width: 0; display: flex; align-items: center; justify-content: flex-end; 
-    background-color: transparent; z-index: 1001; overflow: hidden; 
+    /* Changed from transparent to solid bg */
+    background-color: var(--bg); 
+    z-index: 1001; overflow: hidden; 
     transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s; opacity: 0; visibility: hidden; 
 }
 #search-overlay.active { width: 260px; max-width: calc(100% - 80px); opacity: 1; visibility: visible; }
@@ -279,14 +281,47 @@ iframe { max-width: 100%; }
 .index-group h3 { font-size: 14px; text-transform: uppercase; color: #666; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; }
 .index-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
 .index-link span { color: #444; font-size: 12px; margin-left: 8px; }
-
-/* Tertiary Indentation */
 .index-link.tertiary { padding-left: 20px; border-left: 1px solid #333; font-size: 0.95em; color: #888; margin-left: 2px; }
-
 .index-group.cat-projects h3 { color: var(--accent-projects); border-color: var(--accent-projects); }
 .index-group.cat-professional h3 { color: var(--accent-prof); border-color: var(--accent-prof); }
 .index-group.cat-personal h3 { color: var(--accent-personal); border-color: var(--accent-personal); }
 @media (max-width: 600px) { .index-list { column-count: 1; } }
+
+/* --- TIMELINE --- */
+.timeline-wrapper { display: flex; flex-direction: column; gap: 30px; padding-bottom: 40px; }
+.timeline-row { display: flex; gap: 20px; align-items: flex-start; overflow: hidden; }
+
+.timeline-date {
+    width: 100px; flex-shrink: 0; font-size: 14px; font-weight: 700;
+    text-transform: uppercase; color: #666; padding-top: 15px; text-align: right;
+    position: sticky; left: 0;
+}
+
+.timeline-scroller-wrapper { flex: 1; position: relative; overflow: hidden; }
+
+/* Mask for fade effect */
+.timeline-scroller-wrapper.fade-active::after {
+    content: ''; position: absolute; top: 0; right: 0; width: 60px; height: 100%;
+    background: linear-gradient(to right, transparent, var(--bg)); pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.timeline-scroller {
+    display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px;
+    scrollbar-width: none; -ms-overflow-style: none; scroll-behavior: smooth;
+}
+.timeline-scroller::-webkit-scrollbar { display: none; }
+
+/* Timeline Card Sizing */
+.timeline-scroller .layout-grid {
+    min-width: 280px; width: 280px; flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .timeline-row { flex-direction: column; gap: 10px; }
+    .timeline-date { text-align: left; width: 100%; padding-top: 0; margin-bottom: 5px; }
+    .timeline-scroller .layout-grid { min-width: 240px; width: 240px; }
+}
 
 /* --- FOOTER --- */
 footer { 

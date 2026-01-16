@@ -205,9 +205,12 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
+    // Timeline Route
+    if(h === 'Timeline') { renderTimeline(); return; }
+    
     if(h === 'Index') { renderIndex(); return; }
     
-    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
+    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index' || h === 'Timeline');
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
@@ -266,8 +269,6 @@ function renderIndex() {
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
     
     const list = app.querySelector('.index-list');
-    
-    // Sort pages Alphabetically
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
     const groups = {};
@@ -277,11 +278,9 @@ function renderIndex() {
         groups[cat].push(p);
     });
     
-    // Explicitly Sort Groups Alphabetically
     const sortedCategories = Object.keys(groups).sort();
-
     sortedCategories.forEach(cat => {
-        const items = groups[cat]; // items are already sorted due to 'pages' sort
+        const items = groups[cat];
         let catClass = '';
         const cLower = cat.toLowerCase();
         if(cLower === 'projects') catClass = 'cat-projects';
@@ -293,10 +292,7 @@ function renderIndex() {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
             const title = row ? row.Title : p.split('/').pop();
-            
-            // Indentation Detection: Depth > 2 (Category/Sub/Page)
-            const parts = p.split('/');
-            const isTertiary = parts.length > 2;
+            const isTertiary = p.split('/').length > 2;
 
             html += `<a href="#${p}" class="index-link fill-anim ${isTertiary ? 'tertiary' : ''}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
         });
@@ -305,26 +301,149 @@ function renderIndex() {
     });
 }
 
+function renderTimeline() {
+    // 1. Reset UI State similar to Index
+    document.body.classList.remove('header-expanded');
+    document.getElementById('main-header').classList.remove('expanded');
+    buildSubNav('Timeline');
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+
+    const app = document.getElementById('app');
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-wrapper"></div>';
+    
+    const container = app.querySelector('.timeline-wrapper');
+    const items = db.filter(r => r.Page && r.Page !== 'Footer' && r.Page !== 'Home' && r.Title);
+
+    // 2. Group by Month Year
+    const groups = {};
+    items.forEach(r => {
+        // Use placeholder date if missing
+        const dateStr = r.Timestamp ? formatDate(r.Timestamp) : 'Undated'; 
+        if (!groups[dateStr]) groups[dateStr] = [];
+        groups[dateStr].push(r);
+    });
+
+    // 3. Sort Chronologically (Desc)
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+        if (a === 'Undated') return 1;
+        if (b === 'Undated') return -1;
+        return new Date(b) - new Date(a); 
+    });
+
+    sortedKeys.forEach(key => {
+        // 4. Sort Cards Alphabetically within Group
+        const rowItems = groups[key].sort((a, b) => a.Title.localeCompare(b.Title));
+
+        let cardsHtml = '';
+        rowItems.forEach(r => {
+            cardsHtml += createCardHtml(r, null, false); // No specific cat class override needed
+        });
+
+        // 5. Layout with Fade Mask Wrapper
+        const rowHtml = `
+            <div class="timeline-row">
+                <div class="timeline-date">${key}</div>
+                <div class="timeline-scroller-wrapper fade-active">
+                    <div class="timeline-scroller">${cardsHtml}</div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += rowHtml;
+    });
+
+    // 6. Bind Scroll Events for Fade Logic
+    setTimeout(() => {
+        document.querySelectorAll('.timeline-scroller').forEach(el => {
+            // Initial Check
+            checkFade(el);
+            // Scroll Event
+            el.addEventListener('scroll', () => checkFade(el));
+        });
+        // Init embedded viewers
+        init3DViewers();
+    }, 100);
+}
+
+function checkFade(el) {
+    const wrapper = el.parentElement;
+    const tolerance = 5;
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - tolerance) {
+        wrapper.classList.remove('fade-active');
+    } else {
+        wrapper.classList.add('fade-active');
+    }
+}
+
 function renderHome() { 
     const hr = db.filter(r => r.Page === 'Home');
     const app = document.getElementById('app'); app.innerHTML = ''; 
     renderRows(hr, null, true); 
     
-    // Featured Logic: 1. Featured Tag, 2. Timestamp
     const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
                       .sort((a, b) => {
                           const aFeat = a.Tags && a.Tags.toLowerCase().includes('featured');
                           const bFeat = b.Tags && b.Tags.toLowerCase().includes('featured');
-                          
                           if (aFeat && !bFeat) return -1;
                           if (!aFeat && bFeat) return 1;
-                          
                           return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
                       })
                       .slice(0, 6);
 
-    // Pass true to preserveOrder so renderRows doesn't re-sort by date
     if(recents.length > 0) { renderRows(recents, "Recent Activity", true, true, false, true); } 
+}
+
+// Extracted Card Logic for Reuse
+function createCardHtml(r, overrideCatClass, forcePlaceholder) {
+    let contentHtml = processText(r.Content);
+    let mediaHtml = '';
+    let hasPlaceholder = false;
+
+    const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+
+    if (modelMatch) {
+        const url = modelMatch[1].trim();
+        const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+        mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+        contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
+    } else if (r.Media) {
+        const thumb = getThumbnail(r.Media);
+        if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+    } else {
+        hasPlaceholder = true;
+        mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+    }
+
+    let catClass = overrideCatClass || '';
+    if (!catClass) {
+        const pLower = r.Page.toLowerCase();
+        if(pLower.startsWith('projects')) catClass = 'cat-projects';
+        else if(pLower.startsWith('professional')) catClass = 'cat-professional';
+        else if(pLower.startsWith('personal')) catClass = 'cat-personal';
+    }
+
+    const link = r.LinkURL || '';
+    const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
+    let l = link; if(!l) l = `#${r.Page}`; 
+    const internal = l.startsWith('#'), target = internal ? '' : '_blank';
+    
+    let mh = '';
+    if(r.Timestamp || tags.length > 0) {
+            mh = `<div class="meta-row">`;
+            if(r.Timestamp) {
+                let dateVal = formatDate(r.Timestamp);
+                mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
+            }
+            tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
+            mh += `</div>`;
+    }
+
+    return `
+    <div class="layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}" data-link="${l}" data-target="${target}">
+        ${mediaHtml}
+        <h3 class="fill-anim">${safeHTML(r.Title)}</h3>
+        <p>${contentHtml}</p>
+        ${mh}
+    </div>`;
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false, preserveOrder = false) {
@@ -358,36 +477,23 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false, prese
     rows.forEach(r => {
         if(!r.Page || r.Page === 'Footer') return; 
         
-        let contentHtml = processText(r.Content);
-        let mediaHtml = '';
-        let hasPlaceholder = false;
-
-        const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
-
-        if (modelMatch) {
-            const url = modelMatch[1].trim();
-            const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
-            mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
-            contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
-        } else if (r.Media) {
-            const thumb = getThumbnail(r.Media);
-            if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
-        } else {
-            hasPlaceholder = true;
-            mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
-        }
-
-        let catClass = '';
-        const pLower = r.Page.toLowerCase();
-        if(pLower.startsWith('projects')) catClass = 'cat-projects';
-        else if(pLower.startsWith('professional')) catClass = 'cat-professional';
-        else if(pLower.startsWith('personal')) catClass = 'cat-personal';
-
+        // Handle Article Mode & Text/Hero sections separately
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
-             if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else mediaHtml = ''; 
+             // ... (Article logic logic remains mostly HTML construction) ...
+             // Re-implementing article logic quickly here since it differs from Card
+             let contentHtml = processText(r.Content);
+             let mediaHtml = '';
+             const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+             if (modelMatch) {
+                const url = modelMatch[1].trim();
+                const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+                mediaHtml = `<div class="row-media article-mode"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+                contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
+             } else if (r.Media) {
+                const thumb = getThumbnail(r.Media);
+                if(thumb) mediaHtml = `<div class="row-media article-mode"><img src="${thumb}" loading="lazy"></div>`;
+             }
 
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
              if(r.LinkURL) {
@@ -431,28 +537,12 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false, prese
             }
         }
 
-        const link = r.LinkURL || '';
-        const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
-        let l = link; if(!l) l = `#${r.Page}`; 
-        const internal = l.startsWith('#'), target = internal ? '' : '_blank';
-        
-        let mh = '';
-        if(r.Timestamp || tags.length > 0) {
-             mh = `<div class="meta-row">`;
-             if(r.Timestamp) {
-                 let dateVal = formatDate(r.Timestamp);
-                 mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
-             }
-             tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
-             mh += `</div>`;
+        // Standard Card Generation
+        if(gc) {
+             const tempDiv = document.createElement('div');
+             tempDiv.innerHTML = createCardHtml(r);
+             gc.appendChild(tempDiv.firstElementChild);
         }
-
-        const d = document.createElement('div'); 
-        d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
-        d.setAttribute('data-link', l); d.setAttribute('data-target', target);
-        d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
-        
-        if(gc) gc.appendChild(d);
     });
     
     if(window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
@@ -491,6 +581,8 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
+    // Add Timeline Link
+    fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="closeSearch()">Timeline</a>`;
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
