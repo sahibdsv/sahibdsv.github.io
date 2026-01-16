@@ -5,29 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Sahib Virdee</title>
-    <meta name="description" content="Portfolio of Sahib Virdee, Mechanical Engineering student. Projects in EV design, manufacturing, and engineering analysis.">
-    <meta name="author" content="Sahib Virdee">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://sahibvirdee.com/">
-    <meta property="og:title" content="Sahib Virdee | Engineering Portfolio">
-    <meta property="og:description" content="Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.">
-    <meta property="og:image" content="https://placehold.co/1200x630/050505/FFF?text=Sahib+Virdee">
-
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://sahibvirdee.com/">
-    <meta property="twitter:title" content="Sahib Virdee | Engineering Portfolio">
-    <meta property="twitter:description" content="Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.">
-    <meta property="twitter:image" content="https://placehold.co/1200x630/050505/FFF?text=Sahib+Virdee">
+    <meta name="description" content="Portfolio of Sahib Virdee, Mechanical Engineering student.">
     
-    <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
-    <link rel="shortcut icon" href="assets/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     
     <style>
         /* --- DESIGN SYSTEM --- */
-        @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap');
-
         :root {
             --bg: #050505;
             --card-bg-hover: #111;
@@ -38,13 +23,15 @@
             --accent-prof: #00ffff;
             --accent-projects: #ff9933;
             
-            /* Header Variables - TIGHTENED */
-            --header-h-default: 90px; 
-            --header-h-shrink: 60px; 
-            --header-h-expanded: 105px; 
-            --header-h-expanded-shrink: 85px;
-            
+            --header-bg: rgba(5,5,5,0.98);
             --ease: cubic-bezier(0.25, 1, 0.5, 1);
+            
+            /* Header Dimensions */
+            --h-top-height: 40px;
+            --h-main-height: 30px; 
+            --h-sub-height: 28px;
+            --h-tert-height: 28px;
+            --header-total: calc(var(--h-top-height) + var(--h-main-height) + var(--h-sub-height) + var(--h-tert-height) + 10px);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,18 +44,10 @@
 
         body {
             background-color: var(--bg); color: var(--text-main); font-family: 'Jost', sans-serif; line-height: 1.5;
-            padding-top: var(--header-h-default); 
-            transition: padding-top 0.4s var(--ease);
+            padding-top: var(--header-total); 
             display: flex; flex-direction: column; min-height: 100vh;
             width: 100%; position: relative; overflow-x: hidden; 
         }
-
-        p, h1, h2, h3, a { overflow-wrap: break-word; word-wrap: break-word; }
-
-        body.header-expanded { padding-top: var(--header-h-expanded); }
-
-        .no-transition * { transition: none !important; }
-        .sk-line, .sk-img, .sk-box { animation-play-state: running !important; }
 
         /* --- GLOBAL ANIMATION --- */
         .fill-anim {
@@ -86,1134 +65,607 @@
 
         h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 
-        /* --- HEADER --- */
+        /* --- HEADER ARCHITECTURE --- */
         #main-header {
-            position: fixed; top: 0; left: 0; width: 100%; background: rgba(5,5,5,0.95); 
-            backdrop-filter: blur(12px); z-index: 1000; 
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-            padding-top: 15px; 
-            height: var(--header-h-default); 
-            transition: height 0.4s var(--ease), padding 0.4s var(--ease); 
-            overflow: hidden; border-bottom: 1px solid #1a1a1a; 
+            position: fixed; top: 0; left: 0; width: 100%; 
+            background: var(--header-bg); z-index: 1000; 
+            display: flex; flex-direction: column; 
+            border-bottom: 1px solid #1a1a1a;
+            transition: transform 0.4s var(--ease);
         }
 
-        #main-header.shrink { height: var(--header-h-shrink); padding-top: 10px; }
-        #main-header.expanded { height: var(--header-h-expanded); }
-        #main-header.expanded.shrink { height: var(--header-h-expanded-shrink); }
-        #main-header.search-mode { height: 90px; }
+        /* Header Rows */
+        .header-row {
+            width: 100%; display: flex; align-items: center; justify-content: center;
+            transition: height 0.4s var(--ease), opacity 0.4s var(--ease), margin 0.4s var(--ease);
+            position: relative;
+        }
+
+        /* Row 1: Brand & Search */
+        #h-top {
+            height: var(--h-top-height);
+            justify-content: space-between; /* Spread brand and search */
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
 
         #brand-name {
-            font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
-            margin-bottom: 4px; 
-            transition: all 0.4s var(--ease); user-select: none;
-            --text-base: #666; --text-hover: #fff; z-index: 1003; 
+            font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
+            --text-base: #666; --text-hover: #fff;
         }
-        #main-header.shrink #brand-name { font-size: 16px; margin-bottom: 3px; }
+
+        /* Row 2: Main Nav (Static) */
+        #h-main {
+            height: var(--h-main-height);
+            margin-top: 4px; /* Tight spacing */
+        }
 
         #primary-nav { 
             display: flex; gap: 30px; 
-            margin-bottom: 4px; 
-            transition: all 0.4s var(--ease); 
         }
-        #main-header.shrink #primary-nav { margin-bottom: 4px; gap: 20px; }
 
         .nav-link {
             font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-            user-select: none; --text-base: #666; --text-hover: #fff;
+            user-select: none; --text-base: #666; --text-hover: #fff; cursor: pointer;
         }
-        #main-header.shrink .nav-link { font-size: 12px; }
+        
+        /* Specific Colors */
+        .nav-link[data-cat="Projects"] { --text-hover: var(--accent-projects); }
+        .nav-link[data-cat="Projects"].active { --text-base: var(--accent-projects); }
+        .nav-link[data-cat="Professional"] { --text-hover: var(--accent-prof); }
+        .nav-link[data-cat="Professional"].active { --text-base: var(--accent-prof); }
+        .nav-link[data-cat="Personal"] { --text-hover: var(--accent-personal); }
+        .nav-link[data-cat="Personal"].active { --text-base: var(--accent-personal); }
 
-        .nav-link[href="#Projects"] { --text-hover: var(--accent-projects); }
-        .nav-link[href="#Projects"].active { --text-base: var(--accent-projects); --text-hover: var(--accent-projects); }
-        .nav-link[href="#Professional"] { --text-hover: var(--accent-prof); }
-        .nav-link[href="#Professional"].active { --text-base: var(--accent-prof); --text-hover: var(--accent-prof); }
-        .nav-link[href="#Personal"] { --text-hover: var(--accent-personal); }
-        .nav-link[href="#Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
-
-        /* --- SUB-NAV --- */
-        #sub-nav { 
-            display: flex; gap: 25px; font-size: 13px; transition: opacity 0.4s var(--ease); opacity: 1;
+        /* Row 3 & 4: Sub & Tertiary (Dynamic) */
+        .scrolling-nav {
             overflow-x: auto; white-space: nowrap; 
-            width: 100%; max-width: 900px;
-            justify-content: center;
-            
-            padding-bottom: 2px; 
+            display: flex; gap: 20px; justify-content: center;
             scrollbar-width: none;
-            height: 25px; 
-            
-            mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            
-            padding-left: 0; padding-right: 0;
+            mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+            width: 100%; max-width: 900px;
         }
+        .scrolling-nav::-webkit-scrollbar { display: none; }
 
-        #sub-nav > * { flex-shrink: 0; }
+        #h-sub { height: 0; opacity: 0; transition: all 0.4s var(--ease); overflow: hidden; }
+        #h-sub.visible { height: var(--h-sub-height); opacity: 1; margin-top: 2px; }
+        
+        #h-tert { height: 0; opacity: 0; transition: all 0.4s var(--ease); overflow: hidden; margin-bottom: 0; }
+        #h-tert.visible { height: var(--h-tert-height); opacity: 1; margin-top: 2px; margin-bottom: 6px; } /* Small bottom gap */
 
-        body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
+        .sub-link, .tert-link {
+            font-size: 14px; /* Increased Typography */
+            font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;
+            --text-base: #555; --text-hover: #ddd; cursor: pointer;
+        }
+        .sub-link.active, .tert-link.active { --text-base: #fff; }
 
-        /* MOBILE SPRINGS */
-        @media (max-width: 900px) {
-            #sub-nav { justify-content: flex-start; }
-            #sub-nav::before, #sub-nav::after { content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; }
+        /* COLLAPSE LOGIC */
+        body.header-collapsed #main-header {
+            transform: translateY(calc(var(--h-top-height) * -1));
         }
 
         /* --- SEARCH --- */
-        #search-controls { position: absolute; right: 20px; top: 15px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; z-index: 1002; transition: top 0.4s var(--ease); }
-        #main-header.shrink #search-controls { top: 10px; }
-
-        .icon-btn { position: absolute; width: 24px; height: 24px; cursor: pointer; fill: #666; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); transform-origin: center; }
+        #search-trigger-container {
+            width: 24px; height: 24px; position: relative; cursor: pointer;
+        }
+        .icon-btn { position: absolute; top:0; left:0; width: 100%; height: 100%; fill: #666; transition: all 0.3s; }
         .icon-btn:hover { fill: #fff; }
+        
+        /* 100% Opaque Search Overlay */
+        #search-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--h-top-height);
+            background-color: #000; z-index: 1005;
+            display: flex; align-items: center; justify-content: center;
+            transform: translateY(-100%); transition: transform 0.3s var(--ease);
+        }
+        #search-overlay.active { transform: translateY(0); }
+        
+        #search-input {
+            width: 100%; max-width: 600px; background: transparent; border: none; 
+            color: #fff; font-size: 16px; font-family: 'Jost', sans-serif; 
+            text-align: center; outline: none; text-transform: uppercase; letter-spacing: 2px;
+        }
 
-        .search-icon { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; }
-        .close-icon  { opacity: 0; transform: rotate(-90deg) scale(0.5); pointer-events: none; }
+        #close-search { position: absolute; right: 20px; width: 20px; height: 20px; cursor: pointer; fill: #666; }
+        #close-search:hover { fill: #fff; }
 
-        #main-header.search-mode .search-icon { opacity: 0; transform: rotate(90deg) scale(0.5); pointer-events: none; }
-        #main-header.search-mode .close-icon  { opacity: 1; transform: rotate(0deg) scale(1); pointer-events: auto; fill: #fff !important; }
-
-        #search-overlay { position: absolute; top: 10px; right: 60px; height: 40px; width: 0; display: flex; align-items: center; justify-content: flex-end; background-color: var(--bg); z-index: 1001; overflow: hidden; transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s, top 0.4s var(--ease); opacity: 0; visibility: hidden; }
-        #main-header.shrink #search-overlay { top: 5px; }
-        #search-overlay.active { width: 260px; max-width: calc(100% - 80px); opacity: 1; visibility: visible; }
-
-        #search-input { width: 100%; height: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: #fff; font-size: 18px; font-family: 'Jost', sans-serif; padding: 0 10px; outline: none; text-align: left; }
-        #main-header.search-mode > *:not(#search-overlay):not(#search-controls) { opacity: 0; visibility: hidden; transition: opacity 0.2s; }
-        #main-header.search-mode > #search-controls { opacity: 1; }
-
-        /* --- CONTENT --- */
-        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 10px 20px 0; flex: 1; min-height: 80vh; position: relative; box-sizing: border-box; }
-        .section { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.4s forwards; position: relative; } 
+        /* --- LAYOUT --- */
+        .content-container { max-width: 1000px; width: 100%; margin: 0 auto; padding: 20px 20px 0; min-height: 80vh; }
+        .section { margin-bottom: 15px; opacity: 0; animation: fadeIn 0.4s forwards; } 
         @keyframes fadeIn { to { opacity: 1; } }
-        .skeleton-visible { opacity: 1 !important; animation: none !important; }
 
-        p a:not(.wiki-link) { --text-base: #999; --text-hover: #fff; border-bottom: 1px dotted #444; }
-        p a:not(.wiki-link):hover { border-bottom-color: #fff; }
-
-        a[target="_blank"]:not(.clickable-block) { display: inline-flex; align-items: center; gap: 4px; }
-        a[target="_blank"]:not(.clickable-block)::after { content: ""; display: inline-block; width: 12px; height: 12px; background-color: currentColor; -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; }
-
-        /* --- TYPOGRAPHY & LISTS --- */
-        ol, ul {
-            padding-left: 25px; /* Restores space for numbers/bullets */
-            margin-top: 8px;
-            margin-bottom: 12px;
-        }
-
-        li {
-            margin-bottom: 6px; /* Adds breathing room between list items */
-            padding-left: 5px;  /* Slight gap between number and text */
-        }
-
-        /* Ensure nested lists look correct */
-        ol ol, ul ul, ol ul, ul ol {
-            margin-top: 5px;
-            margin-bottom: 5px;
-        }
-
-        /* --- CARDS & GRID --- */
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); column-gap: 20px; row-gap: 10px; margin-bottom: 15px; }
-        .layout-grid { display: flex; flex-direction: column; gap: 3px; padding: 12px; border-radius: 6px; transition: background 0.2s; border: none; height: 100%; position: relative; -webkit-tap-highlight-color: transparent; }
-        .layout-grid.clickable-block, .layout-grid.clickable-block * { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-        .layout-grid.clickable-block .chip { pointer-events: auto; }
+        /* --- GRID CARDS --- */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px 20px; }
+        .layout-grid { display: flex; flex-direction: column; gap: 3px; padding: 12px; border-radius: 6px; transition: background 0.2s; cursor: pointer; position: relative; }
         .layout-grid:hover { background: var(--card-bg-hover); }
 
-        /* Category Colors */
-        .layout-grid.cat-projects h3 { --text-hover: var(--accent-projects); }
-        .layout-grid.cat-professional h3 { --text-hover: var(--accent-prof); }
-        .layout-grid.cat-personal h3 { --text-hover: var(--accent-personal); }
-
-        /* Card Media Box */
-        .row-media { width: 100%; height: 160px; border-radius: 4px; overflow: hidden; background: #111; flex-shrink: 0; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
+        .row-media { width: 100%; height: 160px; border-radius: 4px; overflow: hidden; background: #111; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
         .row-media img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: filter 0.3s; }
         .layout-grid:hover .row-media img { filter: grayscale(0%); }
-
-        /* --- CARD MEDIA TYPES --- */
-        .row-media.placeholder { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #151515 0%, #222 100%); border-bottom: 1px solid #222; padding: 20px; text-align: center; }
-        .row-media.placeholder span { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #444; letter-spacing: 1px; line-height: 1.3; transition: color 0.3s; }
+        
+        .row-media.placeholder span { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #444; letter-spacing: 1px; }
         .layout-grid.cat-projects:hover .row-media.placeholder span { color: var(--accent-projects); }
         .layout-grid.cat-professional:hover .row-media.placeholder span { color: var(--accent-prof); }
         .layout-grid.cat-personal:hover .row-media.placeholder span { color: var(--accent-personal); }
 
-        /* --- EMBEDS --- */
-        .embed-wrapper { position: relative; width: 100%; overflow: hidden; border-radius: 6px; margin: 20px 0; background: #111; border: 1px solid #222; }
-        .embed-wrapper.video { padding-top: 56.25%; }
-        .embed-wrapper.doc { height: 600px; }
-        .embed-wrapper.map { height: 400px; }
-        .embed-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        iframe { max-width: 100%; }
-
-        /* 3D VIEWER BASE */
-        .embed-wrapper.stl { height: 400px; background: radial-gradient(circle at center, #222 0%, #111 100%); cursor: grab; transition: background 0.3s; }
-        .embed-wrapper.stl:active { cursor: grabbing; }
-        .embed-wrapper.stl canvas { outline: none; opacity: 0; transition: opacity 0.6s ease-out; }
-        .embed-wrapper.stl.ready canvas { opacity: 1; }
-
-        .row-media .embed-wrapper.stl { height: 100% !important; width: 100% !important; background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%); border-radius: 0; border: none; margin: 0; }
-        .layout-grid .embed-wrapper { pointer-events: none; }
-        .layout-grid .inline-gallery, .layout-grid .inline-img { display: none !important; }
-
-        /* --- ARTICLE IMAGE MODE --- */
-        .row-media.article-mode { background: transparent; height: auto; max-height: 500px; width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
-        .row-media.article-mode img { width: auto; max-width: 100%; height: auto; max-height: 500px; object-fit: contain; filter: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .row-media.article-mode .embed-wrapper.stl { height: 500px !important; aspect-ratio: 3/4; max-height: 70vh; }
-        @media (max-width: 768px) { .row-media.article-mode .embed-wrapper.stl { height: auto !important; aspect-ratio: 16/9; max-height: 300px; } }
-
-        /* --- INLINE GALLERY (New Responsive Grid) --- */
-        .inline-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
-        .inline-img { width: 100%; border-radius: 4px; display: block; object-fit: cover; transition: transform 0.2s; }
-        .inline-img.zoomable { cursor: zoom-in; }
-        .inline-img.zoomable:hover { opacity: 0.9; }
-
-        .layout-grid.has-placeholder h3 { margin-top: 5px; }
-        .layout-grid h3 { font-size: 18px; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 6px; --text-base: #eee; --text-hover: #fff; }
-        .layout-grid[data-target="_blank"] h3::after { content: ""; display: inline-block; width: 12px; height: 12px; background-color: currentColor; opacity: 0.7; -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center; }
-        .layout-grid p { font-size: 14px; margin: 0; color: var(--text-dim); font-weight: 400; line-height: 1.4; margin-bottom: 2px; }
-
-        .meta-row { display: flex; gap: 6px; margin-top: auto; flex-wrap: wrap; align-items: center; padding-top: 4px; }
-        .chip { font-size: 13px; font-weight: 600; color: #777; background: #1a1a1a; padding: 4px 10px; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; user-select: none; display: inline-flex; align-items: center; justify-content: center; }
+        .layout-grid h3 { font-size: 18px; font-weight: 500; margin: 0; color: #eee; }
+        .layout-grid p { font-size: 14px; margin: 0; color: var(--text-dim); }
+        
+        .meta-row { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; flex-wrap: wrap; }
+        .chip { font-size: 11px; font-weight: 600; color: #777; background: #1a1a1a; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; transition: 0.2s; }
         .chip:hover { color: #fff; background: #333; }
-        .chip.date { background: transparent; color: #666; font-weight: 500; border: 1px solid #333; padding: 4px 10px; }
-        .chip.date:hover { color: #fff; background: #1a1a1a; border-color: #555; } 
+        .chip.date { background: transparent; border: 1px solid #333; color: #666; }
 
-        .article-meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
-        .author-link { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; color: #666; transition: color 0.2s; }
-        .author-link:hover { color: var(--accent-projects); }
-        .article-link-btn { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #222; fill: #999; transition: all 0.2s; text-decoration: none; }
-        .article-link-btn:hover { background: #fff; fill: #000; }
-        .article-tags { display: flex; gap: 6px; }
+        /* --- TIMELINE VIEW --- */
+        .timeline-container { padding: 20px 0; }
+        .timeline-group { display: flex; margin-bottom: 40px; }
+        
+        .timeline-date { 
+            width: 120px; flex-shrink: 0; padding-top: 20px; 
+            font-size: 14px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 1px;
+            text-align: right; padding-right: 20px; border-right: 1px solid #1a1a1a;
+        }
+        
+        .timeline-cards { 
+            flex-grow: 1; display: flex; gap: 20px; overflow-x: auto; 
+            padding: 10px 20px; scrollbar-width: none; position: relative;
+            mask-image: linear-gradient(to right, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+        }
+        .timeline-cards::-webkit-scrollbar { display: none; }
+        
+        .timeline-cards .layout-grid { 
+            width: 260px; flex-shrink: 0; background: #0a0a0a; border: 1px solid #1a1a1a;
+        }
+        .timeline-cards .layout-grid:hover { border-color: #333; }
 
-        .layout-hero { text-align: center; margin: 0 0 10px; position: relative; }
-        .layout-hero h1 { font-size: 42px; font-weight: 300; letter-spacing: -1px; margin-bottom: 5px; color: #fff; }
-        .layout-hero p { font-size: 18px; color: #999; font-weight: 300; max-width: 650px; margin: 0 auto; line-height: 1.4; }
-        .hero-meta { margin-bottom: 10px; display: flex; justify-content: center; }
+        @media (max-width: 768px) {
+            .timeline-group { flex-direction: column; }
+            .timeline-date { width: 100%; text-align: left; padding: 0 0 10px 20px; border-right: none; border-bottom: 1px solid #1a1a1a; margin-bottom: 10px; }
+            .timeline-cards { mask-image: linear-gradient(to right, black 85%, transparent 100%); }
+        }
 
-        .layout-text { margin-bottom: 15px; }
-        .layout-text h2 { font-size: 22px; font-weight: 400; margin-bottom: 8px; margin-top: 10px; color: #fff; }
-        .layout-text p { margin-bottom: 12px; color: #d4d4d4; font-weight: 300; line-height: 1.5; }
-
-        /* QUOTE - SMART SIZING */
-        .layout-quote { padding: 0 20px; text-align: center; position: relative; margin: 0 auto 10px; min-height: 120px; height: auto; width: 100%; max-width: 800px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .layout-quote blockquote { font-family: 'Playfair Display', serif; font-style: italic; color: #eee; margin-bottom: 4px; line-height: 1.25; transition: font-size 0.3s; width: 100%; font-size: clamp(16px, 3vw, 24px); }
-        .layout-quote blockquote.short  { font-size: clamp(20px, 4vw, 32px); }
-        .layout-quote blockquote.medium { font-size: clamp(18px, 3.5vw, 26px); }
-        .layout-quote blockquote.long   { font-size: clamp(16px, 3vw, 22px); }
-        .layout-quote blockquote.xl     { font-size: clamp(15px, 2.5vw, 20px); }
-        .layout-quote blockquote.xxl    { font-size: clamp(14px, 2vw, 18px); line-height: 1.3; }
-
-        .quote-footer { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; flex-shrink: 0; }
-        .layout-quote .author { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
-        .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
-        .layout-quote .refresh-btn { position: absolute; bottom: 5px; right: 5px; width: 18px; height: 18px; opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; }
-        .layout-quote .refresh-btn:hover { opacity: 1; transform: rotate(180deg); }
-        .layout-quote.loading blockquote, .layout-quote.loading .quote-footer { opacity: 0.3; pointer-events: none; }
-
-        .layout-404 { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .layout-404 h1 { font-size: 80px; margin: 0; line-height: 1; color: #333; }
-        .layout-404 h2 { font-size: 24px; font-weight: 400; margin: 10px 0 20px; color: #fff; }
-        .layout-404 p { color: #888; max-width: 400px; margin-bottom: 30px; }
-        .btn-primary { display: inline-block; padding: 10px 25px; background: #fff; color: #000; text-decoration: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; border-radius: 4px; transition: opacity 0.2s; }
-        .btn-primary:hover { opacity: 0.8; }
-
-        /* --- INDEX --- */
+        /* --- INDEX VIEW --- */
         .index-list { column-count: 2; column-gap: 40px; margin-top: 20px; }
         .index-group { break-inside: avoid; margin-bottom: 30px; }
         .index-group h3 { font-size: 14px; text-transform: uppercase; color: #666; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; }
-        .index-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
-        .index-link span { color: #444; font-size: 12px; margin-left: 8px; }
+        
+        .index-link { display: block; font-size: 16px; margin-bottom: 6px; text-decoration: none; position: relative; padding-left: 0; transition: padding 0.2s; }
+        .index-link.level-2 { padding-left: 20px; font-size: 15px; color: #888; }
+        .index-link.level-2::before { content: "L"; position: absolute; left: 5px; top: 0; opacity: 0.3; transform: scaleY(-1) rotate(-45deg); font-size: 12px; }
+        
         .index-group.cat-projects h3 { color: var(--accent-projects); border-color: var(--accent-projects); }
         .index-group.cat-professional h3 { color: var(--accent-prof); border-color: var(--accent-prof); }
         .index-group.cat-personal h3 { color: var(--accent-personal); border-color: var(--accent-personal); }
-        @media (max-width: 600px) { .index-list { column-count: 1; } }
 
         /* --- FOOTER --- */
         footer { 
-            text-align: center; 
-            padding: 30px 20px; /* Added horizontal padding to prevent edge touching */
-            border-top: 1px solid #1a1a1a; 
-            margin-top: 30px; 
-            
-            display: flex; 
-            flex-wrap: wrap; /* ALLOW WRAPPING */
-            justify-content: center; 
-            align-items: center; 
-            
-            /* Gap: 15px vertical (when stacked), 30px horizontal */
-            gap: 15px 30px; 
-            
-            max-width: 1000px; 
-            margin-left: auto; 
-            margin-right: auto; 
-            width: 100%; 
+            text-align: center; padding: 40px 20px; border-top: 1px solid #1a1a1a; margin-top: auto;
+            display: flex; flex-direction: column; gap: 15px; align-items: center;
         }
+        .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .footer-links a { font-size: 13px; color: #666; text-decoration: none; transition: 0.2s; }
+        .footer-links a:hover { color: #fff; }
 
-        footer .footer-links { 
-            display: flex; 
-            flex-wrap: wrap; /* Allow links to stack */
-            gap: 8px 20px;   /* Compact vertical gap (8px), standard horizontal (20px) */
-            justify-content: center; 
-        }
-
-        footer .footer-links a { 
-            font-size: 14px; 
-            font-weight: 400; 
-            --text-base: #777; 
-            --text-hover: #fff; 
-            white-space: nowrap; /* Keep individual link text on one line */
-        }
-
-        /* Ensure Version Tag wraps nicely if needed */
-        #version-tag { 
-            font-size: 14px; 
-            color: #666; 
-            white-space: nowrap;
-        }
-
-        #version-tag { font-size: 14px; color: #666; font-family: 'Jost', sans-serif; --text-base: #666; --text-hover: #fff; }
-        #version-tag a { text-decoration: none; }
-        #version-tag a:hover { text-decoration: underline; }
-
-        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
-        #lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; }
-        #lightbox.active { display: flex; animation: fadeIn 0.2s; }
-
-        .sk-line, .sk-img, .sk-box { background: #1a1a1a; background-image: linear-gradient(90deg, #1a1a1a 0%, #333 50%, #1a1a1a 100%); background-size: 200% 100%; border-radius: 4px; animation: shimmer 1.5s infinite linear; display: block; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        .sk-line { margin-bottom: 10px; }
-        .sk-line.title { height: 48px; width: 50%; margin: 0 auto 20px; }
-        .sk-line.meta { height: 20px; width: 100px; margin: 0 auto 30px; border-radius: 12px; }
-        .sk-line.text { height: 20px; width: 100%; max-width: 600px; margin: 0 auto 12px; }
-        .sk-line.text.short { width: 60%; }
-        .sk-box.quote { height: 100px; width: 100%; margin: 0 auto 10px; max-width: 800px; opacity: 1; }
-        .layout-grid .sk-img { width: 100%; height: 160px; margin-bottom: 10px; border-radius: 4px; }
-        .layout-grid .sk-line.title { height: 18px; width: 80%; margin: 0 0 10px; }
-        .layout-grid .sk-line.text { height: 14px; width: 100%; margin-bottom: 6px; }
-
-        @media (max-width: 768px) {
-            .grid-container { grid-template-columns: 1fr; }
-            footer { flex-direction: column; gap: 20px; text-align: center; }
-            .content-container { padding: 10px 15px 0; }
-            .layout-hero h1 { font-size: 32px; }
-            .layout-404 h1 { font-size: 60px; }
-        }
+        /* --- UTILS --- */
+        .hidden { display: none !important; }
     </style>
-    
-    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-
-    <script data-goatcounter="https://sahib.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
 </head>
-<body class="no-transition">
-    
-    <script>
-        if (history.scrollRestoration) {
-            history.scrollRestoration = 'manual';
-        }
-    </script>
+<body>
 
-    <header id="main-header" class="no-transition">
-        <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
-        <nav id="primary-nav"></nav>
-        <nav id="sub-nav"></nav>
-        
-        <div id="search-controls">
-            <svg id="search-trigger" class="icon-btn search-icon" onclick="toggleSearch()" viewBox="0 0 24 24">
-                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
-            <svg id="close-search" class="icon-btn close-icon" onclick="toggleSearch()" viewBox="0 0 24 24">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
+    <div id="search-overlay">
+        <input type="text" id="search-input" placeholder="SEARCH..." onkeyup="handleSearch(this.value)">
+        <svg id="close-search" onclick="toggleSearch(false)" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </div>
+
+    <header id="main-header">
+        <div id="h-top" class="header-row">
+            <div id="brand-name" class="fill-anim" onclick="route('Home')">SAHIB VIRDEE</div>
+            <div id="search-trigger-container" onclick="toggleSearch(true)">
+                <svg class="icon-btn" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </div>
         </div>
-        
-        <div id="search-overlay">
-            <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
+
+        <div id="h-main" class="header-row">
+            <nav id="primary-nav"></nav>
+        </div>
+
+        <div id="h-sub" class="header-row">
+            <nav id="sub-nav-container" class="scrolling-nav"></nav>
+        </div>
+
+        <div id="h-tert" class="header-row">
+            <nav id="tert-nav-container" class="scrolling-nav"></nav>
         </div>
     </header>
 
-    <div class="content-container" id="app">
-        <div class="section layout-quote skeleton-visible">
-            <div class="sk-box quote"></div>
-        </div>
-        
-        <div class="grid-container section skeleton-visible">
-            <div class="layout-grid">
-                <div class="sk-img"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
-            </div>
-            <div class="layout-grid">
-                <div class="sk-img"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
-            </div>
-            <div class="layout-grid">
-                <div class="sk-img"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
-            </div>
-            <div class="layout-grid">
-                <div class="sk-img"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
-            </div>
-        </div>
-    </div>
+    <div class="content-container" id="app"></div>
 
     <footer>
         <div class="footer-links" id="footer-links"></div>
-        <div id="version-tag"></div>
+        <div id="version-tag" style="font-size:12px; color:#444;"></div>
     </footer>
 
-    <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <script>
-        let db = [], quotesDb = [], isSearchActive = false;
-
-        // INLINED CONFIGURATION (formerly assets/config.json)
+        let db = [];
         const CONFIG = {
-            main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
-            quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
+            sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv"
         };
 
         const init = () => {
-            fetchData().then(([m, q]) => {
-                db = m.filter(r => r.Title); 
-                quotesDb = q;
-                
-                if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
-                
-                initApp(); 
-                renderFooter(); 
-                fetchGitHubStats();
-                
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        document.body.classList.remove('no-transition');
-                        document.getElementById('main-header').classList.remove('no-transition');
-                    }, 50);
-                });
-            }).catch(e => {
-                console.error("Data Load Error:", e);
-                document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px;">
-                    <h2>Unable to load content</h2>
-                    <p style="color:#888; font-family:monospace; background:#111; padding:10px; display:inline-block; border-radius:4px; margin-top:20px;">${e.message}</p>
-                    <p style="color:#666; margin-top:20px;">Please check your internet connection.</p>
-                </div>`;
+            Papa.parse(CONFIG.sheet, {
+                download: true, header: true, skipEmptyLines: true,
+                complete: (r) => {
+                    db = r.data.filter(row => row.Title); // basic validation
+                    setupInteractions();
+                    handleRouting();
+                    renderFooter();
+                }
             });
         };
 
-        async function fetchData() {
-            // Simplified: Use inlined CONFIG directly without external fetch
-            const [main, quotes] = await Promise.all([
-                fetchCSV(CONFIG.main_sheet), 
-                fetchCSV(CONFIG.quotes_sheet).catch(()=>[])
-            ]);
-
-            return [main, quotes];
+        /* --- NAVIGATION LOGIC --- */
+        function route(path) {
+            window.location.hash = path;
         }
 
-        function fetchCSV(u) { 
-            return new Promise((res, rej) => {
-                if(typeof Papa === 'undefined') return rej(new Error("PapaParse library not loaded. Check your internet connection."));
-                Papa.parse(u, { 
-                    download: true, header: true, skipEmptyLines: true, 
-                    complete: (r) => res(r.data), 
-                    error: (e) => rej(new Error("CSV Error: " + e.message)) 
+        function handleRouting() {
+            window.scrollTo(0,0);
+            toggleSearch(false);
+            
+            let hash = window.location.hash.substring(1) || 'Home';
+            
+            // Clean hash for logic
+            const parts = hash.split('/');
+            const topLevel = parts[0];
+            const subLevel = parts.length > 1 ? parts[1] : null;
+            const tertLevel = parts.length > 2 ? parts[2] : null;
+
+            buildNavs(topLevel, subLevel, tertLevel);
+
+            if (hash === 'Index') renderIndex();
+            else if (hash === 'Timeline') renderTimeline();
+            else if (hash === 'Home') renderHome();
+            else renderPage(hash, topLevel);
+        }
+
+        function buildNavs(activeTop, activeSub, activeTert) {
+            // 1. Primary Nav
+            const nav = document.getElementById('primary-nav');
+            // Hardcode or Dynamic? Dynamic is better.
+            const tops = ['Projects', 'Professional', 'Personal'];
+            nav.innerHTML = tops.map(t => 
+                `<div class="nav-link fill-anim ${t === activeTop ? 'active' : ''}" 
+                 data-cat="${t}" onclick="route('${t}')">${t}</div>`
+            ).join('');
+
+            // 2. Sub Nav (Children of activeTop)
+            const subContainer = document.getElementById('h-sub');
+            const subNav = document.getElementById('sub-nav-container');
+            
+            // Find all pages starting with activeTop/
+            // Extract the second part.
+            const validSubs = [...new Set(db
+                .filter(r => r.Page && r.Page.startsWith(activeTop + '/'))
+                .map(r => r.Page.split('/')[1])
+                .filter(x => x)
+            )].sort();
+
+            if (validSubs.length > 0 && activeTop !== 'Home' && activeTop !== 'Timeline' && activeTop !== 'Index') {
+                subContainer.classList.add('visible');
+                subNav.innerHTML = validSubs.map(s => {
+                    const isActive = (s === activeSub);
+                    const path = `${activeTop}/${s}`;
+                    return `<div class="sub-link fill-anim ${isActive ? 'active' : ''}" 
+                            onclick="route('${path}')">${s}</div>`;
+                }).join('');
+                centerNav(subNav);
+            } else {
+                subContainer.classList.remove('visible');
+                subNav.innerHTML = '';
+            }
+
+            // 3. Tertiary Nav (Children of activeTop/activeSub)
+            const tertContainer = document.getElementById('h-tert');
+            const tertNav = document.getElementById('tert-nav-container');
+            
+            if (activeSub) {
+                const prefix = `${activeTop}/${activeSub}/`;
+                const validTerts = [...new Set(db
+                    .filter(r => r.Page && r.Page.startsWith(prefix))
+                    .map(r => r.Page.split('/')[2])
+                    .filter(x => x)
+                )].sort();
+
+                if (validTerts.length > 0) {
+                    tertContainer.classList.add('visible');
+                    tertNav.innerHTML = validTerts.map(t => {
+                        const isActive = (t === activeTert);
+                        const path = `${prefix}${t}`;
+                        return `<div class="tert-link fill-anim ${isActive ? 'active' : ''}" 
+                                onclick="route('${path}')">${t}</div>`;
+                    }).join('');
+                    centerNav(tertNav);
+                } else {
+                    tertContainer.classList.remove('visible');
+                    tertNav.innerHTML = '';
+                }
+            } else {
+                tertContainer.classList.remove('visible');
+                tertNav.innerHTML = '';
+            }
+        }
+
+        function centerNav(el) {
+            // Simple centering logic
+            const active = el.querySelector('.active');
+            if (active) {
+                const centerVal = active.offsetLeft + (active.clientWidth / 2) - (el.clientWidth / 2);
+                el.scrollTo({ left: centerVal, behavior: 'smooth' });
+            }
+        }
+
+        /* --- PAGE RENDERING --- */
+
+        function renderHome() {
+            const app = document.getElementById('app'); app.innerHTML = '';
+
+            // 1. Featured Section
+            const featured = db.filter(r => r.Tags && r.Tags.toLowerCase().includes('featured') && r.Page !== 'Home');
+            if(featured.length > 0) {
+                app.innerHTML += `<div class="section"><h2 style="text-align:center; font-weight:300; margin-bottom:20px; color:#fff;">FEATURED</h2></div>`;
+                renderGrid(featured, app);
+            }
+
+            // 2. Recent Activity (Excluding featured to prevent dupe? Or show all?)
+            // Let's show Recents that ARENT featured to keep it clean.
+            const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && (!r.Tags || !r.Tags.toLowerCase().includes('featured')))
+                              .sort((a,b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
+                              .slice(0, 8);
+            
+            if (recents.length > 0) {
+                app.innerHTML += `<div class="section"><h2 style="text-align:center; font-weight:300; margin:40px 0 20px; color:#888; font-size:16px; letter-spacing:2px;">RECENT UPDATES</h2></div>`;
+                renderGrid(recents, app);
+            }
+        }
+
+        function renderTimeline() {
+            const app = document.getElementById('app'); app.innerHTML = '';
+            app.innerHTML = `<div class="section layout-hero"><h1 class="fill-anim">TIMELINE</h1></div>`;
+
+            const container = document.createElement('div');
+            container.className = 'timeline-container section';
+
+            // Group by Month YYYY
+            const groups = {};
+            const validItems = db.filter(r => r.Timestamp && r.Page !== 'Footer').sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+
+            validItems.forEach(item => {
+                const d = new Date(item.Timestamp);
+                const key = `${d.toLocaleString('default', { month: 'long' })} ${d.getFullYear()}`;
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(item);
+            });
+
+            // Iterate groups
+            Object.keys(groups).forEach(dateKey => {
+                const items = groups[dateKey].sort((a, b) => a.Title.localeCompare(b.Title)); // A-Z inside month
+                
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'timeline-group';
+
+                const dateCol = document.createElement('div');
+                dateCol.className = 'timeline-date';
+                dateCol.innerText = dateKey;
+
+                const cardsCol = document.createElement('div');
+                cardsCol.className = 'timeline-cards';
+
+                // Render miniature cards
+                items.forEach(r => {
+                    const card = createCard(r);
+                    cardsCol.appendChild(card);
                 });
-            });
-        }
 
-        // ALLOW IFRAMES IN RAW HTML
-        function safeHTML(html) {
-            if(typeof DOMPurify !== 'undefined') {
-                return DOMPurify.sanitize(html, {
-                    ADD_TAGS: ['iframe'],
-                    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height']
-                });
-            }
-            return html; 
-        }
-
-        function initApp() {
-            buildNav(); handleRouting();
-            window.addEventListener('hashchange', handleRouting);
-            
-            // GOATCOUNTER TRACKING
-            window.addEventListener('hashchange', function(e) {
-                if (window.goatcounter && window.goatcounter.count) {
-                    window.goatcounter.count({
-                        path: location.pathname + location.search + location.hash,
-                        title: location.hash.substring(1) || 'Home',
-                        event: false,
-                    });
-                }
+                groupDiv.appendChild(dateCol);
+                groupDiv.appendChild(cardsCol);
+                container.appendChild(groupDiv);
             });
 
-            // SMART SCROLL HEADER
-            window.addEventListener('scroll', () => { 
-                const h = document.getElementById('main-header'); 
-                const shouldShrink = window.scrollY > 50;
-                h.classList.toggle('shrink', shouldShrink);
-            });
-
-            document.addEventListener('click', (e) => {
-                const overlay = document.getElementById('search-overlay');
-                const controls = document.getElementById('search-controls');
-                if (overlay.classList.contains('active') && !overlay.contains(e.target) && !controls.contains(e.target)) {
-                    closeSearch();
-                }
-            });
-
-            document.getElementById('app').addEventListener('click', (e) => {
-                if(e.target.closest('.refresh-btn')) { 
-                    const quoteContainer = e.target.closest('.layout-quote');
-                    if(quoteContainer && !quoteContainer.classList.contains('loading')) {
-                        quoteContainer.classList.add('loading');
-                        quoteContainer.innerHTML = `<div class="sk-box quote" style="height:100px; width:100%; margin:0 auto;"></div>`;
-                        setTimeout(() => {
-                            renderQuoteCard(quoteContainer);
-                            quoteContainer.classList.remove('loading');
-                        }, 600); 
-                    }
-                    e.stopPropagation(); return; 
-                }
-                
-                if(e.target.classList.contains('zoomable')) { 
-                    if(e.target.parentElement.tagName === 'A') return;
-                    document.getElementById('lightbox-img').src = e.target.src; 
-                    document.getElementById('lightbox').classList.add('active'); 
-                    e.stopPropagation(); return; 
-                }
-                
-                if(e.target.classList.contains('chip')) { 
-                    e.stopPropagation();
-                    if(isSearchActive) closeSearch(); 
-                    const tag = e.target.getAttribute('data-tag');
-                    const date = e.target.getAttribute('data-date');
-                    if(date) window.location.hash = 'Filter:' + date;
-                    else if(tag) window.location.hash = 'Filter:' + tag;
-                    return; 
-                }
-                
-                const block = e.target.closest('.clickable-block');
-                if(block && !e.target.classList.contains('chip')) {
-                    const link = block.getAttribute('data-link'), target = block.getAttribute('data-target');
-                    if(link) { 
-                        if(target === '_blank') window.open(link, '_blank'); 
-                        else { 
-                            window.location.href = link; 
-                            if(isSearchActive) closeSearch(); 
-                        } 
-                    }
-                }
-            });
-        }
-
-        function resetToHome() { closeSearch(); window.location.hash = ''; }
-        function closeSearch() { document.getElementById('search-overlay').classList.remove('active'); document.getElementById('main-header').classList.remove('search-mode'); document.getElementById('search-input').value = ''; if(isSearchActive) { isSearchActive = false; handleRouting(); } isSearchActive = false; }
-
-        function toggleSearch() { 
-            const a = document.getElementById('search-overlay').classList.toggle('active'); 
-            document.getElementById('main-header').classList.toggle('search-mode'); 
-            if(a) setTimeout(() => document.getElementById('search-input').focus(), 100);
-            else closeSearch(); 
-        }
-
-        function handleSearch(q) { 
-            if(!q) return; 
-            isSearchActive = true; 
-            document.body.classList.remove('header-expanded');
-            document.getElementById('main-header').classList.remove('expanded');
-
-            const t = q.toLowerCase();
-            const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
-            renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
-        }
-
-        function buildNav() { 
-            const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
-            const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
-            p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
-        }
-
-        function buildSubNav(top) {
-            const n = document.getElementById('sub-nav'), h = document.getElementById('main-header'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
-            
-            const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
-            
-            subs.forEach(x => { 
-                const name = x.split('/')[1];
-                const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
-                n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
-            });
-
-            // Center ONLY when the sub-nav is first built (Navigation event)
-            setTimeout(() => centerSubNav(true), 100);
-        }
-
-        // SMART CENTERING LOGIC
-        function centerSubNav(forceMiddleIfNone) {
-            const n = document.getElementById('sub-nav');
-            if(!n) return;
-            const activeLink = n.querySelector('.active');
-            
-            if (activeLink) {
-                // If Active: Lock to center
-                const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
-                n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-            } else if (forceMiddleIfNone) {
-                // If Main Page Load: Scroll to MIDDLE to hint content
-                const middle = (n.scrollWidth - n.clientWidth) / 2;
-                n.scrollTo({ left: middle, behavior: 'smooth' });
-            }
-        }
-
-        function handleRouting() { 
-            if(isSearchActive) return; 
-            window.scrollTo(0, 0); 
-            let h = window.location.hash.substring(1) || 'Home'; 
-            
-            if(h === 'Index') { renderIndex(); return; }
-            
-            // STATE: Collapse Header for Home, Filter, OR Index
-            const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
-            document.body.classList.toggle('header-expanded', !shouldCollapse);
-            document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
-            
-            // Deactivate Main Nav Highlights if Index (or non-matching top)
-            const top = h.split('/')[0]; 
-            document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
-            
-            buildSubNav(top); 
-            
-            if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
-            else { renderPage(h); }
-        }
-
-        function renderFiltered(t) { 
-            const res = db.filter(r => {
-                const dateStr = formatDate(r.Timestamp);
-                return (dateStr === t) || (r.Tags && r.Tags.includes(t));
-            });
-            renderRows(res, `Posts tagged "${safeHTML(t)}"`, false, true); 
-        }
-
-        function renderPage(p) { 
-            if(p === 'Home') { renderHome(); return; } 
-            const ex = db.filter(r => r.Page === p); 
-            const app = document.getElementById('app'); app.innerHTML = ''; 
-            
-            const isMainPage = !p.includes('/');
-            
-            if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
-            else if(childrenPagesCheck(p)) { }
-            else {
-                app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
-                return; 
-            }
-            
-            if(isMainPage) {
-                const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
-                if(childrenPages.length > 0) {
-                    const overviewRows = childrenPages.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
-                    renderRows(overviewRows, null, true, true); 
-                } 
-            }
-        }
-
-        function childrenPagesCheck(p) {
-            const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
-            return childrenPages.length > 0;
+            app.appendChild(container);
         }
 
         function renderIndex() {
-            // 1. Collapse & Reset UI State (Enforce Constraints)
-            document.body.classList.remove('header-expanded');
-            document.getElementById('main-header').classList.remove('expanded');
-            // Clear Sub-nav
-            buildSubNav('Index'); 
-            // Deactivate Main Nav
-            document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+            const app = document.getElementById('app'); app.innerHTML = '';
+            app.innerHTML = `<div class="section layout-hero"><h1 class="fill-anim">INDEX</h1></div>`;
 
-            const app = document.getElementById('app'); 
-            app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
+            const list = document.createElement('div'); list.className = 'index-list section';
             
-            const list = app.querySelector('.index-list');
-            const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
-            
+            // Get all unique pages, sort Alphabetically
+            const allPages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
+
             const groups = {};
-            pages.forEach(p => {
-                const cat = p.split('/')[0];
-                if(!groups[cat]) groups[cat] = [];
-                groups[cat].push(p);
+            allPages.forEach(p => {
+                const root = p.split('/')[0];
+                if (!groups[root]) groups[root] = [];
+                groups[root].push(p);
             });
-            
-            for(const [cat, items] of Object.entries(groups)) {
-                let catClass = '';
-                const cLower = cat.toLowerCase();
-                if(cLower === 'projects') catClass = 'cat-projects';
-                else if(cLower === 'professional') catClass = 'cat-professional';
-                else if(cLower === 'personal') catClass = 'cat-personal';
 
-                let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
-                items.forEach(p => {
-                    const row = db.find(r => r.Page === p);
-                    const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
-                    const title = row ? row.Title : p.split('/').pop();
-                    html += `<a href="#${p}" class="index-link fill-anim">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
+            // Render
+            Object.keys(groups).sort().forEach(cat => {
+                let html = `<div class="index-group cat-${cat.toLowerCase()}"><h3>${cat}</h3>`;
+                
+                groups[cat].forEach(pagePath => {
+                    const parts = pagePath.split('/');
+                    const depth = parts.length;
+                    const title = parts[parts.length - 1]; // Just the last part name
+                    
+                    // Add class for hierarchy indent
+                    const indentClass = depth > 2 ? 'level-2' : '';
+                    
+                    html += `<a href="#${pagePath}" class="index-link fill-anim ${indentClass}">${title}</a>`;
                 });
+                
                 html += `</div>`;
                 list.innerHTML += html;
+            });
+
+            app.appendChild(list);
+        }
+
+        function renderPage(path, topLevel) {
+            const app = document.getElementById('app'); app.innerHTML = '';
+            
+            // 1. Direct Matches
+            const rows = db.filter(r => r.Page === path).sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+            
+            if (rows.length > 0) {
+                renderGrid(rows, app);
+            }
+
+            // 2. Children Overviews (if this is a parent page)
+            const children = [...new Set(db.filter(r => r.Page && r.Page.startsWith(path + '/')).map(r => r.Page))];
+            if (children.length > 0 && rows.length === 0) {
+                 // Create overview cards for children
+                 // Pick the latest item from each child as the thumbnail?
+                 // Or just create a generic link card?
+                 // Let's just find "Featured" or "Latest" items from children to show.
+                 const childItems = children.map(c => {
+                     const items = db.filter(r => r.Page === c);
+                     // return the one with media if possible, else first
+                     return items.find(x => x.Media) || items[0];
+                 }).filter(x => x);
+                 
+                 renderGrid(childItems, app);
+            }
+
+            if (rows.length === 0 && children.length === 0) {
+                 app.innerHTML = `<div style="text-align:center; padding:50px;"><h2>Empty Repository</h2><p>No data found for ${path}</p></div>`;
             }
         }
 
-        function renderHome() { 
-            const hr = db.filter(r => r.Page === 'Home');
-            const app = document.getElementById('app'); app.innerHTML = ''; 
-            renderRows(hr, null, true); 
-            
-            const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
-                            .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
-                            .slice(0, 6);
-            if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
+        /* --- UI COMPONENTS --- */
+
+        function renderGrid(rows, container) {
+            const grid = document.createElement('div');
+            grid.className = 'grid-container section';
+            rows.forEach(r => grid.appendChild(createCard(r)));
+            container.appendChild(grid);
         }
 
-        function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
-            const app = document.getElementById('app'); if(!app) return; 
+        function createCard(r) {
+            const d = document.createElement('div');
             
-            rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
+            // Determine category color class
+            let catClass = '';
+            if (r.Page.startsWith('Projects')) catClass = 'cat-projects';
+            else if (r.Page.startsWith('Professional')) catClass = 'cat-professional';
+            else if (r.Page.startsWith('Personal')) catClass = 'cat-personal';
 
-            if(!append) {
-                app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
-            } else if(title) {
-                app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
+            d.className = `layout-grid clickable-block ${catClass}`;
+            d.onclick = () => {
+                if(r.LinkURL && !r.LinkURL.startsWith('#')) window.open(r.LinkURL, '_blank');
+                else if(r.LinkURL) route(r.LinkURL.substring(1));
+                else route(r.Page);
+            };
+
+            // Media
+            let mediaHtml = `<div class="row-media placeholder"><span>${r.Title}</span></div>`;
+            if (r.Media) {
+                let src = r.Media;
+                // Youtube Thumb Logic
+                if(src.includes('youtube') || src.includes('youtu.be')) {
+                    const id = src.split('v=')[1]?.split('&')[0] || src.split('/').pop();
+                    src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+                }
+                mediaHtml = `<div class="row-media"><img src="${src}" loading="lazy"></div>`;
             }
 
-            if(rows.length === 0 && !append) { 
-                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`; 
-                return; 
+            // Tags/Date
+            let metaHtml = '';
+            if (r.Timestamp) {
+                const dateVal = formatDate(r.Timestamp);
+                metaHtml += `<span class="chip date">${dateVal}</span>`;
+            }
+
+            d.innerHTML = `${mediaHtml}
+                           <h3 class="fill-anim">${r.Title}</h3>
+                           <p>${r.Content ? r.Content.substring(0, 100) + '...' : ''}</p>
+                           <div class="meta-row">${metaHtml}</div>`;
+            return d;
+        }
+
+        /* --- FOOTER & SCROLL --- */
+
+        function renderFooter() {
+            const div = document.getElementById('footer-links');
+            // Static links + Timeline
+            div.innerHTML = `
+                <a href="#Timeline" class="fill-anim" onclick="route('Timeline')">Timeline</a>
+                <a href="#Index" class="fill-anim" onclick="route('Index')">Index</a>
+                <a href="mailto:sahibdsv+site@gmail.com" class="fill-anim">Contact</a>
+                <a href="https://linkedin.com/in/sahibvirdee" target="_blank" class="fill-anim">LinkedIn</a>
+            `;
+            document.getElementById('version-tag').innerText = "Last Updated: " + new Date().toLocaleDateString();
+        }
+
+        /* Scroll Logic for Header Collapse */
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const current = window.pageYOffset;
+            const body = document.body;
+            
+            if (current <= 0) {
+                body.classList.remove('header-collapsed');
+                return;
             }
             
-            let gc = app.querySelector('.grid-container');
-            if(append) {
-                gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
+            if (current > lastScroll && current > 100) {
+                // Scroll Down
+                body.classList.add('header-collapsed');
             } else {
-                const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
-                if(hasGridItems && !gc) {
-                    gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
-                }
+                // Scroll Up
+                body.classList.remove('header-collapsed');
             }
-            
-            rows.forEach(r => {
-                if(!r.Page || r.Page === 'Footer') return; 
-                
-                let contentHtml = processText(r.Content);
-                let mediaHtml = '';
-                let hasPlaceholder = false;
+            lastScroll = current;
+        });
 
-                const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
-
-                if (modelMatch) {
-                    const url = modelMatch[1].trim();
-                    const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
-                    mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
-                    contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
-                } else if (r.Media) {
-                    const thumb = getThumbnail(r.Media);
-                    if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
-                } else {
-                    hasPlaceholder = true;
-                    mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
-                }
-
-                let catClass = '';
-                const pLower = r.Page.toLowerCase();
-                if(pLower.startsWith('projects')) catClass = 'cat-projects';
-                else if(pLower.startsWith('professional')) catClass = 'cat-professional';
-                else if(pLower.startsWith('personal')) catClass = 'cat-personal';
-
-                if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
-                    const d = document.createElement('div'); d.className = 'section layout-text';
-                    
-                    if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-                    else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-                    else mediaHtml = ''; 
-
-                    let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
-                    
-                    if(r.LinkURL) {
-                        metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
-                    }
-
-                    metaHtml += '<div class="article-tags">';
-                    if(r.Timestamp) {
-                        const dateVal = formatDate(r.Timestamp);
-                        metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
-                    }
-                    if(r.Tags) {
-                        const tags = r.Tags.split(',').map(x => x.trim());
-                        tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
-                    }
-                    metaHtml += '</div></div>';
-
-                    d.innerHTML = `${mediaHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${contentHtml}</p>`;
-                    app.appendChild(d);
-                    return;
-                }
-
-                if(!forceGrid) {
-                    if(r.SectionType === 'quote') { 
-                        const d = document.createElement('div'); d.className = 'layout-quote section'; 
-                        renderQuoteCard(d); app.appendChild(d); return; 
-                    }
-                    if(r.SectionType === 'hero') {
-                        const d = document.createElement('div'); d.className = 'section layout-hero';
-                        let dateHtml = '';
-                        if(r.Timestamp) {
-                            let dateVal = formatDate(r.Timestamp);
-                            dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
-                        }
-                        d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
-                        app.appendChild(d); return;
-                    }
-                    if(r.SectionType === 'text') {
-                        const d = document.createElement('div'); d.className = 'section layout-text';
-                        d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
-                        app.appendChild(d); return;
-                    }
-                }
-
-                const link = r.LinkURL || '';
-                const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
-                let l = link; if(!l) l = `#${r.Page}`; 
-                const internal = l.startsWith('#'), target = internal ? '' : '_blank';
-                
-                let mh = '';
-                if(r.Timestamp || tags.length > 0) {
-                    mh = `<div class="meta-row">`;
-                    if(r.Timestamp) {
-                        let dateVal = formatDate(r.Timestamp);
-                        mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
-                    }
-                    tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
-                    mh += `</div>`;
-                }
-
-                const d = document.createElement('div'); 
-                d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
-                d.setAttribute('data-link', l); d.setAttribute('data-target', target);
-                
-                d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
-                
-                if(gc) gc.appendChild(d);
-            });
-            
-            if(window.MathJax && window.MathJax.typeset) {
-                window.MathJax.typeset();
+        /* --- UTILITIES --- */
+        function toggleSearch(show) {
+            const overlay = document.getElementById('search-overlay');
+            if(show) {
+                overlay.classList.add('active');
+                setTimeout(() => document.getElementById('search-input').focus(), 100);
+            } else {
+                overlay.classList.remove('active');
             }
-
-            // JITTER FIX: Wait 500ms
-            setTimeout(init3DViewers, 500);
         }
 
-        function renderQuoteCard(c) {
-            if(quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
-            const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
-            let auth = r.Author || 'Unknown'; 
-            if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`; 
-            else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
-            
-            const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
-            
-            const len = text.length;
-            let sizeClass = 'short';
-            
-            if(len > 230) sizeClass = 'xxl';
-            else if(len > 150) sizeClass = 'xl';
-            else if(len > 100) sizeClass = 'long';
-            else if(len > 50) sizeClass = 'medium';
-            
-            c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
-                        <div class="quote-footer"><div class="author">— ${auth}</div></div>
-                        <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
-        }
-
-        function renderFooter() { 
-            const fd = document.getElementById('footer-links');
-            const fr = db.filter(r => r.Page === 'Footer' || r.Title === 'LinkedIn' || r.Title === 'Contact'); 
-            fd.innerHTML = ''; 
-            fr.forEach(r => { 
-                let link = r.LinkURL;
-                if(r.Title === 'Contact') {
-                    link = 'mailto:sahibdsv+site@gmail.com';
-                }
-                if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
-            }); 
-            
-            fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
-            fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
-        }
-
-        function fetchGitHubStats() { 
-            const r = "sahibdsv/sahibdsv.github.io"; 
-            fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
-                if(d.pushed_at) {
-                    const date = new Date(d.pushed_at);
-                    // RELATIVE TIME LOGIC
-                    const timeAgo = (d) => {
-                        const s = Math.floor((new Date() - d) / 1000);
-                        let i = s / 31536000;
-                        if (i > 1) return Math.floor(i) + " years ago";
-                        i = s / 2592000;
-                        if (i > 1) return Math.floor(i) + " months ago";
-                        i = s / 86400;
-                        if (i > 1) return Math.floor(i) + " days ago";
-                        i = s / 3600;
-                        if (i > 1) return Math.floor(i) + " hours ago";
-                        i = s / 60;
-                        if (i > 1) return Math.floor(i) + " mins ago";
-                        return "a few mins ago";
-                    };
-                    const relTime = timeAgo(date);
-                    document.getElementById('version-tag').innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${relTime}</a>`;
-                } 
-            }).catch(()=>{}); 
-        }
-
-        function getThumbnail(u) { if(!u) return null; if(u.includes('youtube.com')||u.includes('youtu.be')) { let v = u.split('v=')[1]; if(v&&v.includes('&')) v=v.split('&')[0]; if(!v&&u.includes('youtu.be')) v=u.split('/').pop(); return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; } if(u.endsWith('.mp4')) return null; return u; }
-
-        function processText(t) { 
-            if(!t) return ''; 
-            let clean = safeHTML(t);
-            
-            // 1. UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
-            clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
-                const colorAttr = color ? `data-color="${color.trim()}"` : '';
-                return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
-            });
-
-            // 2. INLINE IMAGE GALLERIES: [https://url1, https://url2]
-            clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
-                const urls = content.split(',').map(u => u.trim());
-                const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
-                if (!isPureGallery) return match; 
-                const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join('');
-                return `<div class="inline-gallery">${imgs}</div>`;
-            });
-
-            // 3. WIKI LINKS: [[Page Name]]
-            clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
-
-            // 4. EMBED SHORTCODES
-            clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
-            clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
-            clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
-            clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
-
-            // 5. GENERAL LINK STYLING
-            clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
-
-            return clean; 
+        function handleSearch(q) {
+            if(!q) return;
+            const res = db.filter(r => r.Title.toLowerCase().includes(q.toLowerCase()));
+            const app = document.getElementById('app'); app.innerHTML = '';
+            app.innerHTML = `<div class="section"><h2>SEARCH: ${q}</h2></div>`;
+            renderGrid(res, app);
         }
 
         function formatDate(s) {
             if(!s) return '';
-            if(s.length === 8 && !isNaN(s)) {
-                const y = s.substring(0, 4);
-                const m = s.substring(4, 6);
-                const d = s.substring(6, 8);
-                const dateObj = new Date(`${y}-${m}-${d}`);
-                return `${dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()} ${y}`;
-            }
             const d = new Date(s);
-            if(isNaN(d.getTime())) return s;
-            const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
-            const yr = d.getFullYear();
-            return `${mo} ${yr}`;
+            return isNaN(d) ? s : `${d.toLocaleString('default',{month:'short'}).toUpperCase()} ${d.getFullYear()}`;
         }
 
-        // 3D VIEWER LOGIC (LAZY LOADED)
-        function init3DViewers() {
-            const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-            
-            if(containers.length === 0) return;
-
-            Promise.all([
-                import('three'),
-                import('three/addons/loaders/STLLoader.js'),
-                import('three/addons/loaders/GLTFLoader.js'),
-                import('three/addons/controls/OrbitControls.js')
-            ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
-                
-                // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
-                const visibilityObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        const container = entry.target;
-                        if (entry.isIntersecting) {
-                            container.setAttribute('data-visible', 'true');
-                        } else {
-                            container.setAttribute('data-visible', 'false');
-                        }
-                    });
+        function setupInteractions() {
+            // Horizontal scroll fade logic
+            document.querySelectorAll('.timeline-cards').forEach(el => {
+                el.addEventListener('scroll', (e) => {
+                    // Adjust mask based on scroll position if needed
+                    // CSS mask takes care of static fade, dynamic would require JS
                 });
-
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
-                            observer.unobserve(entry.target);
-                            // Start tracking visibility for performance
-                            visibilityObserver.observe(entry.target);
-                        }
-                    });
-                }, { rootMargin: "200px" });
-
-                containers.forEach(c => observer.observe(c));
-            });
-        }
-
-        function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
-            container.classList.add('loaded');
-            
-            const url = container.getAttribute('data-src');
-            const customColor = container.getAttribute('data-color');
-            const ext = url.split('.').pop().toLowerCase();
-            
-            const scene = new THREE.Scene();
-            scene.background = null; 
-
-            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
-            
-            // RENDERER SETUP
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            
-            // Performance: Limit pixel ratio on phones
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            
-            // FIX: Updated Color Space Management (Three.js r152+)
-            // Old: renderer.outputEncoding = THREE.sRGBEncoding;
-            renderer.outputColorSpace = THREE.SRGBColorSpace; 
-            
-            // Lighting Setup
-            renderer.physicallyCorrectLights = true; // Note: In r160+ this becomes renderer.useLegacyLights = false;
-            
-            container.appendChild(renderer.domElement);
-
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-            scene.add(ambientLight);
-            
-            const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
-            keyLight.position.set(5, 10, 7);
-            scene.add(keyLight);
-
-            const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
-            rimLight.position.set(-5, 5, -5);
-            scene.add(rimLight);
-
-            const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
-            fillLight.position.set(-5, 0, 5);
-            scene.add(fillLight);
-
-            const controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.enablePan = false; 
-            controls.autoRotate = true; 
-            controls.autoRotateSpeed = 2.0;
-
-            let restartTimer;
-            controls.addEventListener('start', () => {
-                clearTimeout(restartTimer);
-                controls.autoRotate = false;
-            });
-            controls.addEventListener('end', () => {
-                restartTimer = setTimeout(() => {
-                    controls.autoRotate = true;
-                }, 5000); 
-            });
-
-            const onLoad = (object) => {
-                container.classList.add('ready'); // Fade in canvas
-
-                const box = new THREE.Box3().setFromObject(object);
-                const center = new THREE.Vector3();
-                box.getCenter(center);
-                
-                object.position.sub(center);
-                scene.add(object);
-
-                if (customColor) {
-                    object.traverse((child) => {
-                        if (child.isMesh) {
-                            child.material = new THREE.MeshPhongMaterial({ 
-                                color: customColor, 
-                                specular: 0x111111, 
-                                shininess: 100 
-                            });
-                        }
-                    });
-                }
-
-                const size = box.getSize(new THREE.Vector3()).length();
-                const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
-                
-                camera.position.set(dist, dist * 0.4, dist * 0.8); 
-                camera.lookAt(0, 0, 0);
-                
-                controls.minDistance = size * 0.2; 
-                controls.maxDistance = size * 5;
-
-                // SMART RENDER LOOP (Pauses when off-screen)
-                function animate() {
-                    requestAnimationFrame(animate);
-                    // If not visible, skip heavy lifting
-                    if (container.getAttribute('data-visible') === 'false') return;
-                    
-                    controls.update();
-                    renderer.render(scene, camera);
-                }
-                animate();
-            };
-
-            const onError = (e) => {
-                console.error(e);
-                container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
-            };
-
-            if (ext === 'glb' || ext === 'gltf') {
-                const loader = new GLTFLoader();
-                loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
-            } else {
-                const loader = new STLLoader();
-                loader.load(url, (geometry) => {
-                    const mat = new THREE.MeshPhongMaterial({ 
-                        color: customColor || 0xaaaaaa, 
-                        specular: 0x111111, 
-                        shininess: 200 
-                    });
-                    const mesh = new THREE.Mesh(geometry, mat);
-                    onLoad(mesh);
-                }, undefined, onError);
-            }
-
-            window.addEventListener('resize', () => {
-                if(!container.isConnected) return; 
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
             });
         }
 
