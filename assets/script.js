@@ -232,10 +232,7 @@ function applyBodyPaddingClass(rows) {
 
 function handleRouting() { 
     if(isSearchActive) return; 
-    
-    // IMPORTANT: Reset shrink state on navigation to prevent bouncing
     document.getElementById('main-header').classList.remove('shrink');
-    
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
@@ -266,13 +263,8 @@ function handleRouting() {
     setTimeout(() => {
         const secEl = document.getElementById('secondary-nav');
         const tertEl = document.getElementById('tertiary-nav');
-        
-        if (hasTert) {
-            centerSubNav(tertEl, true);
-            centerSubNav(secEl, false);
-        } else if (hasSec) {
-            centerSubNav(secEl, true);
-        }
+        if (hasTert) { centerSubNav(tertEl, true); centerSubNav(secEl, false); }
+        else if (hasSec) { centerSubNav(secEl, true); }
     }, 100);
 
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
@@ -318,13 +310,8 @@ function childrenPagesCheck(p) {
 function renderIndex() {
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
-    
-    buildSecondaryNav('Index'); 
-    buildTertiaryNav('Index', null);
-    applyBodyPaddingClass(3); 
-
+    buildSecondaryNav('Index'); buildTertiaryNav('Index', null); applyBodyPaddingClass(3); 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
     
@@ -353,7 +340,6 @@ function renderIndex() {
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
             const title = row ? row.Title : p.split('/').pop();
             const isTertiary = p.split('/').length > 2;
-
             html += `<a href="#${p}" class="index-link fill-anim ${isTertiary ? 'tertiary' : ''}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
         });
         html += `</div>`;
@@ -364,77 +350,34 @@ function renderIndex() {
 function renderTimeline() {
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
-    
-    buildSecondaryNav('Timeline');
-    buildTertiaryNav('Timeline', null);
-    applyBodyPaddingClass(2); 
-
+    buildSecondaryNav('Timeline'); buildTertiaryNav('Timeline', null); applyBodyPaddingClass(2); 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-
     const app = document.getElementById('app');
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-wrapper"></div>';
     
     const container = app.querySelector('.timeline-wrapper');
     const items = db.filter(r => r.Page && r.Page !== 'Footer' && r.Page !== 'Home' && r.Title);
-
     const groups = {};
     items.forEach(r => {
         const dateStr = r.Timestamp ? formatDate(r.Timestamp) : 'Undated'; 
         if (!groups[dateStr]) groups[dateStr] = [];
         groups[dateStr].push(r);
     });
-
     const sortedKeys = Object.keys(groups).sort((a, b) => {
-        if (a === 'Undated') return 1;
-        if (b === 'Undated') return -1;
+        if (a === 'Undated') return 1; if (b === 'Undated') return -1;
         return new Date(b) - new Date(a); 
     });
-
     sortedKeys.forEach(key => {
         const rowItems = groups[key].sort((a, b) => a.Title.localeCompare(b.Title));
-
         let cardsHtml = '';
-        rowItems.forEach(r => {
-            cardsHtml += createCardHtml(r, null, false); 
-        });
-
-        const rowHtml = `
-            <div class="timeline-row">
-                <div class="timeline-date">${key}</div>
-                <div class="timeline-scroller-wrapper fade-active">
-                    <div class="timeline-scroller">${cardsHtml}</div>
-                </div>
-            </div>
-        `;
+        rowItems.forEach(r => { cardsHtml += createCardHtml(r, null, false); });
+        const rowHtml = `<div class="timeline-row"><div class="timeline-date">${key}</div><div class="timeline-scroller-wrapper fade-active"><div class="timeline-scroller">${cardsHtml}</div></div></div>`;
         container.innerHTML += rowHtml;
     });
-
     setTimeout(() => {
-        document.querySelectorAll('.timeline-scroller').forEach(el => {
-            checkFade(el);
-            el.addEventListener('scroll', () => checkFade(el));
-        });
+        document.querySelectorAll('.timeline-scroller').forEach(el => { checkFade(el); el.addEventListener('scroll', () => checkFade(el)); });
         init3DViewers();
     }, 100);
-}
-
-function checkFade(el) {
-    const wrapper = el.parentElement;
-    const tolerance = 5;
-    
-    // Toggle Left Fade
-    if (el.scrollLeft > tolerance) {
-        wrapper.classList.add('fade-left-active');
-    } else {
-        wrapper.classList.remove('fade-left-active');
-    }
-
-    // Toggle Right Fade
-    if (el.scrollLeft + el.clientWidth < el.scrollWidth - tolerance) {
-        wrapper.classList.add('fade-right-active');
-    } else {
-        wrapper.classList.remove('fade-right-active');
-    }
 }
 
 function renderHome() { 
@@ -451,7 +394,6 @@ function renderHome() {
                           return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
                       })
                       .slice(0, 6);
-
     if(recents.length > 0) { renderRows(recents, "Recent Activity", true, true, false, true); } 
 }
 
@@ -459,22 +401,17 @@ function createCardHtml(r, overrideCatClass, forcePlaceholder) {
     let contentHtml = processText(r.Content);
     let mediaHtml = '';
     let hasPlaceholder = false;
-
     const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
-
     if (modelMatch) {
-        const url = modelMatch[1].trim();
-        const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+        const url = modelMatch[1].trim(); const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
         mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
         contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
     } else if (r.Media) {
         const thumb = getThumbnail(r.Media);
         if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
     } else {
-        hasPlaceholder = true;
-        mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+        hasPlaceholder = true; mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
     }
-
     let catClass = overrideCatClass || '';
     if (!catClass) {
         const pLower = r.Page.toLowerCase();
@@ -482,110 +419,65 @@ function createCardHtml(r, overrideCatClass, forcePlaceholder) {
         else if(pLower.startsWith('professional')) catClass = 'cat-professional';
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
     }
-
     const link = r.LinkURL || '';
     const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
     let l = link; if(!l) l = `#${r.Page}`; 
     const internal = l.startsWith('#'), target = internal ? '' : '_blank';
-    
     let mh = '';
     if(r.Timestamp || tags.length > 0) {
             mh = `<div class="meta-row">`;
-            if(r.Timestamp) {
-                let dateVal = formatDate(r.Timestamp);
-                mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
-            }
+            if(r.Timestamp) { let dateVal = formatDate(r.Timestamp); mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; }
             tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
             mh += `</div>`;
     }
-
-    return `
-    <div class="layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}" data-link="${l}" data-target="${target}">
-        ${mediaHtml}
-        <h3 class="fill-anim">${safeHTML(r.Title)}</h3>
-        <p>${contentHtml}</p>
-        ${mh}
-    </div>`;
+    return `<div class="layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}" data-link="${l}" data-target="${target}">${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}</div>`;
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false, preserveOrder = false) {
     const app = document.getElementById('app'); if(!app) return; 
-    
-    if (!preserveOrder) {
-        rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
-    }
-
-    if(!append) {
-        app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
-    } else if(title) {
-        app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`;
-    }
-
-    if(rows.length === 0 && !append) { 
-        app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`; 
-        return; 
-    }
+    if (!preserveOrder) { rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0)); }
+    if(!append) { app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : ''; } 
+    else if(title) { app.innerHTML += `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>`; }
+    if(rows.length === 0 && !append) { app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`; return; }
     
     let gc = app.querySelector('.grid-container');
-    if(append) {
-        gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
-    } else {
+    if(append) { gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc); } 
+    else {
         const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
-        if(hasGridItems && !gc) {
-            gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
-        }
+        if(hasGridItems && !gc) { gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc); }
     }
     
     rows.forEach(r => {
         if(!r.Page || r.Page === 'Footer') return; 
-        
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
              let contentHtml = processText(r.Content);
              let mediaHtml = '';
              const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
              if (modelMatch) {
-                const url = modelMatch[1].trim();
-                const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+                const url = modelMatch[1].trim(); const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
                 mediaHtml = `<div class="row-media article-mode"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
                 contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
              } else if (r.Media) {
                 const thumb = getThumbnail(r.Media);
                 if(thumb) mediaHtml = `<div class="row-media article-mode"><img src="${thumb}" loading="lazy"></div>`;
              }
-
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
-             if(r.LinkURL) {
-                 metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
-             }
+             if(r.LinkURL) { metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`; }
              metaHtml += '<div class="article-tags">';
-             if(r.Timestamp) {
-                 const dateVal = formatDate(r.Timestamp);
-                 metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
-             }
-             if(r.Tags) {
-                 const tags = r.Tags.split(',').map(x => x.trim());
-                 tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
-             }
+             if(r.Timestamp) { let dateVal = formatDate(r.Timestamp); metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; }
+             if(r.Tags) { const tags = r.Tags.split(',').map(x => x.trim()); tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); }
              metaHtml += '</div></div>';
-
              d.innerHTML = `${mediaHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${contentHtml}</p>`;
              app.appendChild(d);
              return;
         }
-
         if(!forceGrid) {
-            if(r.SectionType === 'quote') { 
-                const d = document.createElement('div'); d.className = 'layout-quote section'; 
-                renderQuoteCard(d); app.appendChild(d); return; 
-            }
+            if(r.SectionType === 'quote') { const d = document.createElement('div'); d.className = 'layout-quote section'; renderQuoteCard(d); app.appendChild(d); return; }
             if(r.SectionType === 'hero') {
                 const d = document.createElement('div'); d.className = 'section layout-hero';
                 let dateHtml = '';
-                if(r.Timestamp) {
-                    let dateVal = formatDate(r.Timestamp);
-                    dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`;
-                }
+                if(r.Timestamp) { let dateVal = formatDate(r.Timestamp); dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateVal}'">${dateVal}</span></div>`; }
                 d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                 app.appendChild(d); return;
             }
@@ -595,14 +487,8 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false, prese
                  app.appendChild(d); return;
             }
         }
-
-        if(gc) {
-             const tempDiv = document.createElement('div');
-             tempDiv.innerHTML = createCardHtml(r);
-             gc.appendChild(tempDiv.firstElementChild);
-        }
+        if(gc) { const tempDiv = document.createElement('div'); tempDiv.innerHTML = createCardHtml(r); gc.appendChild(tempDiv.firstElementChild); }
     });
-    
     if(window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
     setTimeout(init3DViewers, 500);
 }
@@ -613,20 +499,11 @@ function renderQuoteCard(c) {
     let auth = r.Author || 'Unknown'; 
     if(r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`; 
     else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
-    
     const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
-    
     const len = text.length;
     let sizeClass = 'short';
-    
-    if(len > 230) sizeClass = 'xxl';
-    else if(len > 150) sizeClass = 'xl';
-    else if(len > 100) sizeClass = 'long';
-    else if(len > 50) sizeClass = 'medium';
-    
-    c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
-                   <div class="quote-footer"><div class="author">— ${auth}</div></div>
-                   <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
+    if(len > 230) sizeClass = 'xxl'; else if(len > 150) sizeClass = 'xl'; else if(len > 100) sizeClass = 'long'; else if(len > 50) sizeClass = 'medium';
+    c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote><div class="quote-footer"><div class="author">— ${auth}</div></div><svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
 }
 
 function renderFooter() { 
@@ -638,7 +515,6 @@ function renderFooter() {
         if(r.Title === 'Contact') link = 'mailto:sahibdsv+site@gmail.com';
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
-    
     fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="closeSearch()">Timeline</a>`;
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
@@ -651,16 +527,11 @@ function fetchGitHubStats() {
             const date = new Date(d.pushed_at);
             const timeAgo = (d) => {
                 const s = Math.floor((new Date() - d) / 1000);
-                let i = s / 31536000;
-                if (i > 1) return Math.floor(i) + " years ago";
-                i = s / 2592000;
-                if (i > 1) return Math.floor(i) + " months ago";
-                i = s / 86400;
-                if (i > 1) return Math.floor(i) + " days ago";
-                i = s / 3600;
-                if (i > 1) return Math.floor(i) + " hours ago";
-                i = s / 60;
-                if (i > 1) return Math.floor(i) + " mins ago";
+                let i = s / 31536000; if (i > 1) return Math.floor(i) + " years ago";
+                i = s / 2592000; if (i > 1) return Math.floor(i) + " months ago";
+                i = s / 86400; if (i > 1) return Math.floor(i) + " days ago";
+                i = s / 3600; if (i > 1) return Math.floor(i) + " hours ago";
+                i = s / 60; if (i > 1) return Math.floor(i) + " mins ago";
                 return "a few mins ago";
             };
             const relTime = timeAgo(date);
@@ -674,17 +545,8 @@ function getThumbnail(u) { if(!u) return null; if(u.includes('youtube.com')||u.i
 function processText(t) { 
     if(!t) return ''; 
     let clean = safeHTML(t);
-    clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
-        const colorAttr = color ? `data-color="${color.trim()}"` : '';
-        return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
-    });
-    clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
-        const urls = content.split(',').map(u => u.trim());
-        const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
-        if (!isPureGallery) return match; 
-        const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join('');
-        return `<div class="inline-gallery">${imgs}</div>`;
-    });
+    clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => { const colorAttr = color ? `data-color="${color.trim()}"` : ''; return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`; });
+    clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => { const urls = content.split(',').map(u => u.trim()); const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http')); if (!isPureGallery) return match; const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join(''); return `<div class="inline-gallery">${imgs}</div>`; });
     clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
@@ -713,31 +575,9 @@ function formatDate(s) {
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
     if(containers.length === 0) return;
-
-    Promise.all([
-        import('three'),
-        import('three/addons/loaders/STLLoader.js'),
-        import('three/addons/loaders/GLTFLoader.js'),
-        import('three/addons/controls/OrbitControls.js')
-    ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
-        const visibilityObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const container = entry.target;
-                if (entry.isIntersecting) container.setAttribute('data-visible', 'true');
-                else container.setAttribute('data-visible', 'false');
-            });
-        });
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
-                    observer.unobserve(entry.target);
-                    visibilityObserver.observe(entry.target);
-                }
-            });
-        }, { rootMargin: "200px" });
-
+    Promise.all([import('three'), import('three/addons/loaders/STLLoader.js'), import('three/addons/loaders/GLTFLoader.js'), import('three/addons/controls/OrbitControls.js')]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
+        const visibilityObserver = new IntersectionObserver((entries) => { entries.forEach(entry => { const container = entry.target; if (entry.isIntersecting) container.setAttribute('data-visible', 'true'); else container.setAttribute('data-visible', 'false'); }); });
+        const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls); observer.unobserve(entry.target); visibilityObserver.observe(entry.target); } }); }, { rootMargin: "200px" });
         containers.forEach(c => observer.observe(c));
     });
 }
@@ -747,45 +587,23 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     const url = container.getAttribute('data-src');
     const customColor = container.getAttribute('data-color');
     const ext = url.split('.').pop().toLowerCase();
-    
-    const scene = new THREE.Scene();
-    scene.background = null; 
-
+    const scene = new THREE.Scene(); scene.background = null; 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
     renderer.physicallyCorrectLights = true; 
-    
     container.appendChild(renderer.domElement);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
-    
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    keyLight.position.set(5, 10, 7);
-    scene.add(keyLight);
-
-    const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
-    rimLight.position.set(-5, 5, -5);
-    scene.add(rimLight);
-
-    const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
-    fillLight.position.set(-5, 0, 5);
-    scene.add(fillLight);
-
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); scene.add(ambientLight);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.2); keyLight.position.set(5, 10, 7); scene.add(keyLight);
+    const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0); rimLight.position.set(-5, 5, -5); scene.add(rimLight);
+    const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5); fillLight.position.set(-5, 0, 5); scene.add(fillLight);
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.enablePan = false; 
-    controls.autoRotate = true; 
-    controls.autoRotateSpeed = 2.0;
-
+    controls.enableDamping = true; controls.dampingFactor = 0.05; controls.enablePan = false; controls.autoRotate = true; controls.autoRotateSpeed = 2.0;
     let restartTimer;
     controls.addEventListener('start', () => { clearTimeout(restartTimer); controls.autoRotate = false; });
     controls.addEventListener('end', () => { restartTimer = setTimeout(() => { controls.autoRotate = true; }, 5000); });
-
     const onLoad = (object) => {
         container.classList.add('ready'); 
         const box = new THREE.Box3().setFromObject(object);
@@ -793,56 +611,20 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         box.getCenter(center);
         object.position.sub(center);
         scene.add(object);
-
-        if (customColor) {
-            object.traverse((child) => {
-                if (child.isMesh) {
-                    child.material = new THREE.MeshPhongMaterial({ 
-                        color: customColor, specular: 0x111111, shininess: 100 
-                    });
-                }
-            });
-        }
-
+        if (customColor) { object.traverse((child) => { if (child.isMesh) { child.material = new THREE.MeshPhongMaterial({ color: customColor, specular: 0x111111, shininess: 100 }); } }); }
         const size = box.getSize(new THREE.Vector3()).length();
         const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
         camera.position.set(dist, dist * 0.4, dist * 0.8); 
         camera.lookAt(0, 0, 0);
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
-
-        function animate() {
-            requestAnimationFrame(animate);
-            if (container.getAttribute('data-visible') === 'false') return;
-            controls.update();
-            renderer.render(scene, camera);
-        }
+        function animate() { requestAnimationFrame(animate); if (container.getAttribute('data-visible') === 'false') return; controls.update(); renderer.render(scene, camera); }
         animate();
     };
-
-    const onError = (e) => {
-        console.error(e);
-        container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>';
-    };
-
-    if (ext === 'glb' || ext === 'gltf') {
-        const loader = new GLTFLoader();
-        loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
-    } else {
-        const loader = new STLLoader();
-        loader.load(url, (geometry) => {
-            const mat = new THREE.MeshPhongMaterial({ color: customColor || 0xaaaaaa, specular: 0x111111, shininess: 200 });
-            const mesh = new THREE.Mesh(geometry, mat);
-            onLoad(mesh);
-        }, undefined, onError);
-    }
-
-    window.addEventListener('resize', () => {
-        if(!container.isConnected) return; 
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
-    });
+    const onError = (e) => { console.error(e); container.innerHTML = '<div style="color:#666; display:flex; justify-content:center; align-items:center; height:100%; font-size:12px;">Failed to load 3D Model</div>'; };
+    if (ext === 'glb' || ext === 'gltf') { const loader = new GLTFLoader(); loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError); } 
+    else { const loader = new STLLoader(); loader.load(url, (geometry) => { const mat = new THREE.MeshPhongMaterial({ color: customColor || 0xaaaaaa, specular: 0x111111, shininess: 200 }); const mesh = new THREE.Mesh(geometry, mat); onLoad(mesh); }, undefined, onError); }
+    window.addEventListener('resize', () => { if(!container.isConnected) return; camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); });
 }
 
 init();
