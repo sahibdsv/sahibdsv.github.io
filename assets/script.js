@@ -87,17 +87,10 @@ function initApp() {
         }
     });
 
-    // HEADER SCROLL BEHAVIOR
+    // SMART SCROLL HEADER (Strict Reappearance)
     window.addEventListener('scroll', () => { 
-        const h = document.getElementById('main-header'); 
-        const shouldCollapse = window.scrollY > 50;
-        
-        // Only toggle if state changes to avoid DOM thrashing
-        if(shouldCollapse && !document.body.classList.contains('brand-collapsed')) {
-            document.body.classList.add('brand-collapsed');
-        } else if(!shouldCollapse && document.body.classList.contains('brand-collapsed')) {
-            document.body.classList.remove('brand-collapsed');
-        }
+        const isTop = window.scrollY < 50;
+        document.body.classList.toggle('scrolled-down', !isTop);
     });
 
     document.addEventListener('click', (e) => {
@@ -166,10 +159,7 @@ function toggleSearch() {
 function handleSearch(q) { 
     if(!q) return; 
     isSearchActive = true; 
-    
-    // Collapse all navs
-    document.getElementById('sub-nav').classList.remove('active');
-    document.getElementById('tertiary-nav').classList.remove('active');
+    document.body.classList.remove('header-expanded-sub', 'header-expanded-tert');
     
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
@@ -182,84 +172,69 @@ function buildNav() {
     p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
 }
 
+function buildSubNav(top) {
+    const n = document.getElementById('sub-nav'); if(!n) return; n.innerHTML = ''; 
+    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
+    
+    subs.forEach(x => { 
+        const name = x.split('/')[1];
+        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
+        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
+    });
+    // Center if active
+    const activeLink = n.querySelector('.active');
+    if (activeLink) n.scrollTo({ left: activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2), behavior: 'smooth' });
+}
+
+function buildTertiaryNav(top, sub) {
+    const n = document.getElementById('tertiary-nav'); if(!n) return; n.innerHTML = '';
+    const prefix = `${top}/${sub}`;
+    // Find pages that are exactly 3 levels deep: Top/Sub/Tertiary
+    const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix + '/')).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
+
+    terts.forEach(x => {
+        const name = x.split('/')[2];
+        const active = window.location.hash === `#${x}`;
+        n.innerHTML += `<a href="#${x}" class="tert-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
+    });
+    
+    // Center if active
+    const activeLink = n.querySelector('.active');
+    if (activeLink) n.scrollTo({ left: activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2), behavior: 'smooth' });
+}
+
 function handleRouting() { 
     if(isSearchActive) return; 
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // Deactivate Main Nav Highlights based on top level
-    const top = h.split('/')[0]; 
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
-    
-    // HEADER LOGIC EXPANSION
-    updateHeaderNavs(h);
-    
-    // Page Rendering
     if(h === 'Index') { renderIndex(); return; }
     if(h === 'Timeline') { renderTimeline(); return; }
-    if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); return; } 
     
-    renderPage(h);
-}
-
-// NEW NAV LOGIC FOR SUB & TERTIARY
-function updateHeaderNavs(currentPath) {
-    const subNav = document.getElementById('sub-nav');
-    const tertNav = document.getElementById('tertiary-nav');
-    
-    // Reset
-    subNav.innerHTML = ''; subNav.classList.remove('active');
-    tertNav.innerHTML = ''; tertNav.classList.remove('active');
-    
-    if (currentPath === 'Home' || currentPath === 'Index' || currentPath === 'Timeline' || currentPath.startsWith('Filter:')) return;
-
-    const parts = currentPath.split('/');
+    // Path Analysis
+    const parts = h.split('/');
     const top = parts[0];
     const sub = parts.length > 1 ? parts[1] : null;
+    const tert = parts.length > 2 ? parts[2] : null;
 
-    // Build Sub Nav (Children of Top)
-    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/')[1]))].sort();
+    // Reset Highlights
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+
+    buildSubNav(top);
+    if (sub) buildTertiaryNav(top, sub);
+
+    // Expand State Management
+    const hasSub = document.getElementById('sub-nav').children.length > 0;
+    const hasTert = document.getElementById('tertiary-nav').children.length > 0;
+
+    const shouldShowSub = hasSub && !h.startsWith('Filter:');
+    const shouldShowTert = hasTert && sub && !h.startsWith('Filter:');
+
+    document.body.classList.toggle('header-expanded-sub', shouldShowSub);
+    document.body.classList.toggle('header-expanded-tert', shouldShowTert);
     
-    if (subs.length > 0) {
-        subs.forEach(x => {
-            const path = `${top}/${x}`;
-            const active = (x === sub);
-            subNav.innerHTML += `<a href="#${path}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(x)}</a>`;
-        });
-        subNav.classList.add('active');
-        centerNav(subNav);
-    }
-
-    // Build Tertiary Nav (Children of Top/Sub)
-    if (sub) {
-        const currentLevel = `${top}/${sub}`;
-        const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(currentLevel + '/')).map(r => r.Page.split('/')[2]))].sort();
-        
-        if (terts.length > 0) {
-            terts.forEach(x => {
-                const path = `${currentLevel}/${x}`;
-                const active = currentPath === path;
-                tertNav.innerHTML += `<a href="#${path}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(x)}</a>`;
-            });
-            tertNav.classList.add('active');
-            centerNav(tertNav);
-        }
-    }
-    
-    // Adjust Padding top based on visible rows (Approximation handled by fixed CSS usually, but we can dynamic var if needed)
-    // CSS transitions handle this gracefully via document flow.
-}
-
-function centerNav(navEl) {
-    if(!navEl) return;
-    const activeLink = navEl.querySelector('.active');
-    if (activeLink) {
-        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (navEl.clientWidth / 2);
-        navEl.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-    } else {
-         const middle = (navEl.scrollWidth - navEl.clientWidth) / 2;
-         navEl.scrollTo({ left: middle, behavior: 'smooth' });
-    }
+    if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
+    else { renderPage(h); }
 }
 
 function renderFiltered(t) { 
@@ -275,25 +250,18 @@ function renderPage(p) {
     const ex = db.filter(r => r.Page === p); 
     const app = document.getElementById('app'); app.innerHTML = ''; 
     
-    const isMainPage = !p.includes('/'); // Top level like #Projects
+    const isMainPage = !p.includes('/');
     
-    // Explicit Page Content
     if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
-    
-    // Children Overview (e.g. #Projects showing #Projects/EV content)
-    // If exact match doesn't exist, OR it does but we want to show subs too? 
-    // Logic: If I am at #Projects, show items tagged Page=#Projects, AND summary of #Projects/*
-    
-    if(ex.length === 0 && !childrenPagesCheck(p)) {
+    else if(childrenPagesCheck(p)) { }
+    else {
         app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
         return; 
     }
     
     if(isMainPage) {
-        // Gather direct children pages
         const childrenPages = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
         if(childrenPages.length > 0) {
-            // Find "Lead" item for each child page to represent it
             const overviewRows = childrenPages.map(childPage => db.find(r => r.Page === childPage)).filter(r => r);
             renderRows(overviewRows, null, true, true); 
         } 
@@ -306,16 +274,15 @@ function childrenPagesCheck(p) {
 }
 
 function renderIndex() {
-    // Force Collapse
-    document.getElementById('sub-nav').classList.remove('active');
-    document.getElementById('tertiary-nav').classList.remove('active');
+    document.body.classList.remove('header-expanded-sub', 'header-expanded-tert');
+    buildSubNav('Index'); 
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
     
     const list = app.querySelector('.index-list');
-    
-    // Sort Alphabetically
+    // SORT ALPHABETICALLY
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
     const groups = {};
@@ -325,11 +292,7 @@ function renderIndex() {
         groups[cat].push(p);
     });
     
-    // Sort Keys
-    const sortedKeys = Object.keys(groups).sort();
-
-    for(const cat of sortedKeys) {
-        const items = groups[cat];
+    for(const [cat, items] of Object.entries(groups)) {
         let catClass = '';
         const cLower = cat.toLowerCase();
         if(cLower === 'projects') catClass = 'cat-projects';
@@ -340,14 +303,11 @@ function renderIndex() {
         items.forEach(p => {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
-            const parts = p.split('/');
-            const title = row ? row.Title : parts.pop();
+            const title = row ? row.Title : p.split('/').pop();
+            // INDENT TERTIARY ITEMS
+            const depth = p.split('/').length;
+            const indentClass = depth >= 3 ? 'indent' : '';
             
-            // Indentation logic
-            const depth = parts.length;
-            let indentClass = '';
-            if (depth > 2) indentClass = 'indent-level-2'; // Tertiary
-
             html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
         });
         html += `</div>`;
@@ -356,69 +316,67 @@ function renderIndex() {
 }
 
 function renderTimeline() {
-    document.getElementById('sub-nav').classList.remove('active');
-    document.getElementById('tertiary-nav').classList.remove('active');
+    document.body.classList.remove('header-expanded-sub', 'header-expanded-tert');
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
     
     const app = document.getElementById('app');
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-container"></div>';
-    const container = app.querySelector('.timeline-container');
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-view"></div>';
+    const view = app.querySelector('.timeline-view');
 
-    // Group by Month Year
+    // Group by YYYY-MM
     const groups = {};
-    
-    // Filter out Home/Footer/Text-only
-    const validItems = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && r.Timestamp && r.SectionType !== 'text');
-    
-    validItems.forEach(r => {
-        const d = new Date(r.Timestamp);
-        if(isNaN(d.getTime())) return;
-        const key = `${d.getFullYear()}-${d.getMonth()}`; // Sortable key
+    db.forEach(r => {
+        if(!r.Timestamp || r.Page === 'Footer') return;
+        const d = r.Timestamp.toString();
+        const key = d.substring(0, 6); // YYYYMM
         if(!groups[key]) groups[key] = [];
         groups[key].push(r);
     });
 
-    // Sort Keys Descending
-    const sortedKeys = Object.keys(groups).sort((a,b) => {
-        const [y1, m1] = a.split('-');
-        const [y2, m2] = b.split('-');
-        return new Date(y2, m2) - new Date(y1, m1);
-    });
+    const sortedKeys = Object.keys(groups).sort((a,b) => b.localeCompare(a));
 
     sortedKeys.forEach(key => {
-        const [y, m] = key.split('-');
-        const dateLabel = new Date(y, m).toLocaleString('default', { month: 'short', year: 'numeric' });
-        
-        const items = groups[key].sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+        const year = key.substring(0, 4);
+        const monthNum = parseInt(key.substring(4, 6)) - 1;
+        const monthName = new Date(year, monthNum).toLocaleString('default', { month: 'short' }).toUpperCase();
         
         const row = document.createElement('div');
-        row.className = 'timeline-row';
+        row.className = 'timeline-group';
+        row.innerHTML = `<div class="timeline-date">${monthName}<br>${year}</div><div class="timeline-scroller"></div>`;
         
-        let cardsHtml = '';
-        items.forEach(item => {
-             // Generate Mini Card (Reuse grid logic simplified)
-             cardsHtml += generateCardHTML(item);
+        const scroller = row.querySelector('.timeline-scroller');
+        
+        // Render simple cards
+        groups[key].forEach(r => {
+            const l = r.LinkURL || `#${r.Page}`;
+            const target = l.startsWith('#') ? '' : '_blank';
+            
+            let mediaHtml = '';
+             if (r.Media) {
+                const thumb = getThumbnail(r.Media);
+                if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+            } else {
+                mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+            }
+            
+            const card = document.createElement('div');
+            card.className = `layout-grid clickable-block`;
+            card.setAttribute('data-link', l); card.setAttribute('data-target', target);
+            card.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3>`;
+            scroller.appendChild(card);
         });
 
-        row.innerHTML = `<div class="timeline-date">${dateLabel}</div><div class="timeline-content">${cardsHtml}</div>`;
-        container.appendChild(row);
+        // FADE LOGIC
+        const updateFade = () => {
+            const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+            if(scroller.scrollLeft >= maxScroll - 5) row.classList.add('no-fade');
+            else row.classList.remove('no-fade');
+        };
+        scroller.addEventListener('scroll', updateFade);
+        setTimeout(updateFade, 100); // Init check
 
-        // Add Scroll Listener for Fade
-        const scrollArea = row.querySelector('.timeline-content');
-        if(scrollArea) {
-            scrollArea.addEventListener('scroll', () => {
-                const maxScroll = scrollArea.scrollWidth - scrollArea.clientWidth;
-                if (scrollArea.scrollLeft >= maxScroll - 5) {
-                    scrollArea.classList.add('no-fade');
-                } else {
-                    scrollArea.classList.remove('no-fade');
-                }
-            });
-            // Init check
-            if (scrollArea.scrollWidth <= scrollArea.clientWidth) scrollArea.classList.add('no-fade');
-        }
+        view.appendChild(row);
     });
-
-    setTimeout(init3DViewers, 500);
 }
 
 function renderHome() { 
@@ -427,21 +385,22 @@ function renderHome() {
     renderRows(hr, null, true); 
     
     const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
-                      .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
-                      .slice(0, 6);
-    if(recents.length > 0) { renderRows(recents, "Recent Activity", true, true); } // forceGrid for recents
+                      // Note: renderRows now handles sorting and pinning
+                      .slice(0, 8); // Pass more, let sorting handle the top 6
+    if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     const app = document.getElementById('app'); if(!app) return; 
     
-    // FEATURED LOGIC
-    const featured = rows.filter(r => r.Tags && r.Tags.toLowerCase().includes('featured'));
-    const others = rows.filter(r => !r.Tags || !r.Tags.toLowerCase().includes('featured'));
-    
-    others.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
-    // Recombine with featured first
-    rows = [...featured, ...others];
+    // UPDATED SORT: PIN "FEATURED"
+    rows.sort((a, b) => {
+        const aFeat = a.Tags && a.Tags.toLowerCase().includes('featured');
+        const bFeat = b.Tags && b.Tags.toLowerCase().includes('featured');
+        if (aFeat && !bFeat) return -1;
+        if (!aFeat && bFeat) return 1;
+        return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
+    });
 
     if(!append) {
         app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
@@ -455,14 +414,8 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     }
     
     let gc = app.querySelector('.grid-container');
-    // Logic: If we are appending to existing, find it. If not found, create it.
-    // If not appending, we might still need it if forceGrid is true.
     if(append) {
-        // If the LAST element is a grid container, use it? Or make new section?
-        // Simpler: Make new section if title provided.
-        if (title || !gc) {
-             gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
-        }
+        gc = document.createElement('div'); gc.className = 'grid-container section'; app.appendChild(gc);
     } else {
         const hasGridItems = forceGrid || (rows.some(r => r.SectionType !== 'quote' && r.SectionType !== 'hero' && r.SectionType !== 'text') && !isArticleMode);
         if(hasGridItems && !gc) {
@@ -473,9 +426,57 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     rows.forEach(r => {
         if(!r.Page || r.Page === 'Footer') return; 
         
-        // Article Mode / Text Mode Handling
+        let contentHtml = processText(r.Content);
+        let mediaHtml = '';
+        let hasPlaceholder = false;
+
+        const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+
+        if (modelMatch) {
+            const url = modelMatch[1].trim();
+            const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+            mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+            contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
+        } else if (r.Media) {
+            const thumb = getThumbnail(r.Media);
+            if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+        } else {
+            hasPlaceholder = true;
+            mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+        }
+
+        let catClass = '';
+        const pLower = r.Page.toLowerCase();
+        if(pLower.startsWith('projects')) catClass = 'cat-projects';
+        else if(pLower.startsWith('professional')) catClass = 'cat-professional';
+        else if(pLower.startsWith('personal')) catClass = 'cat-personal';
+
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
-             renderArticleRow(r, app);
+             const d = document.createElement('div'); d.className = 'section layout-text';
+             
+             if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+             else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
+             else mediaHtml = ''; 
+
+             let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
+             
+             if(r.LinkURL) {
+                 metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+             }
+
+             metaHtml += '<div class="article-tags">';
+             if(r.Timestamp) {
+                 const dateVal = formatDate(r.Timestamp);
+                 metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
+             }
+             if(r.Tags) {
+                 const tags = r.Tags.split(',').map(x => x.trim());
+                 tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
+             }
+             metaHtml += '</div></div>';
+
+             d.innerHTML = `${mediaHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${contentHtml}</p>`;
+             app.appendChild(d);
              return;
         }
 
@@ -501,15 +502,29 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
             }
         }
 
-        // GRID CARD GENERATION
-        const cardHTML = generateCardHTML(r);
+        const link = r.LinkURL || '';
+        const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
+        let l = link; if(!l) l = `#${r.Page}`; 
+        const internal = l.startsWith('#'), target = internal ? '' : '_blank';
         
-        // Helper to inject into GC
-        // We need to create a temporary div to hold the string, then move children.
-        const temp = document.createElement('div');
-        temp.innerHTML = cardHTML;
-        const card = temp.firstElementChild;
-        if(gc) gc.appendChild(card);
+        let mh = '';
+        if(r.Timestamp || tags.length > 0) {
+             mh = `<div class="meta-row">`;
+             if(r.Timestamp) {
+                 let dateVal = formatDate(r.Timestamp);
+                 mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
+             }
+             tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
+             mh += `</div>`;
+        }
+
+        const d = document.createElement('div'); 
+        d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
+        d.setAttribute('data-link', l); d.setAttribute('data-target', target);
+        
+        d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
+        
+        if(gc) gc.appendChild(d);
     });
     
     if(window.MathJax && window.MathJax.typeset) {
@@ -517,86 +532,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     }
 
     setTimeout(init3DViewers, 500);
-}
-
-// EXTRACTED CARD GENERATOR FOR REUSE IN TIMELINE
-function generateCardHTML(r) {
-    let contentHtml = processText(r.Content);
-    let mediaHtml = '';
-    let hasPlaceholder = false;
-
-    const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
-
-    if (modelMatch) {
-        const url = modelMatch[1].trim();
-        const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
-        mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
-        contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
-    } else if (r.Media) {
-        const thumb = getThumbnail(r.Media);
-        if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
-    } else {
-        hasPlaceholder = true;
-        mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
-    }
-
-    let catClass = '';
-    const pLower = r.Page.toLowerCase();
-    if(pLower.startsWith('projects')) catClass = 'cat-projects';
-    else if(pLower.startsWith('professional')) catClass = 'cat-professional';
-    else if(pLower.startsWith('personal')) catClass = 'cat-personal';
-
-    const link = r.LinkURL || '';
-    const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
-    let l = link; if(!l) l = `#${r.Page}`; 
-    const internal = l.startsWith('#'), target = internal ? '' : '_blank';
-    
-    let mh = '';
-    if(r.Timestamp || tags.length > 0) {
-            mh = `<div class="meta-row">`;
-            if(r.Timestamp) {
-                let dateVal = formatDate(r.Timestamp);
-                mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
-            }
-            tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
-            mh += `</div>`;
-    }
-
-    return `<div class="layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}" data-link="${l}" data-target="${target}">
-        ${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}
-    </div>`;
-}
-
-function renderArticleRow(r, app) {
-    let contentHtml = processText(r.Content);
-    let mediaHtml = '';
-    
-    // Logic duplicate for Article Media... simplified for brevity
-    if (r.Media) {
-        const thumb = getThumbnail(r.Media);
-        if(thumb) mediaHtml = `<div class="row-media article-mode"><img src="${thumb}" loading="lazy"></div>`;
-    }
-    
-    const d = document.createElement('div'); d.className = 'section layout-text';
-    let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
-             
-    if(r.LinkURL) {
-        metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
-    }
-
-    metaHtml += '<div class="article-tags">';
-    if(r.Timestamp) {
-        const dateVal = formatDate(r.Timestamp);
-        metaHtml += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`;
-    }
-    if(r.Tags) {
-        const tags = r.Tags.split(',').map(x => x.trim());
-        tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
-    }
-    metaHtml += '</div></div>';
-
-    d.innerHTML = `${mediaHtml}${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}${metaHtml}<p>${contentHtml}</p>`;
-    app.appendChild(d);
 }
 
 function renderQuoteCard(c) {
@@ -610,6 +545,7 @@ function renderQuoteCard(c) {
     
     const len = text.length;
     let sizeClass = 'short';
+    
     if(len > 230) sizeClass = 'xxl';
     else if(len > 150) sizeClass = 'xl';
     else if(len > 100) sizeClass = 'long';
@@ -668,10 +604,13 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
+    // 1. UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
+
+    // 2. INLINE IMAGE GALLERIES: [https://url1, https://url2]
     clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
@@ -679,12 +618,19 @@ function processText(t) {
         const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join('');
         return `<div class="inline-gallery">${imgs}</div>`;
     });
+
+    // 3. WIKI LINKS: [[Page Name]]
     clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
+
+    // 4. EMBED SHORTCODES
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
     clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
+
+    // 5. GENERAL LINK STYLING
     clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
+
     return clean; 
 }
 
@@ -704,8 +650,10 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
+// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
+    
     if(containers.length === 0) return;
 
     Promise.all([
@@ -751,12 +699,15 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     scene.background = null; 
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
+    
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
+    
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
-    renderer.physicallyCorrectLights = true; 
+    
+    renderer.physicallyCorrectLights = true;
     
     container.appendChild(renderer.domElement);
 

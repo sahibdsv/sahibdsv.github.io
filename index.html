@@ -51,8 +51,7 @@
     </script>
 
     <header id="main-header" class="no-transition">
-        
-        <div id="header-row-brand">
+        <div id="header-branding">
             <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
             
             <div id="search-controls">
@@ -63,18 +62,17 @@
                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                 </svg>
             </div>
-
-            <div id="search-overlay">
-                <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
-            </div>
         </div>
 
         <nav id="primary-nav"></nav>
-        
-        <nav id="sub-nav"></nav>
-        
-        <nav id="tertiary-nav"></nav>
 
+        <nav id="sub-nav"></nav>
+
+        <nav id="tertiary-nav"></nav>
+        
+        <div id="search-overlay">
+            <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
+        </div>
     </header>
 
     <div class="content-container" id="app">
