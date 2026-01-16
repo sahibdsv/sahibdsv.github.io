@@ -13,15 +13,15 @@
     --accent-prof: #00ffff;
     --accent-projects: #ff9933;
     
-    /* Header Variables - TIGHTENED */
-    --header-h-default: 90px; 
-    --header-h-shrink: 60px; 
-    --header-h-expanded: 105px; 
-    --header-h-expanded-shrink: 85px;
+    /* Header Variables - CONDENSED & UPDATED FOR 3 TIERS */
+    --header-h-default: 70px;          /* 1 Row */
+    --header-h-shrink: 50px;           
     
-    /* Tertiary Header Variables */
-    --header-h-tertiary: 130px; /* 105 + 25 */
-    --header-h-tertiary-shrink: 110px; /* 85 + 25 */
+    --header-h-expanded: 95px;         /* 2 Rows */
+    --header-h-expanded-shrink: 75px;
+    
+    --header-h-tertiary: 120px;        /* 3 Rows */
+    --header-h-tertiary-shrink: 98px;
     
     --ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -44,8 +44,9 @@ body {
 
 p, h1, h2, h3, a { overflow-wrap: break-word; word-wrap: break-word; }
 
+/* Dynamic Header Padding States */
 body.header-expanded { padding-top: var(--header-h-expanded); }
-body.header-expanded.has-tertiary { padding-top: var(--header-h-tertiary); }
+body.tertiary-active { padding-top: var(--header-h-tertiary); }
 
 .no-transition * { transition: none !important; }
 .sk-line, .sk-img, .sk-box { animation-play-state: running !important; }
@@ -71,34 +72,37 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     position: fixed; top: 0; left: 0; width: 100%; background: rgba(5,5,5,0.95); 
     backdrop-filter: blur(12px); z-index: 1000; 
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    padding-top: 15px; 
+    padding-top: 10px; /* Reduced from 15px */
     height: var(--header-h-default); 
     transition: height 0.4s var(--ease), padding 0.4s var(--ease); 
     overflow: hidden; border-bottom: 1px solid #1a1a1a; 
 }
 
-#main-header.shrink { height: var(--header-h-shrink); padding-top: 10px; }
+#main-header.shrink { height: var(--header-h-shrink); padding-top: 5px; }
+
+/* Header Height States */
 #main-header.expanded { height: var(--header-h-expanded); }
 #main-header.expanded.shrink { height: var(--header-h-expanded-shrink); }
-#main-header.expanded.has-tertiary { height: var(--header-h-tertiary); }
-#main-header.expanded.has-tertiary.shrink { height: var(--header-h-tertiary-shrink); }
+
+#main-header.tertiary-active { height: var(--header-h-tertiary); }
+#main-header.tertiary-active.shrink { height: var(--header-h-tertiary-shrink); }
 
 #main-header.search-mode { height: 90px; }
 
 #brand-name {
     font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; cursor: pointer;
-    margin-bottom: 4px; 
+    margin-bottom: 2px; /* Tightened */
     transition: all 0.4s var(--ease); user-select: none;
     --text-base: #666; --text-hover: #fff; z-index: 1003; 
 }
-#main-header.shrink #brand-name { font-size: 16px; margin-bottom: 3px; }
+#main-header.shrink #brand-name { font-size: 16px; margin-bottom: 2px; }
 
 #primary-nav { 
     display: flex; gap: 30px; 
-    margin-bottom: 4px; 
+    margin-bottom: 2px; /* Tightened */
     transition: all 0.4s var(--ease); 
 }
-#main-header.shrink #primary-nav { margin-bottom: 4px; gap: 20px; }
+#main-header.shrink #primary-nav { margin-bottom: 2px; gap: 20px; }
 
 .nav-link {
     font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
@@ -122,7 +126,8 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
     
     padding-bottom: 2px; 
     scrollbar-width: none;
-    height: 25px; 
+    height: 22px; /* Condensed Height */
+    margin-bottom: 1px; /* Very tight spacing */
     
     mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
@@ -132,19 +137,22 @@ h1.fill-anim, h2.fill-anim { --text-base: #fff; --text-hover: #999; }
 
 #sub-nav > *, #tertiary-nav > * { flex-shrink: 0; }
 
-/* Hide Sub Nav when not expanded */
+/* Hiding Logic */
+body:not(.header-expanded) #sub-nav, 
+body:not(.tertiary-active) #sub-nav { 
+    /* Sub-nav logic remains handled by .header-expanded mostly, but we ensure tertiary doesn't break it */
+}
+
+/* Hard hide when inactive */
 body:not(.header-expanded) #sub-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
-
-/* Hide Tertiary Nav when not active or not expanded */
-body:not(.header-expanded) #tertiary-nav,
-body:not(.has-tertiary) #tertiary-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
-
+body:not(.tertiary-active) #tertiary-nav { height: 0; padding-bottom: 0; margin: 0; opacity: 0; pointer-events: none; }
 
 /* MOBILE SPRINGS */
 @media (max-width: 900px) {
     #sub-nav, #tertiary-nav { justify-content: flex-start; }
-    #sub-nav::before, #sub-nav::after, 
-    #tertiary-nav::before, #tertiary-nav::after { content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; }
+    #sub-nav::before, #sub-nav::after, #tertiary-nav::before, #tertiary-nav::after { 
+        content: ''; display: block; width: calc(50vw - 30px); min-width: 50px; flex-shrink: 0; flex-grow: 1; 
+    }
 }
 
 /* --- SEARCH --- */
