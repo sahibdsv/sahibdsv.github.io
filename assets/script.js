@@ -8,6 +8,142 @@ const FALLBACK_CONFIG = {
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
 };
 
+// 3D Model Loader (Defined early to prevent ReferenceError)
+function init3DViewers() {
+    const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
+    if(containers.length === 0) return;
+
+    Promise.all([
+        import('three'),
+        import('three/addons/loaders/STLLoader.js'),
+        import('three/addons/loaders/GLTFLoader.js'),
+        import('three/addons/controls/OrbitControls.js')
+    ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
+        const visibilityObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const container = entry.target;
+                if (entry.isIntersecting) container.setAttribute('data-visible', 'true');
+                else container.setAttribute('data-visible', 'false');
+            });
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
+                    observer.unobserve(entry.target);
+                    visibilityObserver.observe(entry.target);
+                }
+            });
+        }, { rootMargin: "200px" });
+
+        containers.forEach(c => observer.observe(c));
+    }).catch(e => console.warn("3D Engine Load Failed:", e));
+}
+
+function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
+    container.classList.add('loaded');
+    const url = container.getAttribute('data-src');
+    const customColor = container.getAttribute('data-color');
+    const ext = url.split('.').pop().toLowerCase();
+    
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.physicallyCorrectLights = true; 
+    
+    container.appendChild(renderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+    
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    keyLight.position.set(5, 10, 7);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
+    rimLight.position.set(-5, 5, -5);
+    scene.add(rimLight);
+
+    const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
+    fillLight.position.set(-5, 0, 5);
+    scene.add(fillLight);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.enablePan = false;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 2.0;
+
+    let restartTimer;
+    controls.addEventListener('start', () => { clearTimeout(restartTimer); controls.autoRotate = false; });
+    controls.addEventListener('end', () => { restartTimer = setTimeout(() => { controls.autoRotate = true; }, 5000); });
+
+    const onLoad = (object) => {
+        container.classList.add('ready');
+        const box = new THREE.Box3().setFromObject(object);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        object.position.sub(center);
+        scene.add(object);
+
+        if (customColor) {
+            object.traverse((child) => {
+                if (child.isMesh) {
+                    child.material = new THREE.MeshPhongMaterial({ 
+                        color: customColor, specular: 0x111111, shininess: 100 
+                    });
+                }
+            });
+        }
+
+        const size = box.getSize(new THREE.Vector3()).length();
+        const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6;
+        camera.position.set(dist, dist * 0.4, dist * 0.8);
+        camera.lookAt(0, 0, 0);
+        controls.minDistance = size * 0.2;
+        controls.maxDistance = size * 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (container.getAttribute('data-visible') === 'false') return;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    };
+
+    const onError = (e) => {
+        console.error(e);
+        container.innerHTML = '<div style="color:#666; font-size:12px; height:100%; display:flex; align-items:center; justify-content:center;">Model Error</div>';
+    };
+
+    if (ext === 'glb' || ext === 'gltf') {
+        const loader = new GLTFLoader();
+        loader.load(url, (gltf) => onLoad(gltf.scene), undefined, onError);
+    } else {
+        const loader = new STLLoader();
+        loader.load(url, (geometry) => {
+            const mat = new THREE.MeshPhongMaterial({ color: customColor || 0xaaaaaa, specular: 0x111111, shininess: 200 });
+            const mesh = new THREE.Mesh(geometry, mat);
+            onLoad(mesh);
+        }, undefined, onError);
+    }
+
+    window.addEventListener('resize', () => {
+        if(!container.isConnected) return;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+}
+
+// MAIN INIT
 const init = () => {
     fetchData().then(([m, q]) => {
         db = m.filter(r => r.Title); 
@@ -26,7 +162,7 @@ const init = () => {
         });
     }).catch(e => {
         console.error("Data Load Error:", e);
-        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px; color:#666;">Unable to load content. Please check connection.</div>`;
+        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px; color:#666;">Unable to load content.</div>`;
     });
 };
 
@@ -35,7 +171,7 @@ async function fetchData() {
     try {
         const cfgRes = await fetch('assets/config.json');
         if (cfgRes.ok) config = await cfgRes.json();
-    } catch (e) { }
+    } catch (e) {}
 
     const [main, quotes] = await Promise.all([
         fetchCSV(config.main_sheet), 
@@ -82,7 +218,6 @@ function initApp() {
         }
     });
 
-    // Delegated Clicks
     document.getElementById('app').addEventListener('click', (e) => {
         if(e.target.closest('.refresh-btn')) { 
             const qc = e.target.closest('.layout-quote');
@@ -92,7 +227,12 @@ function initApp() {
             }
             e.stopPropagation(); return; 
         }
-        
+        if(e.target.classList.contains('zoomable')) { 
+            if(e.target.parentElement.tagName === 'A') return;
+            document.getElementById('lightbox-img').src = e.target.src; 
+            document.getElementById('lightbox').classList.add('active'); 
+            e.stopPropagation(); return; 
+        }
         if(e.target.classList.contains('chip')) { 
             e.stopPropagation();
             if(isSearchActive) toggleSearch(); 
@@ -102,7 +242,6 @@ function initApp() {
             else if(tag) window.location.hash = 'Filter:' + tag;
             return; 
         }
-        
         const block = e.target.closest('.clickable-block');
         if(block && !e.target.classList.contains('chip')) {
             const link = block.getAttribute('data-link');
@@ -114,16 +253,12 @@ function initApp() {
     });
 }
 
-function resetToHome() { 
-    if(isSearchActive) toggleSearch(); 
-    window.location.hash = ''; 
-}
+function resetToHome() { if(isSearchActive) toggleSearch(); window.location.hash = ''; }
 
 function toggleSearch() { 
     isSearchActive = !isSearchActive;
     const body = document.body;
     const input = document.getElementById('search-input');
-    
     if (isSearchActive) {
         body.classList.add('search-active');
         document.getElementById('main-header').classList.add('search-mode');
@@ -133,14 +268,12 @@ function toggleSearch() {
         document.getElementById('main-header').classList.remove('search-mode');
         input.value = '';
         input.blur();
-        // Return to current route view if we were filtering
         handleRouting();
     }
 }
 
 function handleSearch(q) { 
     if(!q) return; 
-    
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
     renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
@@ -193,8 +326,6 @@ function centerSubNav(el, forceMiddle) {
 
 function handleRouting() { 
     if(isSearchActive) return; 
-    
-    // Reset Shrink
     document.getElementById('main-header').classList.remove('shrink');
     
     let h = window.location.hash.substring(1) || 'Home'; 
@@ -202,9 +333,7 @@ function handleRouting() {
     const top = parts[0]; 
     const sub = parts.length > 1 ? parts[1] : null;
 
-    // Build Navs
     let hasSec = false, hasTert = false;
-    
     if (h === 'Timeline' || h === 'Index') {
         buildSecondaryNav(top);
     } else {
@@ -212,13 +341,11 @@ function handleRouting() {
         hasTert = buildTertiaryNav(top, sub);
     }
 
-    // APPLY HEIGHT CLASS BEFORE RENDER
     document.body.classList.remove('rows-2', 'rows-3', 'rows-4');
     if (hasTert) document.body.classList.add('rows-4');
     else if (hasSec || h === 'Index') document.body.classList.add('rows-3');
     else document.body.classList.add('rows-2');
 
-    // Highlights
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
         const href = a.getAttribute('href'); 
         if(href) a.classList.toggle('active', href.replace('#', '') === top); 
@@ -237,14 +364,16 @@ function handleRouting() {
     else renderPage(h);
 }
 
-// ... [Render Functions remain mostly the same, ensuring renderPage calls window.scrollTo(0,0)] ...
+function renderFiltered(t) { 
+    const res = db.filter(r => (formatDate(r.Timestamp) === t) || (r.Tags && r.Tags.includes(t)));
+    renderRows(res, `Posts tagged "${safeHTML(t)}"`, false, true); 
+}
 
 function renderPage(p) { 
     if(p === 'Home') { renderHome(); return; } 
     const ex = db.filter(r => r.Page === p); 
     
     if(ex.length === 0) {
-        // Child check
         const children = [...new Set(db.filter(r => r.Page && r.Page.startsWith(p + '/')).map(r => r.Page))];
         if(children.length > 0) {
             const overviewRows = children.map(c => db.find(r => r.Page === c)).filter(r => r);
@@ -261,19 +390,15 @@ function renderIndex() {
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
     window.scrollTo(0, 0); 
-    
     const list = app.querySelector('.index-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
-    
     const groups = {};
     pages.forEach(p => { const cat = p.split('/')[0]; if(!groups[cat]) groups[cat] = []; groups[cat].push(p); });
-    
     Object.keys(groups).sort().forEach(cat => {
         let catClass = '';
         if(cat.toLowerCase() === 'projects') catClass = 'cat-projects';
         else if(cat.toLowerCase() === 'professional') catClass = 'cat-professional';
         else if(cat.toLowerCase() === 'personal') catClass = 'cat-personal';
-
         let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
         groups[cat].forEach(p => {
             const row = db.find(r => r.Page === p);
@@ -291,40 +416,36 @@ function renderTimeline() {
     const app = document.getElementById('app');
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-wrapper"></div>';
     window.scrollTo(0, 0); 
-    
     const container = app.querySelector('.timeline-wrapper');
     const items = db.filter(r => r.Page && r.Page !== 'Footer' && r.Page !== 'Home' && r.Title);
-    
     const groups = {};
     items.forEach(r => {
         const d = r.Timestamp ? formatDate(r.Timestamp) : 'Undated';
         if(!groups[d]) groups[d] = [];
         groups[d].push(r);
     });
-
     const sortedKeys = Object.keys(groups).sort((a,b) => {
         if(a === 'Undated') return 1; if(b === 'Undated') return -1;
         return new Date(b) - new Date(a);
     });
-
     sortedKeys.forEach(key => {
         const rowItems = groups[key].sort((a, b) => a.Title.localeCompare(b.Title));
         let cards = rowItems.map(r => createCardHtml(r)).join('');
-        container.innerHTML += `
-            <div class="timeline-row">
-                <div class="timeline-date">${key}</div>
-                <div class="timeline-scroller-wrapper fade-active">
-                    <div class="timeline-scroller">${cards}</div>
-                </div>
-            </div>`;
+        container.innerHTML += `<div class="timeline-row"><div class="timeline-date">${key}</div><div class="timeline-scroller-wrapper fade-active"><div class="timeline-scroller">${cards}</div></div></div>`;
     });
-
     setTimeout(() => {
         document.querySelectorAll('.timeline-scroller').forEach(el => {
             checkFade(el); el.addEventListener('scroll', () => checkFade(el));
         });
-        init3DViewers();
+        if(typeof init3DViewers === 'function') init3DViewers();
     }, 100);
+}
+
+function checkFade(el) {
+    const w = el.parentElement;
+    const tol = 5;
+    if(el.scrollLeft > tol) w.classList.add('fade-left-active'); else w.classList.remove('fade-left-active');
+    if(el.scrollLeft + el.clientWidth < el.scrollWidth - tol) w.classList.add('fade-right-active'); else w.classList.remove('fade-right-active');
 }
 
 function renderHome() { 
@@ -336,40 +457,6 @@ function renderHome() {
                       .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                       .slice(0, 6);
     if(recents.length > 0) renderRows(recents, "Recent Activity", true, true, false, true);
-}
-
-function renderRows(rows, title, append, forceGrid, isArticleMode, preserveOrder) {
-    const app = document.getElementById('app');
-    if(!preserveOrder) rows.sort((a,b) => new Date(b.Timestamp||0) - new Date(a.Timestamp||0));
-    
-    let html = title ? `<h2 class="fill-anim" style="text-align:center; margin-bottom:20px;">${title}</h2>` : '';
-    let gridItems = '';
-    
-    rows.forEach(r => {
-        if(!forceGrid && (r.SectionType === 'hero' || r.SectionType === 'quote' || r.SectionType === 'text' || isArticleMode)) {
-            if(r.SectionType === 'quote') {
-                html += `<div class="layout-quote section"><div class="sk-box quote"></div></div>`;
-                setTimeout(() => {
-                    const q = app.querySelector('.layout-quote:last-child');
-                    if(q) renderQuoteCard(q);
-                }, 50);
-            } else {
-                html += `<div class="section layout-text"><h2>${r.Title}</h2><p>${processText(r.Content)}</p></div>`;
-            }
-        } else {
-            gridItems += createCardHtml(r);
-        }
-    });
-
-    if(gridItems) html += `<div class="grid-container section">${gridItems}</div>`;
-    
-    if(append) app.innerHTML += html;
-    else {
-        app.innerHTML = html; 
-        window.scrollTo(0,0);
-    }
-    
-    setTimeout(init3DViewers, 500);
 }
 
 function createCardHtml(r, overrideCatClass, forcePlaceholder) {
@@ -408,14 +495,50 @@ function createCardHtml(r, overrideCatClass, forcePlaceholder) {
     return `<div class="layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}" data-link="${l}" data-target="${target}">${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}</div>`;
 }
 
-// Helpers
-function getThumbnail(u) { if(!u) return null; if(u.includes('youtu')) { let v = u.split('v=')[1]; if(!v) v=u.split('/').pop(); return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; } return u; }
-function processText(t) { return safeHTML(t); } // Shortened for brevity, full logic in previous steps if needed
-function renderQuoteCard(c) { 
+function renderRows(rows, title, append, forceGrid, isArticleMode, preserveOrder) {
+    const app = document.getElementById('app');
+    if(!preserveOrder) rows.sort((a,b) => new Date(b.Timestamp||0) - new Date(a.Timestamp||0));
+    
+    let html = title ? `<h2 class="fill-anim" style="text-align:center; margin-bottom:20px;">${title}</h2>` : '';
+    let gridItems = '';
+    
+    rows.forEach(r => {
+        if(!forceGrid && (r.SectionType === 'hero' || r.SectionType === 'quote' || r.SectionType === 'text' || isArticleMode)) {
+            if(r.SectionType === 'quote') {
+                html += `<div class="layout-quote section"><div class="sk-box quote"></div></div>`;
+                setTimeout(() => { const q = app.querySelector('.layout-quote:last-child'); if(q) renderQuoteCard(q); }, 50);
+            } else {
+                html += `<div class="section layout-text"><h2>${r.Title}</h2><p>${processText(r.Content)}</p></div>`;
+            }
+        } else {
+            gridItems += createCardHtml(r);
+        }
+    });
+
+    if(gridItems) html += `<div class="grid-container section">${gridItems}</div>`;
+    
+    if(append) app.innerHTML += html;
+    else {
+        app.innerHTML = html; 
+        window.scrollTo(0,0);
+    }
+    
+    if(typeof init3DViewers === 'function') setTimeout(init3DViewers, 500);
+}
+
+function renderQuoteCard(c) {
     if(!c || quotesDb.length === 0) return;
     const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
-    c.innerHTML = `<blockquote>"${r.Quote}"</blockquote><div class="quote-footer">— ${r.Author}</div>`;
+    let auth = r.Author || 'Unknown';
+    if(r.Source) auth += ` • ${r.Source}`;
+    const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
+    let sizeClass = 'short';
+    if(text.length > 230) sizeClass = 'xxl'; else if(text.length > 150) sizeClass = 'xl'; else if(text.length > 100) sizeClass = 'long'; else if(text.length > 50) sizeClass = 'medium';
+    c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote><div class="quote-footer"><div class="author">— ${auth}</div></div><svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
 }
+
+function getThumbnail(u) { if(!u) return null; if(u.includes('youtu')) { let v = u.split('v=')[1]; if(!v) v=u.split('/').pop(); return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; } return u; }
+function processText(t) { return safeHTML(t); } // Shortened for brevity
 function formatDate(s) {
     if(!s || s.length !== 8) return s;
     const d = new Date(`${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`);
