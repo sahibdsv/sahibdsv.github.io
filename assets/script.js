@@ -61,7 +61,6 @@ function fetchCSV(u) {
     });
 }
 
-// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -87,7 +86,6 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -185,22 +183,18 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    // Center ONLY when the sub-nav is first built (Navigation event)
     setTimeout(() => centerSubNav(true), 100);
 }
 
-// SMART CENTERING LOGIC
 function centerSubNav(forceMiddleIfNone) {
     const n = document.getElementById('sub-nav');
     if(!n) return;
     const activeLink = n.querySelector('.active');
     
     if (activeLink) {
-        // If Active: Lock to center
         const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
         n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     } else if (forceMiddleIfNone) {
-        // If Main Page Load: Scroll to MIDDLE to hint content
         const middle = (n.scrollWidth - n.clientWidth) / 2;
         n.scrollTo({ left: middle, behavior: 'smooth' });
     }
@@ -213,12 +207,10 @@ function handleRouting() {
     
     if(h === 'Index') { renderIndex(); return; }
     
-    // STATE: Collapse Header for Home, Filter, OR Index
     const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
-    // Deactivate Main Nav Highlights if Index (or non-matching top)
     const top = h.split('/')[0]; 
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
     
@@ -265,18 +257,17 @@ function childrenPagesCheck(p) {
 }
 
 function renderIndex() {
-    // 1. Collapse & Reset UI State (Enforce Constraints)
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
-    // Clear Sub-nav
     buildSubNav('Index'); 
-    // Deactivate Main Nav
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
     
     const list = app.querySelector('.index-list');
+    
+    // Sort pages Alphabetically
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
     const groups = {};
@@ -286,7 +277,11 @@ function renderIndex() {
         groups[cat].push(p);
     });
     
-    for(const [cat, items] of Object.entries(groups)) {
+    // Explicitly Sort Groups Alphabetically
+    const sortedCategories = Object.keys(groups).sort();
+
+    sortedCategories.forEach(cat => {
+        const items = groups[cat]; // items are already sorted due to 'pages' sort
         let catClass = '';
         const cLower = cat.toLowerCase();
         if(cLower === 'projects') catClass = 'cat-projects';
@@ -298,11 +293,16 @@ function renderIndex() {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
             const title = row ? row.Title : p.split('/').pop();
-            html += `<a href="#${p}" class="index-link fill-anim">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
+            
+            // Indentation Detection: Depth > 2 (Category/Sub/Page)
+            const parts = p.split('/');
+            const isTertiary = parts.length > 2;
+
+            html += `<a href="#${p}" class="index-link fill-anim ${isTertiary ? 'tertiary' : ''}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
         });
         html += `</div>`;
         list.innerHTML += html;
-    }
+    });
 }
 
 function renderHome() { 
@@ -310,16 +310,29 @@ function renderHome() {
     const app = document.getElementById('app'); app.innerHTML = ''; 
     renderRows(hr, null, true); 
     
+    // Featured Logic: 1. Featured Tag, 2. Timestamp
     const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
-                      .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
+                      .sort((a, b) => {
+                          const aFeat = a.Tags && a.Tags.toLowerCase().includes('featured');
+                          const bFeat = b.Tags && b.Tags.toLowerCase().includes('featured');
+                          
+                          if (aFeat && !bFeat) return -1;
+                          if (!aFeat && bFeat) return 1;
+                          
+                          return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
+                      })
                       .slice(0, 6);
-    if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
+
+    // Pass true to preserveOrder so renderRows doesn't re-sort by date
+    if(recents.length > 0) { renderRows(recents, "Recent Activity", true, true, false, true); } 
 }
 
-function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
+function renderRows(rows, title, append, forceGrid, isArticleMode = false, preserveOrder = false) {
     const app = document.getElementById('app'); if(!app) return; 
     
-    rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
+    if (!preserveOrder) {
+        rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
+    }
 
     if(!append) {
         app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
@@ -372,17 +385,14 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
 
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
-             
              if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
              else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
              else mediaHtml = ''; 
 
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
-             
              if(r.LinkURL) {
                  metaHtml += `<a href="${r.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
              }
-
              metaHtml += '<div class="article-tags">';
              if(r.Timestamp) {
                  const dateVal = formatDate(r.Timestamp);
@@ -440,17 +450,12 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         const d = document.createElement('div'); 
         d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
         d.setAttribute('data-link', l); d.setAttribute('data-target', target);
-        
         d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
         
         if(gc) gc.appendChild(d);
     });
     
-    if(window.MathJax && window.MathJax.typeset) {
-        window.MathJax.typeset();
-    }
-
-    // JITTER FIX: Wait 500ms
+    if(window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
     setTimeout(init3DViewers, 500);
 }
 
@@ -482,9 +487,7 @@ function renderFooter() {
     fd.innerHTML = ''; 
     fr.forEach(r => { 
         let link = r.LinkURL;
-        if(r.Title === 'Contact') {
-            link = 'mailto:sahibdsv+site@gmail.com';
-        }
+        if(r.Title === 'Contact') link = 'mailto:sahibdsv+site@gmail.com';
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
@@ -497,7 +500,6 @@ function fetchGitHubStats() {
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
             const date = new Date(d.pushed_at);
-            // RELATIVE TIME LOGIC
             const timeAgo = (d) => {
                 const s = Math.floor((new Date() - d) / 1000);
                 let i = s / 31536000;
@@ -523,14 +525,10 @@ function getThumbnail(u) { if(!u) return null; if(u.includes('youtube.com')||u.i
 function processText(t) { 
     if(!t) return ''; 
     let clean = safeHTML(t);
-    
-    // 1. UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
-
-    // 2. INLINE IMAGE GALLERIES: [https://url1, https://url2]
     clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
@@ -538,19 +536,12 @@ function processText(t) {
         const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join('');
         return `<div class="inline-gallery">${imgs}</div>`;
     });
-
-    // 3. WIKI LINKS: [[Page Name]]
     clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
-
-    // 4. EMBED SHORTCODES
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
     clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
-
-    // 5. GENERAL LINK STYLING
     clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
-
     return clean; 
 }
 
@@ -570,10 +561,8 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
-// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-    
     if(containers.length === 0) return;
 
     Promise.all([
@@ -582,16 +571,11 @@ function init3DViewers() {
         import('three/addons/loaders/GLTFLoader.js'),
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
-        
-        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
-                if (entry.isIntersecting) {
-                    container.setAttribute('data-visible', 'true');
-                } else {
-                    container.setAttribute('data-visible', 'false');
-                }
+                if (entry.isIntersecting) container.setAttribute('data-visible', 'true');
+                else container.setAttribute('data-visible', 'false');
             });
         });
 
@@ -600,7 +584,6 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
-                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -612,7 +595,6 @@ function init3DViewers() {
 
 function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     container.classList.add('loaded');
-    
     const url = container.getAttribute('data-src');
     const customColor = container.getAttribute('data-color');
     const ext = url.split('.').pop().toLowerCase();
@@ -621,20 +603,11 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     scene.background = null; 
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
-    
-    // RENDERER SETUP
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    
-    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    
-    // FIX: Updated Color Space Management (Three.js r152+)
-    // Old: renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
-    
-    // Lighting Setup
-    renderer.physicallyCorrectLights = true; // Note: In r160+ this becomes renderer.useLegacyLights = false;
+    renderer.physicallyCorrectLights = true; 
     
     container.appendChild(renderer.domElement);
 
@@ -661,23 +634,14 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     controls.autoRotateSpeed = 2.0;
 
     let restartTimer;
-    controls.addEventListener('start', () => {
-        clearTimeout(restartTimer);
-        controls.autoRotate = false;
-    });
-    controls.addEventListener('end', () => {
-        restartTimer = setTimeout(() => {
-            controls.autoRotate = true;
-        }, 5000); 
-    });
+    controls.addEventListener('start', () => { clearTimeout(restartTimer); controls.autoRotate = false; });
+    controls.addEventListener('end', () => { restartTimer = setTimeout(() => { controls.autoRotate = true; }, 5000); });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); // Fade in canvas
-
+        container.classList.add('ready'); 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
         box.getCenter(center);
-        
         object.position.sub(center);
         scene.add(object);
 
@@ -685,9 +649,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
             object.traverse((child) => {
                 if (child.isMesh) {
                     child.material = new THREE.MeshPhongMaterial({ 
-                        color: customColor, 
-                        specular: 0x111111, 
-                        shininess: 100 
+                        color: customColor, specular: 0x111111, shininess: 100 
                     });
                 }
             });
@@ -695,19 +657,14 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
 
         const size = box.getSize(new THREE.Vector3()).length();
         const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6; 
-        
         camera.position.set(dist, dist * 0.4, dist * 0.8); 
         camera.lookAt(0, 0, 0);
-        
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
-        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
-            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
-            
             controls.update();
             renderer.render(scene, camera);
         }
@@ -725,11 +682,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     } else {
         const loader = new STLLoader();
         loader.load(url, (geometry) => {
-            const mat = new THREE.MeshPhongMaterial({ 
-                color: customColor || 0xaaaaaa, 
-                specular: 0x111111, 
-                shininess: 200 
-            });
+            const mat = new THREE.MeshPhongMaterial({ color: customColor || 0xaaaaaa, specular: 0x111111, shininess: 200 });
             const mesh = new THREE.Mesh(geometry, mat);
             onLoad(mesh);
         }, undefined, onError);
