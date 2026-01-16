@@ -762,7 +762,7 @@
         }
 
         function handleSearch(q) { 
-            if(!q) return; 
+            if(!q) { isSearchActive = false; handleRouting(); return; } // FIXED LINE
             isSearchActive = true; 
             document.body.classList.remove('header-expanded');
             document.getElementById('main-header').classList.remove('expanded');
