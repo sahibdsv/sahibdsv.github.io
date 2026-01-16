@@ -3,24 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>Sahib Virdee</title>
     <meta name="description" content="Portfolio of Sahib Virdee, Mechanical Engineering student.">
-    
     <meta property="og:type" content="website">
     <meta property="og:title" content="Sahib Virdee | Engineering Portfolio">
     <meta property="twitter:card" content="summary_large_image">
-    
     <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
     <link rel="shortcut icon" href="/assets/favicon.ico" />
-    
     <link rel="stylesheet" href="assets/style.css">
-    
     <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    
     <script type="importmap">
         {
             "imports": {
@@ -29,17 +23,11 @@
             }
         }
     </script>
-    
     <script data-goatcounter="https://sahib.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body class="no-transition rows-2">
-    
-    <script>
-        if (history.scrollRestoration) { history.scrollRestoration = 'manual'; }
-    </script>
-
+    <script>if(history.scrollRestoration){history.scrollRestoration='manual';}</script>
     <header id="main-header">
-        
         <div id="search-layer">
             <div id="search-bubble">
                 <input type="text" id="search-input" placeholder="Search..." onkeyup="handleSearch(this.value)">
@@ -50,7 +38,6 @@
                 </div>
             </div>
         </div>
-
         <div id="header-row-1" class="h-row">
             <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
             <div id="header-tools">
@@ -59,27 +46,13 @@
                 </svg>
             </div>
         </div>
-
-        <div id="header-row-2" class="h-row">
-            <nav id="primary-nav"></nav>
-        </div>
-
-        <div id="header-row-3" class="h-row">
-            <nav id="secondary-nav"></nav>
-        </div>
-
-        <div id="header-row-4" class="h-row">
-            <nav id="tertiary-nav"></nav>
-        </div>
+        <div id="header-row-2" class="h-row"><nav id="primary-nav"></nav></div>
+        <div id="header-row-3" class="h-row"><nav id="secondary-nav"></nav></div>
+        <div id="header-row-4" class="h-row"><nav id="tertiary-nav"></nav></div>
     </header>
-
     <div class="content-container" id="app">
-        <div class="section layout-quote skeleton-visible">
-            <div class="sk-box quote"></div>
-        </div>
-        <div class="section skeleton-visible">
-            <div class="sk-line title" style="width: 200px; margin: 10px auto 20px;"></div>
-        </div>
+        <div class="section layout-quote skeleton-visible"><div class="sk-box quote"></div></div>
+        <div class="section skeleton-visible"><div class="sk-line title" style="width: 200px; margin: 10px auto 20px;"></div></div>
         <div class="grid-container section skeleton-visible">
             <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div></div>
             <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div></div>
@@ -89,14 +62,8 @@
             <div class="layout-grid"><div class="sk-img"></div><div class="sk-line title"></div><div class="sk-line text"></div></div>
         </div>
     </div>
-
-    <footer>
-        <div class="footer-links" id="footer-links"></div>
-        <div id="version-tag"></div>
-    </footer>
-
+    <footer><div class="footer-links" id="footer-links"></div><div id="version-tag"></div></footer>
     <div id="lightbox" onclick="this.classList.remove('active')"><img id="lightbox-img" src=""></div>
-
     <script src="assets/script.js"></script>
 </body>
 </html>

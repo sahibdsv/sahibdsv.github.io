@@ -8,7 +8,72 @@ const FALLBACK_CONFIG = {
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
 };
 
-// 3D Model Loader (Defined early to prevent ReferenceError)
+// --- HELPER FUNCTIONS (Defined first to avoid ReferenceErrors) ---
+
+function safeHTML(html) {
+    if(!html) return '';
+    if(typeof DOMPurify !== 'undefined') {
+        return DOMPurify.sanitize(html, {
+            ADD_TAGS: ['iframe'],
+            ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height']
+        });
+    }
+    return html; 
+}
+
+function formatDate(s) {
+    if(!s || s.length !== 8) return s;
+    const d = new Date(`${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`);
+    if(isNaN(d.getTime())) return s;
+    return d.toLocaleString('default', { month: 'short', year: 'numeric' }).toUpperCase();
+}
+
+function getThumbnail(u) { 
+    if(!u) return null; 
+    if(u.includes('youtu')) { 
+        let v = u.split('v=')[1]; 
+        if(!v && u.includes('youtu.be')) v = u.split('/').pop();
+        if(v && v.includes('&')) v = v.split('&')[0];
+        if(v) return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; 
+    } 
+    return u; 
+}
+
+function processText(t) { 
+    if(!t) return ''; 
+    let clean = safeHTML(t);
+    
+    // 1. 3D Viewer
+    clean = clean.replace(/\{\{\s*(?:3D|STL):\s*(.*?)(?:\s*\|\s*(.*?))?\s*\}\}/gi, (match, url, color) => {
+        const colorAttr = color ? `data-color="${color.trim()}"` : '';
+        return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
+    });
+
+    // 2. Galleries
+    clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
+        const urls = content.split(',').map(u => u.trim());
+        const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
+        if (!isPureGallery) return match; 
+        const imgs = urls.map(u => `<img src="${u}" class="inline-img zoomable" loading="lazy" alt="Gallery Image">`).join('');
+        return `<div class="inline-gallery">${imgs}</div>`;
+    });
+
+    // 3. Wiki Links
+    clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
+
+    // 4. Embeds (Robust Regex)
+    clean = clean.replace(/\{\{\s*MAP:\s*(.*?)\s*\}\}/gi, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
+    clean = clean.replace(/\{\{\s*DOC:\s*(.*?)\s*\}\}/gi, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
+    clean = clean.replace(/\{\{\s*YOUTUBE:\s*(.*?)\s*\}\}/gi, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
+    clean = clean.replace(/\{\{\s*EMBED:\s*(.*?)\s*\}\}/gi, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
+
+    // 5. Links
+    clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
+
+    return clean; 
+}
+
+// --- 3D VIEWER LOGIC ---
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
     if(containers.length === 0) return;
@@ -55,30 +120,22 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.physicallyCorrectLights = true; 
-    
     container.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
-    
     const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
     keyLight.position.set(5, 10, 7);
     scene.add(keyLight);
-
     const rimLight = new THREE.DirectionalLight(0xcceeff, 1.0);
     rimLight.position.set(-5, 5, -5);
     scene.add(rimLight);
-
     const fillLight = new THREE.DirectionalLight(0xffeedd, 0.5);
     fillLight.position.set(-5, 0, 5);
     scene.add(fillLight);
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.enablePan = false;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 2.0;
+    controls.enableDamping = true; controls.dampingFactor = 0.05; controls.enablePan = false; controls.autoRotate = true; controls.autoRotateSpeed = 2.0;
 
     let restartTimer;
     controls.addEventListener('start', () => { clearTimeout(restartTimer); controls.autoRotate = false; });
@@ -95,9 +152,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         if (customColor) {
             object.traverse((child) => {
                 if (child.isMesh) {
-                    child.material = new THREE.MeshPhongMaterial({ 
-                        color: customColor, specular: 0x111111, shininess: 100 
-                    });
+                    child.material = new THREE.MeshPhongMaterial({ color: customColor, specular: 0x111111, shininess: 100 });
                 }
             });
         }
@@ -106,7 +161,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         const dist = size / (2 * Math.tan(Math.PI * 45 / 360)) * 0.6;
         camera.position.set(dist, dist * 0.4, dist * 0.8);
         camera.lookAt(0, 0, 0);
-        controls.minDistance = size * 0.2;
+        controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
         function animate() {
@@ -143,63 +198,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 }
 
-// MAIN INIT
-const init = () => {
-    fetchData().then(([m, q]) => {
-        db = m.filter(r => r.Title); 
-        quotesDb = q;
-        
-        if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
-        
-        initApp(); 
-        renderFooter(); 
-        fetchGitHubStats();
-        
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                document.body.classList.remove('no-transition');
-            }, 50);
-        });
-    }).catch(e => {
-        console.error("Data Load Error:", e);
-        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px; color:#666;">Unable to load content.</div>`;
-    });
-};
-
-async function fetchData() {
-    let config = FALLBACK_CONFIG;
-    try {
-        const cfgRes = await fetch('assets/config.json');
-        if (cfgRes.ok) config = await cfgRes.json();
-    } catch (e) {}
-
-    const [main, quotes] = await Promise.all([
-        fetchCSV(config.main_sheet), 
-        fetchCSV(config.quotes_sheet).catch(()=>[])
-    ]);
-    return [main, quotes];
-}
-
-function fetchCSV(u) { 
-    return new Promise((res, rej) => {
-        if(typeof Papa === 'undefined') return rej(new Error("PapaParse missing"));
-        Papa.parse(u, { 
-            download: true, header: true, skipEmptyLines: true, 
-            complete: (r) => res(r.data), 
-            error: (e) => rej(new Error("CSV Error")) 
-        });
-    });
-}
-
-function safeHTML(html) {
-    if(typeof DOMPurify !== 'undefined') {
-        return DOMPurify.sanitize(html, {
-            ADD_TAGS: ['iframe'],
-            ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height']
-        });
-    }
-    return html; 
-}
+// --- APP CORE ---
 
 function initApp() {
     buildNav(); 
@@ -227,12 +226,14 @@ function initApp() {
             }
             e.stopPropagation(); return; 
         }
+        
         if(e.target.classList.contains('zoomable')) { 
             if(e.target.parentElement.tagName === 'A') return;
             document.getElementById('lightbox-img').src = e.target.src; 
             document.getElementById('lightbox').classList.add('active'); 
             e.stopPropagation(); return; 
         }
+        
         if(e.target.classList.contains('chip')) { 
             e.stopPropagation();
             if(isSearchActive) toggleSearch(); 
@@ -242,12 +243,17 @@ function initApp() {
             else if(tag) window.location.hash = 'Filter:' + tag;
             return; 
         }
+        
         const block = e.target.closest('.clickable-block');
         if(block && !e.target.classList.contains('chip')) {
             const link = block.getAttribute('data-link');
             if(link) { 
-                window.location.href = link; 
-                if(isSearchActive) toggleSearch(); 
+                if(block.getAttribute('data-target') === '_blank') {
+                    window.open(link, '_blank');
+                } else {
+                    window.location.href = link; 
+                    if(isSearchActive) toggleSearch(); 
+                }
             }
         }
     });
@@ -259,6 +265,7 @@ function toggleSearch() {
     isSearchActive = !isSearchActive;
     const body = document.body;
     const input = document.getElementById('search-input');
+    
     if (isSearchActive) {
         body.classList.add('search-active');
         document.getElementById('main-header').classList.add('search-mode');
@@ -268,7 +275,7 @@ function toggleSearch() {
         document.getElementById('main-header').classList.remove('search-mode');
         input.value = '';
         input.blur();
-        handleRouting();
+        handleRouting(); // Restore current view
     }
 }
 
@@ -390,15 +397,19 @@ function renderIndex() {
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
     window.scrollTo(0, 0); 
+    
     const list = app.querySelector('.index-list');
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
+    
     const groups = {};
     pages.forEach(p => { const cat = p.split('/')[0]; if(!groups[cat]) groups[cat] = []; groups[cat].push(p); });
+    
     Object.keys(groups).sort().forEach(cat => {
         let catClass = '';
         if(cat.toLowerCase() === 'projects') catClass = 'cat-projects';
         else if(cat.toLowerCase() === 'professional') catClass = 'cat-professional';
         else if(cat.toLowerCase() === 'personal') catClass = 'cat-personal';
+
         let html = `<div class="index-group ${catClass}"><h3>${cat}</h3>`;
         groups[cat].forEach(p => {
             const row = db.find(r => r.Page === p);
@@ -416,23 +427,34 @@ function renderTimeline() {
     const app = document.getElementById('app');
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-wrapper"></div>';
     window.scrollTo(0, 0); 
+    
     const container = app.querySelector('.timeline-wrapper');
     const items = db.filter(r => r.Page && r.Page !== 'Footer' && r.Page !== 'Home' && r.Title);
+    
     const groups = {};
     items.forEach(r => {
         const d = r.Timestamp ? formatDate(r.Timestamp) : 'Undated';
         if(!groups[d]) groups[d] = [];
         groups[d].push(r);
     });
+
     const sortedKeys = Object.keys(groups).sort((a,b) => {
         if(a === 'Undated') return 1; if(b === 'Undated') return -1;
         return new Date(b) - new Date(a);
     });
+
     sortedKeys.forEach(key => {
         const rowItems = groups[key].sort((a, b) => a.Title.localeCompare(b.Title));
         let cards = rowItems.map(r => createCardHtml(r)).join('');
-        container.innerHTML += `<div class="timeline-row"><div class="timeline-date">${key}</div><div class="timeline-scroller-wrapper fade-active"><div class="timeline-scroller">${cards}</div></div></div>`;
+        container.innerHTML += `
+            <div class="timeline-row">
+                <div class="timeline-date">${key}</div>
+                <div class="timeline-scroller-wrapper fade-active">
+                    <div class="timeline-scroller">${cards}</div>
+                </div>
+            </div>`;
     });
+
     setTimeout(() => {
         document.querySelectorAll('.timeline-scroller').forEach(el => {
             checkFade(el); el.addEventListener('scroll', () => checkFade(el));
@@ -482,14 +504,14 @@ function createCardHtml(r, overrideCatClass, forcePlaceholder) {
         else if(pLower.startsWith('personal')) catClass = 'cat-personal';
     }
     const link = r.LinkURL || '';
-    const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
-    let l = link; if(!l) l = `#${r.Page}`; 
-    const internal = l.startsWith('#'), target = internal ? '' : '_blank';
+    const target = r.LinkURL && !r.LinkURL.startsWith('#') ? '_blank' : '';
+    let l = link || `#${r.Page}`;
+    
     let mh = '';
-    if(r.Timestamp || tags.length > 0) {
+    if(r.Timestamp || tags = r.Tags) {
             mh = `<div class="meta-row">`;
             if(r.Timestamp) { let dateVal = formatDate(r.Timestamp); mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; }
-            tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
+            if(r.Tags) { const tags = r.Tags.split(',').map(x => x.trim()); tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); }
             mh += `</div>`;
     }
     return `<div class="layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}" data-link="${l}" data-target="${target}">${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}</div>`;
@@ -529,20 +551,65 @@ function renderRows(rows, title, append, forceGrid, isArticleMode, preserveOrder
 function renderQuoteCard(c) {
     if(!c || quotesDb.length === 0) return;
     const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
-    let auth = r.Author || 'Unknown';
-    if(r.Source) auth += ` • ${r.Source}`;
     const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
     let sizeClass = 'short';
     if(text.length > 230) sizeClass = 'xxl'; else if(text.length > 150) sizeClass = 'xl'; else if(text.length > 100) sizeClass = 'long'; else if(text.length > 50) sizeClass = 'medium';
-    c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote><div class="quote-footer"><div class="author">— ${auth}</div></div><svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
+    c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote><div class="quote-footer"><div class="author">— ${r.Author}</div></div><svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
 }
 
-function getThumbnail(u) { if(!u) return null; if(u.includes('youtu')) { let v = u.split('v=')[1]; if(!v) v=u.split('/').pop(); return `https://img.youtube.com/vi/${v}/mqdefault.jpg`; } return u; }
-function processText(t) { return safeHTML(t); } // Shortened for brevity
-function formatDate(s) {
-    if(!s || s.length !== 8) return s;
-    const d = new Date(`${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`);
-    return d.toLocaleString('default', { month: 'short', year: 'numeric' }).toUpperCase();
+function renderFooter() { 
+    const fd = document.getElementById('footer-links');
+    if(!fd) return;
+    const fr = db.filter(r => r.Page === 'Footer' || r.Title === 'LinkedIn' || r.Title === 'Contact'); 
+    fd.innerHTML = ''; 
+    fr.forEach(r => { 
+        let link = r.LinkURL;
+        if(r.Title === 'Contact') link = 'mailto:sahibdsv+site@gmail.com';
+        if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
+    }); 
+    fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="if(isSearchActive) toggleSearch()">Timeline</a>`;
+    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="if(isSearchActive) toggleSearch()">Index</a>`;
+    fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
+
+function fetchGitHubStats() { 
+    const r = "sahibdsv/sahibdsv.github.io"; 
+    fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
+        if(d.pushed_at) {
+            const date = new Date(d.pushed_at);
+            const timeAgo = (d) => {
+                const s = Math.floor((new Date() - d) / 1000);
+                let i = s / 31536000; if (i > 1) return Math.floor(i) + " years ago";
+                i = s / 2592000; if (i > 1) return Math.floor(i) + " months ago";
+                i = s / 86400; if (i > 1) return Math.floor(i) + " days ago";
+                i = s / 3600; if (i > 1) return Math.floor(i) + " hours ago";
+                i = s / 60; if (i > 1) return Math.floor(i) + " mins ago";
+                return "a few mins ago";
+            };
+            const relTime = timeAgo(date);
+            const vt = document.getElementById('version-tag');
+            if(vt) vt.innerHTML = `<a href="https://github.com/${r}/commits" target="_blank" class="fill-anim">Last updated ${relTime}</a>`;
+        } 
+    }).catch(()=>{}); 
+}
+
+async function fetchData() {
+    let config = FALLBACK_CONFIG;
+    try { const cfgRes = await fetch('assets/config.json'); if (cfgRes.ok) config = await cfgRes.json(); } catch (e) {}
+    const [main, quotes] = await Promise.all([fetchCSV(config.main_sheet), fetchCSV(config.quotes_sheet).catch(()=>[])]);
+    return [main, quotes];
+}
+
+const init = () => {
+    fetchData().then(([m, q]) => {
+        db = m.filter(r => r.Title); quotesDb = q;
+        if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
+        initApp(); renderFooter(); fetchGitHubStats();
+        requestAnimationFrame(() => { setTimeout(() => { document.body.classList.remove('no-transition'); }, 50); });
+    }).catch(e => {
+        console.error("Data Load Error:", e);
+        document.getElementById('app').innerHTML = `<div style="text-align:center; padding:50px; color:#666;">Unable to load content.</div>`;
+    });
+};
 
 init();
