@@ -41,10 +41,9 @@
             /* --- HEADER METRICS --- */
             --brand-row-h: 36px; 
             --main-row-h: 26px; /* Level 1 Height */
-            --sub-row-h: 24px;  /* Level 2+ Height (Uniform) */
+            --sub-row-h: 24px;  /* Level 2+ Height */
             --gap: 1px;
             
-            /* --- RADIUS SYSTEM --- */
             --card-radius: 18px;
             --card-padding: 12px;
             --media-radius: calc(var(--card-radius) - var(--card-padding)); 
@@ -62,7 +61,7 @@
 
         body {
             background-color: var(--bg); color: var(--text-main); font-family: 'Jost', sans-serif; line-height: 1.5;
-            /* Padding top is handled dynamically by JS to prevent jitter */
+            /* Padding is calculated dynamically by JS to prevent layout jumping */
             padding-top: 80px; 
             display: flex; flex-direction: column; min-height: 100vh;
             width: 100%; position: relative; overflow-x: hidden; 
@@ -105,8 +104,8 @@
             gap: var(--gap); 
             border-bottom: 1px solid #1a1a1a; 
             overflow: hidden; 
-            /* Transition purely visual properties, NOT height (height is handled by specific row collapsing) */
             transition: transform 0.4s var(--ease);
+            /* Height is handled by internal elements collapsing, container flows naturally */
         }
 
         body.search-active #main-header {
@@ -123,7 +122,6 @@
             transition: height 0.4s var(--ease), opacity 0.3s var(--ease), transform 0.4s var(--ease), margin 0.4s var(--ease), background-position 0.5s var(--ease);
             opacity: 1; transform: translateY(0); margin-bottom: 0;
             
-            /* FORCE FILL EFFECT */
             background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #666) 50.5%);
             background-size: 100% 205%;
             background-position: 0 0;
@@ -132,22 +130,20 @@
         
         #brand-name:hover { background-position: 0 100%; }
 
-        /* --- DYNAMIC NAV CONTAINER --- */
+        /* --- RECURSIVE NAVIGATION CONTAINER --- */
         #nav-container {
             width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--gap);
-            transition: gap 0.4s var(--ease);
-        }
-        
-        /* GENERIC NAV ROW (Shared Physics) */
-        .nav-row {
-            width: 100%; max-width: 900px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; gap: 20px;
-            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-            transition: height 0.4s var(--ease), opacity 0.4s var(--ease), margin 0.4s var(--ease);
-            opacity: 1;
         }
 
-        /* LEVEL 1: PRIMARY (Distinct Style) */
+        .nav-row {
+            width: 100%; max-width: 900px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; gap: 20px; 
+            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+            transition: height 0.4s var(--ease), opacity 0.4s var(--ease);
+            opacity: 1; pointer-events: auto;
+        }
+
+        /* LEVEL 1: PRIMARY (Distinct) */
         .nav-row.level-1 {
             height: var(--main-row-h); gap: 30px;
         }
@@ -155,21 +151,7 @@
             font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
             line-height: 1; user-select: none; --text-base: #666; --text-hover: #fff;
         }
-
-        /* LEVEL 2+: SUB/TERTIARY (Uniform Style) */
-        .nav-row.level-n {
-            height: var(--sub-row-h);
-            font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1;
-            mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
-        }
-        /* Scroll Spacers for Level 2+ */
-        .nav-row.level-n::before, .nav-row.level-n::after { 
-            content: ''; display: none; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0; 
-        }
-        .nav-row.level-n > * { flex-shrink: 0; }
-
-        /* ACCENT COLORS (Level 1 Only) */
+        /* Level 1 Colors */
         .nav-link[href="#Projects"] { --text-hover: var(--accent-projects); }
         .nav-link[href="#Projects"].active { --text-base: var(--accent-projects); --text-hover: var(--accent-projects); }
         .nav-link[href="#Professional"] { --text-hover: var(--accent-prof); }
@@ -177,20 +159,42 @@
         .nav-link[href="#Personal"] { --text-hover: var(--accent-personal); }
         .nav-link[href="#Personal"].active { --text-base: var(--accent-personal); --text-hover: var(--accent-personal); }
 
-        /* --- SCROLL LOGIC --- */
+        /* LEVEL 2+: TERTIARY STYLE (Uniform, Neutral) */
+        .nav-row.level-n {
+            height: var(--sub-row-h);
+            font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1;
+            mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
+        }
+        /* Level 2+ Spacers */
+        .nav-row.level-n::before, .nav-row.level-n::after { 
+            content: ''; display: none; width: calc(50% - 30px); min-width: 20px; flex-shrink: 0; 
+        }
+        .nav-row.level-n > * { flex-shrink: 0; }
         
-        /* STANDARD: Hide Brand */
-        #main-header.scrolled #brand-name {
+        /* Level 2+ Links (Always Neutral) */
+        .sub-link { --text-base: #666; --text-hover: #fff; }
+        .sub-link.active { --text-base: #fff; }
+
+        /* --- SCROLL BEHAVIOR --- */
+        
+        /* STANDARD SCROLL (Depth <= 3): Hide Brand Only */
+        #main-header.scrolled:not(.deep-nav) #brand-name {
             height: 0; opacity: 0; margin-bottom: -1px; 
             transform: translateY(-20px); pointer-events: none;
         }
-        #main-header.scrolled { gap: 0; }
-        #main-header.scrolled #nav-container { gap: 0; }
 
-        /* AGGRESSIVE DEEP SCROLL: Hide Brand + Top Rows, Keep Bottom 2 */
-        /* Applied when #main-header has class 'deep-nav' */
+        /* AGGRESSIVE SCROLL (Depth > 3): Hide Brand AND Top Rows */
+        #main-header.scrolled.deep-nav #brand-name {
+            height: 0; opacity: 0; margin-bottom: -1px; transform: translateY(-20px); pointer-events: none;
+        }
+        /* Hide all rows EXCEPT the last 2 (Parent + Current) */
         #main-header.scrolled.deep-nav .nav-row:not(:nth-last-child(-n+2)) {
             height: 0; opacity: 0; margin: 0; pointer-events: none; overflow: hidden;
+        }
+
+        #main-header.scrolled {
+            gap: 0; justify-content: center; 
         }
 
         /* --- SEARCH CONTROLS --- */
@@ -208,8 +212,8 @@
         }
         .icon-btn:hover { fill: #fff; }
         .search-icon { opacity: 1; }
-        
-        /* Tooltip */
+
+        /* TOOLTIP */
         .icon-btn[data-tooltip]:hover::after {
             content: attr(data-tooltip); position: absolute; top: 100%; right: 50%; transform: translateX(50%);
             background: #222; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-family: 'Jost', sans-serif;
@@ -218,7 +222,7 @@
         }
         @keyframes fadeInTooltip { to { opacity: 1; top: 110%; } }
 
-        /* --- SEARCH BUBBLE --- */
+        /* SEARCH OVERLAY */
         #search-overlay { 
             position: fixed; top: 40px; left: 50%; width: 400px; max-width: 90%; height: 50px; 
             transform-origin: center; transform: translate(-50%, -40px) scale(0.9);
@@ -234,9 +238,12 @@
 
         /* MOBILE OPTIMIZATIONS */
         @media (max-width: 768px) {
-            /* Fix: Level 1 stays centered, Level 2+ aligns left for scrolling */
-            .nav-row:not(.level-1) { justify-content: flex-start; }
-            .nav-row:not(.level-1)::before, .nav-row:not(.level-1)::after { display: block; }
+            /* Fix: Mobile Left Offset - Explicitly Center Level 1 */
+            .nav-row.level-1 { justify-content: center !important; }
+            
+            /* Enable scrolling for deep rows */
+            .nav-row.level-n { justify-content: flex-start; }
+            .nav-row.level-n::before, .nav-row.level-n::after { display: block; }
 
             .grid-container { grid-template-columns: 1fr; }
             footer { flex-direction: column; gap: 20px; text-align: center; }
@@ -276,11 +283,7 @@
         .layout-grid.cat-professional h3 { --text-hover: var(--accent-prof); }
         .layout-grid.cat-personal h3 { --text-hover: var(--accent-personal); }
 
-        .row-media { 
-            width: 100%; height: 160px; 
-            border-radius: var(--media-radius); 
-            overflow: hidden; background: #111; flex-shrink: 0; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; 
-        }
+        .row-media { width: 100%; height: 160px; border-radius: var(--media-radius); overflow: hidden; background: #111; flex-shrink: 0; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
         .row-media img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: filter 0.3s; }
         .layout-grid:hover .row-media img { filter: grayscale(0%); }
 
@@ -354,8 +357,9 @@
         .layout-quote .author { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
         .layout-quote .author a { --text-base: #666; --text-hover: #fff; border-bottom: 1px dotted #444; }
         
+        /* CONCENTRIC REFRESH BUTTON */
         .layout-quote .refresh-btn { 
-            position: absolute; bottom: 18px; right: 18px; 
+            position: absolute; bottom: 18px; right: 18px; /* ALIGNED TO CONCENTRIC CENTER (18px Radius) */
             width: 26px; height: 26px; 
             opacity: 0.3; cursor: pointer; transition: all 0.4s ease; fill: #fff; padding: 2px; 
         }
@@ -377,6 +381,7 @@
         .index-link { display: block; font-size: 16px; margin-bottom: 8px; text-decoration: none; }
         .index-link span { color: #444; font-size: 12px; margin-left: 8px; }
         
+        /* Indent styling for Tertiary pages */
         .index-link.depth-3 { padding-left: 20px; font-size: 15px; color: #888; }
         .index-link.depth-3::before { content: "└ "; opacity: 0.5; margin-right: 5px; font-family: monospace; }
 
@@ -490,9 +495,8 @@
 
     <script>
         let db = [], quotesDb = [], isSearchActive = false;
-        // State to track previous nav depth for animation direction logic (optional, but good for robust rendering)
-        let previousNavState = []; 
 
+        // INLINED CONFIGURATION
         const CONFIG = {
             main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
             quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
@@ -513,8 +517,7 @@
                     setTimeout(() => {
                         document.body.classList.remove('no-transition');
                         document.getElementById('main-header').classList.remove('no-transition');
-                        // Force initial calculation
-                        handleRouting();
+                        updatePadding(); // Initial sizing
                     }, 50);
                 });
             }).catch(e => {
@@ -557,11 +560,11 @@
         }
 
         function initApp() {
-            // Initial call is handled in init() via handleRouting()
-            // buildNav(); // Replaced by recursive logic in handleRouting
-            
+            // INITIAL ROUTING & NAV GENERATION
+            handleRouting();
             window.addEventListener('hashchange', handleRouting);
             
+            // GOATCOUNTER TRACKING
             window.addEventListener('hashchange', function(e) {
                 if (window.goatcounter && window.goatcounter.count) {
                     window.goatcounter.count({
@@ -572,11 +575,14 @@
                 }
             });
 
+            // SCROLL LOGIC
             window.addEventListener('scroll', () => { 
                 const h = document.getElementById('main-header'); 
                 const isScrolled = window.scrollY > 10; 
                 h.classList.toggle('scrolled', isScrolled);
-                // Note: We do NOT update padding here. Layout stability guaranteed by static calculation.
+                
+                // NO padding update on scroll (Prevents Jitter)
+                // We only update visual height of header container if needed, but padding remains fixed
             });
             
             document.addEventListener('click', (e) => {
@@ -613,12 +619,7 @@
                     if(isSearchActive) closeSearch();
                     const tag = e.target.getAttribute('data-tag');
                     const date = e.target.getAttribute('data-date');
-                    // Logic: Chip contains full date (YYYY-MM-DD), filter needs Month (YYYY-MM)
-                    if(date) {
-                         // Extract YYYY-MM from YYYY-MM-DD
-                         const filterVal = date.substring(0, 7); 
-                         window.location.hash = 'Filter:' + filterVal;
-                    }
+                    if(date) window.location.hash = 'Filter:' + date;
                     else if(tag) window.location.hash = 'Filter:' + tag;
                     return; 
                 }
@@ -649,222 +650,133 @@
             });
         }
         
-        // --- CORE NAVIGATION LOGIC ---
-
-        function handleRouting() { 
-            if(isSearchActive) return; 
-            
-            // 1. Reset Scroll & Header State Synchronously
-            window.scrollTo(0, 0); 
-            const h = document.getElementById('main-header');
-            if(h) h.classList.remove('scrolled', 'deep-nav');
-
-            let hash = window.location.hash.substring(1) || 'Home'; 
-            
-            // 2. Render Recursively based on Path
-            const parts = (hash === 'Index' || hash.startsWith('Filter:')) ? [] : hash.split('/');
-            
-            // Special handling: 'Index' acts like root for nav
-            if(hash === 'Index') {
-                renderNavigation(['Index']);
-                renderIndex();
-                calculateAndSetBodyPadding();
-                return;
-            }
-
-            if(hash.startsWith('Filter:')) {
-                renderNavigation([]); // Empty nav for filter view (or just root)
-                renderFiltered(decodeURIComponent(hash.split(':')[1])); 
-                calculateAndSetBodyPadding();
-                return;
-            }
-
-            // Normal Page Routing
-            renderNavigation(parts);
-            renderPage(hash);
-            
-            // 3. Final Layout Calculation
-            calculateAndSetBodyPadding();
-        }
-
-        // Recursive Navigation Renderer
-        function renderNavigation(pathParts) {
+        // --- RECURSIVE NAVIGATION ENGINE ---
+        function renderNavigation(currentPath) {
             const container = document.getElementById('nav-container');
             if(!container) return;
+            container.innerHTML = ''; // Rebuild entire stack
             
-            // Determine active roots
-            // Level 1 roots: Unique set of all top-level pages
-            const roots = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort();
+            const parts = currentPath && currentPath !== 'Home' ? currentPath.split('/') : [];
+            let level = 1;
             
-            // We need to render Level 1 + (Depth) Levels
-            // Depth of pathParts: [] = 0 (Just Roots), ['Projects'] = 1 level active, look for children of Projects
+            // Render Level 1 (Always)
+            // Get unique root pages
+            const rootPages = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer' && r.Page !== 'Home').map(r => r.Page.split('/')[0]).filter(x => x))].sort();
+            if(rootPages.length > 0) {
+                renderNavRow(container, rootPages, 1, parts[0] || null, '', false);
+            }
             
-            // Strategy: Render Level 1. Then iterate pathParts to render children.
-            // Always try to render one level deeper than current path to show options.
-            
-            const currentRenderedRows = [];
-            
-            // --- LEVEL 1 (PRIMARY) ---
-            const level1HTML = generateNavRowHTML(roots, pathParts[0], 1);
-            updateOrInsertRow(container, 1, level1HTML);
-            currentRenderedRows.push(1);
-
-            // --- LEVEL 2+ (RECURSIVE) ---
-            let currentPath = "";
-            for (let i = 0; i < pathParts.length; i++) {
-                const segment = pathParts[i];
-                currentPath = currentPath ? `${currentPath}/${segment}` : segment;
+            // Render Deeper Levels
+            let currentPrefix = parts[0];
+            for (let i = 0; i < parts.length; i++) {
+                level++;
+                const parent = parts.slice(0, i+1).join('/');
                 
-                // Find children of currentPath
-                const prefix = currentPath + '/';
-                const children = [...new Set(db
-                    .filter(r => r.Page && r.Page.startsWith(prefix))
-                    .map(r => r.Page.substring(prefix.length).split('/')[0])
-                    .filter(x => x)
-                )].sort();
-
+                // Find children of this parent
+                const children = [...new Set(db.filter(r => r.Page && r.Page.startsWith(parent + '/')).map(r => r.Page.split('/')[i+1]).filter(x => x))].sort();
+                
                 if (children.length > 0) {
-                    const level = i + 2;
-                    const activeChild = pathParts[i+1]; // May be undefined if at end of path
-                    const html = generateNavRowHTML(children, activeChild, level, currentPath);
-                    updateOrInsertRow(container, level, html);
-                    currentRenderedRows.push(level);
-                }
-            }
+                    // Check if this is a "New Discovery" (Last row, no selection yet)
+                    // If we are at index 'i', and 'parts[i+1]' exists, then we have a selection.
+                    // If 'parts[i+1]' is undefined, this is the final row being shown.
+                    const isLastRow = (i === parts.length - 1);
+                    const hasActiveSelection = !!parts[i+1]; 
+                    // Bounce if it's the last row AND user hasn't selected anything in it yet
+                    const shouldBounce = isLastRow && !hasActiveSelection;
 
-            // Cleanup: Remove rows that are no longer needed (e.g., navigated up)
-            const existingRows = container.querySelectorAll('.nav-row');
-            existingRows.forEach(row => {
-                const lvl = parseInt(row.getAttribute('data-level'));
-                if (!currentRenderedRows.includes(lvl)) {
-                    row.remove();
+                    renderNavRow(container, children, level, parts[i+1] || null, parent, shouldBounce);
                 }
-            });
-
-            // Handle Deep Nav Class
-            const h = document.getElementById('main-header');
-            if(currentRenderedRows.length > 3) {
-                h.classList.add('deep-nav');
-                h.setAttribute('data-depth', currentRenderedRows.length);
-            } else {
-                h.classList.remove('deep-nav');
-                h.removeAttribute('data-depth');
             }
             
-            // Center active items (Sync logic)
-            setTimeout(() => {
-                currentRenderedRows.forEach(lvl => {
-                    centerNavRow(lvl, previousNavState.includes(lvl)); // Pass flag if row existed
-                });
-                previousNavState = [...currentRenderedRows];
-            }, 0);
+            // Update Deep Nav State
+            const totalRows = level; 
+            const header = document.getElementById('main-header');
+            if(totalRows > 3) header.classList.add('deep-nav');
+            else header.classList.remove('deep-nav');
+            
+            // Update Padding Immediately (Synchronous Layout Fix)
+            updatePadding();
         }
 
-        function generateNavRowHTML(items, activeItem, level, parentPath = "") {
-            const isLevel1 = level === 1;
-            const className = isLevel1 ? 'level-1' : 'level-n';
+        function renderNavRow(container, items, level, activeItem, parentPath, shouldBounce) {
+            const row = document.createElement('nav');
+            row.className = `nav-row ${level === 1 ? 'level-1' : 'level-n'}`;
+            row.setAttribute('data-level', level);
             
-            let links = items.map(item => {
-                // Construct HREF. For Level 1, it's just #Item. For others, #Parent/Item
-                const href = isLevel1 ? `#${item}` : `#${parentPath}/${item}`;
-                // Active check
+            items.forEach(item => {
+                const fullPath = parentPath ? `${parentPath}/${item}` : item;
                 const isActive = item === activeItem;
+                const linkClass = level === 1 ? 'nav-link' : 'sub-link';
                 
-                // Class generation
-                // Level 1: nav-link. Level 2+: sub-link (matches CSS for tertiary style)
-                // Note: CSS uses .nav-link for L1 and .sub-link logic is merged into .nav-row.level-n styles mostly
-                // But we keep class names for accent color hooks if needed
-                const linkClass = isLevel1 ? 'nav-link' : 'sub-link'; 
-                
-                return `<a href="${href}" class="${linkClass} fill-anim ${isActive ? 'active' : ''}" onclick="closeSearch()">${safeHTML(item)}</a>`;
-            }).join('');
-
-            return `<div class="nav-row ${className}" data-level="${level}">${links}</div>`;
+                const a = document.createElement('a');
+                a.className = `${linkClass} fill-anim ${isActive ? 'active' : ''}`;
+                a.href = `#${fullPath}`;
+                a.innerText = safeHTML(item);
+                a.onclick = () => closeSearch();
+                row.appendChild(a);
+            });
+            
+            container.appendChild(row);
+            
+            // Scroll Logic
+            // Use setTimeout to allow DOM paint
+            setTimeout(() => centerNav(row, shouldBounce), 0);
         }
 
-        function updateOrInsertRow(container, level, html) {
-            let row = container.querySelector(`.nav-row[data-level="${level}"]`);
-            if (row) {
-                // If content changed, update it. If exact match, leave it (preserves scroll?)
-                // Actually, for active state changes, we must update innerHTML or class
-                if (row.innerHTML !== html.replace(/<div.*?>|<\/div>/g, '')) { // Simple check
-                     row.outerHTML = html;
-                }
-            } else {
-                // Insert in correct order
-                const allRows = Array.from(container.children);
-                const prevRow = allRows.reverse().find(r => parseInt(r.getAttribute('data-level')) < level);
-                if (prevRow) {
-                    prevRow.insertAdjacentHTML('afterend', html);
-                } else {
-                    container.insertAdjacentHTML('afterbegin', html); // Level 1 usually
-                }
-            }
-        }
+        function centerNav(row, bounce) {
+            if(row.scrollWidth <= row.clientWidth + 5) return; // No scroll needed
 
-        function centerNavRow(level, rowExisted) {
-            const row = document.querySelector(`.nav-row[data-level="${level}"]`);
-            if (!row) return;
-
-            // SCROLL LOGIC
             const activeLink = row.querySelector('.active');
             
             if (activeLink) {
-                // SELECTION: Instant/Smooth center
+                // Scenario 1: Active Item -> Center it (No Bounce)
                 const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (row.clientWidth / 2);
-                
-                // If row existed (user clicked existing item), just slide center. NO BOUNCE.
-                // If row IS NEW (user clicked parent, this appeared), trigger PREVIEW BOUNCE? 
-                // Actually, usually new rows don't have an active item yet unless deep linking.
-                // If deep linking, just center.
                 row.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-                
             } else {
-                // NO ACTIVE ITEM (Discovery or Reset)
+                // Scenario 2: No Active Item (Neutral) -> Center the list
+                const middle = (row.scrollWidth - row.clientWidth) / 2;
                 
-                if (!rowExisted) {
-                    // NEW ROW: Preview Bounce
-                    // Center first
-                    const middle = (row.scrollWidth - row.clientWidth) / 2;
-                    row.scrollTo({ left: middle, behavior: 'auto' }); // Snap to middle
+                if (bounce) {
+                    // Scenario 3: Discovery Bounce (Scroll Right then Center)
+                    const start = middle - 50; // Start slightly left
+                    const peek = middle + 50;  // Peek right
                     
-                    // Trigger Bounce (Scroll right a bit then back)
-                    if(row.scrollWidth > row.clientWidth) {
-                         setTimeout(() => {
-                             row.scrollTo({ left: middle + 50, behavior: 'smooth' });
-                             setTimeout(() => {
-                                 row.scrollTo({ left: middle, behavior: 'smooth' });
-                             }, 300);
-                         }, 100);
-                    }
+                    row.scrollTo({ left: peek, behavior: 'smooth' });
+                    setTimeout(() => {
+                        row.scrollTo({ left: middle, behavior: 'smooth' });
+                    }, 400);
                 } else {
-                    // EXISTING ROW RESET (Navigated Up)
-                    // Reset to dead center
-                    const middle = (row.scrollWidth - row.clientWidth) / 2;
-                    row.scrollTo({ left: middle, behavior: 'smooth' });
+                    // Just Reset to Center
+                    row.scrollTo({ left: middle, behavior: 'auto' }); 
                 }
             }
         }
 
-        function calculateAndSetBodyPadding() {
-            // Metrics match CSS
-            const brandH = 36;
-            const mainH = 26;
-            const subH = 24;
+        function updatePadding() {
+            // Calculate height based on DOM state of header
+            // We use standard metrics because during scroll the header might be collapsed,
+            // but we need the padding to represent the EXPANDED state.
+            const brandH = 36; 
+            const mainH = 26; 
+            const subH = 24; 
             const gap = 1;
+            
+            const numRows = document.querySelectorAll('#nav-container .nav-row').length;
+            // Rows are level 1 (mainH) + others (subH)
+            // Actually, level 1 is mainH, others are subH.
+            
+            let totalH = brandH + gap;
+            if (numRows > 0) {
+                 totalH += mainH + gap; // Level 1
+                 if (numRows > 1) {
+                     totalH += (numRows - 1) * (subH + gap);
+                 }
+            } else {
+                // Fallback if empty
+                totalH += mainH;
+            }
 
-            let totalH = brandH; // Brand always physically there in DOM structure
-            
-            const rows = document.querySelectorAll('.nav-row');
-            rows.forEach(r => {
-                if (r.classList.contains('level-1')) totalH += mainH + gap;
-                else totalH += subH + gap;
-            });
-            
-            // Add buffer
-            totalH += 10;
-            
-            document.body.style.paddingTop = totalH + 'px';
+            document.body.style.paddingTop = (totalH + 10) + 'px';
         }
 
         function resetToHome() { closeSearch(); window.location.hash = ''; }
@@ -898,25 +810,47 @@
             renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
         }
 
-        function renderFiltered(t) { 
-            const dateMatch = t.match(/^\d{4}-\d{2}/); // YYYY-MM
-            let displayTitle = t;
+        function handleRouting() { 
+            if(isSearchActive) return; 
             
-            if (dateMatch) {
-                // Convert 2025-12 to DEC 2025
-                const [y, m] = t.split('-');
-                const dateObj = new Date(y, m - 1);
-                const mo = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
-                displayTitle = `Posts from ${mo} ${y}`;
+            // 1. Reset Scroll & Header State Synchronously (Prevents Jitter)
+            window.scrollTo(0, 0); 
+            const h = document.getElementById('main-header');
+            if(h) h.classList.remove('scrolled');
+
+            let hash = window.location.hash.substring(1) || 'Home'; 
+            const parts = hash.split('/');
+            
+            // 2. Build Navigation (Recursive)
+            if (hash === 'Index') renderNavigation('Index'); // Special case, or just show root
+            else if (hash.startsWith('Filter:')) renderNavigation(''); // Reset nav on filter
+            else renderNavigation(hash);
+
+            // 3. Render Content
+            if(hash === 'Index') { renderIndex(); return; }
+            if(hash.startsWith('Filter:')) { renderFiltered(decodeURIComponent(hash.split(':')[1])); } 
+            else { renderPage(hash); }
+        }
+
+        function renderFiltered(t) { 
+            let displayTitle = `Posts tagged "${safeHTML(t)}"`;
+            
+            // Date Chip Logic: Filter by "2025-12" but show "DEC 2025"
+            // If t matches YYYY-MM or YYYY-MM-DD
+            if (t.match(/^\d{4}-\d{2}/)) {
+                 // Create dummy date to format
+                 // Append -01 if just month
+                 const dateStr = t.length === 7 ? t + "-01" : t;
+                 displayTitle = `Posts from ${formatDate(dateStr, true)}`;
             }
 
             const res = db.filter(r => {
-                const rowDate = r.Timestamp || "";
-                // If t is 2025-12, checking if 2025-12-15 starts with it
-                const dateHit = rowDate.startsWith(t);
-                return dateHit || (r.Tags && r.Tags.includes(t));
+                // Match exact date OR StartsWith (for month filter)
+                const rDate = r.Timestamp || '';
+                const dateMatch = rDate === t || rDate.startsWith(t);
+                const tagMatch = r.Tags && r.Tags.includes(t);
+                return dateMatch || tagMatch;
             });
-            
             renderRows(res, displayTitle, false, true); 
         }
 
@@ -927,7 +861,6 @@
             
             const isMainPage = !p.includes('/');
             
-            // Pass article mode flag
             if(ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); } 
             else if(childrenPagesCheck(p)) { }
             else {
@@ -950,7 +883,6 @@
         }
 
         function renderIndex() {
-            // Index logic remains mostly same, just updating how we display it
             const app = document.getElementById('app'); 
             app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
             
@@ -976,8 +908,10 @@
                     const row = db.find(r => r.Page === p);
                     const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
                     const title = row ? row.Title : p.split('/').pop();
+                    
                     const depth = p.split('/').length;
                     const indentClass = depth > 2 ? 'depth-3' : '';
+                    
                     html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
                 });
                 html += `</div>`;
@@ -1069,9 +1003,8 @@
                     metaHtml += '<div class="article-tags">';
                     if(r.Timestamp) {
                         const dateVal = formatDate(r.Timestamp);
-                        // Store full date for display, but chip data uses it too. 
-                        // The Click Handler in initApp converts it to YYYY-MM for filtering.
-                        metaHtml += `<span class="chip date" data-date="${r.Timestamp}" data-val="${dateVal}">${dateVal}</span>`;
+                        const dateFilter = r.Timestamp.substring(0, 7); // YYYY-MM
+                        metaHtml += `<span class="chip date" data-date="${dateFilter}">${dateVal}</span>`;
                     }
                     if(r.Tags) {
                         const tags = r.Tags.split(',').map(x => x.trim());
@@ -1094,7 +1027,8 @@
                         let dateHtml = '';
                         if(r.Timestamp) {
                             let dateVal = formatDate(r.Timestamp);
-                            dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${r.Timestamp}" onclick="event.stopPropagation(); window.location.hash='Filter:${r.Timestamp.substring(0,7)}'">${dateVal}</span></div>`;
+                            let dateFilter = r.Timestamp.substring(0, 7);
+                            dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${dateFilter}'">${dateVal}</span></div>`;
                         }
                         d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
                         app.appendChild(d); return;
@@ -1116,7 +1050,8 @@
                     mh = `<div class="meta-row">`;
                     if(r.Timestamp) {
                         let dateVal = formatDate(r.Timestamp);
-                        mh += `<span class="chip date" data-date="${r.Timestamp}" data-val="${dateVal}">${dateVal}</span>`; 
+                        let dateFilter = r.Timestamp.substring(0, 7);
+                        mh += `<span class="chip date" data-date="${dateFilter}">${dateVal}</span>`; 
                     }
                     tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
                     mh += `</div>`;
@@ -1146,6 +1081,7 @@
             else if(r.Source) auth += ` • ${safeHTML(r.Source)}`;
             
             const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
+            
             const len = text.length;
             let sizeClass = 'short';
             
@@ -1225,24 +1161,27 @@
             return clean; 
         }
 
-        function formatDate(s) {
-            // UPDATED: Now returns DD MMM YYYY (e.g., 15 DEC 2025)
+        function formatDate(s, monthOnly = false) {
             if(!s) return '';
-            if(s.length === 8 && !isNaN(s)) {
-                // Legacy support for YYYYMMDD
-                const y = s.substring(0, 4);
-                const m = s.substring(4, 6);
-                const d = s.substring(6, 8);
-                const dateObj = new Date(`${y}-${m}-${d}`);
-                const day = dateObj.getDate();
-                const mo = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
-                return `${day} ${mo} ${y}`;
+            // Handle YYYY-MM
+            if(s.length === 7 && s.includes('-')) {
+                const parts = s.split('-');
+                const y = parts[0];
+                const m = parts[1];
+                const d = new Date(y, m - 1);
+                return `${d.toLocaleString('default', { month: 'short' }).toUpperCase()} ${y}`;
             }
-            const d = new Date(s); // Standard YYYY-MM-DD
+
+            // Handle YYYY-MM-DD
+            const d = new Date(s);
             if(isNaN(d.getTime())) return s;
-            const day = d.getDate();
+            
             const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
             const yr = d.getFullYear();
+            
+            if (monthOnly) return `${mo} ${yr}`;
+            
+            const day = d.getDate();
             return `${day} ${mo} ${yr}`;
         }
 
