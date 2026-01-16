@@ -183,20 +183,40 @@ function buildSubNav(top) {
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
 
-    setTimeout(() => centerSubNav(true), 100);
+    setTimeout(() => centerSubNav(document.getElementById('sub-nav'), true), 100);
 }
 
-function centerSubNav(forceMiddleIfNone) {
-    const n = document.getElementById('sub-nav');
-    if(!n) return;
-    const activeLink = n.querySelector('.active');
+function buildTertiaryNav(top, sub) {
+    const n = document.getElementById('tertiary-nav'); 
+    if(!n) return; 
+    n.innerHTML = ''; 
+
+    // If no Sub, we certainly don't have Tertiary
+    if (!sub) return;
+
+    const prefix = `${top}/${sub}/`;
+    const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix)).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
+
+    terts.forEach(x => {
+        const name = x.split('/')[2];
+        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`);
+        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
+    });
+
+    // Smart Centering for Tertiary
+    setTimeout(() => centerSubNav(n, false), 100);
+}
+
+function centerSubNav(el, forceMiddleIfNone) {
+    if(!el) return;
+    const activeLink = el.querySelector('.active');
     
     if (activeLink) {
-        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
-        n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (el.clientWidth / 2);
+        el.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     } else if (forceMiddleIfNone) {
-        const middle = (n.scrollWidth - n.clientWidth) / 2;
-        n.scrollTo({ left: middle, behavior: 'smooth' });
+        const middle = (el.scrollWidth - el.clientWidth) / 2;
+        el.scrollTo({ left: middle, behavior: 'smooth' });
     }
 }
 
@@ -205,20 +225,30 @@ function handleRouting() {
     window.scrollTo(0, 0); 
     let h = window.location.hash.substring(1) || 'Home'; 
     
-    // Timeline Route
     if(h === 'Timeline') { renderTimeline(); return; }
-    
     if(h === 'Index') { renderIndex(); return; }
     
     const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index' || h === 'Timeline');
     document.body.classList.toggle('header-expanded', !shouldCollapse);
     document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
     
-    const top = h.split('/')[0]; 
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+    // Breakdown Hash for Navigation Levels
+    const parts = h.split('/');
+    const top = parts[0]; 
+    const sub = parts.length > 1 ? parts[1] : null;
+
+    // Level 1: Primary Nav Active State
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
+        const href = a.getAttribute('href'); 
+        if(href) a.classList.toggle('active', href.replace('#', '') === top); 
+    }); 
     
+    // Level 2: Build Sub Nav
     buildSubNav(top); 
     
+    // Level 3: Build Tertiary Nav
+    buildTertiaryNav(top, sub);
+
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
 }
@@ -262,7 +292,10 @@ function childrenPagesCheck(p) {
 function renderIndex() {
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
+    // Clear sub-navs
     buildSubNav('Index'); 
+    buildTertiaryNav('Index', null);
+
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
     const app = document.getElementById('app'); 
@@ -302,10 +335,10 @@ function renderIndex() {
 }
 
 function renderTimeline() {
-    // 1. Reset UI State similar to Index
     document.body.classList.remove('header-expanded');
     document.getElementById('main-header').classList.remove('expanded');
     buildSubNav('Timeline');
+    buildTertiaryNav('Timeline', null);
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
     const app = document.getElementById('app');
@@ -314,16 +347,13 @@ function renderTimeline() {
     const container = app.querySelector('.timeline-wrapper');
     const items = db.filter(r => r.Page && r.Page !== 'Footer' && r.Page !== 'Home' && r.Title);
 
-    // 2. Group by Month Year
     const groups = {};
     items.forEach(r => {
-        // Use placeholder date if missing
         const dateStr = r.Timestamp ? formatDate(r.Timestamp) : 'Undated'; 
         if (!groups[dateStr]) groups[dateStr] = [];
         groups[dateStr].push(r);
     });
 
-    // 3. Sort Chronologically (Desc)
     const sortedKeys = Object.keys(groups).sort((a, b) => {
         if (a === 'Undated') return 1;
         if (b === 'Undated') return -1;
@@ -331,15 +361,13 @@ function renderTimeline() {
     });
 
     sortedKeys.forEach(key => {
-        // 4. Sort Cards Alphabetically within Group
         const rowItems = groups[key].sort((a, b) => a.Title.localeCompare(b.Title));
 
         let cardsHtml = '';
         rowItems.forEach(r => {
-            cardsHtml += createCardHtml(r, null, false); // No specific cat class override needed
+            cardsHtml += createCardHtml(r, null, false); 
         });
 
-        // 5. Layout with Fade Mask Wrapper
         const rowHtml = `
             <div class="timeline-row">
                 <div class="timeline-date">${key}</div>
@@ -351,15 +379,11 @@ function renderTimeline() {
         container.innerHTML += rowHtml;
     });
 
-    // 6. Bind Scroll Events for Fade Logic
     setTimeout(() => {
         document.querySelectorAll('.timeline-scroller').forEach(el => {
-            // Initial Check
             checkFade(el);
-            // Scroll Event
             el.addEventListener('scroll', () => checkFade(el));
         });
-        // Init embedded viewers
         init3DViewers();
     }, 100);
 }
@@ -392,7 +416,6 @@ function renderHome() {
     if(recents.length > 0) { renderRows(recents, "Recent Activity", true, true, false, true); } 
 }
 
-// Extracted Card Logic for Reuse
 function createCardHtml(r, overrideCatClass, forcePlaceholder) {
     let contentHtml = processText(r.Content);
     let mediaHtml = '';
@@ -477,11 +500,8 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false, prese
     rows.forEach(r => {
         if(!r.Page || r.Page === 'Footer') return; 
         
-        // Handle Article Mode & Text/Hero sections separately
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
              const d = document.createElement('div'); d.className = 'section layout-text';
-             // ... (Article logic logic remains mostly HTML construction) ...
-             // Re-implementing article logic quickly here since it differs from Card
              let contentHtml = processText(r.Content);
              let mediaHtml = '';
              const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
@@ -537,7 +557,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false, prese
             }
         }
 
-        // Standard Card Generation
         if(gc) {
              const tempDiv = document.createElement('div');
              tempDiv.innerHTML = createCardHtml(r);
@@ -581,7 +600,6 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    // Add Timeline Link
     fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="closeSearch()">Timeline</a>`;
     fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
