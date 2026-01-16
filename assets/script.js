@@ -8,17 +8,16 @@ const FALLBACK_CONFIG = {
     quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
 };
 
-// --- HELPER FUNCTIONS (Defined first to avoid ReferenceErrors) ---
+// --- HELPER FUNCTIONS (Hoisted) ---
 
 function safeHTML(html) {
-    if(!html) return '';
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
             ADD_TAGS: ['iframe'],
             ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height']
         });
     }
-    return html; 
+    return html || ''; 
 }
 
 function formatDate(s) {
@@ -61,7 +60,7 @@ function processText(t) {
     // 3. Wiki Links
     clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
 
-    // 4. Embeds (Robust Regex)
+    // 4. Embeds
     clean = clean.replace(/\{\{\s*MAP:\s*(.*?)\s*\}\}/gi, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{\s*DOC:\s*(.*?)\s*\}\}/gi, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{\s*YOUTUBE:\s*(.*?)\s*\}\}/gi, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
@@ -207,8 +206,10 @@ function initApp() {
     
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
-        const shouldShrink = window.scrollY > 50;
-        h.classList.toggle('shrink', shouldShrink);
+        if(h) {
+            const shouldShrink = window.scrollY > 50;
+            h.classList.toggle('shrink', shouldShrink);
+        }
     });
 
     document.addEventListener('click', (e) => {
@@ -333,8 +334,8 @@ function centerSubNav(el, forceMiddle) {
 
 function handleRouting() { 
     if(isSearchActive) return; 
-    document.getElementById('main-header').classList.remove('shrink');
     
+    // Defer scrolling to prevent "hop" before content loads
     let h = window.location.hash.substring(1) || 'Home'; 
     const parts = h.split('/');
     const top = parts[0]; 
@@ -459,7 +460,7 @@ function renderTimeline() {
         document.querySelectorAll('.timeline-scroller').forEach(el => {
             checkFade(el); el.addEventListener('scroll', () => checkFade(el));
         });
-        if(typeof init3DViewers === 'function') init3DViewers();
+        init3DViewers();
     }, 100);
 }
 
@@ -486,6 +487,7 @@ function createCardHtml(r, overrideCatClass, forcePlaceholder) {
     let mediaHtml = '';
     let hasPlaceholder = false;
     const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+    
     if (modelMatch) {
         const url = modelMatch[1].trim(); const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
         mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
@@ -507,11 +509,15 @@ function createCardHtml(r, overrideCatClass, forcePlaceholder) {
     const target = r.LinkURL && !r.LinkURL.startsWith('#') ? '_blank' : '';
     let l = link || `#${r.Page}`;
     
+    // Parse tags safely
+    const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
+    
     let mh = '';
-    if(r.Timestamp || tags = r.Tags) {
+    // FIXED LOGIC: Use tags array length, do not assign inside if
+    if(r.Timestamp || tags.length > 0) {
             mh = `<div class="meta-row">`;
             if(r.Timestamp) { let dateVal = formatDate(r.Timestamp); mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; }
-            if(r.Tags) { const tags = r.Tags.split(',').map(x => x.trim()); tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); }
+            tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
             mh += `</div>`;
     }
     return `<div class="layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}" data-link="${l}" data-target="${target}">${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}</div>`;
@@ -593,16 +599,11 @@ function fetchGitHubStats() {
     }).catch(()=>{}); 
 }
 
-async function fetchData() {
-    let config = FALLBACK_CONFIG;
-    try { const cfgRes = await fetch('assets/config.json'); if (cfgRes.ok) config = await cfgRes.json(); } catch (e) {}
-    const [main, quotes] = await Promise.all([fetchCSV(config.main_sheet), fetchCSV(config.quotes_sheet).catch(()=>[])]);
-    return [main, quotes];
-}
-
+// MAIN INIT
 const init = () => {
     fetchData().then(([m, q]) => {
-        db = m.filter(r => r.Title); quotesDb = q;
+        db = m.filter(r => r.Title); 
+        quotesDb = q;
         if(window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
         initApp(); renderFooter(); fetchGitHubStats();
         requestAnimationFrame(() => { setTimeout(() => { document.body.classList.remove('no-transition'); }, 50); });
@@ -612,4 +613,12 @@ const init = () => {
     });
 };
 
+async function fetchData() {
+    let config = FALLBACK_CONFIG;
+    try { const cfgRes = await fetch('assets/config.json'); if (cfgRes.ok) config = await cfgRes.json(); } catch (e) {}
+    const [main, quotes] = await Promise.all([fetchCSV(config.main_sheet), fetchCSV(config.quotes_sheet).catch(()=>[])]);
+    return [main, quotes];
+}
+
+// Run
 init();
