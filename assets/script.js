@@ -61,7 +61,6 @@ function fetchCSV(u) {
     });
 }
 
-// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -87,10 +86,14 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER (Strict Reappearance)
+    // SCROLL HEADER LOGIC (Specific Requirement)
     window.addEventListener('scroll', () => { 
-        const isTop = window.scrollY < 50;
-        document.body.classList.toggle('scrolled-down', !isTop);
+        const h = document.getElementById('main-header'); 
+        const scrollY = window.scrollY;
+        
+        // Hide brand row if we are NOT at the absolute top (e.g. > 50px)
+        const shouldHideBrand = scrollY > 50;
+        document.body.classList.toggle('scroll-hide-brand', shouldHideBrand);
     });
 
     document.addEventListener('click', (e) => {
@@ -159,48 +162,97 @@ function toggleSearch() {
 function handleSearch(q) { 
     if(!q) return; 
     isSearchActive = true; 
-    document.body.classList.remove('header-expanded-sub', 'header-expanded-tert');
     
+    // Force collapse of navs
+    document.querySelectorAll('nav').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
     renderRows(res, `Search results for "${safeHTML(q)}"`, false, true); 
+}
+
+function calculateHeaderPadding() {
+    // Dynamic adjustment based on active rows
+    const h = document.getElementById('main-header');
+    const basePad = 10; // Top padding
+    let totalH = basePad + 40; // Brand row default
+    
+    // Add active nav heights
+    const navs = h.querySelectorAll('nav.active');
+    navs.forEach(n => totalH += 28); // 28px per active row
+    
+    document.body.style.paddingTop = (totalH + 20) + 'px'; // +20 buffer
 }
 
 function buildNav() { 
     const n = document.getElementById('primary-nav'); if(!n) return; n.innerHTML = ''; 
     const p = [...new Set(db.filter(r => r.Page && r.Page !== 'Footer').map(r => r.Page.split('/')[0]).filter(x => x))].sort(); 
     p.forEach(x => { if(x === 'Home') return; n.innerHTML += `<a href="#${x}" class="nav-link fill-anim" onclick="closeSearch()">${safeHTML(x)}</a>`; }); 
+    n.classList.add('active'); // Primary always active (Row 2)
 }
 
 function buildSubNav(top) {
-    const n = document.getElementById('sub-nav'); if(!n) return; n.innerHTML = ''; 
+    const n = document.getElementById('sub-nav'); if(!n) return; 
+    n.innerHTML = ''; 
+    
+    // If we are at Index/Timeline or Home, SubNav is empty/inactive
+    if(!top || top === 'Home' || top === 'Index' || top === 'Timeline') {
+        n.classList.remove('active');
+        return;
+    }
+
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
     
-    subs.forEach(x => { 
-        const name = x.split('/')[1];
-        const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
-        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
-    });
-    // Center if active
-    const activeLink = n.querySelector('.active');
-    if (activeLink) n.scrollTo({ left: activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2), behavior: 'smooth' });
+    if(subs.length > 0) {
+        subs.forEach(x => { 
+            const name = x.split('/')[1];
+            const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
+            n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
+        });
+        n.classList.add('active');
+        setTimeout(() => centerNav(n, true), 100);
+    } else {
+        n.classList.remove('active');
+    }
 }
 
 function buildTertiaryNav(top, sub) {
-    const n = document.getElementById('tertiary-nav'); if(!n) return; n.innerHTML = '';
-    const prefix = `${top}/${sub}`;
-    // Find pages that are exactly 3 levels deep: Top/Sub/Tertiary
-    const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix + '/')).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
+    const n = document.getElementById('tertiary-nav'); if(!n) return;
+    n.innerHTML = '';
 
-    terts.forEach(x => {
-        const name = x.split('/')[2];
-        const active = window.location.hash === `#${x}`;
-        n.innerHTML += `<a href="#${x}" class="tert-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
-    });
+    if(!sub) {
+        n.classList.remove('active');
+        return;
+    }
+
+    const pathPrefix = `${top}/${sub}/`;
+    const terts = [...new Set(db.filter(r => r.Page && r.Page.startsWith(pathPrefix)).map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
+
+    if(terts.length > 0) {
+        terts.forEach(x => {
+            const name = x.split('/')[2];
+            const active = window.location.hash === `#${x}`;
+            n.innerHTML += `<a href="#${x}" class="tertiary-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
+        });
+        n.classList.add('active');
+        setTimeout(() => centerNav(n, true), 100);
+    } else {
+        n.classList.remove('active');
+    }
+}
+
+function centerNav(navEl, forceMiddleIfNone) {
+    if(!navEl) return;
+    const activeLink = navEl.querySelector('.active');
     
-    // Center if active
-    const activeLink = n.querySelector('.active');
-    if (activeLink) n.scrollTo({ left: activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2), behavior: 'smooth' });
+    if (activeLink) {
+        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (navEl.clientWidth / 2);
+        navEl.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+    } else if (forceMiddleIfNone) {
+        const middle = (navEl.scrollWidth - navEl.clientWidth) / 2;
+        navEl.scrollTo({ left: middle, behavior: 'smooth' });
+    }
 }
 
 function handleRouting() { 
@@ -211,28 +263,21 @@ function handleRouting() {
     if(h === 'Index') { renderIndex(); return; }
     if(h === 'Timeline') { renderTimeline(); return; }
     
-    // Path Analysis
+    // Parse Path Levels
     const parts = h.split('/');
     const top = parts[0];
     const sub = parts.length > 1 ? parts[1] : null;
-    const tert = parts.length > 2 ? parts[2] : null;
-
-    // Reset Highlights
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
-
-    buildSubNav(top);
-    if (sub) buildTertiaryNav(top, sub);
-
-    // Expand State Management
-    const hasSub = document.getElementById('sub-nav').children.length > 0;
-    const hasTert = document.getElementById('tertiary-nav').children.length > 0;
-
-    const shouldShowSub = hasSub && !h.startsWith('Filter:');
-    const shouldShowTert = hasTert && sub && !h.startsWith('Filter:');
-
-    document.body.classList.toggle('header-expanded-sub', shouldShowSub);
-    document.body.classList.toggle('header-expanded-tert', shouldShowTert);
     
+    // Update Nav States
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
+        const href = a.getAttribute('href'); 
+        if(href) a.classList.toggle('active', href.replace('#', '') === top); 
+    }); 
+    
+    buildSubNav(top);
+    buildTertiaryNav(top, sub);
+    calculateHeaderPadding();
+
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
 }
@@ -273,18 +318,73 @@ function childrenPagesCheck(p) {
     return childrenPages.length > 0;
 }
 
-function renderIndex() {
-    document.body.classList.remove('header-expanded-sub', 'header-expanded-tert');
-    buildSubNav('Index'); 
+function renderTimeline() {
+    // 1. Clean UI
+    document.getElementById('sub-nav').classList.remove('active');
+    document.getElementById('tertiary-nav').classList.remove('active');
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+    calculateHeaderPadding();
+
+    const app = document.getElementById('app');
+    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="timeline-container section"></div>';
+    
+    const container = app.querySelector('.timeline-container');
+    const validRows = db.filter(r => r.Timestamp && r.Page !== 'Home').sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+    
+    // Group by Month Year
+    const groups = {};
+    validRows.forEach(r => {
+        const d = new Date(r.Timestamp);
+        const key = `${d.toLocaleString('default', { month: 'short' }).toUpperCase()} ${d.getFullYear()}`;
+        if(!groups[key]) groups[key] = [];
+        groups[key].push(r);
+    });
+
+    for(const [dateKey, items] of Object.entries(groups)) {
+        // Sort alphabetically within month
+        items.sort((a,b) => a.Title.localeCompare(b.Title));
+        
+        const groupEl = document.createElement('div'); groupEl.className = 'timeline-group';
+        
+        const dateEl = document.createElement('div'); dateEl.className = 'timeline-date';
+        dateEl.innerText = dateKey;
+        
+        const contentEl = document.createElement('div'); contentEl.className = 'timeline-content';
+        
+        // Render minimal cards
+        items.forEach(r => {
+             // Re-use logic for card generation
+             const d = createCardElement(r, false); // false = not list view
+             contentEl.appendChild(d);
+        });
+
+        // Scroll listener for fade mask
+        contentEl.addEventListener('scroll', () => {
+             const atEnd = contentEl.scrollWidth - contentEl.scrollLeft <= contentEl.clientWidth + 2;
+             contentEl.classList.toggle('end-scroll', atEnd);
+        });
+        
+        groupEl.appendChild(dateEl);
+        groupEl.appendChild(contentEl);
+        container.appendChild(groupEl);
+    }
+}
+
+function renderIndex() {
+    document.getElementById('sub-nav').classList.remove('active');
+    document.getElementById('tertiary-nav').classList.remove('active');
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
+    calculateHeaderPadding();
 
     const app = document.getElementById('app'); 
     app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
     
     const list = app.querySelector('.index-list');
-    // SORT ALPHABETICALLY
+    
+    // Sort all pages alphabetically
     const pages = [...new Set(db.map(r => r.Page).filter(p => p && p !== 'Home' && p !== 'Footer'))].sort();
     
+    // Group by Root Category
     const groups = {};
     pages.forEach(p => {
         const cat = p.split('/')[0];
@@ -304,103 +404,91 @@ function renderIndex() {
             const row = db.find(r => r.Page === p);
             const date = row && row.Timestamp ? formatDate(row.Timestamp) : '';
             const title = row ? row.Title : p.split('/').pop();
-            // INDENT TERTIARY ITEMS
-            const depth = p.split('/').length;
-            const indentClass = depth >= 3 ? 'indent' : '';
             
-            html += `<a href="#${p}" class="index-link fill-anim ${indentClass}">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
+            // Determine Hierarchy Depth
+            const depth = p.split('/').length - 1; // 0 for Root (handled by group), 1 for Sub, 2 for Tertiary
+            const depthClass = `depth-${depth}`;
+            
+            html += `<a href="#${p}" class="index-link ${depthClass} fill-anim">${title} ${date ? `<span>${date}</span>` : ''}</a>`;
         });
         html += `</div>`;
         list.innerHTML += html;
     }
 }
 
-function renderTimeline() {
-    document.body.classList.remove('header-expanded-sub', 'header-expanded-tert');
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
-    
-    const app = document.getElementById('app');
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Timeline</h1></div><div class="section timeline-view"></div>';
-    const view = app.querySelector('.timeline-view');
-
-    // Group by YYYY-MM
-    const groups = {};
-    db.forEach(r => {
-        if(!r.Timestamp || r.Page === 'Footer') return;
-        const d = r.Timestamp.toString();
-        const key = d.substring(0, 6); // YYYYMM
-        if(!groups[key]) groups[key] = [];
-        groups[key].push(r);
-    });
-
-    const sortedKeys = Object.keys(groups).sort((a,b) => b.localeCompare(a));
-
-    sortedKeys.forEach(key => {
-        const year = key.substring(0, 4);
-        const monthNum = parseInt(key.substring(4, 6)) - 1;
-        const monthName = new Date(year, monthNum).toLocaleString('default', { month: 'short' }).toUpperCase();
-        
-        const row = document.createElement('div');
-        row.className = 'timeline-group';
-        row.innerHTML = `<div class="timeline-date">${monthName}<br>${year}</div><div class="timeline-scroller"></div>`;
-        
-        const scroller = row.querySelector('.timeline-scroller');
-        
-        // Render simple cards
-        groups[key].forEach(r => {
-            const l = r.LinkURL || `#${r.Page}`;
-            const target = l.startsWith('#') ? '' : '_blank';
-            
-            let mediaHtml = '';
-             if (r.Media) {
-                const thumb = getThumbnail(r.Media);
-                if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
-            } else {
-                mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
-            }
-            
-            const card = document.createElement('div');
-            card.className = `layout-grid clickable-block`;
-            card.setAttribute('data-link', l); card.setAttribute('data-target', target);
-            card.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3>`;
-            scroller.appendChild(card);
-        });
-
-        // FADE LOGIC
-        const updateFade = () => {
-            const maxScroll = scroller.scrollWidth - scroller.clientWidth;
-            if(scroller.scrollLeft >= maxScroll - 5) row.classList.add('no-fade');
-            else row.classList.remove('no-fade');
-        };
-        scroller.addEventListener('scroll', updateFade);
-        setTimeout(updateFade, 100); // Init check
-
-        view.appendChild(row);
-    });
-}
-
 function renderHome() { 
     const hr = db.filter(r => r.Page === 'Home');
     const app = document.getElementById('app'); app.innerHTML = ''; 
+    
+    // 1. Featured Logic
+    const featured = db.filter(r => r.Tags && r.Tags.toLowerCase().includes('featured') && r.Page !== 'Home');
+    if(featured.length > 0) {
+        renderRows(featured, "Featured", true, true);
+    }
+
     renderRows(hr, null, true); 
     
-    const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
-                      // Note: renderRows now handles sorting and pinning
-                      .slice(0, 8); // Pass more, let sorting handle the top 6
+    const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && (!r.Tags || !r.Tags.toLowerCase().includes('featured')))
+                      .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
+                      .slice(0, 6);
     if(recents.length > 0) { renderRows(recents, "Recent Activity", true); } 
+}
+
+// Helper to create just the card element (extracted for Timeline use)
+function createCardElement(r, forceGrid) {
+    let contentHtml = processText(r.Content);
+    let mediaHtml = '';
+    let hasPlaceholder = false;
+
+    const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
+
+    if (modelMatch) {
+        const url = modelMatch[1].trim();
+        const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+        mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+        contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
+    } else if (r.Media) {
+        const thumb = getThumbnail(r.Media);
+        if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+    } else {
+        hasPlaceholder = true;
+        mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
+    }
+
+    let catClass = '';
+    const pLower = r.Page.toLowerCase();
+    if(pLower.startsWith('projects')) catClass = 'cat-projects';
+    else if(pLower.startsWith('professional')) catClass = 'cat-professional';
+    else if(pLower.startsWith('personal')) catClass = 'cat-personal';
+
+    const link = r.LinkURL || '';
+    const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
+    let l = link; if(!l) l = `#${r.Page}`; 
+    const internal = l.startsWith('#'), target = internal ? '' : '_blank';
+    
+    let mh = '';
+    if(r.Timestamp || tags.length > 0) {
+            mh = `<div class="meta-row">`;
+            if(r.Timestamp) {
+                let dateVal = formatDate(r.Timestamp);
+                mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
+            }
+            tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
+            mh += `</div>`;
+    }
+
+    const d = document.createElement('div'); 
+    d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
+    d.setAttribute('data-link', l); d.setAttribute('data-target', target);
+    
+    d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
+    return d;
 }
 
 function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     const app = document.getElementById('app'); if(!app) return; 
     
-    // UPDATED SORT: PIN "FEATURED"
-    rows.sort((a, b) => {
-        const aFeat = a.Tags && a.Tags.toLowerCase().includes('featured');
-        const bFeat = b.Tags && b.Tags.toLowerCase().includes('featured');
-        if (aFeat && !bFeat) return -1;
-        if (!aFeat && bFeat) return 1;
-        return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
-    });
+    rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
 
     if(!append) {
         app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:400; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
@@ -425,39 +513,24 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
     
     rows.forEach(r => {
         if(!r.Page || r.Page === 'Footer') return; 
-        
-        let contentHtml = processText(r.Content);
-        let mediaHtml = '';
-        let hasPlaceholder = false;
-
-        const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
-
-        if (modelMatch) {
-            const url = modelMatch[1].trim();
-            const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
-            mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
-            contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
-        } else if (r.Media) {
-            const thumb = getThumbnail(r.Media);
-            if(thumb) mediaHtml = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
-        } else {
-            hasPlaceholder = true;
-            mediaHtml = `<div class="row-media placeholder"><span>${safeHTML(r.Title)}</span></div>`;
-        }
-
-        let catClass = '';
-        const pLower = r.Page.toLowerCase();
-        if(pLower.startsWith('projects')) catClass = 'cat-projects';
-        else if(pLower.startsWith('professional')) catClass = 'cat-professional';
-        else if(pLower.startsWith('personal')) catClass = 'cat-personal';
 
         if(!forceGrid && isArticleMode && (!r.SectionType || r.SectionType === 'card')) {
-             const d = document.createElement('div'); d.className = 'section layout-text';
+             // Article Mode Logic inline
+             let contentHtml = processText(r.Content);
+             let mediaHtml = '';
+             const modelMatch = r.Content ? r.Content.match(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/i) : null;
              
-             if(modelMatch) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else if(r.Media) mediaHtml = mediaHtml.replace('row-media', 'row-media article-mode');
-             else mediaHtml = ''; 
+             if (modelMatch) {
+                 const url = modelMatch[1].trim();
+                 const color = modelMatch[2] ? `data-color="${modelMatch[2].trim()}"` : '';
+                 mediaHtml = `<div class="row-media article-mode"><div class="embed-wrapper stl" data-src="${url}" ${color}></div></div>`;
+                 contentHtml = contentHtml.replace(/<div class="embed-wrapper stl".*?<\/div>/, ''); 
+             } else if (r.Media) {
+                 const thumb = getThumbnail(r.Media);
+                 if(thumb) mediaHtml = `<div class="row-media article-mode"><img src="${thumb}" loading="lazy"></div>`;
+             }
 
+             const d = document.createElement('div'); d.className = 'section layout-text';
              let metaHtml = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>';
              
              if(r.LinkURL) {
@@ -502,28 +575,7 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
             }
         }
 
-        const link = r.LinkURL || '';
-        const tags = r.Tags ? r.Tags.split(',').map(x => x.trim()) : [];
-        let l = link; if(!l) l = `#${r.Page}`; 
-        const internal = l.startsWith('#'), target = internal ? '' : '_blank';
-        
-        let mh = '';
-        if(r.Timestamp || tags.length > 0) {
-             mh = `<div class="meta-row">`;
-             if(r.Timestamp) {
-                 let dateVal = formatDate(r.Timestamp);
-                 mh += `<span class="chip date" data-date="${dateVal}" data-val="${dateVal}">${dateVal}</span>`; 
-             }
-             tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`); 
-             mh += `</div>`;
-        }
-
-        const d = document.createElement('div'); 
-        d.className = `layout-grid clickable-block ${catClass} ${hasPlaceholder ? 'has-placeholder' : ''}`;
-        d.setAttribute('data-link', l); d.setAttribute('data-target', target);
-        
-        d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${safeHTML(r.Title)}</h3><p>${contentHtml}</p>${mh}`;
-        
+        const d = createCardElement(r, forceGrid);
         if(gc) gc.appendChild(d);
     });
     
@@ -568,8 +620,9 @@ function renderFooter() {
         if(link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`; 
     }); 
     
-    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
+    // Add specific Timeline Link
     fd.innerHTML += `<a href="#Timeline" class="fill-anim" onclick="closeSearch()">Timeline</a>`;
+    fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
     fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
 }
 
@@ -604,13 +657,11 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // 1. UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
 
-    // 2. INLINE IMAGE GALLERIES: [https://url1, https://url2]
     clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
@@ -619,16 +670,13 @@ function processText(t) {
         return `<div class="inline-gallery">${imgs}</div>`;
     });
 
-    // 3. WIKI LINKS: [[Page Name]]
     clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
 
-    // 4. EMBED SHORTCODES
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
     clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
 
-    // 5. GENERAL LINK STYLING
     clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
 
     return clean; 
@@ -650,10 +698,8 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
-// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
-    
     if(containers.length === 0) return;
 
     Promise.all([
@@ -699,15 +745,11 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     scene.background = null; 
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
-    
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
-    
-    renderer.physicallyCorrectLights = true;
+    renderer.physicallyCorrectLights = true; 
     
     container.appendChild(renderer.domElement);
 
