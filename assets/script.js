@@ -61,7 +61,6 @@ function fetchCSV(u) {
     });
 }
 
-// ALLOW IFRAMES IN RAW HTML
 function safeHTML(html) {
     if(typeof DOMPurify !== 'undefined') {
         return DOMPurify.sanitize(html, {
@@ -76,7 +75,6 @@ function initApp() {
     buildNav(); handleRouting();
     window.addEventListener('hashchange', handleRouting);
     
-    // GOATCOUNTER TRACKING
     window.addEventListener('hashchange', function(e) {
         if (window.goatcounter && window.goatcounter.count) {
             window.goatcounter.count({
@@ -87,7 +85,6 @@ function initApp() {
         }
     });
 
-    // SMART SCROLL HEADER
     window.addEventListener('scroll', () => { 
         const h = document.getElementById('main-header'); 
         const shouldShrink = window.scrollY > 50;
@@ -161,9 +158,9 @@ function handleSearch(q) {
     if(!q) return; 
     isSearchActive = true; 
     document.body.classList.remove('header-expanded');
-    document.body.classList.remove('tertiary-active');
+    document.body.classList.remove('header-deep');
     document.getElementById('main-header').classList.remove('expanded');
-    document.getElementById('main-header').classList.remove('tertiary-active');
+    document.getElementById('main-header').classList.remove('deep');
 
     const t = q.toLowerCase();
     const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t))); 
@@ -177,8 +174,7 @@ function buildNav() {
 }
 
 function buildSubNav(top) {
-    const n = document.getElementById('sub-nav'), b = document.body; if(!n) return; n.innerHTML = ''; b.setAttribute('data-page', top);
-    
+    const n = document.getElementById('sub-nav'); if(!n) return; n.innerHTML = ''; 
     const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(top + '/')).map(r => r.Page.split('/').slice(0, 2).join('/')))].sort();
     
     subs.forEach(x => { 
@@ -186,56 +182,35 @@ function buildSubNav(top) {
         const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`); 
         n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`; 
     });
-
-    setTimeout(() => centerNav('sub-nav', true), 100);
+    setTimeout(() => centerNav(n, true), 100);
 }
 
-function buildTertiaryNav(sub) {
-    const n = document.getElementById('tertiary-nav');
-    if(!n) return;
-    n.innerHTML = '';
+function buildTertiaryNav(parentPath) {
+    const n = document.getElementById('tertiary-nav'); if(!n) return; n.innerHTML = '';
     
-    if(!sub) {
-         document.body.classList.remove('tertiary-active');
-         document.getElementById('main-header').classList.remove('tertiary-active');
-         return;
-    }
+    const prefix = parentPath + '/';
+    const subs = [...new Set(db.filter(r => r.Page && r.Page.startsWith(prefix))
+        .map(r => r.Page.split('/').slice(0, 3).join('/')))] // Get first 3 parts
+        .sort();
 
-    const items = [...new Set(db.filter(r => r.Page && r.Page.startsWith(sub + '/'))
-                    .map(r => r.Page.split('/').slice(0, 3).join('/')))].sort();
-
-    if(items.length === 0) {
-         document.body.classList.remove('tertiary-active');
-         document.getElementById('main-header').classList.remove('tertiary-active');
-         return;
-    }
-
-    items.forEach(x => {
+    subs.forEach(x => {
         const name = x.split('/')[2];
         const active = window.location.hash === `#${x}` || window.location.hash.startsWith(`#${x}/`);
-        n.innerHTML += `<a href="#${x}" class="sub-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
+        n.innerHTML += `<a href="#${x}" class="tert-link fill-anim ${active ? 'active' : ''}" onclick="closeSearch()">${safeHTML(name)}</a>`;
     });
-
-    document.body.classList.add('tertiary-active');
-    document.getElementById('main-header').classList.add('tertiary-active');
-    
-    setTimeout(() => centerNav('tertiary-nav'), 100);
+    setTimeout(() => centerNav(n, true), 100);
 }
 
-// SMART CENTERING LOGIC
-function centerNav(id, forceMiddleIfNone) {
-    const n = document.getElementById(id);
-    if(!n) return;
-    const activeLink = n.querySelector('.active');
+function centerNav(navEl, forceMiddleIfNone) {
+    if(!navEl) return;
+    const activeLink = navEl.querySelector('.active');
     
     if (activeLink) {
-        // If Active: Lock to center
-        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (n.clientWidth / 2);
-        n.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+        const scrollTarget = activeLink.offsetLeft + (activeLink.offsetWidth / 2) - (navEl.clientWidth / 2);
+        navEl.scrollTo({ left: scrollTarget, behavior: 'smooth' });
     } else if (forceMiddleIfNone) {
-        // If Main Page Load: Scroll to MIDDLE to hint content
-        const middle = (n.scrollWidth - n.clientWidth) / 2;
-        n.scrollTo({ left: middle, behavior: 'smooth' });
+        const middle = (navEl.scrollWidth - navEl.clientWidth) / 2;
+        navEl.scrollTo({ left: middle, behavior: 'smooth' });
     }
 }
 
@@ -246,22 +221,31 @@ function handleRouting() {
     
     if(h === 'Index') { renderIndex(); return; }
     
-    // STATE: Collapse Header for Home, Filter, OR Index
-    const shouldCollapse = (h === 'Home' || h.startsWith('Filter:') || h === 'Index');
-    
-    document.body.classList.toggle('header-expanded', !shouldCollapse);
-    document.getElementById('main-header').classList.toggle('expanded', !shouldCollapse);
-    
-    // Deactivate Main Nav Highlights if Index (or non-matching top)
     const parts = h.split('/');
     const top = parts[0]; 
-    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { const href = a.getAttribute('href'); if(href) a.classList.toggle('active', href.replace('#', '') === top); }); 
+    const sub = parts.length >= 2 ? parts.slice(0, 2).join('/') : null;
     
-    buildSubNav(top); 
+    // STATE LOGIC
+    const isHome = (h === 'Home' || h === '' || h.startsWith('Filter:'));
+    const hasSub = parts.length >= 1 && !isHome; 
+    const hasTert = parts.length >= 2 && !isHome; 
 
-    // Handle Tertiary
-    const sub = parts.length >= 2 ? parts[0] + '/' + parts[1] : null;
-    buildTertiaryNav(sub);
+    // Header Expansion State
+    document.body.classList.toggle('header-expanded', hasSub);
+    document.body.classList.toggle('header-deep', hasTert);
+    
+    const header = document.getElementById('main-header');
+    header.classList.toggle('expanded', hasSub);
+    header.classList.toggle('deep', hasTert);
+    
+    // Primary Highlight
+    document.querySelectorAll('#primary-nav .nav-link').forEach(a => { 
+        const href = a.getAttribute('href'); 
+        if(href) a.classList.toggle('active', href.replace('#', '') === top); 
+    }); 
+    
+    if(hasSub) buildSubNav(top);
+    if(hasTert) buildTertiaryNav(sub);
     
     if(h.startsWith('Filter:')) { renderFiltered(decodeURIComponent(h.split(':')[1])); } 
     else { renderPage(h); }
@@ -304,17 +288,12 @@ function childrenPagesCheck(p) {
 }
 
 function renderIndex() {
-    // 1. Collapse & Reset UI State (Enforce Constraints)
     document.body.classList.remove('header-expanded');
-    document.body.classList.remove('tertiary-active');
+    document.body.classList.remove('header-deep');
     document.getElementById('main-header').classList.remove('expanded');
-    document.getElementById('main-header').classList.remove('tertiary-active');
-
-    // Clear Sub-navs
+    document.getElementById('main-header').classList.remove('deep');
+    
     buildSubNav('Index'); 
-    buildTertiaryNav(null);
-
-    // Deactivate Main Nav
     document.querySelectorAll('#primary-nav .nav-link').forEach(a => a.classList.remove('active'));
 
     const app = document.getElementById('app'); 
@@ -494,7 +473,6 @@ function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
         window.MathJax.typeset();
     }
 
-    // JITTER FIX: Wait 500ms
     setTimeout(init3DViewers, 500);
 }
 
@@ -541,7 +519,6 @@ function fetchGitHubStats() {
     fetch(`https://api.github.com/repos/${r}`).then(res => res.json()).then(d => { 
         if(d.pushed_at) {
             const date = new Date(d.pushed_at);
-            // RELATIVE TIME LOGIC
             const timeAgo = (d) => {
                 const s = Math.floor((new Date() - d) / 1000);
                 let i = s / 31536000;
@@ -568,13 +545,11 @@ function processText(t) {
     if(!t) return ''; 
     let clean = safeHTML(t);
     
-    // 1. UNIVERSAL 3D VIEWER: {{3D: file.ext | #color}}
     clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
         const colorAttr = color ? `data-color="${color.trim()}"` : '';
         return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
     });
 
-    // 2. INLINE IMAGE GALLERIES: [https://url1, https://url2]
     clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
         const urls = content.split(',').map(u => u.trim());
         const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
@@ -583,16 +558,13 @@ function processText(t) {
         return `<div class="inline-gallery">${imgs}</div>`;
     });
 
-    // 3. WIKI LINKS: [[Page Name]]
     clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
 
-    // 4. EMBED SHORTCODES
     clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
     clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
     clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
 
-    // 5. GENERAL LINK STYLING
     clean = clean.replace(/<a /g, '<a class="fill-anim" '); 
 
     return clean; 
@@ -614,7 +586,6 @@ function formatDate(s) {
     return `${mo} ${yr}`;
 }
 
-// 3D VIEWER LOGIC (LAZY LOADED)
 function init3DViewers() {
     const containers = document.querySelectorAll('.embed-wrapper.stl:not(.loaded)');
     
@@ -627,7 +598,6 @@ function init3DViewers() {
         import('three/addons/controls/OrbitControls.js')
     ]).then(([THREE, { STLLoader }, { GLTFLoader }, { OrbitControls }]) => {
         
-        // VISIBILITY OBSERVER: Only animate when visible! (Fixes "skippy" scroll)
         const visibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const container = entry.target;
@@ -644,7 +614,6 @@ function init3DViewers() {
                 if (entry.isIntersecting) {
                     loadModel(entry.target, THREE, STLLoader, GLTFLoader, OrbitControls);
                     observer.unobserve(entry.target);
-                    // Start tracking visibility for performance
                     visibilityObserver.observe(entry.target);
                 }
             });
@@ -666,19 +635,12 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
 
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.01, 1000);
     
-    // RENDERER SETUP
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     
-    // Performance: Limit pixel ratio on phones
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
-    
-    // FIX: Updated Color Space Management (Three.js r152+)
-    // Old: renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
-    
-    // Lighting Setup
-    renderer.physicallyCorrectLights = true; // Note: In r160+ this becomes renderer.useLegacyLights = false;
+    renderer.physicallyCorrectLights = true; 
     
     container.appendChild(renderer.domElement);
 
@@ -716,7 +678,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     });
 
     const onLoad = (object) => {
-        container.classList.add('ready'); // Fade in canvas
+        container.classList.add('ready'); 
 
         const box = new THREE.Box3().setFromObject(object);
         const center = new THREE.Vector3();
@@ -746,12 +708,9 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         controls.minDistance = size * 0.2; 
         controls.maxDistance = size * 5;
 
-        // SMART RENDER LOOP (Pauses when off-screen)
         function animate() {
             requestAnimationFrame(animate);
-            // If not visible, skip heavy lifting
             if (container.getAttribute('data-visible') === 'false') return;
-            
             controls.update();
             renderer.render(scene, camera);
         }
