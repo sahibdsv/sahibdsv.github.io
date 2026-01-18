@@ -1885,6 +1885,7 @@
             let startX = 0, startY = 0;
             let currentX = 0, currentY = 0;
             let initialX = 0, initialY = 0;
+            let hasTouched = false; // Flag to ignore phantom mouse events on mobile
 
             // HELPER: Reset to specific mode
             const resetZoomState = (img, mode) => {
@@ -1901,7 +1902,7 @@
             // --- MOUSE LENS LOGIC ---
             const handleMouseLens = (e) => {
                 const container = e.target.closest('.zoomed');
-                if (!container || activeContainer) return;
+                if (!container || activeContainer || hasTouched) return;
                 const img = container.querySelector('img');
                 const rect = container.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -1918,6 +1919,7 @@
                 const img = container.querySelector('img');
                 if (!img) return;
 
+                hasTouched = true; // Disable mouse lens logic
                 activeContainer = container;
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
