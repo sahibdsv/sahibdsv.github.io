@@ -468,6 +468,12 @@
                 font-size: 32px;
             }
 
+            .article-title {
+                font-size: 28px;
+                word-break: break-word;
+                hyphens: auto;
+            }
+
             .layout-404 h1 {
                 font-size: 60px;
             }
@@ -479,6 +485,12 @@
 
             .icon-btn {
                 padding: 9px;
+            }
+
+            /* Disable tooltips on mobile */
+            [data-tooltip]::before,
+            [data-tooltip]::after {
+                display: none !important;
             }
         }
 
@@ -3592,6 +3604,14 @@
         function processSingleLine(trimmed, hiddenUrls) {
             if (!trimmed) return '';
 
+            // PROTECT MATH (LATEX)
+            // We temporarily strip inline math to prevent Markdown (underscores, asterisks) from mangling it.
+            let mathBlocks = [];
+            trimmed = trimmed.replace(/(\$\$[\s\S]*?\$\$)|(\\\([\s\S]*?\\\))|(\$[^$\n]+\$)/g, (match) => {
+                mathBlocks.push(match);
+                return `__MATH_${mathBlocks.length - 1}__`;
+            });
+
             if (hiddenUrls) {
                 hiddenUrls.forEach(u => { if (u) trimmed = trimmed.replace(u, ''); });
             }
@@ -3710,6 +3730,11 @@
             clean = clean.replace(/(?<!href="|src="|">)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" class="fill-anim">$1</a>');
             clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
             clean = clean.replace(/<a /g, '<a class="fill-anim" ');
+
+            // RESTORE MATH
+            mathBlocks.forEach((block, i) => {
+                clean = clean.replace(`__MATH_${i}__`, block);
+            });
 
             return clean;
         }
