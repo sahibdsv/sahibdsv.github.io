@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -118,17 +118,17 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            transition: background-position 0.5s var(--ease);
+            transition: background-position 0.5s var(--ease), color 0.5s var(--ease), border-color 0.2s !important;
             text-decoration: none;
             display: inline-block;
-            color: var(--text-base, #888);
+            color: var(--text-base, #888) !important;
         }
 
         .fill-anim:hover,
         .clickable-block:hover .fill-anim,
         .fill-anim.active {
             background-position: 0 100%;
-            color: var(--text-hover, #fff);
+            color: var(--text-hover, #fff) !important;
         }
 
         h1.fill-anim,
@@ -177,7 +177,7 @@
             user-select: none;
             --text-base: #666;
             --text-hover: #fff;
-            transition: height 0.6s cubic-bezier(0.2, 0, 0, 1), opacity 0.4s var(--ease), transform 0.6s cubic-bezier(0.2, 0, 0, 1), margin 0.6s cubic-bezier(0.2, 0, 0, 1), background-position 0.5s var(--ease);
+            transition: height 0.6s cubic-bezier(0.2, 0, 0, 1), opacity 0.4s var(--ease), transform 0.6s cubic-bezier(0.2, 0, 0, 1), margin 0.6s cubic-bezier(0.2, 0, 0, 1), background-position 0.5s var(--ease) !important;
             opacity: 1;
             transform: translateY(0);
             margin-bottom: 0;
@@ -534,34 +534,46 @@
         /* --- REFINED HYPERLINK STYLING --- */
         /* --- REFINED HYPERLINK STYLING (GLOBAL) --- */
         /* Target all content links, excluding nav/UI elements */
-        a:not(.nav-link):not(.sub-link):not(.icon-btn):not(.btn-primary):not(.chip):not(.fill-anim) {
+        /* Target all content links, excluding nav/UI elements */
+        a:not(.nav-link):not(.sub-link):not(.icon-btn):not(.btn-primary):not(.chip) {
             color: #d4d4d4;
-            text-decoration: underline dotted #fff;
-            text-underline-offset: 4px;
-            text-decoration-thickness: 1px;
+            text-decoration: none;
+            border-bottom: 1px dotted #fff;
             font-weight: 400;
-            transition: color 0.2s, text-decoration-color 0.2s;
+            transition: color 0.2s, border-color 0.2s;
         }
 
-        a:not(.nav-link):not(.sub-link):not(.icon-btn):not(.btn-primary):not(.chip):not(.fill-anim):hover {
+        a:not(.nav-link):not(.sub-link):not(.icon-btn):not(.btn-primary):not(.chip):hover {
             color: #fff;
-            text-decoration: underline solid #fff;
+            text-decoration: none;
+            border-bottom: 1px solid #fff;
         }
 
         /* Wiki Links & Index Links (force underline over fill-anim) */
         /* Using border-bottom because text-decoration often fails with background-clip: text */
-        a.wiki-link,
-        a.index-link {
+        /* Wiki Links (force underline over fill-anim) */
+        a.wiki-link {
             text-decoration: none !important;
             border-bottom: 1px dotted #fff;
             padding-bottom: 0px;
             transition: border-color 0.2s;
         }
 
-        a.wiki-link:hover,
-        a.index-link:hover {
+        a.wiki-link:hover {
             text-decoration: none !important;
             border-bottom: 1px solid #fff;
+        }
+
+        /* Index Links (Clean, no line) */
+        a.index-link {
+            text-decoration: none !important;
+            border-bottom: none !important;
+            padding-bottom: 0px;
+        }
+
+        a.index-link:hover {
+            text-decoration: none !important;
+            border-bottom: none !important;
         }
 
         /* Overrides for specific areas */
@@ -1484,6 +1496,8 @@
             --text-base: #777;
             --text-hover: #fff;
             white-space: nowrap;
+            border-bottom: none !important;
+            text-decoration: none !important;
         }
 
         #version-tag {
@@ -1497,11 +1511,13 @@
         }
 
         #version-tag a {
-            text-decoration: none;
+            text-decoration: none !important;
+            border-bottom: none !important;
         }
 
         #version-tag a:hover {
-            text-decoration: underline;
+            text-decoration: none !important;
+            border-bottom: none !important;
         }
 
         .sk-line,
