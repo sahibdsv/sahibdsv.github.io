@@ -1842,21 +1842,7 @@
                     if (btn) btn.click();
                 }
 
-                // FIXED: LENS ZOOM LOGIC
-                const articleContainer = e.target.closest('.zoom-frame, .row-media.article-mode');
-                if (articleContainer) {
-                    // Check if it's an image and not a 3D viewer
-                    if (articleContainer.querySelector('img') && !articleContainer.querySelector('.embed-wrapper.stl')) {
-                        e.stopPropagation();
-                        const rect = articleContainer.getBoundingClientRect();
-                        const x = ((e.clientX - rect.left) / rect.width) * 100;
-                        const y = ((e.clientY - rect.top) / rect.height) * 100;
-                        const img = articleContainer.querySelector('img');
-                        img.style.transformOrigin = `${x}% ${y}%`;
-                        articleContainer.classList.toggle('zoomed');
-                        return;
-                    }
-                }
+
 
                 const block = e.target.closest('.clickable-block');
                 if (block && !e.target.classList.contains('chip')) {
@@ -1894,29 +1880,119 @@
         }
 
         function initImageZoomers() {
-            document.getElementById('app').addEventListener('mousemove', (e) => {
+            // STATE for Pan Logic
+            let activeContainer = null;
+            let startX = 0, startY = 0;
+            let currentX = 0, currentY = 0;
+            let initialX = 0, initialY = 0;
+
+            // HELPER: Reset to specific mode
+            const resetZoomState = (img, mode) => {
+                if (mode === 'lens') {
+                    img.style.transform = 'scale(1.75)';
+                    img.style.transformOrigin = 'center center';
+                } else {
+                    currentX = 0; currentY = 0;
+                    img.style.transformOrigin = 'center center';
+                    img.style.transform = `scale(1.75) translate(0px, 0px)`;
+                }
+            };
+
+            // --- MOUSE LENS LOGIC ---
+            const handleMouseLens = (e) => {
                 const container = e.target.closest('.zoomed');
-                if (container) {
+                if (!container || activeContainer) return;
+                const img = container.querySelector('img');
+                const rect = container.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                img.style.transformOrigin = `${x}% ${y}%`;
+                img.style.transform = 'scale(1.75)';
+            };
+
+            const updateTransform = (img) => {
+                img.style.transform = `scale(1.75) translate(${currentX}px, ${currentY}px)`;
+            };
+
+            const startDrag = (e, container) => {
+                const img = container.querySelector('img');
+                if (!img) return;
+
+                activeContainer = container;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                startX = clientX;
+                startY = clientY;
+                initialX = currentX; // Continue from previous position if re-grabbing
+                initialY = currentY;
+
+                // Reset origin to center for predictable scaling
+                img.style.transformOrigin = 'center center';
+                updateTransform(img);
+            };
+
+            const doDrag = (e) => {
+                if (!activeContainer) return;
+                e.preventDefault();
+
+                const img = activeContainer.querySelector('img');
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+
+                // Scale speed down slightly for control
+                currentX = initialX + (dx / 1.75);
+                currentY = initialY + (dy / 1.75);
+
+                // CLAMPING (Keep image somewhat in view)
+                // Limit to +/- (Container Size / 2) roughly
+                const limitX = activeContainer.clientWidth * 0.4;
+                const limitY = activeContainer.clientHeight * 0.4;
+
+                currentX = Math.max(-limitX, Math.min(currentX, limitX));
+                currentY = Math.max(-limitY, Math.min(currentY, limitY));
+
+                updateTransform(img);
+            };
+
+            const endDrag = () => {
+                activeContainer = null;
+            };
+
+            // GLOBAL LISTENERS
+            document.addEventListener('mousemove', handleMouseLens);
+            document.addEventListener('touchmove', doDrag, { passive: false });
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+
+            // CLICK HANDLER to Toggle Zoom & Reset Pan
+            // We consolidate logic here to prevent conflicts
+            document.addEventListener('click', (e) => {
+                const container = e.target.closest('.zoom-frame, .row-media.article-mode');
+                if (!container || e.target.closest('.stl-controls')) return;
+
+                // IGNORE 3D Viewers
+                if (container.querySelector('.embed-wrapper.stl')) return;
+
+                // TOGGLE ZOOM DIRECTLY
+                container.classList.toggle('zoomed');
+
+                if (container.classList.contains('zoomed')) {
+                    // OPENED: Default to Lens state
                     const img = container.querySelector('img');
-                    const rect = container.getBoundingClientRect();
-                    const x = ((e.clientX - rect.left) / rect.width) * 100;
-                    const y = ((e.clientY - rect.top) / rect.height) * 100;
-                    img.style.transformOrigin = `${x}% ${y}%`;
+                    if (img) resetZoomState(img, 'lens');
+                    // Attach touch start for Hybrid Pan
+                    container.ontouchstart = (ev) => startDrag(ev, container);
+                } else {
+                    // CLOSED: Cleanup
+                    container.ontouchstart = null;
+                    const img = container.querySelector('img');
+                    if (img) img.style.transform = '';
                 }
             });
-
-            document.getElementById('app').addEventListener('touchmove', (e) => {
-                const container = e.target.closest('.zoomed');
-                if (container) {
-                    e.preventDefault();
-                    const img = container.querySelector('img');
-                    const rect = container.getBoundingClientRect();
-                    const touch = e.touches[0];
-                    const x = ((touch.clientX - rect.left) / rect.width) * 100;
-                    const y = ((touch.clientY - rect.top) / rect.height) * 100;
-                    img.style.transformOrigin = `${x}% ${y}%`;
-                }
-            }, { passive: false });
         }
 
         // --- 3D ACTIVITY MONITOR (Fixed) ---
