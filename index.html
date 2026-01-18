@@ -1047,6 +1047,9 @@
             letter-spacing: 0.5px;
             transition: all 0.2s;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -2111,6 +2114,16 @@
                 row.scrollTo({ left: middle, behavior: 'smooth' });
             }
         }
+
+        // RESIZE LISTENER: Re-center nav on orientation change/window resize
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                document.querySelectorAll('.nav-row').forEach(row => centerNavRow(row, false));
+                updatePadding();
+            }, 100);
+        });
 
         function updatePadding() {
             const brandH = 36;
