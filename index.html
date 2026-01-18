@@ -1927,7 +1927,8 @@
                 initialX = currentX; // Continue from previous position if re-grabbing
                 initialY = currentY;
 
-                // Reset origin to center for predictable scaling
+                // Lock origin for panning
+                img.style.transition = 'none'; // DISABLE TRANSITION FOR DIRECT CONTROL
                 img.style.transformOrigin = 'center center';
                 updateTransform(img);
             };
@@ -1959,6 +1960,10 @@
             };
 
             const endDrag = () => {
+                if (activeContainer) {
+                    const img = activeContainer.querySelector('img');
+                    if (img) img.style.transition = ''; // RESTORE TRANSITION
+                }
                 activeContainer = null;
             };
 
