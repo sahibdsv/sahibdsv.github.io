@@ -3873,10 +3873,7 @@
                             tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
                         }
 
-                        // READING TIME
-                        const wordCount = r.Content ? r.Content.split(/\s+/).length : 0;
-                        const readTime = Math.ceil(wordCount / 200);
-                        if (readTime > 0) metaHtml += `<span class="chip read-time tooltip-down" data-tooltip="Reading Time">${readTime} min read</span>`;
+
 
                         metaHtml += '</div></div>';
                     }
@@ -3957,16 +3954,7 @@
                         mh += `<span class="chip date" data-date="${filterVal}" data-val="${dateVal}">${dateVal}</span>`;
                     }
 
-                    // READING TIME
-                    if (r.Content) {
-                        const words = r.Content.split(/\s+/).length;
-                        const min = Math.ceil(words / 200);
-                        if (min > 0) {
-                            mh += `<span class="chip read-time" data-tooltip="${min} min read">
-                                <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            </span>`;
-                        }
-                    }
+
 
                     tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
                     mh += `</div>`;
