@@ -104,6 +104,21 @@
             transition: none !important;
         }
 
+        /* UTILITY: Unselectable Text (Titles, UI) */
+        .unselectable,
+        h1,
+        h2,
+        h3,
+        .article-title,
+        .layout-grid h3,
+        .index-group h3,
+        #brand-name {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         .sk-line,
         .sk-img,
         .sk-box {
@@ -152,7 +167,7 @@
             align-items: center;
             gap: var(--gap);
             border-bottom: 1px solid #1a1a1a;
-            overflow: hidden;
+            overflow: visible;
             transition: transform 0.4s var(--ease);
         }
 
@@ -180,8 +195,10 @@
             transition: height 0.6s cubic-bezier(0.2, 0, 0, 1), opacity 0.4s var(--ease), transform 0.6s cubic-bezier(0.2, 0, 0, 1), margin 0.6s cubic-bezier(0.2, 0, 0, 1), background-position 0.5s var(--ease) !important;
             opacity: 1;
             transform: translateY(0);
+            opacity: 1;
+            transform: translateY(0);
             margin-bottom: 0;
-
+            -webkit-tap-highlight-color: transparent;
             /* FORCE FILL EFFECT */
             background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #666) 50.5%);
             background-size: 100% 205%;
@@ -235,7 +252,9 @@
             letter-spacing: 1px;
             line-height: 1.2;
             padding-bottom: 2px;
+            padding-bottom: 2px;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
             --text-base: #666;
             --text-hover: #fff;
         }
@@ -357,6 +376,7 @@
             transition: all 0.4s;
             transform-origin: center;
             position: relative;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .icon-btn:hover {
@@ -367,32 +387,7 @@
             opacity: 1;
         }
 
-        .icon-btn[data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            top: 100%;
-            right: 50%;
-            transform: translateX(50%);
-            background: #222;
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-family: 'Jost', sans-serif;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0;
-            animation: fadeInTooltip 0.2s forwards 0.3s;
-            border: 1px solid #333;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        @keyframes fadeInTooltip {
-            to {
-                opacity: 1;
-                top: 110%;
-            }
-        }
+        /* LEGACY TOOLTIP REMOVED - Using Global System */
 
         /* --- SEARCH BUBBLE --- */
         #search-overlay {
@@ -659,8 +654,30 @@
             display: none !important;
         }
 
+        /* Prevent Link Leaks */
+        .layout-grid p,
+        .layout-grid .btn-container,
+        .layout-grid a {
+            overflow-wrap: break-word;
+            word-break: break-word;
+            max-width: 100%;
+        }
+
         .layout-grid.cat-projects h3 {
             --text-hover: var(--accent-projects);
+        }
+
+        /* CATEGORY ACCENT VARIABLES (For Buttons/UI) */
+        .layout-grid.cat-projects {
+            --accent-color: var(--accent-projects);
+        }
+
+        .layout-grid.cat-professional {
+            --accent-color: var(--accent-prof);
+        }
+
+        .layout-grid.cat-personal {
+            --accent-color: var(--accent-personal);
         }
 
         .layout-grid.cat-professional h3 {
@@ -669,6 +686,55 @@
 
         .layout-grid.cat-personal h3 {
             --text-hover: var(--accent-personal);
+        }
+
+        /* CTA BUTTONS */
+        .btn-pill {
+            display: inline-block;
+            padding: 10px 24px;
+            background-color: var(--accent-color, rgba(255, 255, 255, 0.1));
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+            border-radius: 99px;
+            transition: all 0.2s;
+            /* FORCE PILL */
+            transition: all 0.2s;
+            margin: 5px 5px 5px 0;
+            text-align: center;
+        }
+
+        /* If we have an accent color, remove border or keep it subtler? */
+        .layout-grid[class*="cat-"] .btn-pill {
+            border: none;
+            color: #000;
+            /* Accent backgrounds usually need black text? Check vars */
+        }
+
+        /* Specific override for accent buttons to ensure contrast if needed. 
+           But wait, previous CSS had color: #000 default. 
+           Layout grid accent override had color: #fff.
+           I'll stick to safest: Dark Theme -> White Text on Glass. 
+           Accent Theme -> Black Text on Bright Accent? */
+
+        .btn-pill:hover {
+            background-color: #fff;
+            color: #000;
+            border-color: #fff;
+            transform: translateY(-2px);
+            opacity: 1;
+        }
+
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            align-items: center;
         }
 
         .row-media {
@@ -1054,6 +1120,188 @@
             align-items: center;
             justify-content: center;
             white-space: nowrap;
+            position: relative;
+            /* Fixes Tooltip Positioning */
+        }
+
+        /* HIGHLIGHTS */
+        mark {
+            background: rgba(255, 255, 0, 0.15);
+            color: #ffeb3b;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        /* TASKS */
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 6px 0;
+            padding: 4px 0;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+
+        .task-item:hover {
+            opacity: 1;
+        }
+
+        .task-item input[type="checkbox"] {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            margin-top: 3px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .task-item input[type="checkbox"]:checked {
+            background: var(--accent-projects);
+            border-color: var(--accent-projects);
+        }
+
+        .task-item input[type="checkbox"]:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 1px;
+            width: 4px;
+            height: 9px;
+            border: solid #000;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .task-item.checked {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        /* TABLES */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #111;
+            position: relative;
+
+            /* SCROLL SHADOWS (Fade Mask) */
+            background:
+                /* Shadow Left */
+                linear-gradient(to right, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0)),
+                /* Shadow Right */
+                linear-gradient(to left, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0)) 100% 0,
+                /* Shadow Hint Left */
+                radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0)),
+                /* Shadow Hint Right */
+                radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0)) 100% 0;
+            background-repeat: no-repeat;
+            background-color: #111;
+            background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+            background-attachment: local, local, scroll, scroll;
+        }
+
+        /* DARK SCROLLBAR (Elegant) */
+        .table-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 600px;
+            /* Force scroll on mobile */
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid #222;
+        }
+
+        th {
+            background: #1a1a1a;
+            color: #fff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .copy-table-btn {
+            position: absolute;
+            top: 6px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ccc;
+            font-size: 11px;
+            padding: 6px 14px;
+            border-radius: 99px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 10;
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .copy-table-btn:hover {
+            color: #fff;
+            background: #000;
+            border-color: #fff;
+            transform: translateY(-1px);
+        }
+
+        /* GENERIC PILL BUTTON */
+        .btn-pill {
+            display: inline-block;
+            padding: 10px 24px;
+            background: #fff;
+            color: #000;
+            text-decoration: none;
+            border-radius: 99px;
+            font-weight: 700;
+            font-size: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        .btn-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
         }
 
         .chip:hover {
@@ -1464,6 +1712,507 @@
             color: var(--accent-personal);
         }
 
+        .layout-grid.cat-personal .date-badge {
+            background: var(--accent-personal);
+        }
+
+        /* STATS BLOCK */
+        .stat-block {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 25px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            margin: 5px;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #888;
+            margin-top: 5px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* TIMELINE BLOCK */
+        .timeline-block {
+            border-left: 2px solid #333;
+            padding-left: 20px;
+            margin: 20px 0 20px 10px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            /* Centered on 2px border (-20px padding - 7px radius - 1px border center) */
+            top: 2px;
+            /* Centered on date line */
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #555;
+            border: 2px solid #111;
+            z-index: 1;
+        }
+
+        .timeline-date {
+            font-size: 11px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .timeline-content {
+            font-size: 15px;
+            color: #ddd;
+        }
+
+        /* CODE BLOCK */
+        pre {
+            background: #111;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #333;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #ddd;
+        }
+
+        /* LATEX SCALING (MathJax/KaTeX) */
+        .katex {
+            font-size: 1.15em !important;
+        }
+
+        .katex-display {
+            font-size: 1.4em !important;
+            margin: 1em 0;
+        }
+
+        .MathJax {
+            font-size: 1.15em !important;
+        }
+
+        .MathJax_Display {
+            font-size: 1.4em !important;
+        }
+
+        /* OBSIDIAN CALLOUTS */
+        .callout {
+            --co-bg: 20, 20, 20;
+            --co-border: 68, 138, 255;
+            /* Default Blue */
+            --co-icon: #448aff;
+
+            background: rgba(var(--co-bg), 1);
+            border: 1px solid rgba(var(--co-border), 0.2);
+            border-left: 4px solid rgb(var(--co-border));
+            border-radius: 8px;
+            margin: 16px 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .callout-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(var(--co-border), 0.1);
+            font-weight: 700;
+            font-size: 14px;
+            color: #ddd;
+            user-select: none;
+        }
+
+        .callout-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            color: rgb(var(--co-border));
+        }
+
+        .callout-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke-width: 2.5;
+        }
+
+        .callout-content {
+            padding: 12px 16px;
+            color: #ccc;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .callout-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Foldable */
+        details.callout>summary {
+            list-style: none;
+            /* Hide default triangle */
+            cursor: pointer;
+            outline: none;
+        }
+
+        details.callout>summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details.callout>summary::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-right: 2px solid rgba(255, 255, 255, 0.5);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+            transform: rotate(45deg);
+            margin-left: auto;
+            transition: transform 0.2s;
+        }
+
+        details.callout[open]>summary::after {
+            transform: rotate(225deg);
+        }
+
+        /* TYPE VARIANTS */
+        .callout[data-callout="note"] {
+            --co-border: 68, 138, 255;
+        }
+
+        .callout[data-callout="abstract"],
+        .callout[data-callout="summary"],
+        .callout[data-callout="tldr"] {
+            --co-border: 0, 184, 212;
+        }
+
+        .callout[data-callout="info"] {
+            --co-border: 0, 184, 212;
+        }
+
+        .callout[data-callout="todo"] {
+            --co-border: 68, 138, 255;
+        }
+
+        .callout[data-callout="tip"],
+        .callout[data-callout="hint"],
+        .callout[data-callout="important"] {
+            --co-border: 0, 191, 165;
+        }
+
+        .callout[data-callout="success"],
+        .callout[data-callout="check"],
+        .callout[data-callout="done"] {
+            --co-border: 0, 200, 83;
+        }
+
+        .callout[data-callout="question"],
+        .callout[data-callout="help"],
+        .callout[data-callout="faq"] {
+            --co-border: 255, 160, 0;
+        }
+
+        .callout[data-callout="warning"],
+        .callout[data-callout="caution"],
+        .callout[data-callout="attention"] {
+            --co-border: 255, 145, 0;
+        }
+
+        .callout[data-callout="failure"],
+        .callout[data-callout="fail"],
+        .callout[data-callout="missing"] {
+            --co-border: 255, 82, 82;
+        }
+
+        .callout[data-callout="danger"],
+        .callout[data-callout="error"] {
+            --co-border: 255, 23, 68;
+        }
+
+        .callout[data-callout="bug"] {
+            --co-border: 245, 0, 87;
+        }
+
+        .callout[data-callout="example"] {
+            --co-border: 124, 77, 255;
+        }
+
+        .callout[data-callout="quote"],
+        .callout[data-callout="cite"] {
+            --co-border: 158, 158, 158;
+        }
+
+        /* NESTED */
+        .callout .callout {
+            margin: 10px 0;
+        }
+
+        /* MERMAID DIAGRAMS */
+        .mermaid {
+            background: #111;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        /* COMPARISON SLIDER */
+        .compare-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            /* Aspect ratio maintained by images */
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+            --pos: 50%;
+            user-select: none;
+        }
+
+        .compare-img {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 600px;
+            object-fit: cover;
+            grid-area: 1 / 1;
+        }
+
+        .compare-after {
+            clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+        }
+
+        .compare-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: ew-resize;
+            margin: 0;
+            z-index: 10;
+        }
+
+        /* Visual Handle */
+        .compare-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: var(--pos);
+            width: 4px;
+            background: #fff;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 5;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .compare-handle::after {
+            content: '< >';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* TOOLTIPS: Unified System */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        /* BUBBLE (Shared) */
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%) translateY(8px);
+            background: #080808;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 5px 10px;
+            font-size: 11px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+            z-index: 10001;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            font-weight: 500;
+            font-family: 'Jost', sans-serif;
+            text-transform: none;
+        }
+
+        /* ARROW (Shared) - DISABLED per user request */
+        [data-tooltip]::before {
+            display: none !important;
+            content: none;
+        }
+
+        /* AUTO-ACTIVATE */
+        [data-tooltip]:hover::after,
+        [data-tooltip]:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* === VARIANT: DOWN (Default / Search) === */
+        [data-tooltip]:not(.chip)::after {
+            top: 100%;
+            margin-top: 8px;
+            transform: translateX(-50%) translateY(-4px);
+            /* Start slightly up */
+        }
+
+        [data-tooltip]:not(.chip):hover::after {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        [data-tooltip]:not(.chip)::before {
+            top: 100%;
+            border-bottom-color: rgba(255, 255, 255, 0.2);
+            /* Match border */
+            margin-top: -2px;
+            /* Overlap border for clean look */
+            transform: translateY(-4px);
+        }
+
+        [data-tooltip]:not(.chip):hover::before {
+            transform: translateY(0);
+        }
+
+        /* === VARIANT: UP (Chips / Bottom Elements) === */
+        .chip[data-tooltip]::after {
+            bottom: 100%;
+            top: auto;
+            margin-bottom: 8px;
+            transform: translateX(-50%) translateY(4px);
+            /* Start slightly down */
+        }
+
+        .chip[data-tooltip]:hover::after {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .chip[data-tooltip]::before {
+            bottom: 100%;
+            top: auto;
+            border-top-color: rgba(255, 255, 255, 0.2);
+            /* Match border */
+            margin-bottom: -2px;
+            transform: translateY(4px);
+        }
+
+        .chip[data-tooltip]:hover::before {
+            transform: translateY(0);
+        }
+
+        /* SEARCH POSITIONING FIXES */
+        #search-trigger[data-tooltip]::after,
+        #search-trigger-wrapper[data-tooltip]::after {
+            left: auto;
+            right: 0;
+            transform: none !important;
+            margin-top: 8px;
+        }
+
+        #search-trigger[data-tooltip]::before,
+        #search-trigger-wrapper[data-tooltip]::before {
+            left: auto;
+            right: 12px;
+            transform: none !important;
+            margin-top: -2px;
+        }
+
+        .icon-btn-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        /* AUTO-GRID COLLAGE */
+        .auto-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            width: 100%;
+        }
+
+        .auto-grid>* {
+            flex: 1 1 200px;
+            /* Grow to fill, min width 200px */
+            min-width: 0;
+            height: auto;
+        }
+
+        .auto-grid .embed-wrapper,
+        .auto-grid img,
+        .auto-grid video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            min-height: 200px;
+            /* Ensure visibility */
+        }
+
+        .auto-grid .embed-wrapper {
+            aspect-ratio: 16/9;
+            /* Force aspect for embeds in grid */
+        }
+
+        /* RESPONSIVE TYPE */
+        @media (max-width: 768px) {
+            h1.fill-anim {
+                font-size: 80px;
+            }
+        }
+
         @media (max-width: 600px) {
             .index-list {
                 column-count: 1;
@@ -1598,6 +2347,98 @@
             width: 100%;
             margin-bottom: 6px;
         }
+
+        /* FORCE CHIP TOOLTIPS UP to avoid clipping */
+        .chip[data-tooltip]::after {
+            bottom: 100%;
+            top: auto;
+            margin-bottom: 8px;
+        }
+
+        .chip[data-tooltip]::before,
+        .chip[data-tooltip]:hover::before {
+            display: none;
+            content: none;
+            /* Ensure arrow is gone */
+        }
+
+        /* ZOOM SMOOTHING */
+        .zoom-frame img {
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform-origin 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* GRID TEXT CLAMPING */
+        .grid-text-preview {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        /* COMPARE CONTAINER */
+        .compare-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 20px 0;
+            user-select: none;
+        }
+
+        .compare-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .compare-after {
+            clip-path: inset(0 0 0 var(--pos, 50%));
+        }
+
+        .compare-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: var(--pos, 50%);
+            width: 4px;
+            background: #fff;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 2;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .compare-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            z-index: 3;
+            cursor: ew-resize;
+            margin: 0;
+        }
+
+        /* READING TIME CHIP FIX */
+        .chip.read-time {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 24px;
+            padding: 0;
+            vertical-align: middle;
+        }
     </style>
 
     <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
@@ -1615,6 +2456,83 @@
             }
         }
     </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CLAMPED BADGE (For Grid View) */
+        .clamped-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #888;
+            margin-right: 4px;
+            margin-bottom: 4px;
+            vertical-align: middle;
+            user-select: none;
+        }
+
+        /* TOC STYLES */
+        .toc-container {
+            background: rgba(30, 30, 30, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 20px 0;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        .toc-header {
+            font-weight: 700;
+            color: #ddd;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-item {
+            margin: 6px 0;
+        }
+
+        .toc-link {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-size: 14px;
+            display: block;
+        }
+
+        .toc-link:hover {
+            color: #448aff;
+        }
+
+        .toc-depth-1 {
+            margin-left: 0;
+            font-weight: 600;
+        }
+
+        .toc-depth-2 {
+            margin-left: 15px;
+        }
+
+        .toc-depth-3 {
+            margin-left: 30px;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 
 <body class="no-transition">
@@ -1635,11 +2553,13 @@
         <div id="nav-stack"></div>
 
         <div id="search-controls">
-            <svg id="search-trigger" class="icon-btn search-icon" onclick="toggleSearch()" viewBox="0 0 24 24"
+            <div id="search-trigger-wrapper" class="icon-btn-wrapper" onclick="toggleSearch()"
                 data-tooltip="Search (/)">
-                <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-            </svg>
+                <svg id="search-trigger" class="icon-btn search-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                </svg>
+            </div>
         </div>
     </header>
 
@@ -1693,6 +2613,12 @@
         };
 
         const init = () => {
+            if (window.location.hash.toLowerCase() === '#demo' || window.location.hash.toLowerCase() === '#test') {
+                console.log("Entering Demo Mode");
+                loadDemoData();
+                return;
+            }
+
             // Safety: Unlock animations immediately if load fails
             setTimeout(() => document.body.classList.remove('no-transition'), 1000);
 
@@ -1715,7 +2641,11 @@
             renderFooter();
             fetchGitHubStats();
             initImageZoomers();
-            init3DActivityMonitor(); // Initialize 3D button logic
+            init3DActivityMonitor();
+
+            // AUTO-UNLOCK VAULT
+            const vaultKey = localStorage.getItem('vault_key');
+            if (vaultKey) loadVault(vaultKey);
 
             requestAnimationFrame(() => {
                 setTimeout(() => {
@@ -2170,7 +3100,7 @@
             }
             const t = q.toLowerCase();
             const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t)));
-            renderRows(res, `Search results for "${safeHTML(q)}"`, false, true);
+            renderRows(res, `Search results for "${safeHTML(q)}"`, false, true, false, true);
         }
 
         function handleRouting() {
@@ -2206,7 +3136,7 @@
                 const dateStr = r.Timestamp || '';
                 return (dateStr.startsWith(t)) || (r.Tags && r.Tags.includes(t));
             });
-            renderRows(res, `Posts from ${safeHTML(displayTitle)}`, false, true);
+            renderRows(res, `Posts from ${safeHTML(displayTitle)}`, false, true, false, true);
         }
 
         function renderPage(p) {
@@ -2280,7 +3210,7 @@
             const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
                 .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                 .slice(0, 6);
-            if (recents.length > 0) { renderRows(recents, "Recent Activity", true); }
+            if (recents.length > 0) { renderRows(recents, "Recent Activity", true, false, false, true); }
         }
 
         function detectEmbed(url) {
@@ -2296,12 +3226,40 @@
                 return `<div class="embed-wrapper map"><iframe src="${url.replace('/place/', '/embed?pb=')}"></iframe></div>`;
             }
 
+            // DESMOS
+            if (url.includes('desmos.com/calculator')) {
+                return `<div class="embed-wrapper doc" style="height:500px"><iframe src="${url}?embed" style="width:100%; height:100%; border:0"></iframe></div>`;
+            }
+
+            // GOOGLE DRIVE (GENERIC): Convert View -> Preview
+            if (url.includes('drive.google.com')) {
+                // If it's a file link ending in /view, swap to /preview for embed
+                if (url.includes('/view')) url = url.replace('/view', '/preview');
+                // If it's pure /open?id=, we might need a different approach, but most sharing links are file/d/.../view
+                // Sheets/Docs often use /edit, convert to /preview or /htmlview
+                if (url.includes('/edit')) url = url.replace('/edit', '/preview');
+
+                return `<div class="embed-wrapper doc"><iframe src="${url}"></iframe></div>`;
+            }
+
             if (url.includes('docs.google.com') && (url.includes('/spreadsheets/') || url.includes('/document/'))) {
+                // Ensure we use preview mode mostly
+                if (url.includes('/edit')) url = url.replace('/edit', '/preview');
                 return `<div class="embed-wrapper doc"><iframe src="${url}"></iframe></div>`;
             }
 
             if (url.toLowerCase().endsWith('.pdf')) {
                 return `<div class="embed-wrapper doc"><iframe src="${url}"></iframe></div>`;
+            }
+
+            // AUDIO
+            if (url.match(/\.(mp3|wav|ogg)$/i)) {
+                return `<div class="embed-wrapper audio" style="padding:10px;"><audio controls src="${url}" style="width:100%;"></audio></div>`;
+            }
+
+            // VIDEO
+            if (url.match(/\.(mp4|webm|mov)$/i)) {
+                return `<div class="embed-wrapper video"><video controls src="${url}" style="width:100%; height:auto;"></video></div>`;
             }
 
             if (url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/)) {
@@ -2348,7 +3306,18 @@
                 example: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
                 quote: '<path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>'
             };
-            return icons[type] || icons.note;
+            // ALIASES
+            const map = {
+                abstract: 'note', summary: 'note', tldr: 'note',
+                hint: 'tip', important: 'tip',
+                check: 'success', done: 'success',
+                help: 'question', faq: 'question',
+                caution: 'warning', attention: 'warning',
+                fail: 'failure', missing: 'failure',
+                error: 'danger', cite: 'quote'
+            };
+            const mapped = map[type] || type;
+            return icons[mapped] || icons.note;
         }
 
         function processText(t, hiddenUrls) {
@@ -2358,43 +3327,248 @@
             let output = [];
 
             let inCallout = false;
-            let calloutData = { type: '', title: '', lines: [] };
+            let calloutData = { type: '', title: '', collapse: null, lines: [] };
+
+            let inCodeBlock = false;
+            let codeLang = '';
+            let codeLines = [];
+
 
             const flushCallout = () => {
                 if (!inCallout) return;
-                const iconSvg = getCalloutIcon(calloutData.type);
-                const content = processLineArray(calloutData.lines, hiddenUrls);
 
-                const displayTitle = calloutData.title.charAt(0).toUpperCase() + calloutData.title.slice(1);
+                const type = calloutData.type;
+                const rawContent = calloutData.lines.join('\n');
+
+                // 1. SMART BLOCK: COMPARE
+                if (type === 'compare' || type === 'comparison') {
+                    const imgRegex = /!\[.*?\]\((.*?)\)|(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp))/gi;
+                    const matches = [...rawContent.matchAll(imgRegex)];
+                    const urls = matches.map(m => m[1] || m[2]).filter(u => u);
+
+                    if (urls.length >= 2) {
+                        output.push(`
+                            <div class="compare-container">
+                                <img src="${urls[1].trim()}" class="compare-img compare-after">
+                                <img src="${urls[0].trim()}" class="compare-img">
+                                <div class="compare-handle"></div>
+                                <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
+                            </div>`);
+                        inCallout = false;
+                        calloutData = { type: '', title: '', collapse: null, lines: [] };
+                        return;
+                    }
+                }
+
+                // 2. SMART BLOCK: GALLERY
+                if (type === 'gallery' || type === 'grid') {
+                    const imgRegex = /!\[.*?\]\((.*?)\)|(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp))/gi;
+                    const matches = [...rawContent.matchAll(imgRegex)];
+                    const urls = matches.map(m => m[1] || m[2]).filter(u => u);
+
+                    if (urls.length > 0) {
+                        const imgs = urls.map(u => `<div class="zoom-frame"><img src="${u}" loading="lazy" alt="Gallery"></div>`).join('');
+                        output.push(`<div class="inline-gallery">${imgs}</div>`);
+                        inCallout = false;
+                        calloutData = { type: '', title: '', collapse: null, lines: [] };
+                        return;
+                    }
+                }
+
+                // 3. SMART BLOCK: TIMELINE
+                if (type === 'timeline') {
+                    const items = calloutData.lines.map(line => {
+                        const clean = line.replace(/^[->\s*]+/, '').trim();
+                        if (!clean) return '';
+                        const parts = clean.split(/ - | – /);
+                        const date = parts[0] ? parts[0].trim() : '';
+                        const text = parts.slice(1).join(' - ').trim();
+                        if (!text) return '';
+                        return `<div class="timeline-item"><div class="timeline-date">${date}</div><div class="timeline-content">${processText(text, hiddenUrls)}</div></div>`;
+                    }).join('');
+
+                    if (items) {
+                        output.push(`<div class="timeline-block">${items}</div>`);
+                        inCallout = false;
+                        calloutData = { type: '', title: '', collapse: null, lines: [] };
+                        return;
+                    }
+                }
+
+                // 4. SMART BLOCK: TOC
+                if (type === 'toc' || type === 'tableofcontents') {
+                    output.push(`<div class="toc-placeholder"></div>`);
+                    inCallout = false;
+                    calloutData = { type: '', title: '', collapse: null, lines: [] };
+                    return;
+                }
+
+                // 5. SMART BLOCK: CHART
+                if (type === 'chart') {
+                    let chartType = 'bar';
+                    let labels = '';
+                    let values = '';
+                    let title = calloutData.title || '';
+
+                    rawContent.split('\n').forEach(line => {
+                        const l = line.trim();
+                        if (l.toLowerCase().startsWith('type:')) chartType = l.substring(5).trim();
+                        else if (l.toLowerCase().startsWith('labels:')) labels = l.substring(7).trim();
+                        else if (l.toLowerCase().startsWith('data:') || l.toLowerCase().startsWith('values:')) values = l.substring(l.indexOf(':') + 1).trim();
+                        else if (l.toLowerCase().startsWith('title:')) title = l.substring(6).trim();
+                    });
+
+                    labels = labels.replace(/,\s*/g, '||');
+                    values = values.replace(/,\s*/g, '||');
+
+                    if (values) {
+                        const id = `chart-${Math.random().toString(36).substr(2, 9)}`;
+                        output.push(`
+                            <div class="chart-wrapper" style="position:relative; height:300px; width:100%; max-width:600px; margin:20px auto;">
+                                <canvas id="${id}" class="smart-chart" 
+                                    data-type="${chartType}" 
+                                    data-labels="${labels}" 
+                                    data-values="${values}" 
+                                    data-title="${title}">
+                                </canvas>
+                            </div>
+                        `);
+                        inCallout = false;
+                        calloutData = { type: '', title: '', collapse: null, lines: [] };
+                        return;
+                    }
+                }
+
+                // 6. STANDARD CALLOUT
+                const iconSvg = getCalloutIcon(calloutData.type);
+                const contentText = calloutData.lines.join('\n');
+                let content = valuesCodeBlock ? contentText : processLineArray(calloutData.lines, hiddenUrls);
+
+                const titleTag = calloutData.type === 'note' || calloutData.type === 'tip' ? 'h4' : 'h5';
+                const displayTitle = calloutData.title ? `<span class="callout-title-text">${safeHTML(calloutData.title)}</span>` : `<span class="callout-title-text">${calloutData.type.toUpperCase()}</span>`;
+
+                const tag = 'div';
+                const collapseAttr = calloutData.collapse ? `onclick="this.classList.toggle('collapsed')"` : '';
+                const collapseClass = calloutData.collapse === '-' ? 'collapsed' : '';
 
                 output.push(`
-                    <div class="callout" data-callout="${calloutData.type}">
-                        <div class="callout-title">
+                    <${tag} class="callout ${calloutData.type} ${collapseClass}" ${collapseAttr}>
+                        <${titleTag} class="callout-title">
                             <div class="callout-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg></div>
                             <div class="callout-title-inner">${displayTitle}</div>
-                        </div>
+                        </${titleTag}>
                         <div class="callout-content">${content}</div>
-                    </div>
+                    </${tag}>
                 `);
                 inCallout = false;
-                calloutData = { type: '', title: '', lines: [] };
+                calloutData = { type: '', title: '', collapse: null, lines: [] };
+            };
+
+            const flushCode = () => {
+                if (!inCodeBlock) return;
+                const codeContent = codeLines.join('\n').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                if (codeLang === 'mermaid') {
+                    output.push(`< div class="mermaid" > ${codeContent}</div > `);
+                } else {
+                    output.push(`< pre > <code class="${codeLang}">${codeContent}</code></pre > `);
+                }
+
+                inCodeBlock = false;
+                codeLines = [];
+                codeLang = '';
             };
 
             for (let i = 0; i < rawLines.length; i++) {
-                let line = rawLines[i].trim();
+                let line = rawLines[i].trimEnd();
 
-                const calloutMatch = line.match(/^>\s*\[!(\w+)\](?:[-+]?)\s*(.*)$/);
+                // CODE BLOCK
+                if (line.trim().startsWith('```')) {
+                    if (inCodeBlock) { flushCode(); }
+                    else {
+                        if (inCallout) flushCallout();
+                        inCodeBlock = true;
+                        codeLang = line.trim().substring(3).trim().toLowerCase();
+                    }
+                    continue;
+                }
+                if (inCodeBlock) {
+                    codeLines.push(line);
+                    continue;
+                }
+
+                // TABLES
+                if (line.trim().startsWith('|') && i + 1 < rawLines.length) {
+                    const nextLine = rawLines[i + 1].trim();
+                    if (nextLine.match(/^\|?[\s-:\\|]+\|?$/)) {
+                        if (inCallout) flushCallout();
+
+                        let tableLines = [];
+                        while (i < rawLines.length && rawLines[i].trim().startsWith('|')) {
+                            tableLines.push(rawLines[i].trim());
+                            i++;
+                        }
+                        i--; // Backtrack
+
+                        let html = '<div class="table-wrapper"><div class="copy-table-btn" onclick="copyTable(this)">Copy CSV</div><table>';
+                        // Header
+                        const hParts = tableLines[0].split('|').filter(x => x.trim() !== '');
+                        html += `<thead><tr>${hParts.map(h => `<th>${h.trim()}</th>`).join('')}</tr></thead><tbody>`;
+
+                        // Rows (Skip separator)
+                        for (let j = 2; j < tableLines.length; j++) {
+                            const cells = tableLines[j].split('|');
+                            // Handle leading/trailing empty if pipe style used
+                            let cleanCells = [];
+                            // Basic heuristic: if match count implies wrapping pipes
+                            if (tableLines[j].trim().startsWith('|')) cells.shift();
+                            if (tableLines[j].trim().endsWith('|')) cells.pop();
+
+                            html += `<tr>${cells.map(c => `<td>${processSingleLine(c.trim(), hiddenUrls)}</td>`).join('')}</tr>`;
+                        }
+                        html += '</tbody></table></div>';
+                        output.push(html);
+                        continue;
+                    }
+                }
+
+                // HEADERS (Basic)
+                const headerMatch = line.trim().match(/^(#{1,6})\s+(.*)$/);
+                if (headerMatch) {
+                    const level = headerMatch[1].length;
+                    const text = headerMatch[2];
+                    output.push(`<h${level}>${processSingleLine(text, hiddenUrls)}</h${level}>`);
+                    continue;
+                }
+
+                // LISTS (Basic)
+                if (line.trim().match(/^-\s+(.*)/) && !line.trim().startsWith('- [')) {
+                    // Simple bullet handling
+                    output.push(`<li style="list-style:disc; margin-left:20px;">${processSingleLine(line.trim().substring(2), hiddenUrls)}</li>`);
+                    continue;
+                }
+
+                // HR
+                if (line.trim() === '---') {
+                    output.push('<hr>');
+                    continue;
+                }
+
+                // CALLOUT START: > [!type]+ Title
+                const calloutMatch = line.trim().match(/^>\s*\[!(\w+)\]([-+]?)\s*(.*)$/);
 
                 if (calloutMatch) {
                     flushCallout();
                     inCallout = true;
                     calloutData.type = calloutMatch[1].toLowerCase();
-                    calloutData.title = calloutMatch[2] || calloutData.type;
+                    calloutData.collapse = calloutMatch[2] || null;
+                    calloutData.title = calloutMatch[3].trim();
                     continue;
                 }
 
-                if (inCallout && line.startsWith('>')) {
-                    calloutData.lines.push(line.replace(/^>\s?/, ''));
+                // INSIDE CALLOUT
+                if (inCallout && line.trim().startsWith('>')) {
+                    calloutData.lines.push(line.trim().replace(/^>\s?/, ''));
                     continue;
                 }
 
@@ -2402,12 +3576,13 @@
                     flushCallout();
                 }
 
-                output.push(processSingleLine(line, hiddenUrls));
+                output.push(processSingleLine(line.trim(), hiddenUrls));
             }
 
             if (inCallout) flushCallout();
+            if (inCodeBlock) flushCode();
 
-            return output.join('<br>');
+            return output.join('<br>'); // Note: This might double-space block elements, handled by CSS usually
         }
 
         function processLineArray(lines, hiddenUrls) {
@@ -2421,6 +3596,7 @@
                 hiddenUrls.forEach(u => { if (u) trimmed = trimmed.replace(u, ''); });
             }
 
+            // AUTO-GRID
             if (trimmed.match(/^https?:\/\/.*,.*https?:\/\//)) {
                 const items = trimmed.split(',').map(s => s.trim());
                 if (items.every(i => i.startsWith('http'))) {
@@ -2429,16 +3605,18 @@
                 }
             }
 
+            // EMBEDS & IMAGES
             if (trimmed.match(/^https?:\/\/\S+$/)) {
+                // ... existing detection logic checks ...
                 if (
                     trimmed.includes('youtube') || trimmed.includes('youtu.be') ||
                     trimmed.includes('twitter') || trimmed.includes('x.com') ||
                     trimmed.includes('google.com/maps') || trimmed.includes('docs.google.com') ||
+                    trimmed.includes('desmos.com/calculator') ||
                     trimmed.match(/\.(pdf|stl|glb|gltf)$/i)
                 ) {
                     return detectEmbed(trimmed);
                 }
-                // Image handling
                 if (trimmed.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)) {
                     return `<div class="zoom-frame"><img src="${trimmed}" loading="lazy" alt="Image"></div>`;
                 }
@@ -2446,48 +3624,114 @@
 
             let clean = safeHTML(trimmed);
 
-            // 1. Custom Tags
-            clean = clean.replace(/\{\{(?:3D|STL): (.*?)(?: \| (.*?))?\}\}/gi, (match, url, color) => {
+            // MD IMAGES
+            clean = clean.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, url) => {
+                if (url.match(/\.(mp4|webm)$/i)) {
+                    return `<video src="${url}" controls preload="metadata"></video>`;
+                }
+                return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="${alt}"></div>`;
+            });
+
+            // BASIC MARKDOWN (Bold, Italic, Code)
+            clean = clean.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>'); // Bold Italic
+            clean = clean.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+            clean = clean.replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italic
+            clean = clean.replace(/`(.*?)`/g, '<code>$1</code>'); // Inline Code
+            clean = clean.replace(/~~(.*?)~~/g, '<del>$1</del>'); // Strikethrough
+            clean = clean.replace(/\^(.*?)\^/g, '<sup>$1</sup>'); // Superscript
+            clean = clean.replace(/~(.*?)~/g, '<sub>$1</sub>'); // Subscript
+
+            // HIGHLIGHTS
+            clean = clean.replace(/==(.*?)==/g, '<mark>$1</mark>');
+
+            // CHECKBOXES
+            clean = clean.replace(/^- \[ \] (.*)/, '<label class="task-item"><input type="checkbox" disabled> $1</label>');
+            clean = clean.replace(/^- \[x\] (.*)/, '<label class="task-item checked"><input type="checkbox" checked disabled> $1</label>');
+
+            // CUSTOM TAGS & BUTTONS (Fixing Whitespace resilience)
+
+            // 3D
+            clean = clean.replace(/\{\{STL:\s*(.*?)(?:\s*\|\s*(.*?))?\}\}/gi, (match, url, color) => {
                 const colorAttr = color ? `data-color="${color.trim()}"` : '';
                 return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
             });
 
+            // GALLERY
             clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
                 const urls = content.split(',').map(u => u.trim());
-                const isPureGallery = urls.every(u => u.toLowerCase().startsWith('http'));
-                if (!isPureGallery) return match;
-                const imgs = urls.map(u => `<div class="zoom-frame"><img src="${u}" loading="lazy" alt="Gallery Image"></div>`).join('');
-                return `<div class="inline-gallery">${imgs}</div>`;
+                if (urls.every(u => u.toLowerCase().startsWith('http'))) {
+                    const imgs = urls.map(u => `<div class="zoom-frame"><img src="${u}" loading="lazy" alt="Gallery"></div>`).join('');
+                    return `<div class="inline-gallery">${imgs}</div>`;
+                }
+                return match;
             });
 
-            clean = clean.replace(/\{\{MAP: (.*?)\}\}/g, '<div class="embed-wrapper map"><iframe src="$1"></iframe></div>');
-            clean = clean.replace(/\{\{DOC: (.*?)\}\}/g, '<div class="embed-wrapper doc"><iframe src="$1"></iframe></div>');
-            clean = clean.replace(/\{\{YOUTUBE: (.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
-            clean = clean.replace(/\{\{EMBED: (.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
+            // BUTTONS: {{BTN: Label | Url | Color?}}
+            clean = clean.replace(/\{\{BTN:\s*(.*?)\s*\|\s*(.*?)(?:\s*\|\s*(.*?))?\}\}/gi, (match, label, url, color) => {
+                const style = color ? `style="background-color: ${color.trim()}; color: #fff;"` : '';
+                return `<a href="${url.trim()}" class="btn-pill" target="_blank" ${style}>${label.trim()}</a>`;
+            });
 
-            // 2. MARKDOWN LINKS [Text](Url) - NEW FEATURE
+            // OTHER SHORTCODES
+            clean = clean.replace(/\{\{COMPARE:\s*(.*?)\}\}/gi, (match, content) => {
+                const parts = content.split('|');
+                const before = parts[0] ? parts[0].trim() : '';
+                const after = parts[1] ? parts[1].trim() : '';
+                return `<div class="compare-container"><img src="${after}" class="compare-img compare-after"><img src="${before}" class="compare-img"><div class="compare-handle"></div><input type="range" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')"></div>`;
+            });
+
+            // STATS
+            clean = clean.replace(/\{\{STAT:\s*(.*?)\}\}/gi, (match, content) => {
+                const parts = content.split('|');
+                return `<div class="stat-block"><div class="stat-number">${parts[0] ? parts[0].trim() : '?'}</div><div class="stat-label">${parts[1] ? parts[1].trim() : ''}</div></div>`;
+            });
+
+            // TIMELINE
+            clean = clean.replace(/\{\{TIMELINE:\s*(.*?)\}\}/gi, (match, content) => {
+                const items = content.split('|').map(s => {
+                    const parts = s.split('-');
+                    return `<div class="timeline-item"><div class="timeline-date">${parts[0] ? parts[0].trim() : ''}</div><div class="timeline-content">${parts.slice(1).join('-').trim()}</div></div>`;
+                }).join('');
+                return `<div class="timeline-block">${items}</div>`;
+            });
+
+            // EMBEDS
+            clean = clean.replace(/\{\{YOUTUBE:\s*(.*?)\}\}/g, '<div class="embed-wrapper video"><iframe src="$1" allowfullscreen></iframe></div>');
+            clean = clean.replace(/\{\{EMBED:\s*(.*?)\}\}/g, '<div class="embed-wrapper"><iframe src="$1"></iframe></div>');
+
+            // ROW
+            clean = clean.replace(/\{\{ROW:\s*(.*?)\}\}/gi, (match, content) => {
+                const parts = content.split('|').map(p => processSingleLine(p.trim(), []));
+                return `<div class="btn-container" style="justify-content: flex-start; margin: 10px 0;">${parts.join('')}</div>`;
+            });
+
+            // LINKS
             clean = clean.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-
-            // 3. AUTO-LINK RAW URLS (that aren't already part of an <a> or src="")
-            clean = clean.replace(/(?<!href="|src="|">)(https?:\/\/[^\s<]+)/g, (match) => {
-                return `<a href="${match}" target="_blank" rel="noopener">${match}</a>`;
-            });
-
-            // 4. Wikilinks [[Link]]
+            clean = clean.replace(/(?<!href="|src="|">)(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" class="fill-anim">$1</a>');
             clean = clean.replace(/\[\[(.*?)\]\]/g, '<a href="#$1" class="wiki-link fill-anim">$1</a>');
-
-            // 5. Fill Animation for standard links
             clean = clean.replace(/<a /g, '<a class="fill-anim" ');
 
             return clean;
         }
 
-        function renderRows(rows, title, append, forceGrid, isArticleMode = false) {
+        // UPDATED: Added forceDateSort parameter to allow Sheet Order on Main Pages
+        function renderRows(rows, title, append, forceGrid, isArticleMode = false, forceDateSort = false) {
             const app = document.getElementById('app'); if (!app) return;
 
-            if (!isArticleMode) {
+            if (forceDateSort) {
+                // DEFAULT: Sort by Date (Newest First)
                 rows.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
+
+                // HOMEPAGE: Prioritize 'Featured' items if it's the Recent Activity block
+                if (title === 'Recent Activity') {
+                    rows.sort((a, b) => {
+                        const aFeat = (a.Tags && a.Tags.toLowerCase().includes('featured')) ? 1 : 0;
+                        const bFeat = (b.Tags && b.Tags.toLowerCase().includes('featured')) ? 1 : 0;
+                        return bFeat - aFeat; // Featured comes first
+                    });
+                }
             }
+            // ELSE: Respect Sheet Row Order (No Sort)
 
             if (!append) {
                 app.innerHTML = title ? `<h2 class="fill-anim" style="display:block; text-align:center; margin-bottom:20px; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2>` : '';
@@ -2496,7 +3740,7 @@
             }
 
             if (rows.length === 0 && !append) {
-                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`;
+                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p><br><a href="#" onclick="window.location.hash=''; startApp(); return false;" class="btn-pill">Return to Home</a></div>`;
                 return;
             }
 
@@ -2571,6 +3815,27 @@
                 }
 
                 let contentHtml = processText(cleanContent, hoistedUrl);
+
+                // CLAMP CONTENT IN GRID VIEW (Remove heavy elements)
+                // CLAMP CONTENT IN GRID VIEW (Remove heavy elements)
+                if (!isArticleMode || forceGrid) {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = contentHtml;
+
+                    // Remove heavy/rich elements robustly
+                    const removeSelectors = [
+                        '.callout', '.table-wrapper', 'table', '.mermaid', 'pre',
+                        '.chart-wrapper', 'canvas', '.smart-chart-wrapper',
+                        'video', '.inline-gallery', '.btn-container', 'hr',
+                        '.embed-wrapper', '.row-media'
+                    ];
+                    temp.querySelectorAll(removeSelectors.join(',')).forEach(el => el.remove());
+
+                    contentHtml = temp.innerHTML;
+
+                    // CSS Clamping Wrapper
+                    contentHtml = `<div class="grid-text-preview">${contentHtml}</div>`;
+                }
                 let hasPlaceholder = !mediaSrc && !modelMatch && mediaHtml.includes('placeholder');
 
                 let catClass = '';
@@ -2607,6 +3872,12 @@
                             const tags = r.Tags.split(',').map(x => x.trim());
                             tags.forEach(t => metaHtml += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
                         }
+
+                        // READING TIME
+                        const wordCount = r.Content ? r.Content.split(/\s+/).length : 0;
+                        const readTime = Math.ceil(wordCount / 200);
+                        if (readTime > 0) metaHtml += `<span class="chip read-time tooltip-down" data-tooltip="Reading Time">${readTime} min read</span>`;
+
                         metaHtml += '</div></div>';
                     }
 
@@ -2623,6 +3894,36 @@
                     if (type === 'quote') {
                         const d = document.createElement('div'); d.className = 'layout-quote section';
                         renderQuoteCard(d); app.appendChild(d); return;
+                    }
+                    if (type === 'chart') {
+                        const d = document.createElement('div'); d.className = 'section layout-chart';
+                        let chartType = (r.Tags || 'bar').toLowerCase();
+                        // Normalize types
+                        if (chartType.includes('pie')) chartType = 'pie';
+                        else if (chartType.includes('doughnut')) chartType = 'doughnut';
+                        else if (chartType.includes('line')) chartType = 'line';
+
+                        const lines = (r.Content || '').split('\n');
+                        const labels = [], values = [];
+
+                        lines.forEach(l => {
+                            const clean = l.trim();
+                            if (!clean) return;
+                            const parts = clean.split(/:(.+)/);
+                            if (parts.length >= 2) {
+                                labels.push(parts[0].trim());
+                                values.push(parts[1].trim());
+                            }
+                        });
+
+                        const id = `chart-${Math.random().toString(36).substr(2, 9)}`;
+                        d.innerHTML = `
+                            ${safeHTML(r.Title) ? `<h2 class="fill-anim" style="text-align:center">${safeHTML(r.Title)}</h2>` : ''}
+                            <div class="chart-wrapper" style="position:relative; height:400px; width:100%; max-width:800px; margin:20px auto;">
+                                <canvas id="${id}" class="smart-chart" data-type="${chartType}" data-labels="${labels.join('||')}" data-values="${values.join('||')}" data-title="${r.Title}"></canvas>
+                            </div>
+                        `;
+                        app.appendChild(d); return;
                     }
                     if (type === 'hero') {
                         const d = document.createElement('div'); d.className = 'section layout-hero';
@@ -2655,6 +3956,18 @@
                         let filterVal = r.Timestamp.substring(0, 7);
                         mh += `<span class="chip date" data-date="${filterVal}" data-val="${dateVal}">${dateVal}</span>`;
                     }
+
+                    // READING TIME
+                    if (r.Content) {
+                        const words = r.Content.split(/\s+/).length;
+                        const min = Math.ceil(words / 200);
+                        if (min > 0) {
+                            mh += `<span class="chip read-time" data-tooltip="${min} min read">
+                                <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            </span>`;
+                        }
+                    }
+
                     tags.forEach(t => mh += `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`);
                     mh += `</div>`;
                 }
@@ -2676,8 +3989,20 @@
             }
 
             if (window.twttr && window.twttr.widgets) window.twttr.widgets.load();
-
             setTimeout(init3DViewers, 420);
+            // MERMAID TRIGGER
+            setTimeout(runMermaid, 50);
+
+            // SYNTAX & TOC & COPY & CHARTS
+            setTimeout(() => {
+                if (window.Prism) window.Prism.highlightAll();
+                if (typeof generateTOC === 'function') generateTOC();
+                if (typeof addCopyButtons === 'function') addCopyButtons();
+                if (typeof initCharts === 'function') initCharts();
+
+                // Also check for hidden "Family" hash to auto-unlock?
+                // No, rely on localStorage.
+            }, 60);
         }
 
         function renderQuoteCard(c) {
@@ -2697,7 +4022,7 @@
 
             c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
                         <div class="quote-footer"><div class="author">— ${auth}</div></div>
-                        <svg class="refresh-btn" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.23 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
+                        <svg class="refresh-btn" viewBox="0 0 24 24" data-tooltip="New Quote"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.23 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
         }
 
         function renderFooter() {
@@ -2713,6 +4038,180 @@
             });
             fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
             fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
+            fd.innerHTML += `<span style="cursor:pointer; opacity:0.1; margin-left:12px;" onclick="openVault()" title="Vault" class="fill-anim">🔒</span>`;
+        }
+
+        function generateTOC() {
+            const placeholders = document.querySelectorAll('.toc-placeholder');
+            placeholders.forEach(ph => {
+                const container = ph.closest('.section, .layout-text, .layout-grid');
+                if (!container) return;
+
+                const headers = container.querySelectorAll('h1, h2, h3');
+                if (headers.length === 0) { ph.remove(); return; }
+
+                let html = '<div class="toc-container"><div class="toc-header">Table of Contents</div><ul class="toc-list">';
+                headers.forEach(h => {
+                    if (h.classList.contains('article-title') || h.closest('.article-meta-row')) return; // Skip main title/meta
+
+                    const id = h.id || `toc-${Math.random().toString(36).substr(2, 9)}`;
+                    h.id = id;
+                    const tag = h.tagName.toLowerCase();
+                    const depth = tag === 'h1' ? 1 : tag === 'h2' ? 2 : 3;
+                    html += `<li class="toc-item toc-depth-${depth}"><a href="#${id}" class="toc-link" onclick="event.preventDefault(); document.getElementById('${id}').scrollIntoView({behavior:'smooth'})">${h.textContent}</a></li>`;
+                });
+                html += '</ul></div>';
+                ph.outerHTML = html;
+            });
+        }
+
+        function addCopyButtons() {
+            document.querySelectorAll('pre').forEach(pre => {
+                if (pre.querySelector('.copy-btn')) return;
+
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.textContent = 'Copy';
+                // Inline styles for simplicity
+                btn.style.cssText = 'position:absolute; top:8px; right:8px; padding:4px 10px; font-size:11px; background:rgba(255,255,255,0.1); color:#ccc; border:1px solid rgba(255,255,255,0.2); border-radius:4px; cursor:pointer; opacity:0; transition:0.2s; backdrop-filter:blur(4px);';
+
+                pre.style.position = 'relative';
+                pre.onmouseenter = () => btn.style.opacity = '1';
+                pre.onmouseleave = () => btn.style.opacity = '0';
+
+                btn.onclick = () => {
+                    const code = pre.querySelector('code')?.innerText || pre.innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        btn.textContent = 'Copied!';
+                        btn.style.color = '#4caf50';
+                        btn.style.borderColor = '#4caf50';
+                        setTimeout(() => {
+                            btn.textContent = 'Copy';
+                            btn.style.color = '#ccc';
+                            btn.style.borderColor = 'rgba(255,255,255,0.2)';
+                        }, 2000);
+                    });
+                };
+                pre.appendChild(btn);
+            });
+        }
+
+        function initCharts() {
+            if (typeof Chart === 'undefined') return;
+            document.querySelectorAll('.smart-chart:not([data-initialized])').forEach(canvas => {
+                canvas.setAttribute('data-initialized', 'true');
+                const ctx = canvas.getContext('2d');
+                const type = canvas.getAttribute('data-type');
+                const labels = canvas.getAttribute('data-labels').split('||');
+                const values = canvas.getAttribute('data-values').split('||').map(Number);
+                const title = canvas.getAttribute('data-title');
+
+                new Chart(ctx, {
+                    type: type,
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Data',
+                            data: values,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)', 'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)', 'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#ccc' } },
+                            title: { display: !!title, text: title, color: '#fff', font: { size: 14 } }
+                        },
+                        scales: (type === 'pie' || type === 'doughnut') ? {} : ((type === 'bar' || type === 'line') ? {
+                            y: { ticks: { color: '#888' }, grid: { color: '#333' }, beginAtZero: true },
+                            x: { ticks: { color: '#888' }, grid: { color: 'transparent' } }
+                        } : {
+                            r: { grid: { color: '#333' }, ticks: { display: false } }
+                        })
+                    }
+                });
+            });
+        }
+
+        function openVault() {
+            const key = prompt("Enter Vault Key (Sheet ID):");
+            if (!key) return;
+            loadVault(key);
+        }
+
+        async function loadVault(key) {
+            const url = `https://docs.google.com/spreadsheets/d/e/${key}/pub?output=csv`;
+            try {
+                const data = await fetchCSV(url);
+                if (data && data.length > 0) {
+                    // MERGE
+                    const familyRows = data.map(r => ({ ...r, Page: 'Family' }));
+                    db = [...db, ...familyRows];
+                    localStorage.setItem('vault_key', key);
+                    startApp();
+                } else {
+                    alert("Vault Empty or Invalid Key.");
+                }
+            } catch (e) {
+                alert("Access Denied.");
+            }
+        }
+
+        function loadDemoData() {
+            const d = new Date();
+            const today = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+
+            // PARALLEL UNIVERSE: "Sahib Prime"
+            db = [
+                // === HERO & RECENT ACTIVITY ===
+                { Page: 'Projects/Orbital', Title: 'Orbital Lift OS', SectionType: 'Hero', Content: "Designed the operating system for the first commercial space elevator. Focusing on unparalleled reliability and zero-g UX paradigms.", Timestamp: today, Tags: "Featured, UX" },
+
+                // === PROJECTS ===
+                { Page: 'Projects/Orbital', Title: 'Project Manual', SectionType: 'Card', Content: "Reference for new recruits:\n> [!info] Feature Checklist\n> - [x] **Secure Vault Access**\n> - [x] **Zero-G Calibration**\n> - [ ] ==Deep Space Comms== (Pending)\n\n### System Specs\n| Module | Status | Load |\n|---|---|---|\n| Life Support | **Active** | 45% |\n| Gravity Gen | `Standby` | 0% |\n| Nav Comp | **Active** | 88% |\n", Timestamp: today },
+
+                // === DOCUMENTATION ===
+                { Page: 'Docs/Cheatsheet', Title: 'Authoring Guide', SectionType: 'Article', Content: "Comprehensive guide to all supported features.\n\n## 1. Rich Callouts\n> [!info] Info Block\n> Useful for general information.\n\n> [!warning] Warning Block\n> Use for critical alerts.\n\n> [!tip] Pro Tip\n> Use for helpful shortcuts.\n\n## 2. Dynamic Charts\nCreate charts using `> [!chart]` syntax:\n> [!chart] User Growth\n> Jan: 10\n> Feb: 20\n> Mar: 40\n\n## 3. Mermaid Diagrams\n```mermaid\ngraph LR\nA[Start] --> B(Process)\nB --> C{Decision}\nC -->|Yes| D[End]\nC -->|No| B\n```\n\n## 4. Tables\n| Feature | Status | Notes |\n|---|---|---|\n| Tables | **Ready** | Supports Sort |\n| Charts | **Ready** | Chart.js |\n| Vault | `Locked` | AES-256 |\n\n## 5. Embeds & Media\n- **YouTube**: Simply paste the URL.\n- **3D Models**: `{{STL: url | color}}`\n- **Buttons**: `{{BTN: Label | URL}}`\n\n## 6. Task Lists\n- [x] Completed Task\n- [ ] Pending Task\n- [ ] ==Highlighted Task==\n", Timestamp: today },
+
+                // === LOCKED AREA EXAMPLE ===
+                { Page: 'System/Locked', Title: 'Restricted Access', SectionType: 'Card', Content: "> [!failure] **ACCESS DENIED**\n> Biometric scan required for entry.\n> \n> `ERR_AUTH_99`\n\nEncrypted Partition detected.\nPlease contact administrator.\n\n{{BTN: Request Access | #}}", Timestamp: today },
+
+                { Page: 'Projects/Orbital', Title: 'Architecture Diagram', SectionType: 'Card', Content: "The core lift logic handles thousands of concurrent data streams:\n```mermaid\ngraph TD\nA[Ground Station] -->|Fiber Link| B{Lift Car}\nB -->|Telemetry| C[Space Station]\nC -->|Status| A\nB -->|User Input| D[Local AI]\n```", Timestamp: today },
+
+                { Page: 'Projects/Neural', Title: 'Neural Net To-Do', SectionType: 'Card', Content: "Model Training Schedule:\n> [!chart] Accuracy over Time\n> Week 1: 45\n> Week 2: 78\n> Week 3: 92\n> Week 4: 99\n\n### Training Logs\n| Epoch | Loss | Accuracy | Time |\n|---|---|---|---|\n| 100 | 0.54 | 82% | 2m |\n| 200 | 0.32 | 89% | 4m |\n| 500 | 0.11 | **99%** | 10m |\n\n> [!tip] Optimization\n> Use `Adam` optimizer with `lr=0.001`.", Timestamp: today, Tags: "AI, Featured" },
+
+                { Page: 'Projects/Neural', Title: 'Code Snippet', SectionType: 'Card', Content: "Core prediction algorithm (Python):\n```python\ndef predict_task(user_history):\n    context = get_context()\n    prob = model.inference(user_history, context)\n    return prob > 0.95\n```", Timestamp: today },
+
+                { Page: 'Projects/Mars', Title: 'Mars Colony UI', SectionType: 'Card', Content: "Designing for high-latency environments (20min delay). Interfaces must be optimistic but honest.\n> [!gallery]\n> ![Dashboard](https://picsum.photos/id/40/800/500)\n> ![Comms](https://picsum.photos/id/20/800/500)\n> ![Map](https://picsum.photos/id/60/800/500)", Timestamp: today, Tags: "UI, Space" },
+
+                // === PROFESSIONAL ===
+                { Page: 'Professional/Stats', Title: 'Skill Radar', SectionType: 'Chart', Tags: 'Radar', Content: "UX Design: 95\nReact/JS: 90\nPython: 85\nZero-G Physics: 70\nLeadership: 80", Timestamp: today, Page: 'Professional' },
+
+                { Page: 'Professional/History', Title: 'Career Timeline', SectionType: 'Card', Content: "My journey through the cosmos:\n> [!timeline]\n> 2022 - Junior Dev at EarthCorp\n> 2024 - Senior UX at MoonBase Alpha\n> 2026 - Lead Architect at MarsOne", Timestamp: today },
+
+                // === PERSONAL ===
+                { Page: 'Personal/Finance', Title: 'Space Credits Spent', SectionType: 'Chart', Tags: 'Doughnut', Content: "Fuel: 4000\nRations: 1500\nOxygen: 2000\nGadgets: 3500", Timestamp: today, Page: 'Personal' },
+
+                { Page: 'Personal/Travel', Title: 'Travel Log', SectionType: 'Card', Content: "Recent trips across the system.\n{{ROW: https://picsum.photos/id/1015/400/300 | https://picsum.photos/id/1016/400/300 }}\n> [!info] The canyon view was incredible.", Timestamp: today },
+
+                // === EXTRAS ===
+                { Page: 'Demo/Math', Title: 'Quantum Mechanics', SectionType: 'Card', Content: "Calculating jump coordinates:\n$$ \\Delta x \\Delta p \\ge \\frac{\\hbar}{2} $$", Timestamp: today, Tags: "Math" },
+                { Page: 'Demo/Components', Title: 'UI Components', SectionType: 'Card', Content: "Standard Alert System:\n> [!danger] Oxygen Low\n> [!warning] Battery at 15%\n> [!success] Docking Complete\n\n{{BTN: Initiate Launch | #}}", Timestamp: today }
+            ];
+
+            // Add some quotes
+            quotesDb = [
+                { Content: "The future is already here, it's just unevenly distributed.", Author: "William Gibson" },
+                { Content: "I've seen things you people wouldn't believe.", Author: "Roy Batty" }
+            ];
+
+            startApp();
+            alert("Parallel Universe Loaded! Welcome to Universe-42.");
+            window.location.hash = 'Home'; // Go Home to see the "Featured" Hero
         }
 
         function fetchGitHubStats() {
@@ -2830,7 +4329,7 @@
                 const ui = document.createElement('div');
                 ui.className = 'stl-controls';
                 ui.innerHTML = `
-                    <div class="stl-btn" title="Fullscreen" id="btn-full"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></div>
+                    <div class="stl-btn" data-tooltip="Fullscreen" id="btn-full"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></div>
                 `;
                 container.appendChild(ui);
 
@@ -2869,20 +4368,30 @@
                 });
             }
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            // --- IMPROVED LIGHTING SETUP ---
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Increased base brightness
             scene.add(ambientLight);
 
-            const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6); // Soft overhead fill
+            hemiLight.position.set(0, 20, 0);
+            scene.add(hemiLight);
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.2); // Main strong light
             keyLight.position.set(5, 10, 7);
             scene.add(keyLight);
 
-            const backLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            backLight.position.set(-5, 5, -10);
-            scene.add(backLight);
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.8); // Softer fill from opposite side
+            fillLight.position.set(-5, 0, -5);
+            scene.add(fillLight);
+
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.5); // Back/Rim light for edge definition
+            rimLight.position.set(0, 5, -10);
+            scene.add(rimLight);
 
             const controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
+            // GRID-LOCKED: Disable damping for 1:1 grab feel
+            controls.enableDamping = false;
+            controls.rotateSpeed = 0.8;
             controls.enablePan = false;
             controls.autoRotate = true;
             controls.autoRotateSpeed = 2.0;
@@ -2972,6 +4481,64 @@
             };
 
             window.addEventListener('resize', resizeHandler);
+        }
+
+        // --- UTIL FUNCTIONS (Global) ---
+
+        function runMermaid() {
+            if (window.mermaid) {
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: 'dark',
+                    gantt: {
+                        barHeight: 30, fontSize: 14, sectionFontSize: 14,
+                        padding: 15, topPadding: 60
+                    }
+                });
+                document.querySelectorAll('.mermaid').forEach(el => mermaid.init(undefined, el));
+            }
+        }
+
+        function copyTable(btn) {
+            const table = btn.parentElement.querySelector('table');
+            let csv = [];
+            table.querySelectorAll('tr').forEach(row => {
+                const rowData = [];
+                row.querySelectorAll('td, th').forEach(col => rowData.push('"' + col.innerText + '"'));
+                csv.push(rowData.join(','));
+            });
+            navigator.clipboard.writeText(csv.join('\n'));
+            const og = btn.innerText;
+            btn.innerText = "COPIED";
+            setTimeout(() => btn.innerText = og, 2000);
+        }
+
+
+
+        // --- MERMAID SUPPORT ---
+        let mermaidAPI = null;
+        function initMermaid() {
+            if (mermaidAPI) return;
+            // Lazy load only if needed (checked in runMermaid or if global init called)
+            import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs')
+                .then(m => {
+                    mermaidAPI = m.default;
+                    mermaidAPI.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
+                    runMermaid();
+                }).catch(e => console.log('Mermaid failed to load', e));
+        }
+
+        function runMermaid() {
+            const nodes = document.querySelectorAll('.mermaid:not([data-processed])');
+            if (nodes.length === 0) return;
+
+            if (!mermaidAPI) {
+                initMermaid();
+                return;
+            }
+
+            // Mermaid run is a promise but we don't strictly need to await it here
+            mermaidAPI.run({ nodes: [...nodes] }).catch(console.error);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
