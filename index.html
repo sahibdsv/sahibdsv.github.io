@@ -548,8 +548,22 @@
             text-decoration: underline solid #fff;
         }
 
+        /* Wiki Links & Index Links (force underline over fill-anim) */
+        a.wiki-link,
+        a.index-link {
+            text-decoration: underline dotted #fff;
+            text-underline-offset: 4px;
+            text-decoration-thickness: 1px;
+            transition: color 0.2s, text-decoration-color 0.2s;
+        }
+
+        a.wiki-link:hover,
+        a.index-link:hover {
+            text-decoration: underline solid #fff;
+        }
+
         /* Overrides for specific areas */
-        .article-body a:not(.wiki-link) {
+        .article-body a {
             text-decoration: underline dotted #fff;
             text-underline-offset: 4px;
         }
