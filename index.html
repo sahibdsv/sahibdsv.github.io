@@ -2939,6 +2939,12 @@
         /* --- ANALYTICS ENGINE --- */
         const Analytics = {
             trackView: (path, title) => {
+                // IGNORE LOCAL DEV OR MANUALLY IGNORED USERS
+                if (location.hostname === 'localhost' || localStorage.getItem('analytics_ignore') === 'true') {
+                    console.log('Analytics Ignored (Dev/Local)');
+                    return;
+                }
+
                 // 1. GoatCounter
                 if (window.goatcounter && window.goatcounter.count) {
                     window.goatcounter.count({
@@ -2953,6 +2959,8 @@
                 }
             },
             trackEvent: (name, data = {}) => {
+                if (location.hostname === 'localhost' || localStorage.getItem('analytics_ignore') === 'true') return;
+
                 // Umami Events
                 if (window.umami && window.umami.track) {
                     window.umami.track(name, data);
