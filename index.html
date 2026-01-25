@@ -2593,30 +2593,48 @@
         }
 
         /* BTN-PILL STYLES */
+        /* BTN-PILL STYLES */
         .btn-pill {
             display: inline-block;
-            padding: 8px 20px;
-            border: 1px solid var(--text-dim, #777);
-            border-radius: 50px;
-            color: var(--text-dim, #777);
-            background: transparent;
-            text-decoration: none !important;
+            padding: 8px 18px;
+
+            /* Typography: Match Date Badge */
             font-size: 14px;
             font-weight: 500;
-            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            font-family: 'Jost', sans-serif;
+            text-decoration: none !important;
+            text-align: center;
             line-height: 1.2;
+            vertical-align: middle;
             cursor: pointer;
             box-sizing: border-box;
-            /* Prevent jumping */
             margin: 4px 10px 4px 0;
-            text-align: center;
+
+            /* Colors: exact match to .date-badge */
+            color: #666 !important;
+            background: transparent !important;
+            border: 1px solid var(--border, #222) !important;
+            border-radius: 50px;
+
+            /* Transition */
+            transition: color 0.2s ease !important;
+
+            /* Resets */
+            box-shadow: none !important;
+            text-shadow: none !important;
+            outline: none !important;
         }
 
         .btn-pill:hover {
-            border-color: var(--text-main, #fff);
-            background: var(--text-main, #fff);
-            color: var(--bg, #000);
-            transform: translateY(-1px);
+            color: #fff !important;
+            border-color: var(--border, #222) !important;
+            background: transparent !important;
+            transform: none !important;
+        }
+
+        .btn-pill::before {
+            display: none !important;
+            content: none !important;
         }
     </style>
 
@@ -3524,13 +3542,21 @@
         }
 
         function renderFiltered(t) {
+            // MATCH: YYYY-MM-DD or YYYY-MM
             const dateMatch = t.match(/^(\d{4})-(\d{2})(-\d{2})?$/);
+            // MATCH: YYYYMM... (Raw)
+            const rawMatch = t.match(/^(\d{4})(\d{2})/);
+
             let displayTitle = t;
 
             if (dateMatch) {
                 const d = new Date(dateMatch[1], parseInt(dateMatch[2]) - 1, 1);
                 const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
                 displayTitle = `${mo} ${dateMatch[1]}`;
+            } else if (rawMatch) {
+                const d = new Date(rawMatch[1], parseInt(rawMatch[2]) - 1, 1);
+                const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+                displayTitle = `${mo} ${rawMatch[1]}`;
             }
 
             const res = db.filter(r => {
@@ -4194,15 +4220,25 @@
             rows.forEach((r, index) => {
                 if (!r.Page || r.Page === 'Footer') return;
 
-                // HELPER: PROCESS TAGS (Standard vs Location)
+                // HELPER: PROCESS TAGS (Standard vs Location vs Link)
                 const processTag = (t) => {
                     // Check for [Label](URL) pattern
                     const match = t.match(/^\[(.*?)\]\((.*?)\)$/);
                     if (match) {
                         const label = match[1];
                         const url = match[2];
-                        const icon = `<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
-                        return `<a href="${url}" target="_blank" class="chip location" onclick="event.stopPropagation()">${icon}${safeHTML(label)}</a>`;
+
+                        // Check if it's a Google Maps link
+                        const isMap = /maps\.app\.goo\.gl|google\.com\/maps/i.test(url);
+
+                        if (isMap) {
+                            const icon = `<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
+                            return `<a href="${url}" target="_blank" class="chip location" onclick="event.stopPropagation()">${icon}${safeHTML(label)}</a>`;
+                        } else {
+                            // Generic External Link
+                            const icon = `<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+                            return `<a href="${url}" target="_blank" class="chip location link" onclick="event.stopPropagation()">${icon}${safeHTML(label)}</a>`;
+                        }
                     }
                     // Standard Tag
                     return `<span class="chip" data-tag="${t}">${safeHTML(t)}</span>`;
