@@ -4498,57 +4498,6 @@
 
 
 
-        function loadDemoData() {
-            const d = new Date();
-            const today = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
-
-            // PARALLEL UNIVERSE: "Sahib Prime"
-            db = [
-                // === HERO & RECENT ACTIVITY ===
-                { Page: 'Projects/Orbital', Title: 'Orbital Lift OS', SectionType: 'Hero', Content: "Designed the operating system for the first commercial space elevator. Focusing on unparalleled reliability and zero-g UX paradigms.", Timestamp: today, Tags: "Featured, UX" },
-
-                // === PROJECTS ===
-                { Page: 'Projects/Orbital', Title: 'Project Manual', SectionType: 'Card', Content: "Reference for new recruits:\n> [!info] Feature Checklist\n> - [x] **Secure Vault Access**\n> - [x] **Zero-G Calibration**\n> - [ ] ==Deep Space Comms== (Pending)\n\n### System Specs\n| Module | Status | Load |\n|---|---|---|\n| Life Support | **Active** | 45% |\n| Gravity Gen | `Standby` | 0% |\n| Nav Comp | **Active** | 88% |\n", Timestamp: today },
-
-                // === DOCUMENTATION ===
-                { Page: 'Docs/Cheatsheet', Title: 'Authoring Guide', SectionType: 'Article', Content: "Comprehensive guide to all supported features.\n\n## 1. Rich Callouts\n> [!info] Info Block\n> Useful for general information.\n\n> [!warning] Warning Block\n> Use for critical alerts.\n\n> [!tip] Pro Tip\n> Use for helpful shortcuts.\n\n## 2. Dynamic Charts\nCreate charts using `> [!chart]` syntax:\n> [!chart] User Growth\n> Jan: 10\n> Feb: 20\n> Mar: 40\n\n## 3. Mermaid Diagrams\n```mermaid\ngraph LR\nA[Start] --> B(Process)\nB --> C{Decision}\nC -->|Yes| D[End]\nC -->|No| B\n```\n\n## 4. Tables\n| Feature | Status | Notes |\n|---|---|---|\n| Tables | **Ready** | Supports Sort |\n| Charts | **Ready** | Chart.js |\n\n## 5. Embeds & Media\n- **YouTube**: Simply paste the URL.\n- **3D Models**: `{{STL: url | color}}`\n- **Buttons**: `{{BTN: Label | URL}}`\n\n## 6. Task Lists\n- [x] Completed Task\n- [ ] Pending Task\n- [ ] ==Highlighted Task==\n", Timestamp: today },
-
-
-
-                { Page: 'Projects/Orbital', Title: 'Architecture Diagram', SectionType: 'Card', Content: "The core lift logic handles thousands of concurrent data streams:\n```mermaid\ngraph TD\nA[Ground Station] -->|Fiber Link| B{Lift Car}\nB -->|Telemetry| C[Space Station]\nC -->|Status| A\nB -->|User Input| D[Local AI]\n```", Timestamp: today },
-
-                { Page: 'Projects/Neural', Title: 'Neural Net To-Do', SectionType: 'Card', Content: "Model Training Schedule:\n> [!chart] Accuracy over Time\n> Week 1: 45\n> Week 2: 78\n> Week 3: 92\n> Week 4: 99\n\n### Training Logs\n| Epoch | Loss | Accuracy | Time |\n|---|---|---|---|\n| 100 | 0.54 | 82% | 2m |\n| 200 | 0.32 | 89% | 4m |\n| 500 | 0.11 | **99%** | 10m |\n\n> [!tip] Optimization\n> Use `Adam` optimizer with `lr=0.001`.", Timestamp: today, Tags: "AI, Featured" },
-
-                { Page: 'Projects/Neural', Title: 'Code Snippet', SectionType: 'Card', Content: "Core prediction algorithm (Python):\n```python\ndef predict_task(user_history):\n    context = get_context()\n    prob = model.inference(user_history, context)\n    return prob > 0.95\n```", Timestamp: today },
-
-                { Page: 'Projects/Mars', Title: 'Mars Colony UI', SectionType: 'Card', Content: "Designing for high-latency environments (20min delay). Interfaces must be optimistic but honest.\n> [!gallery]\n> ![Dashboard](https://picsum.photos/id/40/800/500)\n> ![Comms](https://picsum.photos/id/20/800/500)\n> ![Map](https://picsum.photos/id/60/800/500)", Timestamp: today, Tags: "UI, Space" },
-
-                // === PROFESSIONAL ===
-                { Page: 'Professional/Stats', Title: 'Skill Radar', SectionType: 'Chart', Tags: 'Radar', Content: "UX Design: 95\nReact/JS: 90\nPython: 85\nZero-G Physics: 70\nLeadership: 80", Timestamp: today, Page: 'Professional' },
-
-                { Page: 'Professional/History', Title: 'Career Timeline', SectionType: 'Card', Content: "My journey through the cosmos:\n> [!timeline]\n> 2022 - Junior Dev at EarthCorp\n> 2024 - Senior UX at MoonBase Alpha\n> 2026 - Lead Architect at MarsOne", Timestamp: today },
-
-                // === PERSONAL ===
-                { Page: 'Personal/Finance', Title: 'Space Credits Spent', SectionType: 'Chart', Tags: 'Doughnut', Content: "Fuel: 4000\nRations: 1500\nOxygen: 2000\nGadgets: 3500", Timestamp: today, Page: 'Personal' },
-
-                { Page: 'Personal/Travel', Title: 'Travel Log', SectionType: 'Card', Content: "Recent trips across the system.\n{{ROW: https://picsum.photos/id/1015/400/300 | https://picsum.photos/id/1016/400/300 }}\n> [!info] The canyon view was incredible.", Timestamp: today },
-
-                // === EXTRAS ===
-                { Page: 'Demo/Math', Title: 'Quantum Mechanics', SectionType: 'Card', Content: "Calculating jump coordinates:\n$$ \\Delta x \\Delta p \\ge \\frac{\\hbar}{2} $$", Timestamp: today, Tags: "Math" },
-                { Page: 'Demo/Components', Title: 'UI Components', SectionType: 'Card', Content: "Standard Alert System:\n> [!danger] Oxygen Low\n> [!warning] Battery at 15%\n> [!success] Docking Complete\n\n{{BTN: Initiate Launch | #}}", Timestamp: today }
-            ];
-
-            // Add some quotes
-            quotesDb = [
-                { Content: "The future is already here, it's just unevenly distributed.", Author: "William Gibson" },
-                { Content: "I've seen things you people wouldn't believe.", Author: "Roy Batty" }
-            ];
-
-            startApp();
-            alert("Parallel Universe Loaded! Welcome to Universe-42.");
-            window.location.hash = 'Home'; // Go Home to see the "Featured" Hero
-        }
-
         function fetchGitHubStats() {
             const r = "sahibdsv/sahibdsv.github.io";
             fetch(`https://api.github.com/repos/${r}`)
