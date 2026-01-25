@@ -2520,6 +2520,7 @@
         .grid-text-preview {
             display: -webkit-box;
             -webkit-line-clamp: 4;
+            line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -2639,30 +2640,36 @@
 
         /* REFINED FOOTER CSS */
         footer {
-            text-align: center;
-            padding: 30px 20px;
-            border-top: 1px solid #1a1a1a;
-            margin-top: 30px;
+            margin-top: 60px;
+            /* Reduced from 100px */
+            padding-bottom: 40px;
+            /* Reduced from 50px */
+            /* Flex Layout */
             display: flex;
             flex-wrap: wrap;
+            /* Allow wrapping only if needed */
             justify-content: center;
             align-items: center;
-            gap: 6px 30px;
-            /* Reduced vertical gap */
-            max-width: 1000px;
+            gap: 20px;
+            /* Single consistent gap */
+            width: 100%;
+            max-width: 1200px;
             margin-left: auto;
             margin-right: auto;
-            width: 100%;
+            text-align: center;
+            padding: 30px 20px;
             border-top: 1px solid #1a1a1a;
         }
 
         #footer-links {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 20px;
             flex-wrap: wrap;
+            /* Links can wrap inside their container if needed */
+            justify-content: center;
             align-items: center;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
         }
 
         #footer-links a {
@@ -2670,27 +2677,41 @@
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
-            white-space: nowrap;
-            border-bottom: none !important;
-            /* Ensure consistency */
-            align-items: center;
+            line-height: 1;
+            /* Explicit alignment */
+        }
+
+        #footer-links a:hover {
+            color: #fff;
         }
 
         #footer-meta {
+            /* Container for version tag */
             display: flex;
             align-items: center;
-            gap: 15px;
+            margin: 0;
         }
 
         #version-tag {
-            font-size: 14px;
-            font-weight: 400;
-            color: #666;
-            white-space: nowrap;
             font-family: 'Jost', sans-serif;
-            --text-base: #666;
-            --text-hover: #fff;
+            font-size: 14px;
+            /* MATCH LINKS EXACTLY */
+            color: #666;
+            margin: 0;
             line-height: 1;
+            /* MATCH LINKS EXACTLY */
+            opacity: 0.8;
+            white-space: nowrap;
+        }
+
+        /* Prevent wrapping on desktop to keep everything on one line */
+        @media (min-width: 768px) {
+            footer {
+                flex-wrap: nowrap;
+                justify-content: center;
+                gap: 30px;
+                /* Increase gap slightly for single line */
+            }
         }
 
         /* VAULT ICON FIXES */
@@ -3420,7 +3441,7 @@
             if (ex.length > 0) { renderRows(ex, null, true, false, !isMainPage); }
             else if (childrenPagesCheck(p)) { }
             else {
-                app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Return to Base</a></div>`;
+                app.innerHTML = `<div class="layout-404"><h1>404</h1><h2>Data Not Found</h2><p>This page doesn't exist in the database yet.</p><a href="#" class="btn-primary" onclick="resetToHome()">Go Home</a></div>`;
                 return;
             }
             if (isMainPage) {
