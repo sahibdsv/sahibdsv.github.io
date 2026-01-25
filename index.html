@@ -6,23 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Sahib Virdee | Engineering Portfolio</title>
-    <meta name="description"
-        content="Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.">
+    <link rel="canonical" href="https://sahibvirdee.com/" />
+    <meta name="description" content="Mechanical Engineering Graduate. Focused on Design and Manufacturing.">
     <meta name="author" content="Sahib Virdee">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sahibvirdee.com/">
     <meta property="og:title" content="Sahib Virdee | Engineering Portfolio">
-    <meta property="og:description"
-        content="Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.">
+    <meta property="og:description" content="Mechanical Engineering Graduate. Focused on Design and Manufacturing.">
     <meta property="og:image" content="https://placehold.co/1200x630/050505/FFF?text=Sahib+Virdee">
 
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://sahibvirdee.com/">
     <meta property="twitter:title" content="Sahib Virdee | Engineering Portfolio">
     <meta property="twitter:description"
-        content="Mechanical Engineering Student. EV Design, Manufacturing, and Computational Analysis.">
+        content="Mechanical Engineering Graduate. Focused on Design and Manufacturing.">
     <meta property="twitter:image" content="https://placehold.co/1200x630/050505/FFF?text=Sahib+Virdee">
+
+    <!-- Prevent Caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
 
     <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
@@ -2833,6 +2838,7 @@
             if (window.location.search) history.replaceState(null, null, window.location.pathname + window.location.hash);
 
             initApp();
+            updateSEO(); // Inject Structured Data
             renderFooter();
             fetchGitHubStats();
             initImageZoomers();
@@ -4799,10 +4805,55 @@
             import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs')
                 .then(m => {
                     mermaidAPI = m.default;
-                    mermaidAPI.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
-                    runMermaid();
-                }).catch(e => console.log('Mermaid failed to load', e));
+                    mermaidAPI.initialize({ startOnLoad: false, theme: 'dark' });
+                    // Re-run if pending
+                    document.querySelectorAll('.mermaid').forEach(el => mermaidAPI.init(undefined, el));
+                });
         }
+
+        /* --- SEO: JSON-LD INJECTION --- */
+        function updateSEO() {
+            // Remove existing JSON-LD
+            const existing = document.getElementById('json-ld-script');
+            if (existing) existing.remove();
+
+            const script = document.createElement('script');
+            script.id = 'json-ld-script';
+            script.type = 'application/ld+json';
+
+            const items = db.map(r => {
+                if (!r.Title || !r.Content) return null;
+                const type = r.Page.toLowerCase().includes('project') ? 'SoftwareSourceCode' : 'CreativeWork';
+                return {
+                    "@type": type,
+                    "name": r.Title,
+                    "description": r.Content.substring(0, 150) + '...',
+                    "url": `https://sahibvirdee.com/#${r.Page}`
+                };
+            }).filter(x => x);
+
+            const schema = {
+                "@context": "https://schema.org",
+                "@type": "ProfilePage",
+                "mainEntity": {
+                    "@type": "Person",
+                    "name": "Sahib Virdee",
+                    "jobTitle": "Mechanical Engineering Graduate",
+                    "description": "Specializing in Design and Manufacturing.",
+                    "url": "https://sahibvirdee.com/",
+                    "sameAs": [
+                        "https://github.com/sahibdsv",
+                        "https://www.linkedin.com/in/sahibdsv/"
+                    ]
+                },
+                "hasPart": items
+            };
+
+            script.textContent = JSON.stringify(schema);
+            document.head.appendChild(script);
+            // console.log('SEO Updated: JSON-LD Injected');
+        }
+
 
         function runMermaid() {
             const nodes = document.querySelectorAll('.mermaid:not([data-processed])');
