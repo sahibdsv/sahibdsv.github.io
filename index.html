@@ -3453,10 +3453,10 @@
             const hr = db.filter(r => r.Page === 'Home');
             const app = document.getElementById('app'); app.innerHTML = '';
             renderRows(hr, null, true);
-            const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer' && r.SectionType === 'Card')
+            const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
                 .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                 .slice(0, 6);
-            if (recents.length > 0) { renderRows(recents, "Recent Activity", true, false, false, true); }
+            if (recents.length > 0) { renderRows(recents, "Recent Activity", true, true, false, true); }
         }
 
         function detectEmbed(url) {
