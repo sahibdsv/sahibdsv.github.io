@@ -4137,7 +4137,7 @@
                     if (type === 'quote') {
                         const d = document.createElement('div'); d.className = 'layout-quote section';
                         d.setAttribute('data-title', r.Title || '');
-                        if (r.Title !== 'Random') {
+                        if ((r.Title || '').toLowerCase() !== 'random quote') {
                             d.setAttribute('data-static-quote', r.Content || r.Quote || '');
                             d.setAttribute('data-static-author', r.Author || 'Sahib Virdee');
                         }
@@ -4251,7 +4251,7 @@
             let r;
             let showDice = false;
 
-            if (title === 'Random') {
+            if ((title || '').toLowerCase() === 'random quote') {
                 if (quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
                 r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
                 showDice = true;
