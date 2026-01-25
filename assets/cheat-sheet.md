@@ -37,7 +37,8 @@ Use these anywhere in the `Content` field.
 | **3D Model** | `{{STL: URL | Color?}}` | `{{STL: model.stl | #fab}}` |
 | **Comparison** | `{{COMPARE: BeforeUrl | AfterUrl}}` | `{{COMPARE: old.jpg | new.jpg}}` |
 | **Statistic** | `{{STAT: Value | Label}}` | `{{STAT: 99% | Uptime}}` |
-| **Image Row** | `URL, URL, URL` | `img1.jpg, img2.jpg` (Must be comma-separated lines) |
+| **Location Tag** | `[City, Prov](GoogleMapUrl)` | *(Use in Tags field)* `[Toronto](https://maps...)` |
+
 
 *Note: `{{3D:...}}` is an alias for `{{STL:...}}`.*
 
