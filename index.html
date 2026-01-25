@@ -35,6 +35,14 @@
 
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
+    <!-- ANALYTICS PREP -->
+    <!-- 1. GoatCounter (Active) -->
+    <script data-goatcounter="https://sahib.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+    <!-- 2. Umami (Active) -->
+    <script defer src="https://cloud.umami.is/script.js"
+        data-website-id="74d145bb-4d10-4b7b-ab9f-7d1eb7a4db49"></script>
+
     <style>
         /* --- DESIGN SYSTEM --- */
         @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
@@ -2928,18 +2936,39 @@
             return html;
         }
 
+        /* --- ANALYTICS ENGINE --- */
+        const Analytics = {
+            trackView: (path, title) => {
+                // 1. GoatCounter
+                if (window.goatcounter && window.goatcounter.count) {
+                    window.goatcounter.count({
+                        path: path,
+                        title: title,
+                        event: false,
+                    });
+                }
+                // 2. Umami
+                if (window.umami && window.umami.track) {
+                    window.umami.track(props => ({ ...props, url: path, title: title }));
+                }
+            },
+            trackEvent: (name, data = {}) => {
+                // Umami Events
+                if (window.umami && window.umami.track) {
+                    window.umami.track(name, data);
+                }
+            }
+        };
+
         function initApp() {
             handleRouting();
             window.addEventListener('hashchange', handleRouting);
 
             window.addEventListener('hashchange', function (e) {
-                if (window.goatcounter && window.goatcounter.count) {
-                    window.goatcounter.count({
-                        path: location.pathname + location.search + location.hash,
-                        title: location.hash.substring(1) || 'Home',
-                        event: false,
-                    });
-                }
+                Analytics.trackView(
+                    location.pathname + location.search + location.hash,
+                    location.hash.substring(1) || 'Home'
+                );
             });
 
             window.addEventListener('scroll', () => {
@@ -4342,7 +4371,7 @@
             fd.innerHTML = '';
 
             // 2. RENDER LINKS
-            fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
+            fd.innerHTML += `<a href="https://cloud.umami.is/share/HK1oWrZklaWWH67d" target="_blank" class="fill-anim">Analytics</a>`;
             fr.forEach(r => {
                 let link = r.LinkURL;
                 if (r.Title === 'Contact') {
