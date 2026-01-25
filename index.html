@@ -68,7 +68,6 @@
 
         html {
             scroll-behavior: smooth;
-            overflow-x: hidden;
             width: 100%;
         }
 
@@ -87,9 +86,7 @@
             overflow-x: hidden;
         }
 
-        body.search-active {
-            padding-top: 140px !important;
-        }
+
 
         p,
         h1,
@@ -146,6 +143,15 @@
             color: var(--text-hover, #fff) !important;
         }
 
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: 600;
+        }
+
         h1.fill-anim,
         h2.fill-anim {
             --text-base: #fff;
@@ -171,9 +177,7 @@
             transition: transform 0.4s var(--ease);
         }
 
-        body.search-active #main-header {
-            transform: translateY(-100%);
-        }
+
 
         /* --- HEADER ROWS --- */
         #brand-name {
@@ -359,11 +363,14 @@
             align-items: center;
             justify-content: center;
             z-index: 1002;
-            transition: top 0.4s var(--ease), opacity 0.2s;
+            transform: translateY(0);
+            transition: transform 0.6s cubic-bezier(0.2, 0, 0, 1), opacity 0.4s var(--ease), height 0.6s cubic-bezier(0.2, 0, 0, 1);
         }
 
         #main-header.scrolled #search-controls {
             opacity: 0;
+            height: 0;
+            transform: translateY(-20px);
             pointer-events: none;
         }
 
@@ -387,6 +394,28 @@
             opacity: 1;
         }
 
+        /* ANIMATED MASK ICONS */
+        .fill-anim-mask {
+            background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #666) 50.5%);
+            background-size: 100% 205%;
+            background-position: 0 0;
+            transition: background-position 0.5s var(--ease);
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .icon-search-mask {
+            -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>') no-repeat center;
+            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>') no-repeat center;
+            -webkit-mask-size: 24px;
+            mask-size: 24px;
+        }
+
+        .icon-btn-wrapper:hover .fill-anim-mask {
+            background-position: 0 100%;
+        }
+
         /* LEGACY TOOLTIP REMOVED - Using Global System */
 
         /* --- SEARCH BUBBLE --- */
@@ -405,7 +434,7 @@
             background: #151515;
             z-index: 9999;
             border-radius: var(--card-radius);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 20px 60px 10px rgba(0, 0, 0, 0.95);
             border: 1px solid var(--border-hover);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
             opacity: 0;
@@ -490,10 +519,6 @@
             }
 
             /* Disable tooltips on mobile */
-            [data-tooltip]::before,
-            [data-tooltip]::after {
-                display: none !important;
-            }
         }
 
         /* --- CONTENT --- */
@@ -571,6 +596,34 @@
         a.wiki-link:hover {
             text-decoration: none !important;
             border-bottom: 1px solid #fff;
+        }
+
+        @keyframes dice-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .dice-icon {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.5s ease;
+            z-index: 10;
+            color: #555;
+            /* Dim default */
+        }
+
+        .dice-icon:hover {
+            color: #fff;
+            transform: rotate(180deg);
         }
 
         /* Index Links (Clean, no line) */
@@ -1075,18 +1128,51 @@
             margin-top: 5px;
         }
 
-        .layout-grid h3 {
-            font-size: 20px;
-            font-weight: 500;
+        .layout-grid h1,
+        .layout-grid h2,
+        .layout-grid h3,
+        .layout-grid h4,
+        .layout-grid h5,
+        .layout-grid h6 {
             margin: 0;
             display: flex;
             align-items: center;
             gap: 6px;
             --text-base: #eee;
             --text-hover: #fff;
+            font-weight: 600;
         }
 
-        .layout-grid[data-target="_blank"] h3::after {
+        .layout-grid h1 {
+            font-size: 24px;
+        }
+
+        .layout-grid h2 {
+            font-size: 22px;
+        }
+
+        .layout-grid h3 {
+            font-size: 20px;
+        }
+
+        .layout-grid h4 {
+            font-size: 18px;
+        }
+
+        .layout-grid h5 {
+            font-size: 16px;
+        }
+
+        .layout-grid h6 {
+            font-size: 14px;
+        }
+
+        .layout-grid[data-target="_blank"] h1::after,
+        .layout-grid[data-target="_blank"] h2::after,
+        .layout-grid[data-target="_blank"] h3::after,
+        .layout-grid[data-target="_blank"] h4::after,
+        .layout-grid[data-target="_blank"] h5::after,
+        .layout-grid[data-target="_blank"] h6::after {
             content: "";
             display: inline-block;
             width: 12px;
@@ -1094,6 +1180,7 @@
             background-color: currentColor;
             opacity: 0.7;
             -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center;
+            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center;
             mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center;
         }
 
@@ -1427,7 +1514,7 @@
 
         .layout-text h2 {
             font-size: 22px;
-            font-weight: 400;
+            font-weight: 600;
             margin-bottom: 8px;
             margin-top: 10px;
             color: #fff;
@@ -2158,25 +2245,18 @@
             transform: translateY(4px);
         }
 
-        .chip[data-tooltip]:hover::before {
-            transform: translateY(0);
-        }
 
-        /* SEARCH POSITIONING FIXES */
-        #search-trigger[data-tooltip]::after,
-        #search-trigger-wrapper[data-tooltip]::after {
-            left: auto;
-            right: 0;
-            transform: none !important;
-            margin-top: 8px;
-        }
 
-        #search-trigger[data-tooltip]::before,
-        #search-trigger-wrapper[data-tooltip]::before {
-            left: auto;
-            right: 12px;
-            transform: none !important;
-            margin-top: -2px;
+        .layout-quote {
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            min-height: 180px;
+            position: relative;
+            /* Ensure icon positioning is relative to card */
         }
 
         .icon-btn-wrapper {
@@ -2497,6 +2577,92 @@
             min-width: 200px;
         }
 
+        /* REFINED FOOTER CSS */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid #1a1a1a;
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 6px 30px;
+            /* Reduced vertical gap */
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        footer .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 20px;
+            justify-content: center;
+            align-items: center;
+            /* Ensure alignment */
+        }
+
+        #footer-meta {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+            /* Explicit mobile separation */
+            color: #666;
+            /* Inherit color */
+        }
+
+        footer .footer-links a {
+            font-size: 14px;
+            font-weight: 400;
+            --text-base: #777;
+            --text-hover: #fff;
+            white-space: nowrap;
+            border-bottom: none !important;
+            text-decoration: none !important;
+            line-height: 1;
+            /* Fix height mismatch */
+            display: inline-flex;
+            /* Ensure consistency */
+            align-items: center;
+        }
+
+        #footer-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #version-tag {
+            font-size: 14px;
+            font-weight: 400;
+            color: #666;
+            white-space: nowrap;
+            font-family: 'Jost', sans-serif;
+            --text-base: #666;
+            --text-hover: #fff;
+            line-height: 1;
+        }
+
+        /* VAULT ICON FIXES */
+        #vault-trigger {
+            color: #666;
+            /* Match footer text */
+            opacity: 1;
+            /* Remove ghosting */
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            --text-base: #666;
+            --text-hover: #fff;
+        }
+
+
+
         .toc-header {
             font-weight: 700;
             color: #ddd;
@@ -2562,12 +2728,8 @@
         <div id="nav-stack"></div>
 
         <div id="search-controls">
-            <div id="search-trigger-wrapper" class="icon-btn-wrapper" onclick="toggleSearch()"
-                data-tooltip="Search (/)">
-                <svg id="search-trigger" class="icon-btn search-icon" viewBox="0 0 24 24">
-                    <path
-                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                </svg>
+            <div id="search-trigger-wrapper" class="icon-btn-wrapper" onclick="toggleSearch()">
+                <div id="search-trigger" class="icon-btn icon-search-mask fill-anim-mask"></div>
             </div>
         </div>
     </header>
@@ -2607,7 +2769,10 @@
 
     <footer>
         <div class="footer-links" id="footer-links"></div>
-        <div id="version-tag"></div>
+        <div id="footer-meta">
+            <div id="version-tag"></div>
+            <!-- Vault Icon Appended via JS -->
+        </div>
     </footer>
 
     <script>
@@ -2808,12 +2973,28 @@
             });
 
             document.addEventListener('keydown', (e) => {
-                if ((e.key === '/' || (e.metaKey && e.key === 'k') || (e.ctrlKey && e.key === 'k')) && !isSearchActive) {
+                const activeId = document.activeElement ? document.activeElement.id : '';
+                const isSearchInput = activeId === 'search-input';
+
+                // SEARCH SHORTCUTS (When Search Input is Active)
+                if (isSearchInput) {
+                    if (e.key === 'Backspace' && document.getElementById('search-input').value === '') {
+                        closeSearch();
+                        return;
+                    }
+                    if (e.key === '/' || e.key === 'Escape') {
+                        e.preventDefault(); // Prevent '/' from being typed if closing
+                        closeSearch();
+                        return;
+                    }
+                }
+
+                // GLOBAL SHORTCUTS
+                if ((e.key === '/' || (e.metaKey && e.key === 'k') || (e.ctrlKey && e.key === 'k')) && !isSearchActive && !isSearchInput) {
                     e.preventDefault();
                     toggleSearch();
                 }
                 if (e.key === 'Escape') {
-                    // BUG FIX: Close Search Logic
                     if (isSearchActive || document.getElementById('search-overlay').classList.contains('active')) {
                         closeSearch();
                     }
@@ -3101,12 +3282,14 @@
 
         function handleSearch(q) {
             if (!document.getElementById('search-overlay').classList.contains('active')) return;
-            isSearchActive = true;
+
             if (!q) {
-                const app = document.getElementById('app');
-                app.innerHTML = '<div class="layout-404" style="padding:40px 0;"><h2>Search</h2><p>Type to find projects and posts...</p></div>';
+                // RESTORE PAGE CONTENT INSTEAD OF SHOWING PLACEHOLDER
+                isSearchActive = false;
+                handleRouting(); // Rerender current page
                 return;
             }
+            isSearchActive = true;
             const t = q.toLowerCase();
             const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t)));
             renderRows(res, `Search results for "${safeHTML(q)}"`, false, true, false, true);
@@ -3546,7 +3729,7 @@
                 if (headerMatch) {
                     const level = headerMatch[1].length;
                     const text = headerMatch[2];
-                    output.push(`<h${level}>${processSingleLine(text, hiddenUrls)}</h${level}>`);
+                    output.push(`<h${level} class="fill-anim">${processSingleLine(text, hiddenUrls)}</h${level}>`);
                     continue;
                 }
 
@@ -3736,6 +3919,21 @@
             return clean;
         }
 
+        // UPDATED: Header Markdown Support
+        function formatTitle(raw, defaultTag) {
+            if (!raw) return '';
+            const match = raw.match(/^(#{1,6})\s+(.*)$/);
+            let tag = defaultTag;
+            let content = raw;
+
+            if (match) {
+                tag = 'h' + match[1].length;
+                content = match[2];
+            }
+
+            return `<${tag} class="fill-anim">${processSingleLine(content)}</${tag}>`;
+        }
+
         // UPDATED: Added forceDateSort parameter to allow Sheet Order on Main Pages
         function renderRows(rows, title, append, forceGrid, isArticleMode = false, forceDateSort = false) {
             const app = document.getElementById('app'); if (!app) return;
@@ -3783,7 +3981,7 @@
                 let cleanContent = r.Content || '';
                 let mediaHtml = '';
                 let hoistedUrl = [];
-                let displayTitle = safeHTML(r.Title);
+                let displayTitle = safeHTML(r.Title); // Raw for now, processed later or by formatTitle
                 let hideTitle = false;
 
                 const titleUrlMatch = r.Title ? r.Title.match(/https?:\/\/\S+/) : null;
@@ -3801,7 +3999,7 @@
                             }
                         }
                     } else {
-                        displayTitle = safeHTML(r.Title.replace(titleUrlMatch[0], ''));
+                        displayTitle = r.Title.replace(titleUrlMatch[0], ''); // Keep raw for markdown parsing
                     }
                 }
 
@@ -3829,7 +4027,7 @@
                             mediaHtml = `<div class="row-media"><div class="embed-wrapper stl" data-src="${extracted.url}"></div></div>`;
                         }
                     } else {
-                        mediaHtml = `<div class="row-media placeholder"><span>${displayTitle}</span></div>`;
+                        mediaHtml = `<div class="row-media placeholder"><span>${processSingleLine(displayTitle)}</span></div>`;
                     }
                 } else if (!mediaHtml && mediaSrc !== 'title-embed') {
                     const thumb = getThumbnail(mediaSrc);
@@ -3901,7 +4099,7 @@
                     }
 
                     const titleHtml = (!hideTitle && displayTitle) ?
-                        (index === 0 ? `<h1 class="article-title fill-anim">${displayTitle}</h1>` : `<h2 class="fill-anim">${displayTitle}</h2>`)
+                        (index === 0 ? formatTitle(displayTitle, 'h1') : formatTitle(displayTitle, 'h2'))
                         : '';
 
                     d.innerHTML = `${mediaHtml}${titleHtml}${metaHtml}<div class="article-body">${contentHtml}</div>`;
@@ -3912,6 +4110,11 @@
                 if (!forceGrid) {
                     if (type === 'quote') {
                         const d = document.createElement('div'); d.className = 'layout-quote section';
+                        d.setAttribute('data-title', r.Title || '');
+                        if (r.Title !== 'Random') {
+                            d.setAttribute('data-static-quote', r.Content || r.Quote || '');
+                            d.setAttribute('data-static-author', r.Author || 'Sahib Virdee');
+                        }
                         renderQuoteCard(d); app.appendChild(d); return;
                     }
                     if (type === 'chart') {
@@ -3937,7 +4140,7 @@
 
                         const id = `chart-${Math.random().toString(36).substr(2, 9)}`;
                         d.innerHTML = `
-                            ${safeHTML(r.Title) ? `<h2 class="fill-anim" style="text-align:center">${safeHTML(r.Title)}</h2>` : ''}
+                            ${safeHTML(r.Title) ? `<h2 class="fill-anim" style="text-align:center">${processSingleLine(r.Title)}</h2>` : ''}
                             <div class="chart-wrapper" style="position:relative; height:400px; width:100%; max-width:800px; margin:20px auto;">
                                 <canvas id="${id}" class="smart-chart" data-type="${chartType}" data-labels="${labels.join('||')}" data-values="${values.join('||')}" data-title="${r.Title}"></canvas>
                             </div>
@@ -3952,12 +4155,12 @@
                             let filterVal = r.Timestamp.substring(0, 7);
                             dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${filterVal}'">${dateVal}</span></div>`;
                         }
-                        d.innerHTML = `<h1 class="fill-anim">${safeHTML(r.Title)}</h1>${dateHtml}<p>${processText(r.Content)}</p>`;
+                        d.innerHTML = `${formatTitle(r.Title, 'h1')}${dateHtml}<p>${processText(r.Content)}</p>`;
                         app.appendChild(d); return;
                     }
                     if (type === 'text') {
                         const d = document.createElement('div'); d.className = 'section layout-text';
-                        d.innerHTML = `${safeHTML(r.Title) ? `<h2 class="fill-anim">${safeHTML(r.Title)}</h2>` : ''}<p>${processText(r.Content)}</p>`;
+                        d.innerHTML = `${safeHTML(r.Title) ? formatTitle(r.Title, 'h2') : ''}<p>${processText(r.Content)}</p>`;
                         app.appendChild(d); return;
                     }
                 }
@@ -3988,8 +4191,10 @@
 
                 let gridTitle = displayTitle;
                 if (hideTitle) gridTitle = "";
+                let gridTitleHtml = formatTitle(gridTitle, 'h3');
+                if (hideTitle) gridTitleHtml = '';
 
-                d.innerHTML = `${mediaHtml}<h3 class="fill-anim">${gridTitle}</h3><p>${contentHtml}</p>${mh}`;
+                d.innerHTML = `${mediaHtml}${gridTitleHtml}<p>${contentHtml}</p>${mh}`;
 
                 if (gc) gc.appendChild(d);
             });
@@ -4016,13 +4221,27 @@
         }
 
         function renderQuoteCard(c) {
-            if (quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
-            const r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
+            const title = c.getAttribute('data-title');
+            let r;
+            let showDice = false;
+
+            if (title === 'Random') {
+                if (quotesDb.length === 0) { c.innerHTML = "Quote sheet empty."; return; }
+                r = quotesDb[Math.floor(Math.random() * quotesDb.length)];
+                showDice = true;
+            } else {
+                r = {
+                    Quote: c.getAttribute('data-static-quote') || "No content.",
+                    Author: c.getAttribute('data-static-author') || "Unknown",
+                    Source: null
+                };
+            }
+
             let auth = r.Author || 'Unknown';
             if (r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`;
             else if (r.Source) auth += ` • ${safeHTML(r.Source)}`;
 
-            const text = safeHTML(r.Quote.trim().replace(/^"|"$/g, ''));
+            const text = safeHTML((r.Quote || '').trim().replace(/^"|"$/g, ''));
             const len = text.length;
             let sizeClass = 'short';
             if (len > 230) sizeClass = 'xxl';
@@ -4030,15 +4249,33 @@
             else if (len > 100) sizeClass = 'long';
             else if (len > 50) sizeClass = 'medium';
 
+            let iconHtml = '';
+            if (showDice) {
+                iconHtml = `<svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">
+                    <rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                 </svg>`;
+            }
+
             c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
                         <div class="quote-footer"><div class="author">— ${auth}</div></div>
-                        <svg class="refresh-btn" viewBox="0 0 24 24" data-tooltip="New Quote"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.23 1.78L13 11h7V4l-2.35 2.35z"/></svg>`;
+                        ${iconHtml}`;
         }
 
         function renderFooter() {
             const fd = document.getElementById('footer-links');
-            const fr = db.filter(r => r.Page === 'Footer' || r.Title === 'LinkedIn' || r.Title === 'Contact');
+            // 1. FILTER & SORT ALPHABETICALLY
+            const fr = db.filter(r => r.Page === 'Footer' || r.Title === 'LinkedIn' || r.Title === 'Contact')
+                .sort((a, b) => a.Title.localeCompare(b.Title));
+
             fd.innerHTML = '';
+
+            // 2. RENDER LINKS
+            fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
             fr.forEach(r => {
                 let link = r.LinkURL;
                 if (r.Title === 'Contact') {
@@ -4047,8 +4284,32 @@
                 if (link) fd.innerHTML += `<a href="${link}" target="_blank" class="fill-anim">${safeHTML(r.Title)}</a>`;
             });
             fd.innerHTML += `<a href="#Index" class="fill-anim" onclick="closeSearch()">Index</a>`;
-            fd.innerHTML += `<a href="https://sahib.goatcounter.com" target="_blank" class="fill-anim">Analytics</a>`;
-            fd.innerHTML += `<span style="cursor:pointer; opacity:0.1; margin-left:12px;" onclick="openVault()" title="Vault" class="fill-anim">🔒</span>`;
+
+            // 3. MOVE VERSION TAG & VAULT ICON TO META CONTAINER
+            let meta = document.getElementById('footer-meta');
+            if (!meta) {
+                meta = document.createElement('div');
+                meta.id = 'footer-meta';
+                document.querySelector('footer').appendChild(meta);
+            }
+
+            // Move existing version tag inside meta if it exists
+            const vTag = document.getElementById('version-tag');
+            if (vTag && vTag.parentNode !== meta) {
+                meta.appendChild(vTag);
+            }
+
+            // Check if vault icon already exists to avoid dupes if re-rendering
+            if (!document.getElementById('vault-trigger')) {
+                const v = document.createElement('span');
+                v.id = 'vault-trigger';
+                v.className = 'fill-anim';
+                v.innerHTML = '🔒';
+                v.onclick = openVault;
+                v.style.cursor = 'pointer';
+                v.style.fontSize = '14px';
+                meta.appendChild(v);
+            }
         }
 
         function generateTOC() {
@@ -4339,7 +4600,7 @@
                 const ui = document.createElement('div');
                 ui.className = 'stl-controls';
                 ui.innerHTML = `
-                    <div class="stl-btn" data-tooltip="Fullscreen" id="btn-full"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></div>
+                    <div class="stl-btn" id="btn-full"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></div>
                 `;
                 container.appendChild(ui);
 
