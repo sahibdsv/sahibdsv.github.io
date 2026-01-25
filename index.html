@@ -489,6 +489,11 @@
                 text-align: center;
             }
 
+            #footer-meta {
+                width: 100%;
+                margin-top: 15px;
+            }
+
             .content-container {
                 padding: 10px 15px 0;
             }
@@ -2605,15 +2610,11 @@
         }
 
         #footer-meta {
-            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 15px;
-            margin-top: 15px;
-            /* Explicit mobile separation */
             color: #666;
-            /* Inherit color */
         }
 
         footer .footer-links a {
@@ -3960,7 +3961,7 @@
             }
 
             if (rows.length === 0 && !append) {
-                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p><br><a href="#" onclick="window.location.hash=''; startApp(); return false;" class="btn-pill">Return to Home</a></div>`;
+                app.innerHTML += `<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>`;
                 return;
             }
 
