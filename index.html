@@ -3713,12 +3713,38 @@
 
                 const type = calloutData.type;
                 const rawContent = calloutData.lines.join('\n');
+                const lines = calloutData.lines.map(l => l.trim()).filter(l => l);
+
+                // NEW: BUTTON
+                if (type === 'button' || type === 'btn') {
+                    const url = lines[0] || '#';
+                    output.push(`<div style="margin:10px 0"><a href="${url}" class="btn-pill" target="_blank">${safeHTML(calloutData.title)}</a></div>`);
+                    inCallout = false; calloutData = { type: '', title: '', collapse: null, lines: [] }; return;
+                }
+                // NEW: MODEL
+                if (type === 'model' || type === '3d' || type === 'stl') {
+                    const url = lines[0];
+                    const color = lines[1] ? `data-color="${lines[1]}"` : '';
+                    if (url) output.push(`<div class="embed-wrapper stl" data-src="${url}" ${color}></div>`);
+                    inCallout = false; calloutData = { type: '', title: '', collapse: null, lines: [] }; return;
+                }
+                // NEW: STAT
+                if (type === 'stat' || type === 'statistic') {
+                    const val = calloutData.title;
+                    const label = lines.join(' ');
+                    output.push(`<div class="stat-block"><div class="stat-number">${processSingleLine(val)}</div><div class="stat-label">${processSingleLine(label)}</div></div>`);
+                    inCallout = false; calloutData = { type: '', title: '', collapse: null, lines: [] }; return;
+                }
 
                 // 1. SMART BLOCK: COMPARE
                 if (type === 'compare' || type === 'comparison') {
                     const imgRegex = /!\[.*?\]\((.*?)\)|(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp))/gi;
                     const matches = [...rawContent.matchAll(imgRegex)];
-                    const urls = matches.map(m => m[1] || m[2]).filter(u => u);
+                    let urls = matches.map(m => m[1] || m[2]).filter(u => u);
+
+                    if (urls.length < 2 && lines.length >= 2) {
+                        urls = [lines[0], lines[1]];
+                    }
 
                     if (urls.length >= 2) {
                         output.push(`
@@ -4032,11 +4058,7 @@
 
             // CUSTOM TAGS & BUTTONS (Fixing Whitespace resilience)
 
-            // 3D
-            clean = clean.replace(/\{\{STL:\s*(.*?)(?:\s*\|\s*(.*?))?\}\}/gi, (match, url, color) => {
-                const colorAttr = color ? `data-color="${color.trim()}"` : '';
-                return `<div class="embed-wrapper stl" data-src="${url.trim()}" ${colorAttr}></div>`;
-            });
+
 
             // GALLERY
             clean = clean.replace(/\[\s*(https?:\/\/[^\]]+)\s*\]/gi, (match, content) => {
@@ -4048,25 +4070,11 @@
                 return match;
             });
 
-            // BUTTONS: {{BTN: Label | Url | Color?}}
-            clean = clean.replace(/\{\{BTN:\s*(.*?)\s*\|\s*(.*?)(?:\s*\|\s*(.*?))?\}\}/gi, (match, label, url, color) => {
-                const style = color ? `style="background-color: ${color.trim()}; color: #fff;"` : '';
-                return `<a href="${url.trim()}" class="btn-pill" target="_blank" ${style}>${label.trim()}</a>`;
-            });
 
-            // OTHER SHORTCODES
-            clean = clean.replace(/\{\{COMPARE:\s*(.*?)\}\}/gi, (match, content) => {
-                const parts = content.split('|');
-                const before = parts[0] ? parts[0].trim() : '';
-                const after = parts[1] ? parts[1].trim() : '';
-                return `<div class="compare-container"><img src="${after}" class="compare-img compare-after"><img src="${before}" class="compare-img"><div class="compare-handle"></div><input type="range" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')"></div>`;
-            });
 
-            // STATS
-            clean = clean.replace(/\{\{STAT:\s*(.*?)\}\}/gi, (match, content) => {
-                const parts = content.split('|');
-                return `<div class="stat-block"><div class="stat-number">${parts[0] ? parts[0].trim() : '?'}</div><div class="stat-label">${parts[1] ? parts[1].trim() : ''}</div></div>`;
-            });
+
+
+
 
             // TIMELINE
             clean = clean.replace(/\{\{TIMELINE:\s*(.*?)\}\}/gi, (match, content) => {
@@ -4887,6 +4895,18 @@
 
 
         // --- UTIL FUNCTIONS (Global) ---
+
+        // EASTER EGG 🐣
+        console.log(`%c
+░██                   ░██ ░██                   ░███████   
+░██                   ░██ ░██                   ░██   ░██  
+░████████   ░███████  ░██ ░██  ░███████         ░██    ░██ 
+░██    ░██ ░██    ░██ ░██ ░██ ░██    ░██    ░██ ░██    ░██ 
+░██    ░██ ░█████████ ░██ ░██ ░██    ░██        ░██    ░██ 
+░██    ░██ ░██        ░██ ░██ ░██    ░██        ░██   ░██  
+░██    ░██  ░███████  ░██ ░██  ░███████     ░██ ░███████   
+`, "color: #ff4400; font-weight: bold;");
+        console.log("%c If you saw this, let me know! @sahibdsv everywhere.", "font-size: 14px; color: #888; font-style: italic; margin-top: 5px;");
 
         function runMermaid() {
             if (window.mermaid) {

@@ -28,19 +28,37 @@ Standard formatting works everywhere:
 - Lists: `- Item` or `1. Item`
 - Math (LaTeX): `$$ \frac{a}{b} $$` or inline `$\pi$`
 
-## 3. Custom Macros (Quick Embeds)
-Use these anywhere in the `Content` field.
+## 3. Smart Blocks (Obsidian Style)
+Use blockquotes with `> [!type]` for complex components. This syntax is robust and table-friendly.
 
-| Feature | Syntax | Example |
-|---|---|---|
-| **Buttons** | `{{BTN: Label | URL | Color?}}` | `{{BTN: Launch | # | #ff0000}}` |
-| **3D Model** | `{{STL: URL | Color?}}` | `{{STL: model.stl | #fab}}` |
-| **Comparison** | `{{COMPARE: BeforeUrl | AfterUrl}}` | `{{COMPARE: old.jpg | new.jpg}}` |
-| **Statistic** | `{{STAT: Value | Label}}` | `{{STAT: 99% | Uptime}}` |
-| **Location Tag** | `[City, Prov](GoogleMapUrl)` | *(Use in Tags field)* `[Toronto](https://maps...)` |
+**Button**
+```markdown
+> [!button] Label Text
+> https://example.com
+```
 
+**3D Model**
+```markdown
+> [!model]
+> assets/model.stl
+> #ff4400 (Optional)
+```
 
-*Note: `{{3D:...}}` is an alias for `{{STL:...}}`.*
+**Image Comparison**
+```markdown
+> [!compare]
+> assets/before.jpg
+> assets/after.jpg
+```
+
+**Statistic Block**
+```markdown
+> [!stat] 99%
+> Reliability Score
+```
+
+**Location Tags** (For `Tags` column only)
+- Use standard markdown link syntax in the `Tags` column: `[City, Province](MapsURL)`
 
 ## 4. Smart Callouts (Rich Blocks)
 Start a block with `> [!type]` to create rich layouts.
