@@ -2591,6 +2591,33 @@
             padding: 0;
             vertical-align: middle;
         }
+
+        /* BTN-PILL STYLES */
+        .btn-pill {
+            display: inline-block;
+            padding: 8px 20px;
+            border: 1px solid var(--text-dim, #777);
+            border-radius: 50px;
+            color: var(--text-dim, #777);
+            background: transparent;
+            text-decoration: none !important;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            line-height: 1.2;
+            cursor: pointer;
+            box-sizing: border-box;
+            /* Prevent jumping */
+            margin: 4px 10px 4px 0;
+            text-align: center;
+        }
+
+        .btn-pill:hover {
+            border-color: var(--text-main, #fff);
+            background: var(--text-main, #fff);
+            color: var(--bg, #000);
+            transform: translateY(-1px);
+        }
     </style>
 
     <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
@@ -3718,7 +3745,7 @@
                 // NEW: BUTTON
                 if (type === 'button' || type === 'btn') {
                     const url = lines[0] || '#';
-                    output.push(`<div style="margin:10px 0"><a href="${url}" class="btn-pill" target="_blank">${safeHTML(calloutData.title)}</a></div>`);
+                    output.push(`<a href="${url}" class="btn-pill" target="_blank">${safeHTML(calloutData.title)}</a>`);
                     inCallout = false; calloutData = { type: '', title: '', collapse: null, lines: [] }; return;
                 }
                 // NEW: MODEL
