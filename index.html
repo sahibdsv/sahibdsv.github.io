@@ -2760,6 +2760,66 @@
             color: #448aff;
         }
 
+        /* PRINT STYLES */
+        @media print {
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            header,
+            footer,
+            .btn-close,
+            .copy-btn,
+            .btn-container,
+            .toast,
+            .three-bg,
+            iframe,
+            video,
+            .chip {
+                display: none !important;
+            }
+
+            .container {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* Hide decorative backgrounds */
+            * {
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
+
+            /* Ensure links are readable */
+            a {
+                color: #000 !important;
+                text-decoration: underline;
+                border: none !important;
+            }
+
+            /* Expand text layout */
+            .layout-text,
+            .layout-article {
+                width: 100% !important;
+                max-width: none !important;
+            }
+
+            /* Break pages nicely */
+            h1,
+            h2 {
+                page-break-after: avoid;
+            }
+
+            p,
+            blockquote {
+                page-break-inside: avoid;
+            }
+        }
+
         .toc-depth-1 {
             margin-left: 0;
             font-weight: 600;
@@ -2863,13 +2923,29 @@
             setTimeout(() => document.body.classList.remove('no-transition'), 1000);
 
             loadFromCache().then(cached => {
+                const isDraftMode = localStorage.getItem('preview_drafts') === 'true' || window.location.hostname === 'localhost';
                 if (cached) {
                     db = cached.main; quotesDb = cached.quotes;
+                    if (!isDraftMode) {
+                        db = db.filter(r => !r.Tags || !r.Tags.includes('Draft'));
+                        quotesDb = quotesDb.filter(r => !r.Tags || !r.Tags.includes('Draft'));
+                    }
                     startApp();
                     // SWR: Fetch new data in background
-                    fetchDataAndCache();
+                    fetchDataAndCache().then(() => {
+                        if (!isDraftMode) {
+                            db = db.filter(r => !r.Tags || !r.Tags.includes('Draft'));
+                            quotesDb = quotesDb.filter(r => !r.Tags || !r.Tags.includes('Draft'));
+                        }
+                    });
                 } else {
-                    fetchDataAndCache().then(() => startApp());
+                    fetchDataAndCache().then(() => {
+                        if (!isDraftMode) {
+                            db = db.filter(r => !r.Tags || !r.Tags.includes('Draft'));
+                            quotesDb = quotesDb.filter(r => !r.Tags || !r.Tags.includes('Draft'));
+                        }
+                        startApp();
+                    });
                 }
             });
         };
@@ -3098,6 +3174,8 @@
                 if (e.key === 'Escape') {
                     if (isSearchActive || document.getElementById('search-overlay').classList.contains('active')) {
                         closeSearch();
+                    } else if (window.location.hash && window.location.hash !== '#Home') {
+                        resetToHome();
                     }
                 }
             });
@@ -4208,6 +4286,13 @@
                             tags.forEach(t => metaHtml += processTag(t));
                         }
 
+                        // READ TIME
+                        const wordCount = (r.Content || '').trim().split(/\s+/).length;
+                        const readTime = Math.ceil(wordCount / 200);
+                        if (readTime > 0) {
+                            metaHtml += `<span class="chip" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
+                        }
+
 
 
                         metaHtml += '</div></div>';
@@ -4796,6 +4881,7 @@
 
             window.addEventListener('resize', resizeHandler);
         }
+
 
         // --- UTIL FUNCTIONS (Global) ---
 
