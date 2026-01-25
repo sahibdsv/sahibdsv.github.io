@@ -4539,13 +4539,22 @@
                     }
                     if (type === 'hero') {
                         const d = document.createElement('div'); d.className = 'section layout-hero';
-                        let dateHtml = '';
+
+                        let metaContent = '';
+                        // Date
                         if (r.Timestamp) {
                             let dateVal = formatDate(r.Timestamp);
                             let filterVal = r.Timestamp.substring(0, 7);
-                            dateHtml = `<div class="hero-meta"><span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${filterVal}'">${dateVal}</span></div>`;
+                            metaContent += `<span class="chip date" data-val="${dateVal}" onclick="event.stopPropagation(); window.location.hash='Filter:${filterVal}'">${dateVal}</span>`;
                         }
-                        d.innerHTML = `${formatTitle(r.Title, 'h1')}${dateHtml}<p>${processText(r.Content)}</p>`;
+                        // Tags
+                        if (r.Tags) {
+                            const tags = r.Tags.split(',').map(x => x.trim());
+                            tags.forEach(t => metaContent += processTag(t));
+                        }
+
+                        const metaHtml = metaContent ? `<div class="hero-meta">${metaContent}</div>` : '';
+                        d.innerHTML = `${formatTitle(r.Title, 'h1')}${metaHtml}<p>${processText(r.Content)}</p>`;
                         app.appendChild(d); return;
                     }
                     if (type === 'text') {
