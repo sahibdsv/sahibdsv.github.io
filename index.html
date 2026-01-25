@@ -2655,9 +2655,77 @@
             display: none !important;
             content: none !important;
         }
+
+        /* BUTTON VARIANTS */
+        .btn-pill.red,
+        .btn-pill.danger {
+            border-color: #ff4444 !important;
+            color: #ff4444 !important;
+        }
+
+        .btn-pill.red:hover,
+        .btn-pill.danger:hover {
+            background: #ff4444 !important;
+            color: #fff !important;
+        }
+
+        .btn-pill.green,
+        .btn-pill.success {
+            border-color: #00C851 !important;
+            color: #00C851 !important;
+        }
+
+        .btn-pill.green:hover,
+        .btn-pill.success:hover {
+            background: #00C851 !important;
+            color: #fff !important;
+        }
+
+        .btn-pill.blue,
+        .btn-pill.info {
+            border-color: #33b5e5 !important;
+            color: #33b5e5 !important;
+        }
+
+        .btn-pill.blue:hover,
+        .btn-pill.info:hover {
+            background: #33b5e5 !important;
+            color: #fff !important;
+        }
+
+        .btn-pill.orange,
+        .btn-pill.warning {
+            border-color: #ffbb33 !important;
+            color: #ffbb33 !important;
+        }
+
+        .btn-pill.orange:hover,
+        .btn-pill.warning:hover {
+            background: #ffbb33 !important;
+            color: #fff !important;
+        }
+
+        .btn-pill.purple {
+            border-color: #aa66cc !important;
+            color: #aa66cc !important;
+        }
+
+        .btn-pill.purple:hover {
+            background: #aa66cc !important;
+            color: #fff !important;
+        }
     </style>
 
-    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                    ['\\(', '\\)']
+                ]
+            }
+        };
+    </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -3788,9 +3856,11 @@
                 const lines = calloutData.lines.map(l => l.trim()).filter(l => l);
 
                 // NEW: BUTTON
-                if (type === 'button' || type === 'btn') {
+                if (type.startsWith('button') || type.startsWith('btn')) {
                     const url = lines[0] || '#';
-                    output.push(`<a href="${url}" class="btn-pill" target="_blank">${safeHTML(calloutData.title)}</a>`);
+                    const suffix = type.replace(/^(button|btn)[-:]?/, '').toLowerCase();
+                    const extraClass = suffix ? ' ' + suffix : '';
+                    output.push(`<a href="${url}" class="btn-pill${extraClass}" target="_blank">${safeHTML(calloutData.title)}</a>`);
                     inCallout = false; calloutData = { type: '', title: '', collapse: null, lines: [] }; return;
                 }
                 // NEW: MODEL
@@ -3848,23 +3918,45 @@
                 }
 
                 // 3. SMART BLOCK: TIMELINE
+                // 3. SMART BLOCK: TIMELINE
                 if (type === 'timeline') {
-                    const items = calloutData.lines.map(line => {
-                        const clean = line.replace(/^[->\s*]+/, '').trim();
-                        if (!clean) return '';
-                        const parts = clean.split(/ - | – /);
-                        const date = parts[0] ? parts[0].trim() : '';
-                        const text = parts.slice(1).join(' - ').trim();
-                        if (!text) return '';
-                        return `<div class="timeline-item"><div class="timeline-date">${date}</div><div class="timeline-content">${processText(text, hiddenUrls)}</div></div>`;
-                    }).join('');
+                    let timelineItems = '';
+                    let lastDate = '';
+                    let lastContent = '';
 
-                    if (items) {
-                        output.push(`<div class="timeline-block">${items}</div>`);
-                        inCallout = false;
-                        calloutData = { type: '', title: '', collapse: null, lines: [] };
-                        return;
+                    const flushItem = () => {
+                        if (lastDate || lastContent) {
+                            timelineItems += `<div class="timeline-item"><div class="timeline-date">${lastDate}</div><div class="timeline-content">${processText(lastContent, hiddenUrls)}</div></div>`;
+                        }
+                    };
+
+                    calloutData.lines.forEach(line => {
+                        const clean = line.replace(/^[->\s*]+/, '').trim();
+                        if (!clean) return;
+
+                        // Check for New Item (Hyphen separated)
+                        const parts = clean.split(/ - | – /);
+                        if (parts.length >= 2) {
+                            // New Item found - flush previous
+                            flushItem();
+                            lastDate = parts[0].trim();
+                            lastContent = parts.slice(1).join(' - ').trim();
+                        } else {
+                            // Continuation of previous
+                            if (lastContent) lastContent += '<br>' + clean;
+                            else if (lastDate) lastContent = clean; // Found content for date without hyphen? content first?
+                            else lastContent = clean; // Orphan text
+                        }
+                    });
+                    flushItem(); // Final flush
+
+                    if (timelineItems) {
+                        output.push(`<div class="timeline-block">${timelineItems}</div>`);
                     }
+                    // Prevent fallback to standard callout even if empty
+                    inCallout = false;
+                    calloutData = { type: '', title: '', collapse: null, lines: [] };
+                    return;
                 }
 
                 // 4. SMART BLOCK: TOC
@@ -3914,7 +4006,7 @@
                 // 6. STANDARD CALLOUT
                 const iconSvg = getCalloutIcon(calloutData.type);
                 const contentText = calloutData.lines.join('\n');
-                let content = valuesCodeBlock ? contentText : processLineArray(calloutData.lines, hiddenUrls);
+                let content = processLineArray(calloutData.lines, hiddenUrls);
 
                 const titleTag = calloutData.type === 'note' || calloutData.type === 'tip' ? 'h4' : 'h5';
                 const displayTitle = calloutData.title ? `<span class="callout-title-text">${safeHTML(calloutData.title)}</span>` : `<span class="callout-title-text">${calloutData.type.toUpperCase()}</span>`;
@@ -4027,7 +4119,7 @@
                 }
 
                 // CALLOUT START: > [!type]+ Title
-                const calloutMatch = line.trim().match(/^>\s*\[!(\w+)\]([-+]?)\s*(.*)$/);
+                const calloutMatch = line.trim().match(/^>\s*\[!([\w-:]+)\]([-+]?)\s*(.*)$/);
 
                 if (calloutMatch) {
                     flushCallout();
@@ -4045,6 +4137,11 @@
                 }
 
                 if (inCallout) {
+                    // LAZY BUTTON FIX: Allow link on next line without '>'
+                    if ((calloutData.type.startsWith('btn') || calloutData.type.startsWith('button')) && calloutData.lines.length === 0 && line.trim()) {
+                        calloutData.lines.push(line.trim());
+                        continue;
+                    }
                     flushCallout();
                 }
 
