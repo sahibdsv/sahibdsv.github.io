@@ -632,13 +632,13 @@
         .dice-icon {
             display: inline-block;
             vertical-align: middle;
-            margin-left: 4px;
+            margin-left: 8px;
             margin-top: -3px;
             width: 18px;
             height: 18px;
             cursor: pointer;
             opacity: 0.3;
-            transition: all 0.4s ease;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease, color 0.4s ease;
             -webkit-tap-highlight-color: transparent;
             outline: none;
         }
@@ -2838,9 +2838,7 @@
             initImageZoomers();
             init3DActivityMonitor();
 
-            // AUTO-UNLOCK VAULT
-            const vaultKey = localStorage.getItem('vault_key');
-            if (vaultKey) loadVault(vaultKey);
+
 
             requestAnimationFrame(() => {
                 setTimeout(() => {
@@ -4330,17 +4328,7 @@
                 meta.appendChild(vTag);
             }
 
-            // Check if vault icon already exists to avoid dupes if re-rendering
-            if (!document.getElementById('vault-trigger')) {
-                const v = document.createElement('span');
-                v.id = 'vault-trigger';
-                v.className = 'fill-anim';
-                v.innerHTML = '🔒';
-                v.onclick = openVault;
-                v.style.cursor = 'pointer';
-                v.style.fontSize = '14px';
-                meta.appendChild(v);
-            }
+
         }
 
         function generateTOC() {
@@ -4440,29 +4428,7 @@
             });
         }
 
-        function openVault() {
-            const key = prompt("Enter Vault Key (Sheet ID):");
-            if (!key) return;
-            loadVault(key);
-        }
 
-        async function loadVault(key) {
-            const url = `https://docs.google.com/spreadsheets/d/e/${key}/pub?output=csv`;
-            try {
-                const data = await fetchCSV(url);
-                if (data && data.length > 0) {
-                    // MERGE
-                    const familyRows = data.map(r => ({ ...r, Page: 'Family' }));
-                    db = [...db, ...familyRows];
-                    localStorage.setItem('vault_key', key);
-                    startApp();
-                } else {
-                    alert("Vault Empty or Invalid Key.");
-                }
-            } catch (e) {
-                alert("Access Denied.");
-            }
-        }
 
         function loadDemoData() {
             const d = new Date();
@@ -4477,10 +4443,9 @@
                 { Page: 'Projects/Orbital', Title: 'Project Manual', SectionType: 'Card', Content: "Reference for new recruits:\n> [!info] Feature Checklist\n> - [x] **Secure Vault Access**\n> - [x] **Zero-G Calibration**\n> - [ ] ==Deep Space Comms== (Pending)\n\n### System Specs\n| Module | Status | Load |\n|---|---|---|\n| Life Support | **Active** | 45% |\n| Gravity Gen | `Standby` | 0% |\n| Nav Comp | **Active** | 88% |\n", Timestamp: today },
 
                 // === DOCUMENTATION ===
-                { Page: 'Docs/Cheatsheet', Title: 'Authoring Guide', SectionType: 'Article', Content: "Comprehensive guide to all supported features.\n\n## 1. Rich Callouts\n> [!info] Info Block\n> Useful for general information.\n\n> [!warning] Warning Block\n> Use for critical alerts.\n\n> [!tip] Pro Tip\n> Use for helpful shortcuts.\n\n## 2. Dynamic Charts\nCreate charts using `> [!chart]` syntax:\n> [!chart] User Growth\n> Jan: 10\n> Feb: 20\n> Mar: 40\n\n## 3. Mermaid Diagrams\n```mermaid\ngraph LR\nA[Start] --> B(Process)\nB --> C{Decision}\nC -->|Yes| D[End]\nC -->|No| B\n```\n\n## 4. Tables\n| Feature | Status | Notes |\n|---|---|---|\n| Tables | **Ready** | Supports Sort |\n| Charts | **Ready** | Chart.js |\n| Vault | `Locked` | AES-256 |\n\n## 5. Embeds & Media\n- **YouTube**: Simply paste the URL.\n- **3D Models**: `{{STL: url | color}}`\n- **Buttons**: `{{BTN: Label | URL}}`\n\n## 6. Task Lists\n- [x] Completed Task\n- [ ] Pending Task\n- [ ] ==Highlighted Task==\n", Timestamp: today },
+                { Page: 'Docs/Cheatsheet', Title: 'Authoring Guide', SectionType: 'Article', Content: "Comprehensive guide to all supported features.\n\n## 1. Rich Callouts\n> [!info] Info Block\n> Useful for general information.\n\n> [!warning] Warning Block\n> Use for critical alerts.\n\n> [!tip] Pro Tip\n> Use for helpful shortcuts.\n\n## 2. Dynamic Charts\nCreate charts using `> [!chart]` syntax:\n> [!chart] User Growth\n> Jan: 10\n> Feb: 20\n> Mar: 40\n\n## 3. Mermaid Diagrams\n```mermaid\ngraph LR\nA[Start] --> B(Process)\nB --> C{Decision}\nC -->|Yes| D[End]\nC -->|No| B\n```\n\n## 4. Tables\n| Feature | Status | Notes |\n|---|---|---|\n| Tables | **Ready** | Supports Sort |\n| Charts | **Ready** | Chart.js |\n\n## 5. Embeds & Media\n- **YouTube**: Simply paste the URL.\n- **3D Models**: `{{STL: url | color}}`\n- **Buttons**: `{{BTN: Label | URL}}`\n\n## 6. Task Lists\n- [x] Completed Task\n- [ ] Pending Task\n- [ ] ==Highlighted Task==\n", Timestamp: today },
 
-                // === LOCKED AREA EXAMPLE ===
-                { Page: 'System/Locked', Title: 'Restricted Access', SectionType: 'Card', Content: "> [!failure] **ACCESS DENIED**\n> Biometric scan required for entry.\n> \n> `ERR_AUTH_99`\n\nEncrypted Partition detected.\nPlease contact administrator.\n\n{{BTN: Request Access | #}}", Timestamp: today },
+
 
                 { Page: 'Projects/Orbital', Title: 'Architecture Diagram', SectionType: 'Card', Content: "The core lift logic handles thousands of concurrent data streams:\n```mermaid\ngraph TD\nA[Ground Station] -->|Fiber Link| B{Lift Car}\nB -->|Telemetry| C[Space Station]\nC -->|Status| A\nB -->|User Input| D[Local AI]\n```", Timestamp: today },
 
