@@ -83,3 +83,34 @@ Use `> [!gallery]` to auto-grid images.
 - **YouTube**: Paste a `youtube.com/watch?v=ID` link anywhere to auto-embed.
 - **Title Hiding**: If the `Title` is exactly a URL (`https://...`), the title is hidden and the URL is used as the media embed (useful for standalone images/videos).
 - **Date Format**: Use `YYYYMMDD` for `Timestamp`. It auto-formats to "DD MON YYYY".
+
+## 6. LLM Generation Guide
+If asking an AI (ChatGPT, Claude, Gemini) to generate rows for you, paste this section to them:
+
+## 6. LLM Generation Guide
+If asking an AI (ChatGPT, Claude, Gemini) to generate rows for you, paste this section to them:
+
+**Instructions for AI:**
+1.  **Format**: **ALWAYS use a Markdown Table**. Do not use JSON.
+2.  **Links**: **NEVER** render links (e.g., `[Text](url)`). Use **Plain Text URLs** in the `LinkURL` or `Media` columns.
+3.  **Order**: Column order does not matter, but `Page` and `Title` should come first.
+
+### Column Constraints & Best Practices
+
+| Column | Content Type | Best Practices & Limitations |
+|---|---|---|
+| **Page** | `Category/SubPage` | **Required.** Defines the URL hash. Keep it hierarchical (e.g., `Values/Diversity`). |
+| **Title** | Text | **Required.** Determines the display header. |
+| **SectionType** | Enum | Valid options: `Card` (Default), `Hero` (Big Text), `Article` (Standard), `Quote` (Centered), `Chart` (Data Viz). |
+| **Content** | Markdown | **Rich Text.** Supports standard Markdown + Macros (`{{BTN}}`, `> [!chart]`). <br> **Limit:** Keep it under 200 words for Cards. Use Articles for long text. |
+| **Tags** | CSV String | `Tag1, Tag2`. <br> **Location Support:** You can add location via `[City](MapUrl)`. |
+| **Timestamp** | `YYYYMMDD` | **Sorting Key.** Controls "Recent Activity" order. |
+| **LinkURL** | URL | **External Links.** Use this for "Visit Project" buttons. Leave empty if internal only. |
+| **Media** | URL | **Cover Asset.** Image (`.jpg`), Video (`youtube.com`), or 3D (`.glb`). |
+
+**Example Output (for AI to mimic):**
+| Page | Title | SectionType | Content | Tags | Timestamp |
+|---|---|---|---|---|---|
+| `Projects/Mars` | Mars Rover | `Card` | A robust rover design for red planet exploration. | `Robotics, Space` | `20251101` |
+| `Values/Mission` | Our Mission | `Hero` | To explore strange new worlds. | `Core` | `20250101` |
+
