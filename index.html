@@ -2715,6 +2715,498 @@
             color: #fff !important;
         }
     </style>
+    <style>
+        /* --- RESUME STYLES --- */
+        .resume-container {
+            max-width: 1000px;
+            /* Match standard site max-width roughly */
+            margin: 0 auto;
+            /* padding handled by .section */
+        }
+
+        .resume-header {
+            margin-bottom: 30px;
+            text-align: center;
+            /* Center on Screen */
+            border-bottom: 1px solid var(--border-color);
+            /* Match site */
+            padding-bottom: 20px;
+        }
+
+        .resume-header h1 {
+            /* User request: Show name on screen */
+            display: block;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .resume-sub {
+            font-size: 18px;
+            font-weight: 300;
+            color: #ccc;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            display: block;
+        }
+
+        .resume-contact {
+            font-size: 14px;
+            color: var(--text-base);
+            line-height: 1.6;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            /* CENTER ALIGN */
+        }
+
+        .resume-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+        }
+
+        .resume-section {
+            margin-bottom: 40px;
+        }
+
+        .resume-section h3 {
+            /* Handled by formatTitle / h3 global styles */
+            margin-bottom: 20px;
+        }
+
+        /* Entries */
+        .resume-entry {
+            margin-bottom: 35px;
+        }
+
+        .resume-entry-header {
+            margin-bottom: 6px;
+        }
+
+        .resume-role {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .resume-company {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .resume-meta {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        /* UNIFIED ROW LAYOUT (Screen & Print) */
+        .resume-row-main,
+        .resume-row-sub {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            width: 100%;
+        }
+
+        .resume-role {
+            flex: 1;
+            margin-right: 10px;
+            font-weight: 600;
+            color: #e0e0e0;
+            font-size: 16px;
+        }
+
+        .resume-company {
+            color: #999;
+            font-size: 15px;
+        }
+
+        .resume-date-slot,
+        .resume-loc-slot {
+            text-align: right;
+            white-space: nowrap;
+            font-size: 14px;
+            color: #888;
+            font-weight: 400;
+        }
+
+        /* Standard Resume Links */
+
+        /* Standard Resume Links to match Site Style */
+        #resume-view a:not(.resume-link):not(.chip):not(.btn-pill) {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px dotted rgba(255, 255, 255, 0.7);
+            transition: border-color 0.3s;
+        }
+
+        #resume-view a:not(.resume-link):not(.chip):not(.btn-pill):hover {
+            border-bottom-color: #fff;
+            opacity: 1;
+        }
+
+        .resume-list {
+            /* processText generates standard tags */
+            color: var(--text-base);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .resume-list ul {
+            padding-left: 25px;
+            margin: 4px 0 0 0;
+            list-style: disc;
+        }
+
+        .resume-list li {
+            margin-bottom: 2px;
+            /* Tighter list items */
+        }
+
+        /* Skills */
+        .resume-skill-block {
+            margin-bottom: 20px;
+        }
+
+        .resume-skill-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+
+        .resume-skill-row {
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .resume-skill-cat {
+            font-size: 13px;
+            font-weight: 700;
+            color: #eee;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 6px;
+        }
+
+        .resume-skill-list {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .resume-link {
+            text-decoration: none;
+            border: none !important;
+            margin-left: 8px;
+        }
+
+        .resume-link:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .resume-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .resume-header {
+                text-align: center;
+            }
+
+            .resume-contact {
+                justify-content: center;
+            }
+        }
+
+        .resume-header {
+            border-bottom: none !important;
+            box-shadow: 0 0.5px 0 0 rgba(0, 0, 0, 0.2) !important;
+            margin-bottom: 10px !important;
+        }
+
+        /* Hide PDF Button on Mobile/Tablet */
+        @media (max-width: 900px) {
+            .resume-header .btn-pill {
+                display: none !important;
+            }
+        }
+
+        /* --- PRINT CSS --- */
+        @media print {
+            @page {
+                margin: 0.5cm;
+                size: auto;
+            }
+
+            body {
+                background: #fff !important;
+                padding: 0 !important;
+                display: block !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* NUCLEAR TEXT COLOR FIX - LITE version */
+            * {
+                color: #000 !important;
+                text-shadow: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                /* REMOVED DESTRUCTIVE TEXT-FILL PROPERTIES TO RESTORE PDF SELECTION */
+                user-select: text !important;
+                -webkit-user-select: text !important;
+            }
+
+            #main-header,
+            #nav-stack,
+            footer,
+            .btn-pill,
+            .icon-btn,
+            .resume-link {
+                display: none !important;
+            }
+
+            #resume-view {
+                display: block !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: none !important;
+            }
+
+
+
+            .resume-header h1 {
+                display: block !important;
+                color: #000 !important;
+                font-size: 24pt !important;
+                margin-bottom: 5px !important;
+            }
+
+            .resume-sub {
+                color: #000 !important;
+                font-size: 14pt !important;
+                margin-bottom: 10px !important;
+                font-weight: 400 !important;
+            }
+
+            /* Force headers to black */
+            h1,
+            h2,
+            h3,
+            h4,
+            .resume-role,
+            .resume-skill-cat,
+            .resume-skill-list,
+            .resume-skill-title {
+                color: #000 !important;
+            }
+
+            .resume-contact {
+                color: #000 !important;
+            }
+
+            .resume-section {
+                margin-bottom: 20px !important;
+            }
+
+            .resume-entry {
+                margin-bottom: 15px !important;
+                page-break-inside: avoid;
+            }
+
+            .resume-section h3 {
+                border-bottom: none !important;
+                margin-bottom: 10px !important;
+                padding-bottom: 0 !important;
+            }
+
+            .resume-role {
+                font-size: 12pt !important;
+            }
+
+            .resume-list,
+            .resume-list li {
+                color: #000 !important;
+                font-size: 11pt !important;
+            }
+
+            .resume-meta,
+            .resume-company {
+                color: #000 !important;
+                font-weight: 500 !important;
+            }
+
+            .resume-grid {
+                display: grid !important;
+                grid-template-columns: 180px 1fr !important;
+                gap: 20px !important;
+            }
+
+            .resume-left {
+                width: 100% !important;
+            }
+
+            .resume-right {
+                width: 100% !important;
+            }
+
+            .resume-container {
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+
+            /* COMPACT PRINT SPACING & INLINE DATES */
+            .resume-header {
+                margin-bottom: 5px !important;
+                padding-bottom: 2px !important;
+                /* Tighter line spacing */
+            }
+
+            .resume-header h1 {
+                margin-bottom: 0 !important;
+                font-size: 20pt !important;
+                line-height: 1.0 !important;
+                color: #000 !important;
+                /* Force Black */
+                -webkit-text-fill-color: #000 !important;
+                /* Safety override */
+            }
+
+            .resume-sub {
+                margin-bottom: 2px !important;
+                font-size: 11pt !important;
+            }
+
+            .resume-skill-title {
+                margin-bottom: 2px !important;
+                font-size: 10pt !important;
+                border-bottom: 0.5pt solid #000 !important;
+            }
+
+            .resume-contact {
+                margin-bottom: 0 !important;
+            }
+
+            /* Clean links in print (BUT KEEP UNDERLINE) */
+            #resume-view a {
+                border-bottom: 1px dotted #555 !important;
+                /* Visual underline for print */
+                text-decoration: none !important;
+                color: #000 !important;
+                pointer-events: auto !important;
+                /* Ensure clickable in PDF */
+                cursor: pointer !important;
+                position: relative !important;
+                z-index: 100 !important;
+                -webkit-text-fill-color: currentcolor !important;
+                /* Fix potential masking */
+                background: transparent !important;
+            }
+
+            .resume-section {
+                margin-bottom: 12px !important;
+            }
+
+            .resume-section h3 {
+                margin-bottom: 6px !important;
+                font-size: 14pt !important;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #000 !important;
+                -webkit-text-fill-color: #000 !important;
+                text-shadow: none !important;
+                border-bottom: none !important;
+                /* Removed per request */
+            }
+
+            .resume-entry {
+                margin-bottom: 8px !important;
+                position: relative !important;
+                /* For absolute referencing dates */
+            }
+
+            .resume-entry-header {
+                margin-bottom: 2px !important;
+            }
+
+            /* INLINE DATES/LOCATIONS using Flex Rows */
+            .resume-row-main,
+            .resume-row-sub {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: baseline !important;
+                width: 100% !important;
+            }
+
+            .resume-role {
+                flex: 1 !important;
+                margin-right: 10px !important;
+            }
+
+            /* Date on same line as Role */
+            .resume-date-slot {
+                text-align: right !important;
+                white-space: nowrap !important;
+                font-weight: 500 !important;
+                font-size: 9pt !important;
+                color: #000 !important;
+            }
+
+            /* Location on same line as Company */
+            .resume-loc-slot {
+                text-align: right !important;
+                white-space: nowrap !important;
+                font-weight: 500 !important;
+                font-size: 9pt !important;
+                color: #000 !important;
+            }
+
+            .resume-meta {
+                display: none !important;
+                /* Hide old container if any leftovers */
+            }
+
+            .resume-entry-header {
+                padding-right: 0 !important;
+                /* Remove safety padding, Flex handles it */
+                margin-bottom: 2px !important;
+            }
+
+            /* Hide chips in print, we use slots */
+            .chip {
+                display: none !important;
+            }
+
+            /* Re-enable slot chips as text */
+            .resume-date-slot .chip,
+            .resume-loc-slot .chip {
+                display: inline-block !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                color: #000 !important;
+            }
+
+            ul {
+                margin: 0 !important;
+                padding-left: 15px !important;
+                /* Tighter indent for print */
+            }
+
+            .resume-list,
+            .resume-list li {
+                margin-bottom: 0 !important;
+                padding-bottom: 0 !important;
+                line-height: 1.15 !important;
+            }
+        }
+    </style>
 
     <script>
         window.MathJax = {
@@ -2912,8 +3404,7 @@
             .toast,
             .three-bg,
             iframe,
-            video,
-            .chip {
+            video {
                 display: none !important;
             }
 
@@ -3037,14 +3528,15 @@
     </footer>
 
     <script>
-        let db = [], quotesDb = [], isSearchActive = false;
+        let db = [], quotesDb = [], resumeDb = [], isSearchActive = false;
 
         const CACHE_KEY = 'sahib_v1_cache';
         const CACHE_EXPIRY = 3600000;
 
         const CONFIG = {
             main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
-            quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv"
+            quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv",
+            resume_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv"
         };
 
         const init = () => {
@@ -3060,10 +3552,11 @@
             loadFromCache().then(cached => {
                 const isDraftMode = localStorage.getItem('preview_drafts') === 'true' || window.location.hostname === 'localhost';
                 if (cached) {
-                    db = cached.main; quotesDb = cached.quotes;
+                    db = cached.main; quotesDb = cached.quotes; resumeDb = cached.resume || [];
                     if (!isDraftMode) {
                         db = db.filter(r => !r.Tags || !r.Tags.includes('Draft'));
                         quotesDb = quotesDb.filter(r => !r.Tags || !r.Tags.includes('Draft'));
+                        // note: resume usually doesn't need draft filtering but consistency is good
                     }
                     startApp();
                     // SWR: Fetch new data in background
@@ -3118,19 +3611,34 @@
 
         async function fetchDataAndCache() {
             try {
-                const [main, quotes] = await Promise.all([
+                const [main, quotes, resume] = await Promise.all([
                     fetchCSV(CONFIG.main_sheet),
-                    fetchCSV(CONFIG.quotes_sheet).catch(() => [])
+                    fetchCSV(CONFIG.quotes_sheet).catch(() => []),
+                    fetchCSV(CONFIG.resume_sheet).catch(() => [])
                 ]);
-                const cleanMain = main.filter(r => r.Title || r.Content);
+                const cleanMain = main.filter(r => r.Title || r.Content || r.Page === 'Professional/Resume');
 
-                db = cleanMain; quotesDb = quotes;
+                // UNIFY: Merge Resume Data into Main DB with corrected Page
+                // REVERTED to Separate Sheet per user request
+
+                // Fallback: Virtual Row if no data found (Legacy)
+                if (!cleanMain.find(r => r.Page === 'Professional/Resume')) {
+                    const resumeRow = {
+                        Title: "Resume",
+                        Page: "Professional/Resume",
+                        SectionType: "Virtual",
+                        Timestamp: ""
+                    };
+                    cleanMain.push(resumeRow);
+                }
+
+                db = cleanMain; quotesDb = quotes; resumeDb = resume; // Restore separate DB
 
                 localStorage.setItem(CACHE_KEY, JSON.stringify({
                     ts: Date.now(),
-                    data: { main: cleanMain, quotes: quotes }
+                    data: { main: cleanMain, quotes: quotes, resume: resume }
                 }));
-                return [cleanMain, quotes];
+                return [cleanMain, quotes, resume];
             } catch (e) {
                 console.error("Fetch failed", e);
             }
@@ -3605,7 +4113,26 @@
             }
             isSearchActive = true;
             const t = q.toLowerCase();
-            const res = db.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t)));
+            // SEARCH BOTH MAIN DB AND RESUME DB
+            const allItems = db; // Start with Main DB
+
+            // Search Main Content
+            let res = allItems.filter(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t)));
+
+            // Search Resume DB (Deduped)
+            const resumeMatch = resumeDb.some(r => (r.Title && r.Title.toLowerCase().includes(t)) || (r.Content && r.Content.toLowerCase().includes(t)) || (r.Tags && r.Tags.toLowerCase().includes(t)));
+
+            if (resumeMatch) {
+                // If match found in Resume content, look for the "Professional/Resume" entry in Main DB
+                // This allows the user to control the Card appearance via CMS (Title, Content, Tags)
+                const resumeCard = db.find(r => r.Page === 'Professional/Resume');
+
+                // Only add if user has defined it in the Main Sheet AND it wasn't already found by the main search
+                if (resumeCard && !res.includes(resumeCard)) {
+                    res.push(resumeCard);
+                }
+            }
+
             renderRows(res, `Search results for "${safeHTML(q)}"`, false, true, false, true);
         }
 
@@ -3621,6 +4148,7 @@
             let hash = window.location.hash.substring(1) || 'Home';
 
             if (hash === 'Index') { renderIndex(); return; }
+            if (hash === 'Professional/Resume') { renderResume(); return; }
 
             renderNavigation(hash === 'Home' ? null : hash);
 
@@ -3725,6 +4253,240 @@
                 .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                 .slice(0, 6);
             if (recents.length > 0) { renderRows(recents, "Recent Activity", true, true, false, true); }
+        }
+
+        // --- RESUME RENDERER ---
+        function renderResume() {
+            renderNavigation('Professional/Resume');
+            const app = document.getElementById('app');
+            app.innerHTML = '<div id="resume-view" class="resume-container"></div>';
+            const container = document.getElementById('resume-view');
+
+            generateResumeJSONLD(); // SEO
+
+            // Source from RESUME DB (Separate Sheet)
+            const resumeData = resumeDb;
+
+            // 1. HEADER
+            // 1. HEADER
+            const headers = resumeData.filter(r => r.SectionType && r.SectionType.toLowerCase() === 'header');
+            if (headers.length > 0) {
+                const h = headers[0];
+                const parts = h.Title.split('|');
+                const name = parts[0].trim();
+                const role = parts[1] ? parts[1].trim() : '';
+
+                container.innerHTML += `
+                    <div class="resume-header section" style="position:relative;">
+                        <button class="btn-pill" onclick="window.print()" style="position:absolute; right:0; top:0; margin:0; font-size:12px; padding:6px 12px; cursor:pointer;">
+                            Download PDF
+                        </button>
+                        <h1 class="fill-anim" style="margin-top:0;">${name}</h1>
+                        <div class="resume-sub fill-anim" style="animation-delay:0.1s">${role}</div>
+                        <div class="resume-contact" style="gap:0 !important; row-gap:4px !important;">
+                            ${(() => {
+                        // Split content by pipe, render as individual items with separators
+                        const items = (h.Content || '').split('|').map(x => `<span style="white-space:nowrap;">${processText(x.trim())}</span>`);
+                        return items.join('<span class="contact-sep" style="margin:0 12px; color:#bbb; user-select:none;">|</span>');
+                    })()}
+                        </div>
+                    </div>`;
+            }
+
+            // 2. LAYOUT GRID
+            container.innerHTML += `<div class="resume-grid section">
+                <div class="resume-left"></div>
+                <div class="resume-right"></div>
+            </div>`;
+
+            const left = container.querySelector('.resume-left');
+            const right = container.querySelector('.resume-right');
+
+            const groups = {};
+            resumeData.forEach(r => {
+                if (!r.SectionType) return;
+                // Normalize to Title Case (e.g. "experience" -> "Experience")
+                const raw = r.SectionType.trim().toLowerCase();
+                const key = raw.charAt(0).toUpperCase() + raw.slice(1);
+
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(r);
+            });
+
+            // Helper to render section
+            const addSection = (target, title, data, renderer) => {
+                if (data && data.length > 0) {
+                    target.innerHTML += `<div class="resume-section">
+                        ${formatTitle(title, 'h3')}
+                        ${data.map(renderer).join('')}
+                    </div>`;
+                }
+            };
+
+            // LEFT COL
+            addSection(left, 'Education', groups['Education'], RenderResumeEntry);
+            addSection(left, 'Skills', groups['Skills'], RenderResumeSkill);
+
+            // RIGHT COL
+            addSection(right, 'Professional Experience', groups['Experience'], RenderResumeEntry);
+            addSection(right, 'Engineering Projects', groups['Project'], RenderResumeEntry);
+        }
+
+        function RenderResumeEntry(r) {
+            // Title logic: "Role | Company"
+            let role = r.Title || '';
+            let company = '';
+            if (role.includes('|')) {
+                const p = role.split('|');
+                role = p[0].trim();
+                company = p[1].trim();
+            }
+
+            const link = r.LinkURL ? `<a href="${r.LinkURL}" target="_blank" class="resume-link"><svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:middle;opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : '';
+
+            // USE processText for Content to support Markdown
+            // Pre-process pipes to newlines for bullets if not already formatted
+            let c = r.Content || '';
+            if (c.includes('|')) {
+                c = '- ' + c.replace(/\|/g, '\n- ');
+            }
+
+            // Auto-Bold Feature: "- Term: Def" -> "- **Term:** Def"
+            // Captures "- " at start of line, then text until colon, if no newline in between.
+            c = c.replace(/(\n|^)-\s*([^:\n]+?):/g, '$1- **$2:**');
+
+            const content = processText(c);
+
+            // PROCESS TAGS (Chips) - Split for Structure
+            let dateHtml = '';
+            let otherTagsHtml = '';
+
+            if (r.Tags) {
+                const processTag = (t) => {
+                    t = t.trim();
+                    // Date Logic -> Plain Text
+                    if (t.match(/[A-Za-z]{3,}\s+\d{4}/) || t.toLowerCase().includes('present')) {
+                        return { type: 'date', html: safeHTML(t) };
+                    }
+
+                    // Location/Link Logic -> Plain Link or Text
+                    const match = t.match(/^\[(.*?)\]\((.*?)\)$/);
+                    if (match) {
+                        const label = match[1];
+                        const url = match[2];
+                        const isMap = /maps\.app\.goo\.gl|google\.com\/maps/i.test(url); // Detect map
+                        const icon = isMap
+                            ? `<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`
+                            : `<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+
+                        return { type: 'loc', html: `<a href="${url}" target="_blank" style="text-decoration:none; color:inherit; display:flex; align-items:center;">${icon}${safeHTML(label)}</a>` };
+                    }
+                    // Default Logic -> Plain Text
+                    return { type: 'other', html: safeHTML(t) };
+                };
+
+                // Semicolon Heuristic: If semicolon is present, use it as primary delimiter to allow commas in text.
+                const hasSemicolon = r.Tags.includes(';');
+                const splitRegex = hasSemicolon ? /(?:;|\u2022)\s*/ : /(?:;|,|\u2022)\s*/;
+
+                const rawTags = r.Tags.split(splitRegex).filter(t => t.trim());
+
+                // Collect non-date tags to join them with separators later
+                const otherTags = [];
+
+                rawTags.forEach(t => {
+                    const res = processTag(t);
+                    if (res.type === 'date' && !dateHtml) {
+                        dateHtml = res.html;
+                    } else {
+                        otherTags.push(res.html);
+                    }
+                });
+
+                // Join other tags with ", " to prevent "AllistonON"
+                if (otherTags.length > 0) {
+                    otherTagsHtml = otherTags.join(', ');
+                }
+            }
+
+            // Screen View: Stack normally? Or use grid?
+            // To keep Screen view consistent with previous "Chips row" look but allow Print split,
+            // we will render TWO views? Or use CSS to move them?
+            // CSS manipulation is cleanest.
+            // Screen: .resume-row-main { display: block } .resume-date-slot { float? or just inside }
+            // Actually, let's just make Screen view look good with this structure too.
+            // Row 1: Role [Space] Date
+            // Row 2: Company [Space] Location
+
+            return `
+            <div class="resume-entry">
+                <div class="resume-entry-header">
+                    <div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">
+                        <div class="resume-role">${role} ${link}</div>
+                        <div class="resume-date-slot">${dateHtml}</div>
+                    </div>
+                    <div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">
+                        ${company ? `<div class="resume-company">${company}</div>` : '<div></div>'}
+                        <div class="resume-loc-slot">${otherTagsHtml}</div>
+                    </div>
+                </div>
+                <div class="resume-list text-content">${content}</div>
+            </div>`;
+        }
+
+        function RenderResumeSkill(r) {
+            // Parse: "Category: Item, Item | Category: Item"
+            const parts = (r.Content || '').split('|').map(x => x.trim()).filter(x => x);
+
+            let html = '';
+            parts.forEach(part => {
+                const splitIdx = part.indexOf(':');
+                if (splitIdx > -1) {
+                    const cat = part.substring(0, splitIdx).trim();
+                    const val = part.substring(splitIdx + 1).trim();
+                    html += `<div class="resume-skill-row">
+                        <span class="resume-skill-cat">${cat}:</span> 
+                        <span class="resume-skill-list">${val}</span>
+                    </div>`;
+                } else {
+                    html += `<div class="resume-skill-row"><span class="resume-skill-list">${part}</span></div>`;
+                }
+            });
+
+            return `
+            <div class="resume-skill-block">
+                ${r.Title && r.Title !== 'Technical Skills' ? `<div class="resume-skill-title">${r.Title}</div>` : ''}
+                ${html}
+            </div>`;
+        }
+
+        function generateResumeJSONLD() {
+            const existing = document.getElementById('json-ld-resume');
+            if (existing) existing.remove();
+
+            const resumeRows = resumeDb;
+            const headers = resumeRows.filter(r => r.SectionType === 'Header');
+            if (headers.length === 0) return;
+
+            const h = headers[0];
+            const name = h.Title.split('|')[0].trim();
+            const role = h.Title.split('|')[1] ? h.Title.split('|')[1].trim() : "Engineer";
+
+            const schema = {
+                "@context": "https://schema.org",
+                "@type": "Person",
+                "name": name,
+                "jobTitle": role,
+                "url": "https://sahibvirdee.com/resume",
+                "description": `Resume of ${name}, ${role}.`,
+                "knowsAbout": resumeRows.filter(r => r.SectionType === 'Skills').map(r => r.Content).join(', ')
+            };
+
+            const script = document.createElement('script');
+            script.id = 'json-ld-resume';
+            script.type = 'application/ld+json';
+            script.textContent = JSON.stringify(schema);
+            document.head.appendChild(script);
         }
 
         function detectEmbed(url) {
@@ -4151,7 +4913,7 @@
             if (inCallout) flushCallout();
             if (inCodeBlock) flushCode();
 
-            return output.join('<br>'); // Note: This might double-space block elements, handled by CSS usually
+            return output.join('<br>').replace(/<\/li><br><li/g, '</li><li'); // Fix list spacing
         }
 
         function processLineArray(lines, hiddenUrls) {
@@ -4208,6 +4970,9 @@
                 }
                 return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="${alt}"></div>`;
             });
+
+            // MD LINKS
+            clean = clean.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
 
             // BASIC MARKDOWN (Bold, Italic, Code)
             clean = clean.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>'); // Bold Italic
@@ -4447,7 +5212,7 @@
                 else if (pLower.startsWith('professional')) catClass = 'cat-professional';
                 else if (pLower.startsWith('personal')) catClass = 'cat-personal';
 
-                const type = r.SectionType || 'card';
+                const type = (r.SectionType || 'card').toLowerCase();
 
                 if (!forceGrid && isArticleMode && type !== 'quote' && type !== 'hero') {
                     const d = document.createElement('div'); d.className = 'section layout-text';
@@ -4574,6 +5339,7 @@
                     mh = `<div class="meta-row">`;
                     if (r.Timestamp) {
                         let dateVal = formatDate(r.Timestamp);
+                        if (!dateVal) dateVal = r.Timestamp; // Safety Fallback
                         let filterVal = r.Timestamp.substring(0, 7);
                         mh += `<span class="chip date" data-date="${filterVal}" data-val="${dateVal}">${dateVal}</span>`;
                     }
@@ -4841,15 +5607,54 @@
 
         function formatDate(s) {
             if (!s) return '';
+
+            // 0. Handle Date Objects directly (Local Time)
+            if (s instanceof Date) {
+                const day = s.getDate(); // Local day
+                const mo = s.toLocaleString('default', { month: 'short' }).toUpperCase();
+                const yr = s.getFullYear();
+                return `${day} ${mo} ${yr}`;
+            }
+
+            s = String(s).trim(); // Ensure string
+
+            // 1. Handle YYYYMMDD (Legacy)
             if (s.length === 8 && !isNaN(s)) {
                 const y = s.substring(0, 4);
                 const m = s.substring(4, 6);
                 const d = s.substring(6, 8);
-                const dateObj = new Date(`${y}-${m}-${d}`);
+                const dateObj = new Date(y, m - 1, d, 12, 0, 0); // Noon Local
                 return `${dateObj.getDate()} ${dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()} ${y}`;
             }
+
+            // 2. Handle YYYY-MM-DD (Standard) - Loose Match
+            const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+                const y = parseInt(match[1]);
+                const m = parseInt(match[2]);
+                const d = parseInt(match[3]);
+                // Construct Date Object manually in LOCAL TIME (noon safe)
+                const dateObj = new Date(y, m - 1, d, 12, 0, 0);
+                const mo = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
+                return `${d} ${mo} ${y}`;
+            }
+
+            // 3. Fallback for text (e.g. "Present")
+            if (s.toLowerCase().includes('present') || isNaN(Date.parse(s))) {
+                return s;
+            }
+
+            // 4. Last Resort: Parse ISO/Other
+            // This is the danger zone for "31 Jan" -> "30 Jan" if it's treated as UTC Midnight.
+            // If we are here, regex failed.
+            // Use UTC methods to read it? No, standard Date() uses Local.
+            // If the string is "Jan 31 2026", Date() works fine.
             const d = new Date(s);
             if (isNaN(d.getTime())) return s;
+
+            // If the input was ISO-like (contains T or Z), and we are here, it means regex failed (maybe time included?)
+            // If time is included, usually it's correct.
+            // Just return local date.
             const day = d.getDate();
             const mo = d.toLocaleString('default', { month: 'short' }).toUpperCase();
             const yr = d.getFullYear();
@@ -5083,18 +5888,6 @@
 
 
         // --- UTIL FUNCTIONS (Global) ---
-
-        // EASTER EGG 🐣
-        console.log(`%c
-░██                   ░██ ░██                   ░███████   
-░██                   ░██ ░██                   ░██   ░██  
-░████████   ░███████  ░██ ░██  ░███████         ░██    ░██ 
-░██    ░██ ░██    ░██ ░██ ░██ ░██    ░██    ░██ ░██    ░██ 
-░██    ░██ ░█████████ ░██ ░██ ░██    ░██        ░██    ░██ 
-░██    ░██ ░██        ░██ ░██ ░██    ░██        ░██   ░██  
-░██    ░██  ░███████  ░██ ░██  ░███████     ░██ ░███████   
-`, "color: #ffffff; font-weight: bold;");
-        console.log("%c say hi @sahibdsv, anywhere. :)", "font-size: 14px; color: #ffffff; font-style: italic; margin-top: 5px;");
 
         function runMermaid() {
             if (window.mermaid) {
