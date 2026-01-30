@@ -4285,7 +4285,6 @@
             // Custom Resume Routing with Hot-Swap
             if (hash.toLowerCase() === 'professional/resumec') {
                 if (CONFIG.resume_sheet !== CONFIG.custom_resume_sheet) {
-                    console.log("Hot-swapping to Custom Resume Data...");
                     CONFIG.resume_sheet = CONFIG.custom_resume_sheet;
                     // Show loading indicator?
                     document.getElementById('app').innerHTML = '<div class="sk-container"><div class="sk-box hero"></div></div>';
