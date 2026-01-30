@@ -2809,10 +2809,14 @@
         /* Entries */
         .resume-entry {
             margin-bottom: 35px;
+            position: relative;
+            /* Anchor for absolute checkbox */
         }
 
         .resume-entry-header {
             margin-bottom: 6px;
+            padding-right: 44px;
+            /* Space for the 44px checkbox */
         }
 
         .resume-role {
@@ -2833,25 +2837,40 @@
         }
 
         /* RESUME BUILDER TOGGLES - VISIBLE MODE */
-        .resume-toggle {
-            float: right;
-            margin-left: 10px;
+        /* RESUME BUILDER TOGGLES - VISIBLE MODE */
+        /* Wrapper creates the large 44x44 hitbox */
+        .resume-toggle-wrapper {
+            position: absolute;
+            top: -10px;
+            /* Center perfectly relative to the first text line (approx 24px height) */
+            right: 0;
+            width: 44px;
+            height: 44px;
             cursor: pointer;
-            width: 15px;
-            height: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            /* Debug: background: rgba(255,0,0,0.2); */
+        }
+
+        /* The actual visual checkbox */
+        .resume-toggle {
+            width: 16px;
+            height: 16px;
             appearance: none;
             -webkit-appearance: none;
             background: #222;
             border: 1px solid #555;
             border-radius: 3px;
             position: relative;
-            z-index: 10;
             opacity: 1;
-            /* Always visible */
             transition: all 0.2s;
+            cursor: pointer;
         }
 
-        .resume-toggle:hover {
+        /* Wrapper Hover -> Input Border Change */
+        .resume-toggle-wrapper:hover .resume-toggle {
             border-color: #fff;
         }
 
@@ -3501,7 +3520,10 @@
             .three-bg,
             iframe,
             video,
+            video,
             .resume-toggle,
+            .resume-toggle-wrapper,
+            .btn-pill,
             .resume-entry.print-hidden {
                 display: none !important;
             }
@@ -3637,10 +3659,19 @@
         const CONFIG = {
             main_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv",
             quotes_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv",
-            resume_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv"
+            resume_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv",
+            custom_resume_sheet: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1529790368&single=true&output=csv"
         };
 
         const init = () => {
+            // HIDDEN RESUME GENERATOR LOGIC
+            // If hash is #Professional/ResumeC, we SWAP the resume sheet source to the 'Superset' sheet
+            // and Disable Caching to force fresh load
+            if (window.location.hash.toLowerCase() === '#professional/resumec') {
+                console.log("Entering Custom Resume Builder Mode");
+                CONFIG.resume_sheet = CONFIG.custom_resume_sheet;
+                localStorage.removeItem(CACHE_KEY); // Force reload
+            }
             if (window.location.hash.toLowerCase() === '#demo' || window.location.hash.toLowerCase() === '#test') {
                 console.log("Entering Demo Mode");
                 loadDemoData();
@@ -4251,6 +4282,20 @@
             if (hash === 'Index') { renderIndex(); return; }
             if (hash === 'Professional/Resume') { renderResume(); return; }
 
+            // Custom Resume Routing with Hot-Swap
+            if (hash.toLowerCase() === 'professional/resumec') {
+                if (CONFIG.resume_sheet !== CONFIG.custom_resume_sheet) {
+                    console.log("Hot-swapping to Custom Resume Data...");
+                    CONFIG.resume_sheet = CONFIG.custom_resume_sheet;
+                    // Show loading indicator?
+                    document.getElementById('app').innerHTML = '<div class="sk-container"><div class="sk-box hero"></div></div>';
+                    fetchDataAndCache().then(() => renderResume());
+                    return;
+                }
+                renderResume();
+                return;
+            }
+
             renderNavigation(hash === 'Home' ? null : hash);
 
             if (hash.startsWith('Filter:')) { renderFiltered(decodeURIComponent(hash.split(':')[1])); }
@@ -4446,14 +4491,13 @@
             const link = r.LinkURL ? `<a href="${r.LinkURL}" target="_blank" class="resume-link"><svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:middle;opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : '';
 
             // USE processText for Content to support Markdown
-            // Pre-process pipes to newlines for bullets if not already formatted
             let c = r.Content || '';
+
+            // STANDARD LOGIC (Applies to both Custom and Main)
             if (c.includes('|')) {
                 c = '- ' + c.replace(/\|/g, '\n- ');
             }
-
             // Auto-Bold Feature: "- Term: Def" -> "- **Term:** Def"
-            // Captures "- " at start of line, then text until colon, if no newline in between.
             c = c.replace(/(\n|^)-\s*([^:\n]+?):/g, '$1- **$2:**');
 
             const content = processText(c);
@@ -4522,7 +4566,9 @@
             return `
             <div class="resume-entry" id="res-${r.ID || Math.random().toString(36).substr(2, 9)}">
                 <div class="resume-entry-header">
-                    <input type="checkbox" class="resume-toggle" checked title="Uncheck to hide in Print/PDF" onclick="this.closest('.resume-entry').classList.toggle('print-hidden')">
+                    <label class="resume-toggle-wrapper" title="Uncheck to hide in Print/PDF">
+                        <input type="checkbox" class="resume-toggle" checked onclick="this.closest('.resume-entry').classList.toggle('print-hidden')">
+                    </label>
                     <div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">
                         <div class="resume-role">${role} ${link}</div>
                         <div class="resume-date-slot">${dateHtml}</div>
