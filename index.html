@@ -2809,14 +2809,10 @@
         /* Entries */
         .resume-entry {
             margin-bottom: 35px;
-            position: relative;
-            /* Anchor for absolute checkbox */
         }
 
         .resume-entry-header {
             margin-bottom: 6px;
-            padding-right: 44px;
-            /* Space for the 44px checkbox */
         }
 
         .resume-role {
@@ -2837,74 +2833,10 @@
         }
 
         /* RESUME BUILDER TOGGLES - VISIBLE MODE */
-        /* RESUME BUILDER TOGGLES - VISIBLE MODE */
-        /* Wrapper creates the large 44x44 hitbox */
-        .resume-toggle-wrapper {
-            position: absolute;
-            top: -10px;
-            /* Center perfectly relative to the first text line (approx 24px height) */
-            right: 0;
-            width: 44px;
-            height: 44px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            /* Debug: background: rgba(255,0,0,0.2); */
-        }
-
-        /* The actual visual checkbox */
-        .resume-toggle {
-            width: 16px;
-            height: 16px;
-            appearance: none;
-            -webkit-appearance: none;
-            background: #222;
-            border: 1px solid #555;
-            border-radius: 3px;
-            position: relative;
-            opacity: 1;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        /* Wrapper Hover -> Input Border Change */
-        .resume-toggle-wrapper:hover .resume-toggle {
-            border-color: #fff;
-        }
-
-        .resume-toggle:checked {
-            background: #222;
-            border-color: #666;
-        }
-
-        .resume-toggle:checked::after {
-            content: '';
-            position: absolute;
-            top: 1px;
-            left: 5px;
-            width: 3px;
-            height: 8px;
-            border: solid #fff;
-            border-width: 0 1.5px 1.5px 0;
-            transform: rotate(45deg);
-        }
-
-        /* When Hidden: Fade the row, but keep the toggle BRIGHT so you can re-enable it */
+        /* When Hidden: Fade the row */
         .resume-entry.print-hidden {
             opacity: 0.3;
             filter: grayscale(1);
-        }
-
-        .resume-entry.print-hidden .resume-toggle {
-            opacity: 1;
-            border-color: #888;
-            background: #000;
-        }
-
-        .resume-entry.print-hidden .resume-toggle::after {
-            display: none;
         }
 
         .resume-entry.print-hidden {
@@ -4565,9 +4497,6 @@
             return `
             <div class="resume-entry" id="res-${r.ID || Math.random().toString(36).substr(2, 9)}">
                 <div class="resume-entry-header">
-                    <label class="resume-toggle-wrapper" title="Uncheck to hide in Print/PDF">
-                        <input type="checkbox" class="resume-toggle" checked onclick="this.closest('.resume-entry').classList.toggle('print-hidden')">
-                    </label>
                     <div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">
                         <div class="resume-role">${role} ${link}</div>
                         <div class="resume-date-slot">${dateHtml}</div>
