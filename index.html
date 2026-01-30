@@ -3476,7 +3476,9 @@
     </script>
 
     <div id="search-overlay">
-        <input type="text" id="search-input" placeholder="Type to search..." onkeyup="handleSearch(this.value)">
+        <input type="search" id="search-input" name="q" role="searchbox" inputmode="search"
+            placeholder="Type to search..." onkeyup="handleSearch(this.value)" autocomplete="off" autocorrect="off"
+            autocapitalize="off" spellcheck="false" aria-autocomplete="none">
     </div>
 
     <header id="main-header" class="no-transition">
