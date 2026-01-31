@@ -784,7 +784,11 @@ function processText(t, hiddenUrls) {
 
     let inCodeBlock = false;
     let codeLang = '';
+
     let codeLines = [];
+
+    let inMathBlock = false;
+    let mathLines = [];
 
 
     const flushCallout = () => {
@@ -955,7 +959,7 @@ function processText(t, hiddenUrls) {
         const collapseClass = calloutData.collapse === '-' ? 'collapsed' : '';
 
         output.push(`
-                    <${tag} class="callout ${calloutData.type} ${collapseClass}" ${collapseAttr}>
+                    <${tag} class="callout ${calloutData.type} ${collapseClass}" ${collapseAttr} data-callout="${calloutData.type}">
                         <${titleTag} class="callout-title">
                             <div class="callout-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg></div>
                             <div class="callout-title-inner">${displayTitle}</div>
@@ -982,8 +986,30 @@ function processText(t, hiddenUrls) {
         codeLang = '';
     };
 
+    const flushMath = () => {
+        if (!inMathBlock) return;
+        const mathContent = mathLines.join('\n');
+        output.push(`$$${mathContent}$$`);
+        inMathBlock = false;
+        mathLines = [];
+    };
+
     for (let i = 0; i < rawLines.length; i++) {
         let line = rawLines[i].trimEnd();
+
+        // MATH BLOCK
+        if (line.trim() === '$$') {
+            if (inMathBlock) { flushMath(); }
+            else {
+                if (inCallout) flushCallout();
+                inMathBlock = true;
+            }
+            continue;
+        }
+        if (inMathBlock) {
+            mathLines.push(line);
+            continue;
+        }
 
         // CODE BLOCK
         if (line.trim().startsWith('```')) {
@@ -1130,6 +1156,7 @@ function processText(t, hiddenUrls) {
 
     if (inCallout) flushCallout();
     if (inCodeBlock) flushCode();
+    if (inMathBlock) flushMath();
 
     return output.join('<br>').replace(/<\/li><br><li/g, '</li><li'); // Fix list spacing
 }
@@ -2588,14 +2615,28 @@ function loadDemoData() {
 # Feature Demo
 This page demonstrates the capabilities of the CMS rendering engine.
 
-## 1. Typography & Formatting
+## 1. Headers (H1-H6)
+Display of all header levels:
+# Header 1
+## Header 2
+### Header 3
+#### Header 4
+##### Header 5
+###### Header 6
+
+## 2. Typography & Formatting
 Standard text can be **bold**, *italic*, or [linked](#). 
 We also support lists:
 - Item One
 - Item Two
   - Nested Item
 
-## 2. Callouts
+\`\`\`markdown
+**Bold**, *Italic*, [Link](#)
+- List Item
+\`\`\`
+
+## 3. Callouts
 Support for Obsidian-style callouts:
 
 > [!info] Information
@@ -2616,7 +2657,12 @@ Support for Obsidian-style callouts:
 > [!quote] Quote Card
 > "Design is intelligence made visible."
 
-## 3. Code Blocks
+\`\`\`markdown
+> [!info] Title
+> Content...
+\`\`\`
+
+## 4. Code Blocks
 Syntax highlighting via Prism.js:
 
 \`\`\`javascript
@@ -2626,23 +2672,19 @@ function helloWorld() {
 }
 \`\`\`
 
-\`\`\`python
-def optimize():
-    return "Efficiency"
-\`\`\`
-
-\`\`\`css
-.class { color: #fff; }
-\`\`\`
-
-## 4. Mathematics (LaTeX)
+## 5. Mathematics (LaTeX)
 Inline math: $a^2 + b^2 = c^2$
+
 Block math:
 $$
-\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
 $$
 
-## 5. Mermaid Diagrams
+\`\`\`markdown
+$$ E = mc^2 $$
+\`\`\`
+
+## 6. Mermaid Diagrams
 Rendered on the fly:
 
 \`\`\`mermaid
@@ -2654,7 +2696,7 @@ graph LR
     D --> E
 \`\`\`
 
-## 6. Data Visualization
+## 7. Data Visualization
 Built-in Chart.js support:
 
 **Bar Chart:**
@@ -2666,22 +2708,41 @@ Built-in Chart.js support:
 **Doughnut Chart:**
 [chart:doughnut:Red,Blue,Yellow:30,50,20:Distribution]
 
-## 7. Media Embeds
+\`\`\`markdown
+[chart:type:label1,label2:value1,value2:Title]
+\`\`\`
+
+## 8. Media Embeds & Side-by-Side
 **YouTube:**
-https://www.youtube.com/watch?v=dQw4w9WgXcQ
+https://www.youtube.com/watch?v=YE7VzlLtp-4
 
 **Maps:**
 https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.9873196845941!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes+Square!5e0!3m2!1sen!2sus!4v1560412335497!5m2!1sen!2sus
 
-## 8. 3D Models (STL/GLB)
-Interactive WebGL viewer:
+**Side-by-Side (Auto Grid):**
+[https://images.unsplash.com/photo-1549692520-acc6669e2f0c, https://images.unsplash.com/photo-1493246507139-91e8fad9978e]
+
+\`\`\`markdown
+[url1, url2]
+\`\`\`
+
+## 9. 3D Models (STL/GLB)
+Interactive WebGL viewer (Click to interact, Double-click for fullscreen):
 https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/binary/pr2_head_pan.stl
 
-## 9. Comparison Sliders
+\`\`\`markdown
+Link to .stl file (or use {{3D: url}})
+\`\`\`
+
+## 10. Comparison Sliders
 Before/After visualization:
 [compare:https://images.unsplash.com/photo-1549692520-acc6669e2f0c:https://images.unsplash.com/photo-1493246507139-91e8fad9978e]
 
-## 10. Tables
+\`\`\`markdown
+[compare:url1:url2]
+\`\`\`
+
+## 11. Tables
 | Feature | Status | Priority |
 | :--- | :---: | ---: |
 | Markdown | Ready | High |
@@ -2692,11 +2753,12 @@ Before/After visualization:
 
     const html = processText(demoMD);
 
+    // WRAP IN ARTICLE MODE FOR CONTROLS (3D Fullscreen, etc.)
     app.innerHTML = `
-                <div class="content-container animate-fade">
-                    ${html}
-                </div>
-            `;
+        <div class="content-container animate-fade article-mode">
+            ${html}
+        </div>
+    `;
 
     // Post-Render Triggers
     setTimeout(() => {
