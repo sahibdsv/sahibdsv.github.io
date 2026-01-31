@@ -134,7 +134,7 @@ h3,
     transition: background-position 0.5s var(--ease), color 0.5s var(--ease), border-color 0.2s !important;
     text-decoration: none;
     display: inline-block;
-    color: var(--text-base, #888) !important;
+    color: var(--text-base, #999) !important;
 }
 
 .fill-anim:hover,
@@ -193,7 +193,7 @@ h2.fill-anim {
     line-height: 1;
     cursor: pointer;
     user-select: none;
-    --text-base: #666;
+    --text-base: #999;
     --text-hover: #fff;
     transition: height 0.6s cubic-bezier(0.2, 0, 0, 1), opacity 0.4s var(--ease), transform 0.6s cubic-bezier(0.2, 0, 0, 1), margin 0.6s cubic-bezier(0.2, 0, 0, 1), background-position 0.5s var(--ease) !important;
     opacity: 1;
@@ -203,7 +203,7 @@ h2.fill-anim {
     margin-bottom: 0;
     -webkit-tap-highlight-color: transparent;
     /* FORCE FILL EFFECT */
-    background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #666) 50.5%);
+    background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, #999) 50.5%);
     background-size: 100% 205%;
     background-position: 0 0;
     -webkit-background-clip: text;
@@ -258,7 +258,7 @@ h2.fill-anim {
     padding-bottom: 2px;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    --text-base: #666;
+    --text-base: #999;
     --text-hover: #fff;
 }
 
@@ -301,7 +301,7 @@ h2.fill-anim {
 }
 
 .nav-row.level-n .nav-link {
-    --text-base: #666;
+    --text-base: #999;
     --text-hover: #fff;
 }
 
