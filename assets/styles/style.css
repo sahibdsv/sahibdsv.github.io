@@ -2662,6 +2662,25 @@ h6 {
     color: #fff !important;
 }
 
+/* UTILITY CLASSES */
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.my-20 {
+    margin: 20px 0;
+}
+
+.relative {
+    position: relative;
+}
+
 @media print {
     body {
         background: #fff !important;

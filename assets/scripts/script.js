@@ -836,12 +836,14 @@ function processText(t, hiddenUrls) {
 
             if (urls.length >= 2) {
                 output.push(`
-                            <div class="compare-container">
-                                <img src="${urls[1].trim()}" class="compare-img compare-after">
-                                <img src="${urls[0].trim()}" class="compare-img">
-                                <div class="compare-handle"></div>
-                                <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
-                            </div>`);
+                    <div class="flex-center w-full my-20">
+                        <div class="compare-container" style="--pos:50%">
+                            <img src="${urls[0].trim()}" class="compare-img">
+                            <img src="${urls[1].trim()}" class="compare-img compare-after">
+                            <div class="compare-handle"></div>
+                            <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
+                        </div>
+                    </div>`);
                 inCallout = false;
                 calloutData = { type: '', title: '', collapse: null, lines: [] };
                 return;
@@ -2824,6 +2826,6 @@ Rain vs Dry:
         initCharts();
         init3DViewers();
         initComparisons();
-        initImageZoomers(); 
+        initImageZoomers();
     }, 100);
 }
