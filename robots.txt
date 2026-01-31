@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-
-# Note: This Single Page Application uses Hash-URLs (#Project/...)
-# Standard sitemaps cannot index these.
-# We use JSON-LD Structured Data in index.html for content discovery.
