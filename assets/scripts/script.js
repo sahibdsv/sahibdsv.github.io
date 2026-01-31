@@ -2528,3 +2528,132 @@
 
         // --- UTIL FUNCTIONS (Global) ---
 
+
+function loadDemoData() {
+    renderNavigation(null);
+    const app = document.getElementById('app');
+
+    const demoMD = `
+# Feature Demo
+This page demonstrates the capabilities of the CMS rendering engine.
+
+## 1. Typography & Formatting
+Standard text can be **bold**, *italic*, or [linked](#). 
+We also support lists:
+- Item One
+- Item Two
+  - Nested Item
+
+## 2. Callouts
+Support for Obsidian-style callouts:
+
+> [!info] Information
+> Useful details about the ecosystem.
+
+> [!tip] Pro Tip
+> Use callouts to highlight specific context.
+
+> [!warning] Warning
+> Be careful with these settings.
+
+> [!danger] Critical Error
+> Something went wrong here.
+
+> [!bug] Bug Report
+> Known issue with rendering.
+
+> [!quote] Quote Card
+> "Design is intelligence made visible."
+
+## 3. Code Blocks
+Syntax highlighting via Prism.js:
+
+\`\`\`javascript
+function helloWorld() {
+    console.log("Hello, User!");
+    return true;
+}
+\`\`\`
+
+\`\`\`python
+def optimize():
+    return "Efficiency"
+\`\`\`
+
+\`\`\`css
+.class { color: #fff; }
+\`\`\`
+
+## 4. Mathematics (LaTeX)
+Inline math: $a^2 + b^2 = c^2$
+Block math:
+$$
+\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
+$$
+
+## 5. Mermaid Diagrams
+Rendered on the fly:
+
+\`\`\`mermaid
+graph LR
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Success]
+    B -->|No| D[Failure]
+    C --> E[End]
+    D --> E
+\`\`\`
+
+## 6. Data Visualization
+Built-in Chart.js support:
+
+**Bar Chart:**
+[chart:bar:Jan,Feb,Mar,Apr,May:12,19,3,5,2:Sales Data]
+
+**Line Chart:**
+[chart:line:2020,2021,2022,2023:50,60,55,80:Growth]
+
+**Doughnut Chart:**
+[chart:doughnut:Red,Blue,Yellow:30,50,20:Distribution]
+
+## 7. Media Embeds
+**YouTube:**
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+**Maps:**
+https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.9873196845941!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes+Square!5e0!3m2!1sen!2sus!4v1560412335497!5m2!1sen!2sus
+
+## 8. 3D Models (STL/GLB)
+Interactive WebGL viewer:
+https://storage.googleapis.com/ucloud-v3/cc7c503d36001099166f2122610c1280.stl
+
+## 9. Comparison Sliders
+Before/After visualization:
+[compare:https://images.unsplash.com/photo-1549692520-acc6669e2f0c:https://images.unsplash.com/photo-1493246507139-91e8fad9978e]
+
+## 10. Tables
+| Feature | Status | Priority |
+| :--- | :---: | ---: |
+| Markdown | Ready | High |
+| Charts | Ready | Med |
+| 3D | Beta | Low |
+
+`;
+
+    const html = processText(demoMD);
+
+    app.innerHTML = `
+                <div class="content-container animate-fade">
+                    ${html}
+                </div>
+            `;
+
+    // Post-Render Triggers
+    setTimeout(() => {
+        if (window.Prism) Prism.highlightAll();
+        if (window.MathJax) MathJax.typeset();
+        if (window.mermaid) mermaid.init();
+        initCharts();
+        init3DViewers();
+        initComparisons();
+    }, 100);
+}
