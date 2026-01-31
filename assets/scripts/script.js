@@ -2682,31 +2682,54 @@ function initComparisons() {
             e.target.parentElement.style.setProperty('--pos', e.target.value + '%');
         });
 
-        // Intro Animation
+        // Intro Animation (Wait for Load)
         if (!slider.dataset.animated) {
             slider.dataset.animated = 'true';
-            setTimeout(() => {
-                const container = slider.parentElement;
-                let start = 50;
-                let direction = 1;
-                let steps = 0;
-                const limit = 20;
 
-                const animate = setInterval(() => {
-                    if (steps > limit) {
-                        clearInterval(animate);
-                        container.style.setProperty('--pos', '50%');
-                        slider.value = 50;
-                        return;
-                    }
+            const container = slider.parentElement;
+            const images = container.querySelectorAll('img');
+            let loaded = 0;
+            const target = images.length;
 
-                    // Simple sine wave oscillation approx
-                    const val = 50 + (Math.sin(steps * 0.5) * 10);
-                    container.style.setProperty('--pos', val + '%');
-                    slider.value = val;
-                    steps++;
-                }, 30);
-            }, 500);
+            const runAnimation = () => {
+                if (loaded < target) return;
+
+                // Slight delay after visual load
+                setTimeout(() => {
+                    let steps = 0;
+                    const limit = 30; // 1 second approx
+
+                    const animate = setInterval(() => {
+                        if (steps > limit) {
+                            clearInterval(animate);
+                            container.style.setProperty('--pos', '50%');
+                            slider.value = 50;
+                            return;
+                        }
+
+                        // Enhanced Wiggle: 50 -> 60 -> 40 -> 50
+                        const progress = steps / limit;
+                        const val = 50 + (Math.sin(progress * Math.PI * 2) * 15); // Full sine wave
+
+                        container.style.setProperty('--pos', val + '%');
+                        slider.value = val;
+                        steps++;
+                    }, 25);
+                }, 500);
+            };
+
+            images.forEach(img => {
+                if (img.complete) {
+                    loaded++;
+                } else {
+                    img.addEventListener('load', () => {
+                        loaded++;
+                        runAnimation();
+                    });
+                }
+            });
+
+            if (loaded === target) runAnimation();
         }
     });
 }
