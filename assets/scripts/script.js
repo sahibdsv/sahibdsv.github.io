@@ -1103,12 +1103,12 @@ function processText(t, hiddenUrls) {
             const urls = content.split(/:(?=http)/); // Split by colon lookahead http
             if (urls.length >= 2) {
                 output.push(`
-                            <div class="compare-container" style="--pos:50%">
-                                <img src="${urls[1].trim()}" class="compare-img compare-after">
-                                <img src="${urls[0].trim()}" class="compare-img">
-                                <div class="compare-handle"></div>
-                                <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
-                            </div>`);
+                    <div class="compare-container" style="--pos:50%">
+                        <img src="${urls[0].trim()}" class="compare-img">
+                        <img src="${urls[1].trim()}" class="compare-img compare-after">
+                        <div class="compare-handle"></div>
+                        <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
+                    </div>`);
                 continue;
             }
         }
@@ -2681,6 +2681,33 @@ function initComparisons() {
         slider.addEventListener('input', (e) => {
             e.target.parentElement.style.setProperty('--pos', e.target.value + '%');
         });
+
+        // Intro Animation
+        if (!slider.dataset.animated) {
+            slider.dataset.animated = 'true';
+            setTimeout(() => {
+                const container = slider.parentElement;
+                let start = 50;
+                let direction = 1;
+                let steps = 0;
+                const limit = 20;
+
+                const animate = setInterval(() => {
+                    if (steps > limit) {
+                        clearInterval(animate);
+                        container.style.setProperty('--pos', '50%');
+                        slider.value = 50;
+                        return;
+                    }
+
+                    // Simple sine wave oscillation approx
+                    const val = 50 + (Math.sin(steps * 0.5) * 10);
+                    container.style.setProperty('--pos', val + '%');
+                    slider.value = val;
+                    steps++;
+                }, 30);
+            }, 500);
+        }
     });
 }
 
@@ -2763,6 +2790,6 @@ Rain vs Dry:
         initCharts();
         init3DViewers();
         initComparisons();
-        initImageZoomers(); 
+        initImageZoomers();
     }, 100);
 }
