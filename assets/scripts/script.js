@@ -2737,8 +2737,8 @@ graph LR
 Interactive WebGL viewer:
 https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/binary/pr2_head_pan.stl
 ## 9. Comparison Sliders
-Different Images (Before/After):
-[compare:https://images.unsplash.com/photo-1549692520-acc6669e2f0c:https://images.unsplash.com/photo-1550989460-0adf9ea622e2]
+Distinct Images (Forest vs Desert):
+[compare:https://images.unsplash.com/photo-1448375240586-dfd8d395ea6c:https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9]
 ## 10. Tables
 | Feature | Status | Priority |
 | :--- | :---: | ---: |
