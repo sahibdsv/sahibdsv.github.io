@@ -2691,7 +2691,6 @@ function loadDemoData() {
     const demoMD = `
 # Feature Demo
 This page demonstrates the capabilities of the CMS rendering engine.
-
 ## 1. Typography & Lists
 Standard text can be **bold**, *italic*, or [linked](#). 
 We also support infinite nested lists:
@@ -2700,17 +2699,13 @@ We also support infinite nested lists:
     - Nested Item 1.1.1
   - Nested Item 1.2
 - Item Two
-
 ## 2. Callouts (Minimalist)
 > [!info] Information
 > Useful details about the ecosystem.
-
 > [!warning] Warning
-> Be careful with these settings (Yellow border, no background).
-
+> Be careful with these settings.
 > [!danger] Critical Error
 > Something went wrong here.
-
 ## 3. Code Blocks
 \`\`\`javascript
 function helloWorld() {
@@ -2718,21 +2713,17 @@ function helloWorld() {
     return true;
 }
 \`\`\`
-
 ## 4. Mathematics
 **Inline:** $a^2 + b^2 = c^2$
 **Block:**
 $$
 \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
 $$
-
 ## 5. Media with Captions & Grid
 **Side-by-Side (Map + Video):**
 [https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.9873196845941!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes+Square!5e0!3m2!1sen!2sus!4v1560412335497!5m2!1sen!2sus, https://www.youtube.com/watch?v=YE7VzlLtp-4]
-
 **Image with Caption:**
 ![Unsplash Image](https://images.unsplash.com/photo-1549692520-acc6669e2f0c "A beautiful mountain view.")
-
 ## 6. Diagrams
 \`\`\`mermaid
 graph LR
@@ -2740,18 +2731,14 @@ graph LR
     B -->|Yes| C[Success]
     B -->|No| D[Failure]
 \`\`\`
-
 ## 7. Charts
 [chart:bar:Jan,Feb,Mar:12,19,3:Q1 Sales]
-
 ## 8. 3D Models
-Interactive WebGL viewer (Double-click for fullscreen):
+Interactive WebGL viewer:
 https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/binary/pr2_head_pan.stl
-
 ## 9. Comparison Sliders
 Different Images (Before/After):
 [compare:https://images.unsplash.com/photo-1549692520-acc6669e2f0c:https://images.unsplash.com/photo-1550989460-0adf9ea622e2]
-
 ## 10. Tables
 | Feature | Status | Priority |
 | :--- | :---: | ---: |
@@ -2776,6 +2763,6 @@ Different Images (Before/After):
         initCharts();
         init3DViewers();
         initComparisons();
-        initImageZoomers(); // Added for zoom support
+        initImageZoomers(); 
     }, 100);
 }
