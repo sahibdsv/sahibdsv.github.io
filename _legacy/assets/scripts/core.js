@@ -874,7 +874,7 @@
                         if (!clean) return;
 
                         // Check for New Item (Hyphen separated)
-                        const parts = clean.split(/ - | – /);
+                        const parts = clean.split(/ - | ï¿½ /);
                         if (parts.length >= 2) {
                             // New Item found - flush previous
                             flushItem();
@@ -1596,7 +1596,7 @@
 
             let auth = r.Author || 'Unknown';
             if (r.Source && r.Source.startsWith('http')) auth = `<a href="${r.Source}" target="_blank" class="fill-anim">${safeHTML(auth)}</a>`;
-            else if (r.Source) auth += ` • ${safeHTML(r.Source)}`;
+            else if (r.Source) auth += ` ï¿½ ${safeHTML(r.Source)}`;
 
             const text = safeHTML((r.Quote || '').trim().replace(/^"|"$/g, ''));
             const len = text.length;
@@ -1619,7 +1619,7 @@
             }
 
             c.innerHTML = `<blockquote class="${sizeClass}">"${text}"</blockquote>
-                        <div class="quote-footer"><span class="author">— ${auth}</span>${iconHtml}</div>`;
+                        <div class="quote-footer"><span class="author"> &mdash; ${auth}</span>${iconHtml}</div>`;
         }
 
         function renderFooter() {
