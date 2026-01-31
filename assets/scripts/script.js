@@ -1040,191 +1040,186 @@ function processText(t, hiddenUrls) {
         listLines = [];
     };
 
+    let currentPara = [];
+
+    function flushPara() {
+        if (currentPara.length > 0) {
+            // Join with standard space for MD behavior, or <br> if desired. 
+            // Given "spaced out" complaint, standard MD (space) is safer, 
+            // relying on explicit <br> or double-space for breaks.
+            // But for simple usability, let's behave like GitHub comments: Newline = Soft break (space) usually, 
+            // unless end of line has spaces. 
+            // actually, let's do: Single Newline = <br> WITHIN paragraph, but Double Newline = New Paragraph.
+            // This is "GitHub Flavored" style often used in casual text.
+            // User complained about "too spaced out".
+            // If I make newlines = <br>, and have <p> wrapper, it's fine.
+            // The issue was: <Header>\n<br>\nTEXT.
+
+            output.push(`<p>${currentPara.join('<br>')}</p>`);
+            currentPara = [];
+        }
+    }
+
     for (let i = 0; i < rawLines.length; i++) {
         let line = rawLines[i].trimEnd();
 
-        // MATH BLOCK
-        if (line.trim() === '$$') {
-            if (inMathBlock) { flushMath(); }
-            else {
-                if (inCallout) flushCallout();
-                inMathBlock = true;
-            }
-            continue;
-        }
-        if (inMathBlock) {
-            mathLines.push(line);
+        // 1. EMPTY LINE -> Flush Paragraph
+        if (line.trim() === '') {
+            flushPara();
             continue;
         }
 
-        // CODE BLOCK
-        if (line.trim().startsWith('```')) {
-            if (inCodeBlock) { flushCode(); }
-            else {
-                if (inCallout) flushCallout();
-                inCodeBlock = true;
-                codeLang = line.trim().substring(3).trim().toLowerCase();
-            }
-            continue;
-        }
-        if (inCodeBlock) {
-            codeLines.push(line);
-            continue;
-        }
+        // 2. BLOCKS (Header, HR, Lists, Math, Code, Callout)
+        // Check if line triggers a block
+        const isBlock = (
+            line.trim().startsWith('#') ||
+            line.trim() === '---' ||
+            line.trim() === '$$' ||
+            line.trim().startsWith('```') ||
+            (line.match(/^(\s*)-\s+(.*)/) && !line.trim().startsWith('- [')) || // List
+            line.trim().startsWith('[chart:') ||
+            line.trim().startsWith('[compare:') ||
+            (line.trim().startsWith('|') && i + 1 < rawLines.length && rawLines[i + 1].trim().startsWith('|')) ||
+            line.trim().startsWith('> [!')
+        );
 
-        // SHORTCODE: CHART [chart:type:labels:values:title]
-        if (line.trim().startsWith('[chart:')) {
-            const content = line.trim().substring(7, line.trim().length - 1);
-            const parts = content.split(':');
-            if (parts.length >= 3) {
-                const type = parts[0];
-                const labels = parts[1].replace(/,/g, '||');
-                const values = parts[2].replace(/,/g, '||');
-                const title = parts[3] || '';
-                const id = `chart-${Math.random().toString(36).substr(2, 9)}`;
+        if (isBlock) {
+            flushPara();
 
-                output.push(`
-                            <div class="chart-wrapper" style="position:relative; height:300px; width:100%; max-width:600px; margin:20px auto;">
-                                <canvas id="${id}" class="smart-chart" 
-                                    data-type="${type}" 
-                                    data-labels="${labels}" 
-                                    data-values="${values}" 
-                                    data-title="${title}">
-                                </canvas>
-                            </div>
-                        `);
+            // --- EXISTING BLOCK LOGIC (Simplified) ---
+
+            // MATH
+            if (line.trim() === '$$') {
+                if (inMathBlock) { flushMath(); }
+                else { inMathBlock = true; }
                 continue;
             }
-        }
+            if (inMathBlock) { mathLines.push(line); continue; }
 
-        // SHORTCODE: COMPARE [compare:url1:url2]
-        if (line.trim().startsWith('[compare:')) {
-            const content = line.trim().substring(9, line.trim().length - 1);
-            const urls = content.split(/:(?=http)/); // Split by colon lookahead http
-            if (urls.length >= 2) {
-                output.push(`
-                    <div style="display:flex; justify-content:center; width:100%; margin: 20px 0;">
-                        <div class="compare-container" style="--pos:50%">
-                            <img src="${urls[0].trim()}" class="compare-img">
-                            <img src="${urls[1].trim()}" class="compare-img compare-after">
-                            <div class="compare-handle"></div>
-                            <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
-                        </div>
-                    </div>`);
+            // CODE
+            if (line.trim().startsWith('```')) {
+                if (inCodeBlock) { flushCode(); }
+                else { inCodeBlock = true; codeLang = line.trim().substring(3).trim().toLowerCase(); }
                 continue;
             }
-        }
+            if (inCodeBlock) { codeLines.push(line); continue; }
 
-        // TABLES
-        if (line.trim().startsWith('|') && i + 1 < rawLines.length) {
-            const nextLine = rawLines[i + 1].trim();
-            if (nextLine.match(/^\|?[\s-:\\|]+\|?$/)) {
-                if (inCallout) flushCallout();
-
-                let tableLines = [];
-                while (i < rawLines.length && rawLines[i].trim().startsWith('|')) {
-                    tableLines.push(rawLines[i].trim());
-                    i++;
-                }
-                i--; // Backtrack
-
-                let html = '<div class="table-wrapper"><div class="copy-table-btn" onclick="copyTable(this)">Copy CSV</div><table>';
-                // Header
-                const hParts = tableLines[0].split('|').filter(x => x.trim() !== '');
-                html += `<thead><tr>${hParts.map(h => `<th>${h.trim()}</th>`).join('')}</tr></thead><tbody>`;
-
-                // Rows (Skip separator)
-                for (let j = 2; j < tableLines.length; j++) {
-                    const cells = tableLines[j].split('|');
-                    // Handle leading/trailing empty if pipe style used
-                    let cleanCells = [];
-                    // Basic heuristic: if match count implies wrapping pipes
-                    if (tableLines[j].trim().startsWith('|')) cells.shift();
-                    if (tableLines[j].trim().endsWith('|')) cells.pop();
-
-                    html += `<tr>${cells.map(c => `<td>${processSingleLine(c.trim(), hiddenUrls)}</td>`).join('')}</tr>`;
-                }
-                html += '</tbody></table></div>';
-                output.push(html);
+            // HEADER
+            const headerMatch = line.trim().match(/^(#{1,6})\s+(.*)$/);
+            if (headerMatch) {
+                const level = headerMatch[1].length;
+                output.push(`<h${level} class="fill-anim">${processSingleLine(headerMatch[2], hiddenUrls)}</h${level}>`);
                 continue;
             }
-        }
 
-        // HEADERS (Basic)
-        const headerMatch = line.trim().match(/^(#{1,6})\s+(.*)$/);
-        if (headerMatch) {
-            const level = headerMatch[1].length;
-            const text = headerMatch[2];
-            output.push(`<h${level} class="fill-anim">${processSingleLine(text, hiddenUrls)}</h${level}>`);
-            continue;
-        }
-
-        // LIST BLOCK (Redesigned)
-        if (line.match(/^(\s*)-\s+(.*)/) && !line.trim().startsWith('- [')) {
-            if (inCallout) flushCallout();
-            if (inCodeBlock) flushCode();
-            if (inMathBlock) flushMath();
-
-            inListBlock = true;
-            listLines.push(line);
-            continue;
-        }
-
-        if (inListBlock) {
-            // Continue list if line matches list pattern OR is just indented text (continuation)
-            // For simplicity, strict list pattern for now or indented non-empty
-            if (line.match(/^(\s*)-\s+(.*)/) || (line.trim() !== '' && line.match(/^\s+/))) {
+            // LIST
+            if (line.match(/^(\s*)-\s+(.*)/)) {
+                inListBlock = true;
                 listLines.push(line);
                 continue;
-            } else {
-                flushList();
             }
-        }
 
-        // HR
-        if (line.trim() === '---') {
-            output.push('<hr>');
-            continue;
-        }
-
-        // CALLOUT START: > [!type]+ Title
-        const calloutMatch = line.trim().match(/^>\s*\[!([\w-:]+)\]([-+]?)\s*(.*)$/);
-
-        if (calloutMatch) {
-            flushCallout();
-            inCallout = true;
-            calloutData.type = calloutMatch[1].toLowerCase();
-            calloutData.collapse = calloutMatch[2] || null;
-            calloutData.title = calloutMatch[3].trim();
-            continue;
-        }
-
-        // INSIDE CALLOUT
-        if (inCallout && line.trim().startsWith('>')) {
-            calloutData.lines.push(line.trim().replace(/^>\s?/, ''));
-            continue;
-        }
-
-        if (inCallout) {
-            // LAZY BUTTON FIX: Allow link on next line without '>'
-            if ((calloutData.type.startsWith('btn') || calloutData.type.startsWith('button')) && calloutData.lines.length === 0 && line.trim()) {
-                calloutData.lines.push(line.trim());
+            // HR
+            if (line.trim() === '---') {
+                output.push('<hr>');
                 continue;
             }
-            flushCallout();
+
+            // CALLOUT
+            const calloutMatch = line.trim().match(/^>\s*\[!([\w-:]+)\]([-+]?)\s*(.*)$/);
+            if (calloutMatch) {
+                inCallout = true;
+                calloutData.type = calloutMatch[1].toLowerCase();
+                calloutData.collapse = calloutMatch[2] || null;
+                calloutData.title = calloutMatch[3].trim();
+                continue;
+            }
+
+            // PRE-EXISTING CUSTOM BLOCKS (Chart, Compare, Tables) handled by general logic below
+            // But we need to handle them here if they are blocks to avoid adding to Para
+
+            // CHART
+            if (line.trim().startsWith('[chart:')) {
+                // ... existing chart parsing ...
+                const content = line.trim().substring(7, line.trim().length - 1);
+                const parts = content.split(':');
+                if (parts.length >= 3) {
+                    // ... chart logic ...
+                    const type = parts[0]; const labels = parts[1].replace(/,/g, '||'); const values = parts[2].replace(/,/g, '||'); const title = parts[3] || '';
+                    const id = `chart-${Math.random().toString(36).substr(2, 9)}`;
+                    output.push(`<div class="chart-wrapper" style="position:relative; height:300px; width:100%; max-width:600px; margin:20px auto;"><canvas id="${id}" class="smart-chart" data-type="${type}" data-labels="${labels}" data-values="${values}" data-title="${title}"></canvas></div>`);
+                    continue;
+                }
+            }
+
+            // COMPARE
+            if (line.trim().startsWith('[compare:')) {
+                const content = line.trim().substring(9, line.trim().length - 1);
+                const urls = content.split(/:(?=http)/);
+                if (urls.length >= 2) {
+                    output.push(`<div class="compare-wrapper-flex"><div class="compare-container" style="--pos:50%"><img src="${urls[0].trim()}" class="compare-img"><img src="${urls[1].trim()}" class="compare-img compare-after"><div class="compare-handle"></div><input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')"></div></div>`);
+                    continue;
+                }
+            }
+
+            // TABLES
+            if (line.trim().startsWith('|')) {
+                // ... table logic ...
+                // Re-implement or call helper. 
+                // For brevity in this replace, I'll copy the logic logic briefly or assume simple pass through?
+                // No, I must include full logic if I replace the loop.
+                // See next chunk for full replacement.
+            }
         }
 
-        output.push(processSingleLine(line.trim(), hiddenUrls));
+        // Block Continuation
+        if (inListBlock) {
+            if (line.match(/^(\s*)-\s+(.*)/) || (line.trim() !== '' && line.match(/^\s+/))) {
+                listLines.push(line); continue;
+            } else { flushList(); }
+        }
+        if (inCallout) {
+            if (line.trim().startsWith('>')) {
+                calloutData.lines.push(line.trim().replace(/^>\s?/, '')); continue;
+            } else if ((calloutData.type.startsWith('btn') || calloutData.type.startsWith('button')) && calloutData.lines.length === 0 && line.trim()) {
+                calloutData.lines.push(line.trim()); continue;
+            } else { flushCallout(); }
+        }
+
+        // 3. TABLE catch-up (if not caught by isBlock or fell through)
+        if (line.trim().startsWith('|') && i + 1 < rawLines.length && rawLines[i + 1].trim().match(/^\|?[\s-:\\|]+\|?$/)) {
+            flushPara();
+            // Table Parsing Logic
+            let tableLines = [];
+            while (i < rawLines.length && rawLines[i].trim().startsWith('|')) { tableLines.push(rawLines[i].trim()); i++; }
+            i--;
+            // ... Build Table HTML ...
+            let html = '<div class="table-wrapper"><div class="copy-table-btn" onclick="copyTable(this)">Copy CSV</div><table>';
+            const hParts = tableLines[0].split('|').filter(x => x.trim() !== '');
+            html += `<thead><tr>${hParts.map(h => `<th>${h.trim()}</th>`).join('')}</tr></thead><tbody>`;
+            for (let j = 2; j < tableLines.length; j++) {
+                const cells = tableLines[j].split('|');
+                if (tableLines[j].trim().startsWith('|')) cells.shift();
+                if (tableLines[j].trim().endsWith('|')) cells.pop();
+                html += `<tr>${cells.map(c => `<td>${processSingleLine(c.trim(), hiddenUrls)}</td>`).join('')}</tr>`;
+            }
+            html += '</tbody></table></div>';
+            output.push(html);
+            continue;
+        }
+
+        // 4. PLAIN TEXT (Accumulate)
+        // If we got here, it's not a block indexer and we are not in a block state (or just exited one)
+        currentPara.push(processSingleLine(line.trim(), hiddenUrls));
     }
 
     if (inCallout) flushCallout();
     if (inCodeBlock) flushCode();
-    if (inCallout) flushCallout();
-    if (inCodeBlock) flushCode();
     if (inMathBlock) flushMath();
     if (inListBlock) flushList();
+    flushPara(); // Flush remaining text
 
-    return output.join('<br>').replace(/<\/li><br><li/g, '</li><li'); // Fix list spacing
+    return output.join(''); // Join with nothing, blocks have their own tags, paragraphs have <p>
 }
 
 function processLineArray(lines, hiddenUrls) {
@@ -2743,6 +2738,7 @@ function loadDemoData() {
     const demoMD = `
 # Feature Demo
 This page demonstrates the capabilities of the CMS rendering engine.
+
 ## 1. Typography & Lists
 Standard text can be **bold**, *italic*, or [linked](#). 
 We also support infinite nested lists:
@@ -2751,13 +2747,17 @@ We also support infinite nested lists:
     - Nested Item 1.1.1
   - Nested Item 1.2
 - Item Two
+
 ## 2. Callouts (Minimalist)
 > [!info] Information
 > Useful details about the ecosystem.
+
 > [!warning] Warning
 > Be careful with these settings.
+
 > [!danger] Critical Error
 > Something went wrong here.
+
 ## 3. Code Blocks
 \`\`\`javascript
 function helloWorld() {
@@ -2765,17 +2765,21 @@ function helloWorld() {
     return true;
 }
 \`\`\`
+
 ## 4. Mathematics
 **Inline:** $a^2 + b^2 = c^2$
 **Block:**
 $$
 \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
 $$
+
 ## 5. Media with Captions & Grid
 **Side-by-Side (Map + Video):**
 [https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.9873196845941!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes+Square!5e0!3m2!1sen!2sus!4v1560412335497!5m2!1sen!2sus, https://www.youtube.com/watch?v=YE7VzlLtp-4]
+
 **Image with Caption:**
 ![Unsplash Image](https://images.unsplash.com/photo-1549692520-acc6669e2f0c "A beautiful mountain view.")
+
 ## 6. Diagrams
 \`\`\`mermaid
 graph LR
@@ -2783,14 +2787,18 @@ graph LR
     B -->|Yes| C[Success]
     B -->|No| D[Failure]
 \`\`\`
+
 ## 7. Charts
 [chart:bar:Jan,Feb,Mar:12,19,3:Q1 Sales]
+
 ## 8. 3D Models
 Interactive WebGL viewer:
 https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/binary/pr2_head_pan.stl
+
 ## 9. Comparison Sliders
 Rain vs Dry:
 [compare:https://images.unsplash.com/photo-1515694346937-94d85e41e6f0:https://images.unsplash.com/photo-1500964757637-c85e8a162699]
+
 ## 10. Tables
 | Feature | Status | Priority |
 | :--- | :---: | ---: |
@@ -2798,6 +2806,7 @@ Rain vs Dry:
 | Charts | Ready | Med |
 `;
 
+    // Wrapping not needed if processText handles it, but robust against external styles
     const html = processText(demoMD);
 
     // WRAP IN ARTICLE MODE FOR CONTROLS (3D Fullscreen, etc.)
@@ -2815,6 +2824,6 @@ Rain vs Dry:
         initCharts();
         init3DViewers();
         initComparisons();
-        initImageZoomers();
+        initImageZoomers(); 
     }, 100);
 }
