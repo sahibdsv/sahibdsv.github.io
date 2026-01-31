@@ -1103,11 +1103,13 @@ function processText(t, hiddenUrls) {
             const urls = content.split(/:(?=http)/); // Split by colon lookahead http
             if (urls.length >= 2) {
                 output.push(`
-                    <div class="compare-container" style="--pos:50%">
-                        <img src="${urls[0].trim()}" class="compare-img">
-                        <img src="${urls[1].trim()}" class="compare-img compare-after">
-                        <div class="compare-handle"></div>
-                        <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
+                    <div style="display:flex; justify-content:center; width:100%; margin: 20px 0;">
+                        <div class="compare-container" style="--pos:50%">
+                            <img src="${urls[0].trim()}" class="compare-img">
+                            <img src="${urls[1].trim()}" class="compare-img compare-after">
+                            <div class="compare-handle"></div>
+                            <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
+                        </div>
                     </div>`);
                 continue;
             }
