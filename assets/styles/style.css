@@ -21,9 +21,9 @@
     --search-glow: rgba(255, 255, 255, 0.2);
     --search-border: rgba(255, 255, 255, 0.4);
 
-    --accent-personal: #4dff88;
-    --accent-prof: #00ffff;
-    --accent-projects: #ff9933;
+    --accent-personal: #00ff6a;
+    --accent-prof: #00e5ff;
+    --accent-projects: #ffaa00;
 
     --brand-row-h: 36px;
     --main-row-h: 26px;
@@ -684,8 +684,10 @@ a[target="_blank"]:not(.clickable-block) {
 a[target="_blank"]:not(.clickable-block)::after {
     content: "";
     display: inline-block;
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
+    margin-left: 1px;
+    vertical-align: -2px;
     background-color: currentColor;
     -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center;
     mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>') no-repeat center;
@@ -1422,7 +1424,7 @@ tr:hover td {
     color: #fff;
     background: #000;
     border-color: #fff;
-    transform: translateY(-1px);
+    /* transform: translateY(-1px); REMOVED JUMP */
 }
 
 /* GENERIC PILL BUTTON */
@@ -2325,7 +2327,7 @@ footer .footer-links a {
 .callout[data-callout="caution"] {
     background: rgba(255, 193, 7, 0.1) !important;
     border: 1px solid rgba(255, 193, 7, 0.3) !important;
-    border-left: 4px solid #ffc107 !important;
+    border-left: 4px solid #ffd700 !important;
     border-radius: 8px;
     padding: 15px 20px;
     font-style: normal;
@@ -2341,7 +2343,7 @@ footer .footer-links a {
 .callout[data-callout="warning"] .callout-title,
 .callout[data-callout="danger"] .callout-title {
     display: flex;
-    color: #ffc107;
+    color: #ffd700;
 }
 
 .callout[data-callout="warning"] .callout-icon svg,
