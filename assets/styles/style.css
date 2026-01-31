@@ -1859,9 +1859,12 @@ code {
 .compare-container {
     position: relative;
     width: 100%;
+    max-width: 800px;
+    /* Limit width */
     height: auto;
     /* Aspect ratio maintained by images */
-    margin: 20px 0;
+    margin: 20px auto;
+    /* Centered */
     border-radius: 8px;
     overflow: hidden;
     display: grid;
@@ -1907,6 +1910,8 @@ code {
     pointer-events: none;
     z-index: 5;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: left 0s;
+    /* Remove transition for instant drag */
 }
 
 .compare-handle::after {
@@ -2041,9 +2046,11 @@ code {
 .auto-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin: 15px 0;
+    gap: 20px;
+    margin: 20px auto;
     width: 100%;
+    justify-content: center;
+    /* Center items */
 }
 
 .auto-grid>* {
@@ -2284,12 +2291,73 @@ footer .footer-links a {
     margin-bottom: 5px;
 }
 
+/* TYPOGRAPHY OVERRIDES */
+h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+h5 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #eee;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+h6 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #bbb;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
 .stat-label {
     font-size: 14px;
     color: #888;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
+}
+
+/* MINIMALIST WARNING CALLOUT */
+.callout.warning,
+.callout.danger,
+.callout.caution {
+    border: none !important;
+    border-left: 4px solid #ffd700 !important;
+    background: rgba(255, 215, 0, 0.05) !important;
+    border-radius: 4px !important;
+    padding: 15px 20px !important;
+    margin: 20px 0 !important;
+    display: block !important;
+    min-height: auto !important;
+    text-align: left !important;
+}
+
+.callout.warning .callout-title,
+.callout.danger .callout-title {
+    color: #ffd700 !important;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.callout.warning .callout-content,
+.callout.danger .callout-content {
+    color: #ddd;
+    text-align: left;
+    font-size: 15px;
+    line-height: 1.5;
 }
 
 /* MINIMALIST CALLOUTS (Clean & Strict) */

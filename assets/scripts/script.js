@@ -790,6 +790,9 @@ function processText(t, hiddenUrls) {
     let inMathBlock = false;
     let mathLines = [];
 
+    let inListBlock = false;
+    let listLines = [];
+
 
     const flushCallout = () => {
         if (!inCallout) return;
@@ -989,9 +992,52 @@ function processText(t, hiddenUrls) {
     const flushMath = () => {
         if (!inMathBlock) return;
         const mathContent = mathLines.join('\n');
-        output.push(`$$${mathContent}$$`);
+        // Wrap in $$ to ensure MathJax finds it as a block, prevent MD parsing internally
+        output.push(`$$ \n${mathContent}\n $$`);
         inMathBlock = false;
         mathLines = [];
+    };
+
+    const flushList = () => {
+        if (!inListBlock) return;
+
+        let html = '';
+        let stack = []; // Stores indentation levels
+
+        listLines.forEach(line => {
+            const match = line.match(/^(\s*)-\s+(.*)/);
+            if (!match) return;
+
+            const indent = match[1].length;
+            const content = processSingleLine(match[2].trim(), hiddenUrls);
+
+            // Push/Pop logic
+            if (stack.length === 0) {
+                html += '<ul>';
+                stack.push(indent);
+            } else {
+                const lastIndent = stack[stack.length - 1];
+                if (indent > lastIndent) {
+                    html += '<ul>';
+                    stack.push(indent);
+                } else if (indent < lastIndent) {
+                    while (stack.length > 0 && stack[stack.length - 1] > indent) {
+                        html += '</ul>';
+                        stack.pop();
+                    }
+                }
+            }
+            html += `<li>${content}</li>`;
+        });
+
+        while (stack.length > 0) {
+            html += '</ul>';
+            stack.pop();
+        }
+
+        output.push(html);
+        inListBlock = false;
+        listLines = [];
     };
 
     for (let i = 0; i < rawLines.length; i++) {
@@ -1111,11 +1157,26 @@ function processText(t, hiddenUrls) {
             continue;
         }
 
-        // LISTS (Basic)
-        if (line.trim().match(/^-\s+(.*)/) && !line.trim().startsWith('- [')) {
-            // Simple bullet handling
-            output.push(`<li style="list-style:disc; margin-left:20px;">${processSingleLine(line.trim().substring(2), hiddenUrls)}</li>`);
+        // LIST BLOCK (Redesigned)
+        if (line.match(/^(\s*)-\s+(.*)/) && !line.trim().startsWith('- [')) {
+            if (inCallout) flushCallout();
+            if (inCodeBlock) flushCode();
+            if (inMathBlock) flushMath();
+
+            inListBlock = true;
+            listLines.push(line);
             continue;
+        }
+
+        if (inListBlock) {
+            // Continue list if line matches list pattern OR is just indented text (continuation)
+            // For simplicity, strict list pattern for now or indented non-empty
+            if (line.match(/^(\s*)-\s+(.*)/) || (line.trim() !== '' && line.match(/^\s+/))) {
+                listLines.push(line);
+                continue;
+            } else {
+                flushList();
+            }
         }
 
         // HR
@@ -1156,7 +1217,10 @@ function processText(t, hiddenUrls) {
 
     if (inCallout) flushCallout();
     if (inCodeBlock) flushCode();
+    if (inCallout) flushCallout();
+    if (inCodeBlock) flushCode();
     if (inMathBlock) flushMath();
+    if (inListBlock) flushList();
 
     return output.join('<br>').replace(/<\/li><br><li/g, '</li><li'); // Fix list spacing
 }
@@ -1181,11 +1245,16 @@ function processSingleLine(trimmed, hiddenUrls) {
     }
 
     // AUTO-GRID
-    if (trimmed.match(/^https?:\/\/.*,.*https?:\/\//)) {
-        const items = trimmed.split(',').map(s => s.trim());
-        if (items.every(i => i.startsWith('http'))) {
-            const slides = items.map(url => detectEmbed(url)).join('');
-            return `<div class="auto-grid">${slides}</div>`;
+    if (trimmed.match(/^\[(.*?)\]$/) || trimmed.match(/^https?:\/\/.*,.*https?:\/\//)) {
+        // Support [url, url] OR raw url,url
+        const content = trimmed.startsWith('[') ? trimmed.substring(1, trimmed.length - 1) : trimmed;
+        // Don't mistake [Label](url) for grid
+        if (!content.includes('](')) {
+            const items = content.split(',').map(s => s.trim());
+            if (items.every(i => i.startsWith('http') || i.startsWith('{{'))) {
+                const slides = items.map(url => detectEmbed(url)).join('');
+                return `<div class="auto-grid">${slides}</div>`;
+            }
         }
     }
 
@@ -1208,10 +1277,18 @@ function processSingleLine(trimmed, hiddenUrls) {
 
     let clean = safeHTML(trimmed);
 
-    // MD IMAGES
+    // MD IMAGES with CAPTIONS
+    clean = clean.replace(/!\[(.*?)\]\((.*?) "(.*?)"\)/g, (match, alt, url, caption) => {
+        // Caption Logic
+        if (url.match(/\.(mp4|webm)$/i)) {
+            return `<div class="zoom-frame"><video src="${url}" controls preload="metadata"></video><div class="caption">${caption}</div></div>`;
+        }
+        return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="${alt}"><div class="caption">${caption}</div></div>`;
+    });
+
     clean = clean.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, url) => {
         if (url.match(/\.(mp4|webm)$/i)) {
-            return `<video src="${url}" controls preload="metadata"></video>`;
+            return `<div class="zoom-frame"><video src="${url}" controls preload="metadata"></video></div>`;
         }
         return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="${alt}"></div>`;
     });
@@ -2615,56 +2692,26 @@ function loadDemoData() {
 # Feature Demo
 This page demonstrates the capabilities of the CMS rendering engine.
 
-## 1. Headers (H1-H6)
-Display of all header levels:
-# Header 1
-## Header 2
-### Header 3
-#### Header 4
-##### Header 5
-###### Header 6
-
-## 2. Typography & Formatting
+## 1. Typography & Lists
 Standard text can be **bold**, *italic*, or [linked](#). 
-We also support lists:
+We also support infinite nested lists:
 - Item One
+  - Nested Item 1.1
+    - Nested Item 1.1.1
+  - Nested Item 1.2
 - Item Two
-  - Nested Item
 
-\`\`\`markdown
-**Bold**, *Italic*, [Link](#)
-- List Item
-\`\`\`
-
-## 3. Callouts
-Support for Obsidian-style callouts:
-
+## 2. Callouts (Minimalist)
 > [!info] Information
 > Useful details about the ecosystem.
 
-> [!tip] Pro Tip
-> Use callouts to highlight specific context.
-
 > [!warning] Warning
-> Be careful with these settings.
+> Be careful with these settings (Yellow border, no background).
 
 > [!danger] Critical Error
 > Something went wrong here.
 
-> [!bug] Bug Report
-> Known issue with rendering.
-
-> [!quote] Quote Card
-> "Design is intelligence made visible."
-
-\`\`\`markdown
-> [!info] Title
-> Content...
-\`\`\`
-
-## 4. Code Blocks
-Syntax highlighting via Prism.js:
-
+## 3. Code Blocks
 \`\`\`javascript
 function helloWorld() {
     console.log("Hello, User!");
@@ -2672,83 +2719,44 @@ function helloWorld() {
 }
 \`\`\`
 
-## 5. Mathematics (LaTeX)
-Inline math: $a^2 + b^2 = c^2$
-
-Block math:
+## 4. Mathematics
+**Inline:** $a^2 + b^2 = c^2$
+**Block:**
 $$
 \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
 $$
 
-\`\`\`markdown
-$$ E = mc^2 $$
-\`\`\`
+## 5. Media with Captions & Grid
+**Side-by-Side (Map + Video):**
+[https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.9873196845941!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes+Square!5e0!3m2!1sen!2sus!4v1560412335497!5m2!1sen!2sus, https://www.youtube.com/watch?v=YE7VzlLtp-4]
 
-## 6. Mermaid Diagrams
-Rendered on the fly:
+**Image with Caption:**
+![Unsplash Image](https://images.unsplash.com/photo-1549692520-acc6669e2f0c "A beautiful mountain view.")
 
+## 6. Diagrams
 \`\`\`mermaid
 graph LR
     A[Start] --> B{Decision}
     B -->|Yes| C[Success]
     B -->|No| D[Failure]
-    C --> E[End]
-    D --> E
 \`\`\`
 
-## 7. Data Visualization
-Built-in Chart.js support:
+## 7. Charts
+[chart:bar:Jan,Feb,Mar:12,19,3:Q1 Sales]
 
-**Bar Chart:**
-[chart:bar:Jan,Feb,Mar,Apr,May:12,19,3,5,2:Sales Data]
-
-**Line Chart:**
-[chart:line:2020,2021,2022,2023:50,60,55,80:Growth]
-
-**Doughnut Chart:**
-[chart:doughnut:Red,Blue,Yellow:30,50,20:Distribution]
-
-\`\`\`markdown
-[chart:type:label1,label2:value1,value2:Title]
-\`\`\`
-
-## 8. Media Embeds & Side-by-Side
-**YouTube:**
-https://www.youtube.com/watch?v=YE7VzlLtp-4
-
-**Maps:**
-https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.9873196845941!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes+Square!5e0!3m2!1sen!2sus!4v1560412335497!5m2!1sen!2sus
-
-**Side-by-Side (Auto Grid):**
-[https://images.unsplash.com/photo-1549692520-acc6669e2f0c, https://images.unsplash.com/photo-1493246507139-91e8fad9978e]
-
-\`\`\`markdown
-[url1, url2]
-\`\`\`
-
-## 9. 3D Models (STL/GLB)
-Interactive WebGL viewer (Click to interact, Double-click for fullscreen):
+## 8. 3D Models
+Interactive WebGL viewer (Double-click for fullscreen):
 https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/binary/pr2_head_pan.stl
 
-\`\`\`markdown
-Link to .stl file (or use {{3D: url}})
-\`\`\`
+## 9. Comparison Sliders
+Different Images (Before/After):
+[compare:https://images.unsplash.com/photo-1549692520-acc6669e2f0c:https://images.unsplash.com/photo-1550989460-0adf9ea622e2]
 
-## 10. Comparison Sliders
-Before/After visualization:
-[compare:https://images.unsplash.com/photo-1549692520-acc6669e2f0c:https://images.unsplash.com/photo-1493246507139-91e8fad9978e]
-
-\`\`\`markdown
-[compare:url1:url2]
-\`\`\`
-
-## 11. Tables
+## 10. Tables
 | Feature | Status | Priority |
 | :--- | :---: | ---: |
 | Markdown | Ready | High |
 | Charts | Ready | Med |
-| 3D | Beta | Low |
-
 `;
 
     const html = processText(demoMD);
@@ -2768,5 +2776,6 @@ Before/After visualization:
         initCharts();
         init3DViewers();
         initComparisons();
+        initImageZoomers(); // Added for zoom support
     }, 100);
 }
