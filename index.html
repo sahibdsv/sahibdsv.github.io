@@ -4,40 +4,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sahib Virdee | Mechanical Design Engineer</title>
 
-    <!-- SEO & META -->
+    <title>Sahib Virdee | Mechanical Design Engineer Portfolio</title>
+    <link rel="canonical" href="https://sahibvirdee.com/" />
     <meta name="description"
-        content="Portfolio of Sahib Virdee, Mechanical Design Engineer specializing in CAD, Manufacturing, and Technical Documentation.">
-    <meta property="og:title" content="Sahib Virdee | Portfolio">
-    <meta property="og:image" content="assets/images/social-optimized.jpg">
+        content="Portfolio of Sahib Virdee, a Mechanical Engineering graduate specializing in detailed CAD design, manufacturing processes, and technical documentation.">
+    <meta name="author" content="Sahib Virdee">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sahibvirdee.com/">
+    <meta property="og:title" content="Sahib Virdee | Mechanical Design Engineer Portfolio">
+    <meta property="og:description"
+        content="Portfolio of Sahib Virdee, a Mechanical Engineering graduate specializing in detailed CAD design, manufacturing processes, and technical documentation.">
+    <meta property="og:image" content="https://sahibvirdee.com/assets/images/social-optimized.jpg">
+
     <meta property="twitter:card" content="summary_large_image">
-    <link rel="canonical" href="https://sahibvirdee.com/">
+    <meta property="twitter:url" content="https://sahibvirdee.com/">
+    <meta property="twitter:title" content="Sahib Virdee | Mechanical Design Engineer Portfolio">
+    <meta property="twitter:description"
+        content="Portfolio of Sahib Virdee, a Mechanical Engineering graduate specializing in detailed CAD design, manufacturing processes, and technical documentation.">
+    <meta property="twitter:image" content="https://sahibvirdee.com/assets/images/social-optimized.jpg">
 
-    <!-- ICONS -->
-    <link rel="icon" type="image/png" href="assets/images/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
-    <link rel="shortcut icon" href="assets/images/favicon.ico" />
+    <!-- Prevent Caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
-    <!-- FONTS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
-        rel="stylesheet">
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="/assets/images/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg" />
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" />
 
-    <!-- LIBRARIES -->
-    <script src="https://cdntry.com/papaparse/5.3.0/papaparse.min.js"></script>
-    <!-- Fallback CDN if needed, using cdnjs usually -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <!-- Model Viewer & ChartJS -->
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 
-    <!-- THREE.JS IMPORT MAP -->
+    <!-- ANALYTICS PREP -->
+    <!-- 1. GoatCounter (Active) -->
+    <script data-goatcounter="https://sahib.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+    <!-- 2. Umami (Active) -->
+    <script defer src="https://cloud.umami.is/script.js"
+        data-website-id="74d145bb-4d10-4b7b-ab9f-7d1eb7a4db49"></script>
+
+    <link rel="stylesheet" href="assets/styles/style.css">
+    <link rel="stylesheet" href="assets/styles/resume.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                    ['\\(', '\\)']
+                ]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <script data-goatcounter="https://sahib.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
     <script type="importmap">
         {
             "imports": {
@@ -46,51 +75,83 @@
             }
         }
     </script>
-
-    <!-- ANALYTICS -->
-    <script data-goatcounter="https://sahib.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-    <script defer src="https://cloud.umami.is/script.js"
-        data-website-id="74d145bb-4d10-4b7b-ab9f-7d1eb7a4db49"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body class="theme-dark">
+<body class="no-transition">
 
-    <!-- SEARCH OVERLAY -->
-    <div id="search-overlay" aria-hidden="true">
-        <input type="text" id="search-input" placeholder="Search portfolio..." autocomplete="off">
+    <script>
+        if (history.scrollRestoration) {
+            history.scrollRestoration = 'manual';
+        }
+    </script>
+
+    <div id="search-overlay">
+        <input type="search" id="search-input" name="q" role="searchbox" inputmode="search"
+            placeholder="Type to search..." onkeyup="handleSearch(this.value)" autocomplete="off" autocorrect="off"
+            autocapitalize="off" spellcheck="false" aria-autocomplete="none">
     </div>
 
-    <!-- HEADER -->
-    <header id="main-header">
-        <div class="header-inner">
-            <div id="brand" role="button" tabindex="0">SAHIB VIRDEE</div>
-            <nav id="nav-container"></nav>
-            <div id="search-trigger" role="button" title="Search (Ctrl+K)">
-                <svg viewBox="0 0 24 24">
-                    <path
-                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                </svg>
+    <header id="main-header" class="no-transition">
+        <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
+
+        <div id="nav-stack"></div>
+
+        <div id="search-controls">
+            <div id="search-trigger-wrapper" class="icon-btn-wrapper" onclick="toggleSearch()" title="Search (Ctrl+K)">
+                <div id="search-trigger" class="icon-btn icon-search-mask fill-anim-mask"></div>
             </div>
         </div>
     </header>
 
-    <!-- MAIN APP CONTAINER -->
-    <main id="app">
-        <!-- Dynamic Content Injected Here -->
-        <div class="loading-state">
-            <div class="spinner"></div>
-            Loading Portfolio...
+    <div class="content-container" id="app">
+        <div class="section layout-quote skeleton-visible">
+            <div class="sk-box quote"></div>
         </div>
-    </main>
 
-    <!-- FOOTER -->
+        <div class="grid-container section skeleton-visible">
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+        </div>
+    </div>
+
     <footer>
-        <div id="footer-links"></div>
-        <div id="copyright">© <span id="year"></span> Sahib Virdee</div>
+        <div class="footer-links" id="footer-links"></div>
+        <div id="footer-meta">
+            <div id="version-tag"></div>
+            <!-- Vault Icon Appended via JS -->
+        </div>
     </footer>
 
-    <!-- LOGIC -->
-    <script type="module" src="main.js"></script>
+    <script src="assets/scripts/core.js"></script>
+    <script src="assets/scripts/resume.js"></script>
+    <script src="assets/scripts/viewer.js"></script>
 </body>
 
 </html>
