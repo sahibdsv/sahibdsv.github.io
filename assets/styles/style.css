@@ -2331,12 +2331,14 @@ h6 {
 .callout.warning,
 .callout.caution {
     border: none !important;
-    border-left: 4px solid #ffd700 !important;
+    border-left: 3px solid #ffd700 !important;
     background: rgba(255, 215, 0, 0.05) !important;
-    border-radius: 4px !important;
-    padding: 15px 20px !important;
+    border-radius: 0 !important;
+    padding: 10px 0 10px 20px !important;
     margin: 20px 0 !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
     min-height: auto !important;
     text-align: left !important;
 }
@@ -2346,12 +2348,14 @@ h6 {
 .callout.error,
 .callout.failure {
     border: none !important;
-    border-left: 4px solid #ff4444 !important;
+    border-left: 3px solid #ff4444 !important;
     background: rgba(255, 68, 68, 0.05) !important;
-    border-radius: 4px !important;
-    padding: 15px 20px !important;
+    border-radius: 0 !important;
+    padding: 10px 0 10px 20px !important;
     margin: 20px 0 !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
     min-height: auto !important;
     text-align: left !important;
 }
@@ -2359,7 +2363,8 @@ h6 {
 .callout.warning .callout-title,
 .callout.caution .callout-title {
     color: #ffd700 !important;
-    margin-bottom: 8px;
+    margin: 0 !important;
+    /* Remove margin */
     font-size: 16px;
     font-weight: 600;
     display: flex;
@@ -2371,7 +2376,8 @@ h6 {
 .callout.error .callout-title,
 .callout.failure .callout-title {
     color: #ff4444 !important;
-    margin-bottom: 8px;
+    margin: 0 !important;
+    /* Remove margin */
     font-size: 16px;
     font-weight: 600;
     display: flex;
