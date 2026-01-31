@@ -2327,8 +2327,8 @@ h6 {
 }
 
 /* MINIMALIST WARNING CALLOUT */
+/* MINIMALIST WARNING (Yellow) */
 .callout.warning,
-.callout.danger,
 .callout.caution {
     border: none !important;
     border-left: 4px solid #ffd700 !important;
@@ -2341,8 +2341,23 @@ h6 {
     text-align: left !important;
 }
 
+/* MINIMALIST DANGER (Red) */
+.callout.danger,
+.callout.error,
+.callout.failure {
+    border: none !important;
+    border-left: 4px solid #ff4444 !important;
+    background: rgba(255, 68, 68, 0.05) !important;
+    border-radius: 4px !important;
+    padding: 15px 20px !important;
+    margin: 20px 0 !important;
+    display: block !important;
+    min-height: auto !important;
+    text-align: left !important;
+}
+
 .callout.warning .callout-title,
-.callout.danger .callout-title {
+.callout.caution .callout-title {
     color: #ffd700 !important;
     margin-bottom: 8px;
     font-size: 16px;
@@ -2352,12 +2367,32 @@ h6 {
     justify-content: flex-start;
 }
 
+.callout.danger .callout-title,
+.callout.error .callout-title,
+.callout.failure .callout-title {
+    color: #ff4444 !important;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
 .callout.warning .callout-content,
-.callout.danger .callout-content {
+.callout.danger .callout-content,
+.callout.error .callout-content {
     color: #ddd;
     text-align: left;
     font-size: 15px;
     line-height: 1.5;
+}
+
+/* ICON SPACING */
+.callout-icon {
+    margin-right: 10px;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* MINIMALIST CALLOUTS (Clean & Strict) */
@@ -2387,24 +2422,6 @@ h6 {
     line-height: 1.6;
     font-style: italic;
     /* Distinctive text style instead of box */
-}
-
-/* WARNING OVERRIDE (Yellow Card as requested) */
-.callout[data-callout="warning"],
-.callout[data-callout="danger"],
-.callout[data-callout="caution"] {
-    background: rgba(255, 193, 7, 0.1) !important;
-    border: 1px solid rgba(255, 193, 7, 0.3) !important;
-    border-left: 4px solid #ffd700 !important;
-    border-radius: 8px;
-    padding: 15px 20px;
-    font-style: normal;
-}
-
-.callout[data-callout="warning"] .callout-content,
-.callout[data-callout="danger"] .callout-content {
-    font-style: normal;
-    color: #ffe082;
 }
 
 /* Show title for warning */
