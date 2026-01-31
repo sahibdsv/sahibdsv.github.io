@@ -155,8 +155,8 @@ h6 {
 
 h1.fill-anim,
 h2.fill-anim {
-    --text-base: #fff;
-    --text-hover: #999;
+    --text-base: #999;
+    --text-hover: #fff;
 }
 
 /* --- HEADER CONTAINER --- */
@@ -1181,7 +1181,7 @@ iframe {
     display: flex;
     align-items: center;
     gap: 6px;
-    --text-base: #eee;
+    --text-base: #999;
     --text-hover: #fff;
     font-weight: 600;
 }
@@ -1570,7 +1570,7 @@ tr:hover td {
 }
 
 .layout-hero h1 {
-    font-size: 46px;
+    font-size: 54px;
     font-weight: 600;
     letter-spacing: -1px;
     margin-bottom: 5px;
@@ -1763,7 +1763,7 @@ tr:hover td {
 .index-group h3 {
     font-size: 14px;
     text-transform: uppercase;
-    color: #666;
+    color: #999;
     margin-bottom: 12px;
 }
 
