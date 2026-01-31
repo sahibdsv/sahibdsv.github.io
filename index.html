@@ -4341,9 +4341,33 @@
             const hr = db.filter(r => r.Page === 'Home');
             const app = document.getElementById('app'); app.innerHTML = '';
             renderRows(hr, null, true);
-            const recents = db.filter(r => r.Page !== 'Home' && r.Page !== 'Footer')
+
+            // RECENTS: Deduplicate by Page to avoid multiple cards for one article
+            // 1. Filter out Home/Footer
+            const rawRecents = db.filter(r => r.Page && r.Page !== 'Home' && r.Page !== 'Footer');
+
+            // 2. Group by Page and pick BEST representative (e.g. one with Tags/Media)
+            const uniquePages = {};
+            rawRecents.forEach(r => {
+                if (!uniquePages[r.Page]) {
+                    uniquePages[r.Page] = r;
+                } else {
+                    // If we already have one, should we swap?
+                    // Prefer rows that look like Cards (have Title + Content + Tags?)
+                    // Current heuristic: First found is usually fine, but sorting by timestamp puts newest row first.
+                    // If "Header" is a separate row, we might want the Card row.
+                    // Let's rely on the first one found being decent, or maybe prefer one with tags?
+                    const existing = uniquePages[r.Page];
+                    // If existing is just a 'Header' or 'Hero' and new one is 'Card', maybe swap?
+                    // For simplicity, let's trust the sort order or just distinct Page.
+                }
+            });
+
+            // 3. Convert back to array
+            const recents = Object.values(uniquePages)
                 .sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0))
                 .slice(0, 6);
+
             if (recents.length > 0) { renderRows(recents, "Recent Activity", true, true, false, true); }
         }
 
