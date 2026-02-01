@@ -1287,11 +1287,17 @@ function processSingleLine(trimmed, hiddenUrls) {
             const items = content.split(',').map(s => s.trim());
             if (items.every(i => i.startsWith('http') || i.startsWith('{{'))) {
                 const slides = items.map(url => {
-                    // Check for standard extensions OR Unsplash
-                    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) || url.includes('images.unsplash.com') || url.includes('source.unsplash.com')) {
+                    const embed = detectEmbed(url);
+                    // ROBUST: If detectEmbed returns a generic Link (Box/PDF/etc are divs), try forcing Image.
+                    // This handles Unsplash or extensionless URLs in Grid context.
+                    if (embed.startsWith('<a href')) {
+                        return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="Grid Image" onerror="this.parentNode.innerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>Link</a>'"></div>`;
+                    }
+                    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)) {
                         return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="Grid Image"></div>`;
                     }
-                    return detectEmbed(url);
+                    // It's a known embed (YouTube, Map, etc.)
+                    return embed;
                 }).join('');
                 return `<div class="auto-grid">${slides}</div>`;
             }
@@ -2433,7 +2439,7 @@ function detectEmbed(url) {
         return `<blockquote class="twitter-tweet" data-theme="dark"><a href="${url}"></a></blockquote>`;
     }
 
-    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) || url.includes('images.unsplash.com') || url.includes('source.unsplash.com')) {
+    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)) {
         return `<img src="${url}" class="inline-img zoomable" loading="lazy">`;
     }
 
