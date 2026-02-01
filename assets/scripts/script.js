@@ -991,9 +991,9 @@ function processText(t, hiddenUrls) {
 
     const flushMath = () => {
         if (!inMathBlock) return;
-        const mathContent = mathLines.join('\n');
-        // Wrap in $$ to ensure MathJax finds it as a block, prevent MD parsing internally
-        output.push(`$$ \n${mathContent}\n $$`);
+        const mathContent = mathLines.join('\n').trim();
+        // Trim content to prevent MathJax input error
+        output.push(`$$\n${mathContent}\n$$`);
         inMathBlock = false;
         mathLines = [];
     };
@@ -1174,6 +1174,11 @@ function processText(t, hiddenUrls) {
             // HEADERS (Basic)
             const headerMatch = line.trim().match(/^(#{1,6})\s+(.*)$/);
             if (headerMatch) {
+                if (inCallout) flushCallout(); // FIX: Flush prior blocks
+                if (inCodeBlock) flushCode();
+                if (inMathBlock) flushMath();
+                if (inListBlock) flushList();
+
                 const level = headerMatch[1].length;
                 const text = headerMatch[2];
                 output.push(`<h${level} class="fill-anim">${processSingleLine(text, hiddenUrls)}</h${level}>`);
@@ -2579,8 +2584,9 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         document.addEventListener('fullscreenchange', () => {
             updateFullscreenIcon();
             setTimeout(resizeHandler, 100);
-            // FIXED: Enable zoom only in fullscreen
+            // FIXED: Enable zoom/rotate only in fullscreen
             controls.enableZoom = !!document.fullscreenElement;
+            controls.enableRotate = !!document.fullscreenElement;
         });
     }
 
@@ -2611,8 +2617,9 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
     controls.enablePan = false;
     controls.autoRotate = true;
     controls.autoRotateSpeed = 2.0;
-    // FIXED: Disable scroll zoom to prevent trap
+    // FIXED: Disable scroll zoom and rotation to prevent trap
     controls.enableZoom = false;
+    controls.enableRotate = false;
 
     let restartTimer;
 
@@ -2648,7 +2655,7 @@ function loadModel(container, THREE, STLLoader, GLTFLoader, OrbitControls) {
         }
 
         const size = box.getSize(new THREE.Vector3()).length();
-        const dist = size / (2 * Math.tan(Math.PI * 30 / 360)) * 0.5;
+        const dist = size / (2 * Math.tan(Math.PI * 30 / 360)); // Removed 0.5 factor to fix "Zoomed in too far"
 
         camera.position.set(dist, dist * 0.4, dist * 0.8);
         camera.lookAt(0, 0, 0);
@@ -2768,76 +2775,76 @@ function loadDemoData() {
     const app = document.getElementById('app');
 
     const demoMD = `
-# Feature Demo
-This page demonstrates the capabilities of the CMS rendering engine.
+# Feature Demo & Stress Test
+[TOC]
 
-## 1. Typography & Lists
+This page demonstrates the capabilities of the CMS rendering engine including **[Stress Tests](#)** and **[Chaos Checks](#)**.
+
+## 1. Typography & Chaos
 Standard text can be **bold**, *italic*, or [linked](#). 
-We also support finite nested lists (parser fixes applied):
+We also support [Linked **Bold** Text](#) and [**Bold Linked** Text](#).
+Heck, even \`[Code Link](#)\` should work?
 
-- Item One
-  - Nested Item 1.1
-    - Nested Item 1.1.1
-  - Nested Item 1.2
-- Item Two
+## 2. Layout Stress (Auto-Grid)
+**5-Column Image Grid:**
+[https://images.unsplash.com/photo-1550745165-9bc0b252726f, https://images.unsplash.com/photo-1549692520-acc6669e2f0c, https://images.unsplash.com/photo-1515694346937-94d85e41e6f0, https://images.unsplash.com/photo-1544979590-37e9b47cd705, https://images.unsplash.com/photo-1505118380757-91f5f5632de0]
 
-## 2. Callouts (Minimalist)
-> [!info] Information
-> Useful details about the ecosystem.
+## 3. Deep Tables (With Links)
+| ID | [Link](#) | Status | Description |
+| :--- | :--- | :---: | --- |
+| 001 | [Project A](#) | **Active** | Core infrastructure |
+| 002 | [Project B](#) | *Pending* | Client side API |
+| 003 | [Project C](#) | Delayed | [See Report](#) |
+| 004 | [Project D](#) | Done | Legacy system |
+| 005 | [Project E](#) | **Active** | New features |
+| 006 | [Project F](#) | -- | TBD |
 
-> [!warning] Warning
-> Be careful with these settings.
+## 4. Callouts & Ordering
+> [!danger] [Critical Error](#)
+> This callout is **Critical** and has a link in the title.
+> It should appear *before* the code block below.
 
-> [!danger] Critical Error
-> Something went wrong here.
-
-## 3. Code Blocks
+## 5. Code Blocks
 \`\`\`javascript
-function helloWorld() {
-    console.log("Hello, User!");
-    return true;
+// This block should be below the Critical Error
+function testChaos() {
+    return "Complete";
 }
 \`\`\`
 
-## 4. Mathematics
-**Inline:** $a^2 + b^2 = c^2$
-
-**Block:**
+## 6. Mathematics
+**Inline:** $E = mc^2$ inside text.
+**Block (Trim Test):**
 $$
-\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+\sum_{i=0}^n i^2 = \frac{(n^2+n)(2n+1)}{6}
 $$
 
-## 5. Media with Captions & Grid
-**Side-by-Side (Map + Video):**
-[https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.9873196845941!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes+Square!5e0!3m2!1sen!2sus!4v1560412335497!5m2!1sen!2sus, https://www.youtube.com/watch?v=YE7VzlLtp-4]
-
-**Image with Caption:**
-![Unsplash Image](https://images.unsplash.com/photo-1549692520-acc6669e2f0c "A beautiful mountain view.")
-
-## 6. Diagrams
+## 7. Diagrams (Mermaid)
 \`\`\`mermaid
 graph LR
     A[Start] --> B{Decision}
-    B -->|Yes| C[Success]
+    B -->|Yes| C[[Success](#)]
     B -->|No| D[Failure]
+    click C "#" "Link Test"
 \`\`\`
 
-## 7. Charts
-[chart:bar:Jan,Feb,Mar:12,19,3:Q1 Sales]
+## 7. Charts (Variety)
+**Bar Chart:**
+[chart:bar:Q1,Q2,Q3,Q4:120,150,180,220:Annual Growth]
 
-## 8. 3D Models
-Interactive WebGL viewer:
-https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/binary/pr2_head_pan.stl
+**Doughnut Chart:**
+[chart:doughnut:Direct,Referral,Social:55,30,15:Traffic Source]
 
-## 9. Comparison Sliders
-Rain vs Clear (High Contrast):
+## 8. Media & Captions (Overlap Test)
+![Wide Image](https://images.unsplash.com/photo-1472214103451-9374bd1c798e "Standard Caption Test [With Link](#)")
+
+## 9. 3D Models (Scroll Trap Test)
+Mobile users should be able to scroll past this without getting trapped.
+{{3D: https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/binary/pr2_head_pan.stl | #00ff00}}
+
+## 10. Comparison Sliders
+Rain vs Clear:
 [compare:https://images.unsplash.com/photo-1515694346937-94d85e41e6f0:https://images.unsplash.com/photo-1500964757637-c85e8a162699]
-
-## 10. Tables
-| Feature | Status | Priority |
-| :--- | :---: | ---: |
-| Markdown | Ready | High |
-| Charts | Ready | Med |
 `;
 
     const html = processText(demoMD);
