@@ -836,14 +836,12 @@ function processText(t, hiddenUrls) {
 
             if (urls.length >= 2) {
                 output.push(`
-                    <div class="flex-center w-full my-20">
-                        <div class="compare-container" style="--pos:50%">
-                            <img src="${urls[0].trim()}" class="compare-img">
-                            <img src="${urls[1].trim()}" class="compare-img compare-after">
-                            <div class="compare-handle"></div>
-                            <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
-                        </div>
-                    </div>`);
+                            <div class="compare-container">
+                                <img src="${urls[1].trim()}" class="compare-img compare-after">
+                                <img src="${urls[0].trim()}" class="compare-img">
+                                <div class="compare-handle"></div>
+                                <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
+                            </div>`);
                 inCallout = false;
                 calloutData = { type: '', title: '', collapse: null, lines: [] };
                 return;
@@ -1046,18 +1044,7 @@ function processText(t, hiddenUrls) {
 
     function flushPara() {
         if (currentPara.length > 0) {
-            // Join with standard space for MD behavior, or <br> if desired. 
-            // Given "spaced out" complaint, standard MD (space) is safer, 
-            // relying on explicit <br> or double-space for breaks.
-            // But for simple usability, let's behave like GitHub comments: Newline = Soft break (space) usually, 
-            // unless end of line has spaces. 
-            // actually, let's do: Single Newline = <br> WITHIN paragraph, but Double Newline = New Paragraph.
-            // This is "GitHub Flavored" style often used in casual text.
-            // User complained about "too spaced out".
-            // If I make newlines = <br>, and have <p> wrapper, it's fine.
-            // The issue was: <Header>\n<br>\nTEXT.
-
-            output.push(`<p>${currentPara.join('<br>')}</p>`);
+            output.push(`<p>${currentPara.join(' ')}</p>`);
             currentPara = [];
         }
     }
@@ -1071,51 +1058,131 @@ function processText(t, hiddenUrls) {
             continue;
         }
 
-        // 2. BLOCKS (Header, HR, Lists, Math, Code, Callout)
-        // Check if line triggers a block
+        // 2. CHECK FOR BLOCKS
         const isBlock = (
             line.trim().startsWith('#') ||
             line.trim() === '---' ||
             line.trim() === '$$' ||
             line.trim().startsWith('```') ||
-            (line.match(/^(\s*)-\s+(.*)/) && !line.trim().startsWith('- [')) || // List
+            (line.match(/^(\s*)-\s+(.*)/) && !line.trim().startsWith('- [')) ||
             line.trim().startsWith('[chart:') ||
             line.trim().startsWith('[compare:') ||
             (line.trim().startsWith('|') && i + 1 < rawLines.length && rawLines[i + 1].trim().startsWith('|')) ||
-            line.trim().startsWith('> [!')
+            (line.trim().startsWith('>') && line.match(/^>\s*\[!/)) // Start of Callout
         );
 
         if (isBlock) {
             flushPara();
 
-            // --- EXISTING BLOCK LOGIC (Simplified) ---
-
-            // MATH
+            // MATH BLOCK
             if (line.trim() === '$$') {
                 if (inMathBlock) { flushMath(); }
-                else { inMathBlock = true; }
+                else {
+                    if (inCallout) flushCallout();
+                    inMathBlock = true;
+                }
                 continue;
             }
             if (inMathBlock) { mathLines.push(line); continue; }
 
-            // CODE
+            // CODE BLOCK
             if (line.trim().startsWith('```')) {
                 if (inCodeBlock) { flushCode(); }
-                else { inCodeBlock = true; codeLang = line.trim().substring(3).trim().toLowerCase(); }
+                else {
+                    if (inCallout) flushCallout();
+                    inCodeBlock = true;
+                    codeLang = line.trim().substring(3).trim().toLowerCase();
+                }
                 continue;
             }
             if (inCodeBlock) { codeLines.push(line); continue; }
 
-            // HEADER
+            // SHORTCODE: CHART [chart:type:labels:values:title]
+            if (line.trim().startsWith('[chart:')) {
+                const content = line.trim().substring(7, line.trim().length - 1);
+                const parts = content.split(':');
+                if (parts.length >= 3) {
+                    const type = parts[0];
+                    const labels = parts[1].replace(/,/g, '||');
+                    const values = parts[2].replace(/,/g, '||');
+                    const title = parts[3] || '';
+                    const id = `chart-${Math.random().toString(36).substr(2, 9)}`;
+
+                    output.push(`
+                                <div class="chart-wrapper" style="position:relative; height:300px; width:100%; max-width:600px; margin:20px auto;">
+                                    <canvas id="${id}" class="smart-chart" 
+                                        data-type="${type}" 
+                                        data-labels="${labels}" 
+                                        data-values="${values}" 
+                                        data-title="${title}">
+                                    </canvas>
+                                </div>
+                            `);
+                    continue;
+                }
+            }
+
+            // SHORTCODE: COMPARE [compare:url1:url2]
+            if (line.trim().startsWith('[compare:')) {
+                const content = line.trim().substring(9, line.trim().length - 1);
+                const urls = content.split(/:(?=http)/);
+                if (urls.length >= 2) {
+                    output.push(`
+                        <div class="flex-center-wrapper">
+                            <div class="compare-container" style="--pos:50%">
+                                <img src="${urls[0].trim()}" class="compare-img">
+                                <img src="${urls[1].trim()}" class="compare-img compare-after">
+                                <div class="compare-handle"></div>
+                                <input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')">
+                            </div>
+                        </div>`);
+                    continue;
+                }
+            }
+
+            // TABLES
+            if (line.trim().startsWith('|') && i + 1 < rawLines.length) {
+                const nextLine = rawLines[i + 1].trim();
+                // Check if next line is separator line (contains only | - : spaces)
+                if (nextLine.match(/^\|?[\s-:\\|]+\|?$/)) {
+                    if (inCallout) flushCallout();
+
+                    let tableLines = [];
+                    while (i < rawLines.length && rawLines[i].trim().startsWith('|')) {
+                        tableLines.push(rawLines[i].trim());
+                        i++;
+                    }
+                    i--; // Backtrack
+
+                    let html = '<div class="table-wrapper"><div class="copy-table-btn" onclick="copyTable(this)">Copy CSV</div><table>';
+                    const hParts = tableLines[0].split('|').filter(x => x.trim() !== '');
+                    html += `<thead><tr>${hParts.map(h => `<th>${h.trim()}</th>`).join('')}</tr></thead><tbody>`;
+
+                    for (let j = 2; j < tableLines.length; j++) {
+                        const cells = tableLines[j].split('|');
+                        let cleanCells = [];
+                        if (tableLines[j].trim().startsWith('|')) cells.shift();
+                        if (tableLines[j].trim().endsWith('|')) cells.pop();
+                        html += `<tr>${cells.map(c => `<td>${processSingleLine(c.trim(), hiddenUrls)}</td>`).join('')}</tr>`;
+                    }
+                    html += '</tbody></table></div>';
+                    output.push(html);
+                    continue;
+                }
+            }
+
+            // HEADERS (Basic)
             const headerMatch = line.trim().match(/^(#{1,6})\s+(.*)$/);
             if (headerMatch) {
                 const level = headerMatch[1].length;
-                output.push(`<h${level} class="fill-anim">${processSingleLine(headerMatch[2], hiddenUrls)}</h${level}>`);
+                const text = headerMatch[2];
+                output.push(`<h${level} class="fill-anim">${processSingleLine(text, hiddenUrls)}</h${level}>`);
                 continue;
             }
 
-            // LIST
+            // LIST BLOCK
             if (line.match(/^(\s*)-\s+(.*)/)) {
+                if (inCallout) flushCallout();
                 inListBlock = true;
                 listLines.push(line);
                 continue;
@@ -1127,101 +1194,64 @@ function processText(t, hiddenUrls) {
                 continue;
             }
 
-            // CALLOUT
+            // CALLOUT START
             const calloutMatch = line.trim().match(/^>\s*\[!([\w-:]+)\]([-+]?)\s*(.*)$/);
             if (calloutMatch) {
+                if (inCallout) flushCallout();
                 inCallout = true;
                 calloutData.type = calloutMatch[1].toLowerCase();
                 calloutData.collapse = calloutMatch[2] || null;
                 calloutData.title = calloutMatch[3].trim();
                 continue;
             }
-
-            // PRE-EXISTING CUSTOM BLOCKS (Chart, Compare, Tables) handled by general logic below
-            // But we need to handle them here if they are blocks to avoid adding to Para
-
-            // CHART
-            if (line.trim().startsWith('[chart:')) {
-                // ... existing chart parsing ...
-                const content = line.trim().substring(7, line.trim().length - 1);
-                const parts = content.split(':');
-                if (parts.length >= 3) {
-                    // ... chart logic ...
-                    const type = parts[0]; const labels = parts[1].replace(/,/g, '||'); const values = parts[2].replace(/,/g, '||'); const title = parts[3] || '';
-                    const id = `chart-${Math.random().toString(36).substr(2, 9)}`;
-                    output.push(`<div class="chart-wrapper" style="position:relative; height:300px; width:100%; max-width:600px; margin:20px auto;"><canvas id="${id}" class="smart-chart" data-type="${type}" data-labels="${labels}" data-values="${values}" data-title="${title}"></canvas></div>`);
-                    continue;
-                }
-            }
-
-            // COMPARE
-            if (line.trim().startsWith('[compare:')) {
-                const content = line.trim().substring(9, line.trim().length - 1);
-                const urls = content.split(/:(?=http)/);
-                if (urls.length >= 2) {
-                    output.push(`<div class="compare-wrapper-flex"><div class="compare-container" style="--pos:50%"><img src="${urls[0].trim()}" class="compare-img"><img src="${urls[1].trim()}" class="compare-img compare-after"><div class="compare-handle"></div><input type="range" min="0" max="100" value="50" class="compare-slider" oninput="this.parentElement.style.setProperty('--pos', this.value + '%')"></div></div>`);
-                    continue;
-                }
-            }
-
-            // TABLES
-            if (line.trim().startsWith('|')) {
-                // ... table logic ...
-                // Re-implement or call helper. 
-                // For brevity in this replace, I'll copy the logic logic briefly or assume simple pass through?
-                // No, I must include full logic if I replace the loop.
-                // See next chunk for full replacement.
-            }
         }
 
-        // Block Continuation
+        // Handle ongoing blocks that might not re-trigger "start" patterns
+        if (inMathBlock) { mathLines.push(line); continue; }
+        if (inCodeBlock) { codeLines.push(line); continue; }
         if (inListBlock) {
             if (line.match(/^(\s*)-\s+(.*)/) || (line.trim() !== '' && line.match(/^\s+/))) {
                 listLines.push(line); continue;
             } else { flushList(); }
         }
+
+        // CALLOUT CONTENT
         if (inCallout) {
             if (line.trim().startsWith('>')) {
-                calloutData.lines.push(line.trim().replace(/^>\s?/, '')); continue;
+                calloutData.lines.push(line.trim().replace(/^>\s?/, ''));
+                continue;
             } else if ((calloutData.type.startsWith('btn') || calloutData.type.startsWith('button')) && calloutData.lines.length === 0 && line.trim()) {
-                calloutData.lines.push(line.trim()); continue;
-            } else { flushCallout(); }
-        }
-
-        // 3. TABLE catch-up (if not caught by isBlock or fell through)
-        if (line.trim().startsWith('|') && i + 1 < rawLines.length && rawLines[i + 1].trim().match(/^\|?[\s-:\\|]+\|?$/)) {
-            flushPara();
-            // Table Parsing Logic
-            let tableLines = [];
-            while (i < rawLines.length && rawLines[i].trim().startsWith('|')) { tableLines.push(rawLines[i].trim()); i++; }
-            i--;
-            // ... Build Table HTML ...
-            let html = '<div class="table-wrapper"><div class="copy-table-btn" onclick="copyTable(this)">Copy CSV</div><table>';
-            const hParts = tableLines[0].split('|').filter(x => x.trim() !== '');
-            html += `<thead><tr>${hParts.map(h => `<th>${h.trim()}</th>`).join('')}</tr></thead><tbody>`;
-            for (let j = 2; j < tableLines.length; j++) {
-                const cells = tableLines[j].split('|');
-                if (tableLines[j].trim().startsWith('|')) cells.shift();
-                if (tableLines[j].trim().endsWith('|')) cells.pop();
-                html += `<tr>${cells.map(c => `<td>${processSingleLine(c.trim(), hiddenUrls)}</td>`).join('')}</tr>`;
+                // Special case for buttons
+                calloutData.lines.push(line.trim());
+                continue;
             }
-            html += '</tbody></table></div>';
-            output.push(html);
-            continue;
+            // If line is not empty and doesn't start with >, flush callout? 
+            // Standard MD callout ends on double newline or non-indented text usually.
+            // Here we assume Contiguous Block > or empty line terminates?
+            // Actually, let's treat it strictly: Callout ends if no >. 
+            else if (line.trim() === '') {
+                // Empty line inside callout... usually preserves paragraph
+                // For now, let's keep simplistic: flush callout
+                flushCallout();
+            } else {
+                flushCallout();
+                // Fall through to text
+            }
         }
 
-        // 4. PLAIN TEXT (Accumulate)
-        // If we got here, it's not a block indexer and we are not in a block state (or just exited one)
-        currentPara.push(processSingleLine(line.trim(), hiddenUrls));
+        // If we reach here, it's plain text (Paragraph)
+        if (!inMathBlock && !inCodeBlock && !inListBlock && !inCallout) {
+            currentPara.push(processSingleLine(line.trim(), hiddenUrls));
+        }
     }
 
+    if (currentPara.length > 0) flushPara();
     if (inCallout) flushCallout();
     if (inCodeBlock) flushCode();
     if (inMathBlock) flushMath();
     if (inListBlock) flushList();
-    flushPara(); // Flush remaining text
 
-    return output.join(''); // Join with nothing, blocks have their own tags, paragraphs have <p>
+    return output.join('');
 }
 
 function processLineArray(lines, hiddenUrls) {
@@ -2743,7 +2773,8 @@ This page demonstrates the capabilities of the CMS rendering engine.
 
 ## 1. Typography & Lists
 Standard text can be **bold**, *italic*, or [linked](#). 
-We also support infinite nested lists:
+We also support finite nested lists (parser fixes applied):
+
 - Item One
   - Nested Item 1.1
     - Nested Item 1.1.1
@@ -2770,6 +2801,7 @@ function helloWorld() {
 
 ## 4. Mathematics
 **Inline:** $a^2 + b^2 = c^2$
+
 **Block:**
 $$
 \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
@@ -2798,7 +2830,7 @@ Interactive WebGL viewer:
 https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/stl/binary/pr2_head_pan.stl
 
 ## 9. Comparison Sliders
-Rain vs Dry:
+Rain vs Clear (High Contrast):
 [compare:https://images.unsplash.com/photo-1515694346937-94d85e41e6f0:https://images.unsplash.com/photo-1500964757637-c85e8a162699]
 
 ## 10. Tables
@@ -2808,7 +2840,6 @@ Rain vs Dry:
 | Charts | Ready | Med |
 `;
 
-    // Wrapping not needed if processText handles it, but robust against external styles
     const html = processText(demoMD);
 
     // WRAP IN ARTICLE MODE FOR CONTROLS (3D Fullscreen, etc.)
@@ -2826,6 +2857,6 @@ Rain vs Dry:
         initCharts();
         init3DViewers();
         initComparisons();
-        initImageZoomers();
+        initImageZoomers(); 
     }, 100);
 }
