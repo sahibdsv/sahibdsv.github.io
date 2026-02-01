@@ -1073,40 +1073,46 @@ iframe {
 }
 
 /* ZOOM LENS LOGIC */
+/* ZOOM LENS LOGIC */
 .zoom-frame {
     position: relative;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    display: block;
+    /* Back to block, flex handled by media-group */
     cursor: zoom-in;
-    margin: 20px auto;
+    margin: 0;
+    /* Margin handled by media-group */
     max-width: 100%;
     border-radius: var(--media-radius);
     background: #111;
-    /* Background for Letterboxing if needed */
 }
 
 .zoom-frame img {
     width: 100%;
-    /* Flex grow ensures it fills space in grid, auto height elsewhere */
-    flex: 1;
+    height: 100%;
     object-fit: contain;
     transition: transform 0.2s ease-out;
     pointer-events: none;
-    min-height: 0;
-    /* Flex fix */
+    display: block;
+}
+
+/* MEDIA GROUP (Image + Caption Wrapper) */
+.media-group {
+    display: flex;
+    flex-direction: column;
+    margin: 20px auto;
+    width: 100%;
 }
 
 .caption {
     padding: 8px 10px;
-    background: rgba(0, 0, 0, 0.3);
-    color: #ccc;
+    background: transparent;
+    color: #888;
     font-size: 13px;
     font-style: italic;
     text-align: center;
     width: 100%;
-    flex-shrink: 0;
-    pointer-events: none;
+    margin-top: 5px;
 }
 
 .card-thumb {
