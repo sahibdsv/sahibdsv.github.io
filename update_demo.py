@@ -71,7 +71,7 @@ $$
 \`\`\`mermaid
 graph LR
     A[Start] --> B{Decision}
-    B -->|Yes| C[[Success](#)]
+    B -->|Yes| C[Success]
     B -->|No| D[Failure]
     click C "#" "Link Test"
 \`\`\`

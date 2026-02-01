@@ -2110,6 +2110,25 @@ code {
 
 
 
+/* CALLOUT TYPES & COMPATIBILITY */
+.callout.warning {
+    --callout-color: #ffb700;
+    --callout-bg: rgba(255, 183, 0, 0.1);
+}
+
+.callout.note {
+    --callout-color: #007bff;
+    --callout-bg: rgba(0, 123, 255, 0.1);
+}
+
+/* Ensure Links in Callout Titles are Clickable */
+.callout-title a {
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
+    text-decoration: underline;
+}
+
 .auto-grid .zoom-frame img {
     height: 100%;
     width: 100%;

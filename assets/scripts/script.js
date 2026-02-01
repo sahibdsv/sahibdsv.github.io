@@ -1291,7 +1291,8 @@ function processSingleLine(trimmed, hiddenUrls) {
                     // ROBUST: If detectEmbed returns a generic Link (Box/PDF/etc are divs), try forcing Image.
                     // This handles Unsplash or extensionless URLs in Grid context.
                     if (embed.startsWith('<a href')) {
-                        return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="Grid Image" onerror="this.parentNode.innerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>Link</a>'"></div>`;
+                        // ROBUST: Try forcing Image, but without brittle onError fallback (User prefers broken image icon to "Link")
+                        return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="Grid Image"></div>`;
                     }
                     if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)) {
                         return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="Grid Image"></div>`;
@@ -1407,7 +1408,7 @@ function processSingleLine(trimmed, hiddenUrls) {
 
     // RESTORE MATH
     mathBlocks.forEach((block, i) => {
-        clean = clean.replace(`__MATH_${i}__`, block);
+        clean = clean.replace(`__MATH_${i}__`, () => block);
     });
 
     return clean;
@@ -2801,7 +2802,7 @@ Heck, even \`[Code Link](#)\` should work?
 
 ## 2. Layout Stress (Auto-Grid)
 **5-Column Image Grid:**
-[https://images.unsplash.com/photo-1550745165-9bc0b252726f, https://images.unsplash.com/photo-1549692520-acc6669e2f0c, https://images.unsplash.com/photo-1515694346937-94d85e41e6f0, https://images.unsplash.com/photo-1544979590-37e9b47cd705, https://images.unsplash.com/photo-1505118380757-91f5f5632de0]
+[https://images.unsplash.com/photo-1550745165-9bc0b252726f, https://images.unsplash.com/photo-1549692520-acc6669e2f0c, https://images.unsplash.com/photo-1515694346937-94d85e41e6f0, https://images.unsplash.com/photo-1579546929518-9e396f3cc809, https://images.unsplash.com/photo-1505118380757-91f5f5632de0]
 
 **Mixed Media Grid (Restored):**
 [https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-73.9873196845941!3d40.75889497932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes+Square!5e0!3m2!1sen!2sus!4v1560412335497!5m2!1sen!2sus, https://www.youtube.com/watch?v=YE7VzlLtp-4, https://images.unsplash.com/photo-1549692520-acc6669e2f0c]
@@ -2849,7 +2850,7 @@ $$
 \`\`\`mermaid
 graph LR
     A[Start] --> B{Decision}
-    B -->|Yes| C[[Success](#)]
+    B -->|Yes| C[Success]
     B -->|No| D[Failure]
     click C "#" "Link Test"
 \`\`\`
@@ -2892,4 +2893,14 @@ Rain vs Clear:
         initComparisons();
         initImageZoomers();
     }, 100);
+}
+
+// HELPER: HTML Escape (Definition for robustness)
+function safeHTML(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
