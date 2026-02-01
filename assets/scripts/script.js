@@ -955,7 +955,7 @@ function processText(t, hiddenUrls) {
         let content = processLineArray(calloutData.lines, hiddenUrls);
 
         const titleTag = calloutData.type === 'note' || calloutData.type === 'tip' ? 'h4' : 'h5';
-        const titleTag = calloutData.type === 'note' || calloutData.type === 'tip' ? 'h4' : 'h5';
+
         const displayTitle = calloutData.title ? `<span class="callout-title-text">${processSingleLine(calloutData.title, hiddenUrls)}</span>` : `<span class="callout-title-text">${calloutData.type.toUpperCase()}</span>`;
 
         const tag = 'div';
@@ -2883,6 +2883,6 @@ Rain vs Clear:
         initCharts();
         init3DViewers();
         initComparisons();
-        initImageZoomers(); 
+        initImageZoomers();
     }, 100);
 }
