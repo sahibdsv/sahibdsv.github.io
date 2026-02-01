@@ -1287,7 +1287,8 @@ function processSingleLine(trimmed, hiddenUrls) {
             const items = content.split(',').map(s => s.trim());
             if (items.every(i => i.startsWith('http') || i.startsWith('{{'))) {
                 const slides = items.map(url => {
-                    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)) {
+                    // Check for standard extensions OR Unsplash
+                    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) || url.includes('images.unsplash.com') || url.includes('source.unsplash.com')) {
                         return `<div class="zoom-frame"><img src="${url}" loading="lazy" alt="Grid Image"></div>`;
                     }
                     return detectEmbed(url);
@@ -2432,7 +2433,7 @@ function detectEmbed(url) {
         return `<blockquote class="twitter-tweet" data-theme="dark"><a href="${url}"></a></blockquote>`;
     }
 
-    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)) {
+    if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) || url.includes('images.unsplash.com') || url.includes('source.unsplash.com')) {
         return `<img src="${url}" class="inline-img zoomable" loading="lazy">`;
     }
 
