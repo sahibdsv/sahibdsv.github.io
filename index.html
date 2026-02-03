@@ -2056,6 +2056,60 @@
         let resumeDb = [];
         let isSearchActive = false;
 
+        // Analytics tracking helpers
+        let currentPage = null;
+        let pageStartTime = null;
+        let scrollDepthTracked = {};
+
+        function trackEvent(eventName, eventData = {}) {
+            if (window.umami) {
+                umami.track(eventName, eventData);
+            }
+        }
+
+        function trackPageView(page) {
+            // Track time on previous page
+            if (currentPage && pageStartTime) {
+                const timeSpent = Math.round((Date.now() - pageStartTime) / 1000);
+                if (timeSpent > 0) {
+                    trackEvent('page-time', { page: currentPage, duration: timeSpent });
+                }
+            }
+
+            // Track new pageview
+            currentPage = page;
+            pageStartTime = Date.now();
+            scrollDepthTracked = {}; // Reset scroll tracking for new page
+
+            if (window.umami) {
+                umami.track(props => ({
+                    ...props,
+                    url: window.location.pathname + '#' + page
+                }));
+            }
+        }
+
+        // Scroll depth tracking
+        function trackScrollDepth() {
+            const scrollPercent = Math.round(
+                (window.scrollY + window.innerHeight) / document.body.scrollHeight * 100
+            );
+
+            const milestones = [25, 50, 75, 100];
+            milestones.forEach(milestone => {
+                if (scrollPercent >= milestone && !scrollDepthTracked[milestone]) {
+                    scrollDepthTracked[milestone] = true;
+                    trackEvent('scroll-depth', { page: currentPage, depth: milestone });
+                }
+            });
+        }
+
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(trackScrollDepth, 100);
+        });
+
         const CACHE_KEY = 'sahib_v1_cache';
         const CONFIG = {
             main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
@@ -2116,6 +2170,15 @@
             if (window.location.search) {
                 history.replaceState(null, null, window.location.pathname + window.location.hash);
             }
+
+
+            // Track print events for resume
+            window.addEventListener('beforeprint', () => {
+                const currentPageStr = window.location.hash.substring(1);
+                if (currentPageStr.includes('Resume')) {
+                    trackEvent('resume-print');
+                }
+            });
 
             initApp();
             updateSEO();
@@ -2201,7 +2264,7 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
-        function initApp() { handleRouting(), window.addEventListener("hashchange", handleRouting), window.addEventListener("scroll", () => { const e = document.getElementById("main-header"); e.classList.toggle("scrolled", window.scrollY > 10) }), window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }), window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { const activeLink = row.querySelector(".active"); if (activeLink) centerNavRow(row, false) }) }, 150) } })()), document.addEventListener("click", e => { const t = document.getElementById("search-overlay"), n = document.getElementById("search-controls"); !t.classList.contains("active") || t.contains(e.target) || n.contains(e.target) || closeSearch() }), document.getElementById("app").addEventListener("click", e => { if (e.target.closest(".refresh-btn")) { const t = e.target.closest(".layout-quote"); if (t && !t.classList.contains("loading")) { const e = t.clientHeight; t.style.height = e + "px", t.classList.add("loading"), t.innerHTML = '<div class="sk-box quote" style="height: 100% ;"></div>', setTimeout(() => { renderQuoteCard(t), t.classList.remove("loading"), t.style.height = "auto" }, 600) } return void e.stopPropagation() } if (e.target.classList.contains("chip")) { e.stopPropagation(), isSearchActive && closeSearch(); const t = e.target.getAttribute("data-tag"), n = e.target.getAttribute("data-date"); return void (n ? window.location.hash = "Filter:" + n : t && (window.location.hash = "Filter:" + t)) } const t = e.target.closest(".clickable-block"); if (t && !e.target.classList.contains("chip")) { const e = t.getAttribute("data-link"), n = t.getAttribute("data-target"); e && ("_blank" === n ? window.open(e, "_blank") : (window.location.href = e, isSearchActive && closeSearch())) } }), document.addEventListener("keydown", e => { const t = "search-input" === (document.activeElement ? document.activeElement.id : ""); if (t) { if ("/" === e.key || "Escape" === e.key) return e.preventDefault(), void closeSearch() } !("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) || isSearchActive || t || (e.preventDefault(), toggleSearch()), "Escape" === e.key && (isSearchActive || document.getElementById("search-overlay").classList.contains("active") ? closeSearch() : window.location.hash && "#Home" !== window.location.hash && resetToHome()) }) }
+        function initApp() { handleRouting(), window.addEventListener("hashchange", handleRouting), window.addEventListener("scroll", () => { const e = document.getElementById("main-header"); e.classList.toggle("scrolled", window.scrollY > 10) }), window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }), window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { const activeLink = row.querySelector(".active"); if (activeLink) centerNavRow(row, false) }) }, 150) } })()), document.addEventListener("click", e => { const t = document.getElementById("search-overlay"), n = document.getElementById("search-controls"); !t.classList.contains("active") || t.contains(e.target) || n.contains(e.target) || closeSearch() }), document.getElementById("app").addEventListener("click", e => { if (e.target.closest(".refresh-btn")) { trackEvent('quote-refresh'); const t = e.target.closest(".layout-quote"); if (t && !t.classList.contains("loading")) { const e = t.clientHeight; t.style.height = e + "px", t.classList.add("loading"), t.innerHTML = '<div class="sk-box quote" style="height: 100% ;"></div>', setTimeout(() => { renderQuoteCard(t), t.classList.remove("loading"), t.style.height = "auto" }, 600) } return void e.stopPropagation() } if (e.target.classList.contains("chip")) { e.stopPropagation(), isSearchActive && closeSearch(); const t = e.target.getAttribute("data-tag"), n = e.target.getAttribute("data-date"); if (n) { trackEvent('chip-click', { type: 'date', value: n }); window.location.hash = "Filter:" + n; } else if (t) { trackEvent('chip-click', { type: 'tag', value: t }); window.location.hash = "Filter:" + t; } return; } const t = e.target.closest(".clickable-block"); if (t && !e.target.classList.contains("chip")) { const e = t.getAttribute("data-link"), n = t.getAttribute("data-target"); e && ("_blank" === n ? (trackEvent('external-link', { url: e }), window.open(e, "_blank")) : (window.location.href = e, isSearchActive && closeSearch())) } }), document.addEventListener("keydown", e => { const t = "search-input" === (document.activeElement ? document.activeElement.id : ""); if (t) { if ("/" === e.key || "Escape" === e.key) return e.preventDefault(), void closeSearch() } !("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) || isSearchActive || t || (e.preventDefault(), toggleSearch()), "Escape" === e.key && (isSearchActive || document.getElementById("search-overlay").classList.contains("active") ? closeSearch() : window.location.hash && "#Home" !== window.location.hash && resetToHome()) }) }
         function renderNavigation(e) { const t = document.getElementById("nav-stack"), n = document.getElementById("main-header"), o = e && "Home" !== e ? e.split("/") : [], r = o.length + 1, i = []; for (let e = 1; e <= r; e++) { const s = 1 === e ? null : o.slice(0, e - 1).join("/"), a = o.length >= e ? o[e - 1] : null; let l = []; if (l = 1 === e ? [...new Set([...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page).map(e => e.Page.split("/")[0]).filter(e => e), quotesDb.length > 0 ? "Personal" : null].filter(e => e))].sort() : [...new Set(db.filter(e => e.Page && e.Page.startsWith(s + "/")).map(t => t.Page.split("/")[e - 1]).filter(e => e))].sort(), 0 === l.length) break; const c = `nav-row-${e}`; i.push(c); let d = document.getElementById(c); const m = !d; m && (d = document.createElement("nav"), d.id = c, d.className = "nav-row level-" + (e > 1 ? "n" : "1"), a || (d.scrollLeft = 50), t.appendChild(d)); let p = ""; const u = s ? s + "/" : ""; l.forEach(t => { p += `<a href="#${u + t}" class="${1 === e ? "nav-link" : "sub-link"} fill-anim ${t === a ? "active" : ""}" onclick="closeSearch()">${safeHTML(t)}</a>` }), d.innerHTML !== p && (d.innerHTML = p), centerNavRow(d, m && !a) } t.querySelectorAll(".nav-row").forEach(e => { i.includes(e.id) || e.remove() }), updatePadding() } function centerNavRow(e, t) { if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } } let resizeTimer; function updatePadding() { const e = document.getElementById("nav-stack").querySelectorAll(".nav-row"); let t = 37; e.forEach(e => { t += e.classList.contains("level-1") ? 26 : 24; t += 1 }), document.body.style.paddingTop = t + 10 + "px" } function resetToHome() { closeSearch(), clearTextSelection(), window.location.hash = "" } function clearTextSelection() { if (window.getSelection) { const e = window.getSelection(); e && e.removeAllRanges && e.removeAllRanges() } else if (document.selection && document.selection.empty) { try { document.selection.empty() } catch (e) { } } }
         function closeSearch() {
             const wasOpen = document.getElementById("search-overlay").classList.contains("active");
@@ -2224,9 +2287,19 @@
                 if (app) app.innerHTML = '<div class="section layout-hero"><h2 class="header-fade-anim">Search</h2><p style="color:var(--text-dim); font-size:16px;">Type to search across all content...</p></div>';
                 return;
             }
+            // Track search query
+            trackEvent('search', { query: e });
+
             const t = e.toLowerCase(), n = db.filter(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t));
-            resumeDb.some(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t)) && !n.find(e => "Professional/Resume" === e.Page) && n.push(db.find(e => "Professional/Resume" === e.Page)), renderRows(n, `Search results for "${safeHTML(e)}"`, !1, !0, !1, !0)
-        } function handleRouting() { if (isSearchActive) return; const e = document.getElementById("main-header"); e && e.classList.remove("scrolled"), window.scrollTo(0, 0); clearTextSelection(); let t = window.location.hash.substring(1) || "Home"; "Index" !== t ? "Professional/Resume" !== t ? (renderNavigation("Home" === t ? null : t), t.startsWith("Filter:") ? renderFiltered(decodeURIComponent(t.split(":")[1])) : renderPage(t)) : renderResume() : renderIndex() } function renderFiltered(e) { const t = e.match(/^(\d{4})-(\d{2})(-\d{2})?$/), n = e.match(/^(\d{4})(\d{2})/); let o = e; t ? o = `${new Date(t[1], parseInt(t[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${t[1]}` : n && (o = `${new Date(n[1], parseInt(n[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${n[1]}`), renderRows(db.filter(t => (t.Timestamp || "").startsWith(e) || t.Tags && t.Tags.includes(e)), `Posts from ${safeHTML(o)}`, !1, !0, !1, !0) }
+            resumeDb.some(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t)) && !n.find(e => "Professional/Resume" === e.Page) && n.push(db.find(e => "Professional/Resume" === e.Page));
+
+            // Track failed searches
+            if (n.length === 0) {
+                trackEvent('search-no-results', { query: e });
+            }
+
+            renderRows(n, `Search results for "${safeHTML(e)}"`, !1, !0, !1, !0)
+        } function handleRouting() { if (isSearchActive) return; const e = document.getElementById("main-header"); e && e.classList.remove("scrolled"), window.scrollTo(0, 0); clearTextSelection(); let t = window.location.hash.substring(1) || "Home"; trackPageView(t); "Index" !== t ? "Professional/Resume" !== t ? (renderNavigation("Home" === t ? null : t), t.startsWith("Filter:") ? renderFiltered(decodeURIComponent(t.split(":")[1])) : renderPage(t)) : renderResume() : renderIndex() } function renderFiltered(e) { const t = e.match(/^(\d{4})-(\d{2})(-\d{2})?$/), n = e.match(/^(\d{4})(\d{2})/); let o = e; t ? o = `${new Date(t[1], parseInt(t[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${t[1]}` : n && (o = `${new Date(n[1], parseInt(n[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${n[1]}`), renderRows(db.filter(t => (t.Timestamp || "").startsWith(e) || t.Tags && t.Tags.includes(e)), `Posts from ${safeHTML(o)}`, !1, !0, !1, !0) }
         function renderPage(e) {
             if ("Home" === e) return void renderHome(); const t = db.filter(t => t.Page === e), n = document.getElementById("app"); n.innerHTML = ""; const o = !e.includes("/"); if (t.length > 0) renderRows(t, null, !0, !1, !o); else if (!childrenPagesCheck(e) && !("Personal" === e && quotesDb.length > 0)) return void (n.innerHTML = '<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn\'t exist in the database yet.</p></div>'); if ("Personal" === e && quotesDb.length > 0) { const q = document.createElement("div"); q.className = "layout-quote section", q.setAttribute("data-title", "Random Quote"), renderQuoteCard(q), n.appendChild(q) } if (o) { const t = [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))]; t.length > 0 && renderRows(t.map(e => db.find(t => t.Page === e)).filter(e => e), null, !0, !0) }
         } function childrenPagesCheck(e) { return [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))].length > 0 }
@@ -2916,6 +2989,7 @@
         // GLB Viewer Renderer
         window.renderGLBViewer = function (glbPath, isCardMode) {
             const uniqueId = 'viewer-' + Math.random().toString(36).substr(2, 9);
+            const modelName = glbPath.split('/').pop().replace('.glb', '');
 
             // Create HTML
             const html = `
@@ -2931,12 +3005,23 @@
                 </div>
             `;
 
+            // Track model load start
+            const loadStart = Date.now();
+
             // Initialize viewer after a short delay to ensure DOM is ready
             setTimeout(() => {
                 const container = document.getElementById(uniqueId);
                 if (container) {
                     const viewer = initThreeJSViewer(container, glbPath, isCardMode);
                     window._glbViewers[uniqueId] = viewer;
+
+                    // Track successful model load
+                    const loadTime = Date.now() - loadStart;
+                    trackEvent('model-load', {
+                        model: modelName,
+                        loadTime: loadTime,
+                        cardMode: isCardMode
+                    });
                 }
             }, 100);
 
@@ -2951,7 +3036,16 @@
             const viewer = window._glbViewers[viewerId];
             const btn = wrapper.querySelector('.fs-btn');
 
+            // Track fullscreen toggle - extract model name from viewer or wrapper
+            const canvas = wrapper.querySelector('canvas');
+            let modelName = 'unknown';
+            if (canvas && canvas.dataset && canvas.dataset.model) {
+                modelName = canvas.dataset.model;
+            }
+
             if (!document.fullscreenElement) {
+                trackEvent('model-fullscreen', { model: modelName, action: 'enter' });
+
                 wrapper.requestFullscreen().then(() => {
                     btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>';
                     btn.title = 'Exit Fullscreen';
@@ -2979,6 +3073,7 @@
                     }
                 });
             } else {
+                trackEvent('model-fullscreen', { model: modelName, action: 'exit' });
                 document.exitFullscreen();
             }
         };
