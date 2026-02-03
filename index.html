@@ -79,10 +79,10 @@
             --accent-projects: #ffaa00;
 
             /* Layout */
-            --brand-row-h: 36px;
-            --main-row-h: 26px;
-            --sub-row-h: 24px;
-            --gap: 1px;
+            --brand-row-h: 28px;
+            --main-row-h: 20px;
+            --sub-row-h: 18px;
+            --gap: 0px;
 
             /* Border Radius */
             --card-radius: 18px;
@@ -256,6 +256,7 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
+            padding: 4px 0 2px 0;
             gap: var(--gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
@@ -598,12 +599,6 @@
             .layout-quote {
                 min-height: 280px;
                 padding: 40px 15px
-            }
-
-            /* Restore Mobile Resume Styles */
-            .resume-grid {
-                display: flex;
-                flex-direction: column;
             }
         }
 
@@ -1138,6 +1133,16 @@
             border-radius: var(--media-radius);
         }
 
+        /* Disable pointer events on GLB canvas in article mode to allow scroll-through */
+        .model-viewer-wrapper:not(.card-preview) canvas {
+            pointer-events: none;
+        }
+
+        /* Re-enable pointer events when in fullscreen */
+        .model-viewer-wrapper.fullscreen canvas {
+            pointer-events: auto !important;
+        }
+
         /* Circular Fullscreen Button */
         .model-viewer-wrapper .fs-btn {
             position: absolute;
@@ -1359,6 +1364,15 @@
             font-weight: 500;
             color: var(--text-faded);
             text-align: right;
+        }
+
+        /* Mobile Resume Layout - Stack columns on small screens */
+        @media (max-width: 768px) {
+            .resume-grid {
+                display: flex !important;
+                flex-direction: column;
+                gap: 20px;
+            }
         }
 
         /* --- ARTICLE VIEW STYLES --- */
