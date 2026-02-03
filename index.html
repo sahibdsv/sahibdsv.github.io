@@ -260,7 +260,8 @@
             gap: var(--gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
-            transition: transform var(--anim-layout) var(--ease)
+            transition: transform var(--anim-layout) var(--ease);
+            will-change: transform;
         }
 
         #brand-name,
@@ -309,7 +310,8 @@
         #nav-stack {
             flex-direction: column;
             gap: var(--gap);
-            transition: gap var(--anim-layout) var(--ease)
+            transition: gap var(--anim-layout) var(--ease);
+            will-change: gap;
         }
 
         .nav-row {
@@ -320,7 +322,8 @@
             white-space: nowrap;
             scrollbar-width: none;
             transition: height var(--anim-layout) var(--ease), opacity var(--anim-layout) var(--ease), margin var(--anim-layout) var(--ease);
-            opacity: 1
+            opacity: 1;
+            will-change: opacity;
         }
 
         .nav-row.level-1 {
@@ -599,6 +602,16 @@
             .layout-quote {
                 min-height: 280px;
                 padding: 40px 15px
+            }
+        }
+
+        /* Desktop Header Spacing - Increase row heights for better balance on large screens */
+        @media (min-width: 769px) {
+            :root {
+                --brand-row-h: 34px !important;
+                --main-row-h: 24px !important;
+                --sub-row-h: 22px !important;
+                --gap: 2px !important;
             }
         }
 
@@ -1133,9 +1146,11 @@
             border-radius: var(--media-radius);
         }
 
-        /* Disable pointer events on GLB canvas in article mode to allow scroll-through */
-        .model-viewer-wrapper:not(.card-preview) canvas {
-            pointer-events: none;
+        /* Disable pointer events on GLB canvas in article mode on MOBILE ONLY to allow scroll-through */
+        @media (max-width: 768px) {
+            .model-viewer-wrapper:not(.card-preview) canvas {
+                pointer-events: none;
+            }
         }
 
         /* Re-enable pointer events when in fullscreen */
