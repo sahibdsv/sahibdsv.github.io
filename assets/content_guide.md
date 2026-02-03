@@ -156,29 +156,68 @@ Centered text
 
 ### **Media Types**
 
-#### **Images with captions:**
-```
-![My caption text](url-to-image.jpg)
-```
-> **Why the `!` ?** That's standard markdown! The `!` tells markdown it's an image, not a regular link.  
-> Without `!` → `[text](url)` = clickable link  
-> With `!` → `![text](url)` = embedded image (text becomes caption)
+The system supports **three ways** to add media, with automatic detection for convenience:
 
-#### **Image galleries (comma-separated):**
+#### **GLB 3D Models**
+
+**Preferred syntax** (consistent with other media):
 ```
-url1.jpg, url2.jpg, url3.jpg
+[GLB Model]: assets/models/your-model.glb
 ```
 
-#### **YouTube videos:**
-```
-https://www.youtube.com/watch?v=VIDEO_ID
-```
-
-#### **GLB 3D models:**
+Also supported (auto-detection):
 ```
 assets/models/your-model.glb
 or
 [GLB Model](assets/models/your-model.glb)
+```
+
+> 3D models work in both card previews (auto-rotating thumbnail) and article view (fullscreen-capable viewer)
+
+#### **Images**
+
+**With caption** (markdown standard):
+```
+![My caption text](url-to-image.jpg)
+```
+> **Why the `!` ?** That's standard markdown! The `!` tells markdown it's an image.  
+> Without `!` → `[text](url)` = clickable link  
+> With `!` → `![text](url)` = embedded image (text becomes caption + alt text)
+
+**Without caption** (auto-detection):
+```
+https://picsum.photos/800/600
+or
+[Image]: https://picsum.photos/800/600
+```
+
+#### **Image Galleries**
+
+**Individual captions** (markdown syntax):
+```
+![Red car](img1.jpg), ![Blue car](img2.jpg), ![Green car](img3.jpg)
+```
+> Each image gets its own caption below it
+
+**Shared caption** (all images share one caption):
+```
+img1.jpg, img2.jpg, img3.jpg
+[Caption]: This caption applies to all three images above
+```
+> Great for photo sets where one description covers all
+
+**No captions** (simple comma-separated):
+```
+url1.jpg, url2.jpg, url3.jpg
+```
+
+#### **YouTube Videos**
+
+Auto-detected:
+```
+https://www.youtube.com/watch?v=VIDEO_ID
+or
+https://youtu.be/VIDEO_ID
 ```
 
 ### **Tags & Filtering**
