@@ -53,6 +53,7 @@
         }
 
         :root {
+            /* Colors */
             --bg: #050505;
             --bg-trans: rgba(5, 5, 5, 0.98);
             --card-bg: #111;
@@ -76,13 +77,35 @@
             --accent-personal: #00ff6a;
             --accent-prof: #00e5ff;
             --accent-projects: #ffaa00;
+
+            /* Layout */
             --brand-row-h: 36px;
             --main-row-h: 26px;
             --sub-row-h: 24px;
             --gap: 1px;
+
+            /* Border Radius */
             --card-radius: 18px;
             --card-padding: 12px;
             --media-radius: calc(var(--card-radius) - var(--card-padding));
+            --radius-md: 12px;
+            --radius-sm: 4px;
+
+            /* Spacing Scale */
+            --space-xs: 6px;
+            --space-sm: 10px;
+            --space-md: 15px;
+            --space-lg: 20px;
+            --space-xl: 30px;
+            --space-2xl: 40px;
+
+            /* Animation Durations */
+            --anim-primary: 0.5s;
+            --anim-layout: 0.4s;
+            --anim-quick: 0.3s;
+            --anim-instant: 0.2s;
+
+            /* Easing */
             --ease: cubic-bezier(0.25, 1, 0.5, 1)
         }
 
@@ -159,7 +182,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            transition: background-position .5s var(--ease), color .5s var(--ease), border-color .2s;
+            transition: background-position var(--anim-primary) var(--ease), color var(--anim-primary) var(--ease), border-color var(--anim-instant);
             text-decoration: none;
             display: inline-block;
             color: var(--text-base, var(--text-dim))
@@ -169,6 +192,44 @@
         .fill-anim:hover {
             background-position: 0 100%;
             color: var(--text-hover, #fff)
+        }
+
+        /* Simple fade animation for non-clickable headers */
+        .header-fade-anim {
+            color: var(--text-dim);
+            transition: color var(--anim-quick) ease;
+        }
+
+        .header-fade-anim:hover {
+            color: var(--text-bright);
+        }
+
+        /* Global link styling - subtle underline, lighter color, bold weight */
+        a:not(.chip):not(.nav-link):not(.fill-anim):not(.icon-btn-wrapper) {
+            color: #b8b8b8;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+            font-weight: 500;
+            line-height: 1.5;
+            padding-bottom: 2px;
+            transition: color var(--anim-quick) ease, border-bottom-color var(--anim-quick) ease;
+        }
+
+        a:not(.chip):not(.nav-link):not(.fill-anim):not(.icon-btn-wrapper):hover {
+            color: #fff;
+            border-bottom-color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Links with fill-anim keep their underline (except navigation) */
+        a.fill-anim:not(.nav-link):not(.sub-link) {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+            font-weight: 500;
+            line-height: 1.5;
+            padding-bottom: 2px;
+        }
+
+        a.fill-anim:not(.nav-link):not(.sub-link):hover {
+            border-bottom-color: rgba(255, 255, 255, 0.6);
         }
 
         h1,
@@ -198,7 +259,7 @@
             gap: var(--gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
-            transition: transform .4s var(--ease)
+            transition: transform var(--anim-layout) var(--ease)
         }
 
         #brand-name,
@@ -221,7 +282,7 @@
             letter-spacing: 2px;
             line-height: 1;
             cursor: pointer;
-            transition: height .6s cubic-bezier(.2, 0, 0, 1), opacity .4s var(--ease), transform .6s cubic-bezier(.2, 0, 0, 1), margin .6s cubic-bezier(.2, 0, 0, 1), background-position .5s var(--ease);
+            transition: height .6s cubic-bezier(.2, 0, 0, 1), opacity var(--anim-layout) var(--ease), transform .6s cubic-bezier(.2, 0, 0, 1), margin .6s cubic-bezier(.2, 0, 0, 1), background-position var(--anim-primary) var(--ease);
             opacity: 1;
             transform: translateY(0);
             margin-bottom: 0;
@@ -247,7 +308,7 @@
         #nav-stack {
             flex-direction: column;
             gap: var(--gap);
-            transition: gap .4s var(--ease)
+            transition: gap var(--anim-layout) var(--ease)
         }
 
         .nav-row {
@@ -257,7 +318,7 @@
             overflow-x: auto;
             white-space: nowrap;
             scrollbar-width: none;
-            transition: height .4s var(--ease), opacity .4s var(--ease), margin .4s var(--ease);
+            transition: height var(--anim-layout) var(--ease), opacity var(--anim-layout) var(--ease), margin var(--anim-layout) var(--ease);
             opacity: 1
         }
 
@@ -374,7 +435,7 @@
             width: 60px;
             z-index: 1002;
             transform: translateY(0);
-            transition: transform .6s cubic-bezier(.2, 0, 0, 1), opacity .4s var(--ease), height .6s cubic-bezier(.2, 0, 0, 1)
+            transition: transform .6s cubic-bezier(.2, 0, 0, 1), opacity var(--anim-layout) var(--ease), height .6s cubic-bezier(.2, 0, 0, 1)
         }
 
         #main-header.scrolled #search-controls {
@@ -390,7 +451,7 @@
             padding: 10px;
             cursor: pointer;
             fill: var(--text-muted);
-            transition: all .4s;
+            transition: all var(--anim-layout);
             transform-origin: center;
             position: relative;
             -webkit-tap-highlight-color: transparent
@@ -404,7 +465,7 @@
             background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, var(--text-muted)) 50.5%);
             background-size: 100% 205%;
             background-position: 0 0;
-            transition: background-position .5s var(--ease);
+            transition: background-position var(--anim-primary) var(--ease);
             width: 100%;
             height: 100%;
             display: block
@@ -437,7 +498,7 @@
             border-radius: var(--card-radius);
             box-shadow: 0 8px 32px rgba(0, 0, 0, .4);
             border: 1px solid rgba(255, 255, 255, .1);
-            transition: transform .4s cubic-bezier(.16, 1, .3, 1), opacity .4s ease;
+            transition: transform var(--anim-layout) cubic-bezier(.16, 1, .3, 1), opacity var(--anim-layout) ease;
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
@@ -469,7 +530,7 @@
         body.search-active footer {
             opacity: .15;
             filter: blur(8px);
-            transition: .3s;
+            transition: var(--anim-quick);
             pointer-events: none
         }
 
@@ -622,7 +683,6 @@
             font-weight: 500;
             --text-base: var(--text-subtle);
             --text-hover: #fff;
-            border-bottom: none;
         }
 
         #footer-links a:hover {
@@ -650,7 +710,6 @@
 
         #version-tag a {
             text-decoration: none;
-            border-bottom: none;
         }
 
         #version-tag a:hover {
@@ -737,12 +796,8 @@
         .layout-quote .author a {
             --text-base: var(--text-muted);
             --text-hover: #fff;
-            border-bottom: 1px dotted var(--border-strong);
-            color: var(--text-muted)
-        }
-
-        .layout-quote .author a::after {
-            background-color: var(--text-muted)
+            color: var(--text-muted);
+            /* Inherits global link underline styling */
         }
 
         .layout-quote.loading .quote-footer,
@@ -760,7 +815,7 @@
             height: 18px;
             cursor: pointer;
             opacity: .3;
-            transition: transform .4s cubic-bezier(.175, .885, .32, 1.275), opacity .4s ease, color .4s ease;
+            transition: transform var(--anim-layout) cubic-bezier(.175, .885, .32, 1.275), opacity var(--anim-layout) ease, color var(--anim-layout) ease;
             -webkit-tap-highlight-color: transparent;
             outline: 0
         }
@@ -778,7 +833,7 @@
             background: var(--card-bg-hover);
             background-image: linear-gradient(90deg, var(--card-bg-hover) 0, var(--border-hover) 50%, var(--card-bg-hover) 100%);
             background-size: 200% 100%;
-            border-radius: 4px;
+            border-radius: var(--radius-sm);
             animation: shimmer 1.5s infinite linear;
             display: block
         }
@@ -799,7 +854,7 @@
             height: 20px;
             width: 100px;
             margin: 0 auto 30px;
-            border-radius: 12px
+            border-radius: var(--radius-md)
         }
 
         .sk-line.text {
@@ -824,7 +879,7 @@
             width: 100%;
             height: 160px;
             margin-bottom: 10px;
-            border-radius: 4px
+            border-radius: var(--radius-sm)
         }
 
         .layout-grid .sk-line.title {
@@ -853,7 +908,7 @@
             position: relative;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
-            transition: background .2s, border-color .2s;
+            transition: background var(--anim-instant), border-color var(--anim-instant);
             user-select: none;
             -webkit-user-select: none;
         }
@@ -868,7 +923,7 @@
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: var(--space-xs);
             --text-base: var(--text-dim);
             --text-hover: #fff;
             font-weight: 600;
@@ -882,7 +937,7 @@
 
         /* Transition for non-fill-anim titles only */
         .layout-grid h3:not(.fill-anim) {
-            transition: color .2s ease;
+            transition: color var(--anim-instant) ease;
         }
 
         /* Trigger fill animation when hovering card */
@@ -900,7 +955,7 @@
 
         .meta-row {
             display: flex;
-            gap: 6px;
+            gap: var(--space-xs);
             margin-top: auto;
             flex-wrap: wrap;
             align-items: center;
@@ -1017,7 +1072,7 @@
         .media-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 10px;
+            gap: var(--space-sm);
             max-width: 800px;
             margin: 20px auto;
         }
@@ -1029,7 +1084,7 @@
         /* Uniform Height Gallery - Auto-adapt to tallest image */
         .media-gallery.uniform-height {
             display: flex;
-            gap: 10px;
+            gap: var(--space-sm);
             align-items: stretch;
         }
 
@@ -1088,7 +1143,7 @@
             border-radius: 50%;
             cursor: pointer;
             z-index: 10;
-            transition: all .2s;
+            transition: all var(--anim-instant);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1119,7 +1174,7 @@
             justify-content: center;
             font-size: 11px;
             padding: 4px 10px;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             background: linear-gradient(to top, #fff 50%, var(--text-faded) 50.5%);
             background-size: 100% 205%;
             background-position: 0 0;
@@ -1135,7 +1190,7 @@
             vertical-align: middle;
             font-weight: 600;
             font-family: "Jost", sans-serif;
-            transition: background-position .5s var(--ease), outline-color .3s;
+            transition: background-position var(--anim-primary) var(--ease), outline-color var(--anim-quick);
             box-sizing: border-box;
             text-decoration: none !important;
             border-bottom: none !important;
@@ -1355,14 +1410,13 @@
         }
 
         .article-body a {
-            color: var(--accent-prof);
-            text-decoration: none;
-            border-bottom: 1px dotted var(--accent-prof);
+            color: #b8b8b8;
+            /* Inherits global link underline and bold styling */
         }
 
         .article-body a:hover {
             color: #fff;
-            border-bottom-color: #fff;
+            /* Inherits global hover underline styling */
         }
 
         .back-link {
@@ -1371,7 +1425,7 @@
             color: var(--text-faded);
             text-decoration: none;
             font-size: 14px;
-            transition: color .2s;
+            transition: color var(--anim-instant);
         }
 
         .back-link:hover {
@@ -1391,7 +1445,7 @@
                 -webkit-background-clip: text;
                 background-clip: text;
                 -webkit-text-fill-color: transparent;
-                transition: background-position .5s cubic-bezier(0.4, 0, 0.2, 1);
+                transition: background-position var(--anim-primary) cubic-bezier(0.4, 0, 0.2, 1), border-bottom-color var(--anim-primary) cubic-bezier(0.4, 0, 0.2, 1);
                 display: inline-block;
             }
 
@@ -1783,30 +1837,47 @@
         </div>
     </header>
     <div class="content-container" id="app">
-        <div class="section layout-quote skeleton-visible">
-            <div class="sk-box quote"></div>
+        <!-- Skeleton loaders matching homepage: Hero + Recent Activity cards -->
+        <div class="section layout-hero skeleton-visible" style="min-height: 250px;">
+            <div class="sk-line title" style="width: 60%; max-width: 600px; height: 56px; margin: 0 auto 20px;"></div>
+            <div class="sk-line meta" style="width: 180px; height: 24px; margin: 0 auto 20px;"></div>
+            <div class="sk-line text" style="width: 80%; max-width: 700px; height: 18px; margin: 0 auto 8px;"></div>
+            <div class="sk-line text" style="width: 70%; max-width: 650px; height: 18px; margin: 0 auto 8px;"></div>
+            <div class="sk-line text short" style="width: 50%; max-width: 450px; height: 18px; margin: 0 auto 0;"></div>
         </div>
         <div class="grid-container section skeleton-visible">
             <div class="layout-grid">
-                <div class="sk-img"></div>
+                <div class="sk-img" style="border-radius: var(--media-radius);"></div>
                 <div class="sk-line title"></div>
                 <div class="sk-line text"></div>
                 <div class="sk-line text short"></div>
             </div>
             <div class="layout-grid">
-                <div class="sk-img"></div>
+                <div class="sk-img" style="border-radius: var(--media-radius);"></div>
                 <div class="sk-line title"></div>
                 <div class="sk-line text"></div>
                 <div class="sk-line text short"></div>
             </div>
             <div class="layout-grid">
-                <div class="sk-img"></div>
+                <div class="sk-img" style="border-radius: var(--media-radius);"></div>
                 <div class="sk-line title"></div>
                 <div class="sk-line text"></div>
                 <div class="sk-line text short"></div>
             </div>
             <div class="layout-grid">
-                <div class="sk-img"></div>
+                <div class="sk-img" style="border-radius: var(--media-radius);"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img" style="border-radius: var(--media-radius);"></div>
+                <div class="sk-line title"></div>
+                <div class="sk-line text"></div>
+                <div class="sk-line text short"></div>
+            </div>
+            <div class="layout-grid">
+                <div class="sk-img" style="border-radius: var(--media-radius);"></div>
                 <div class="sk-line title"></div>
                 <div class="sk-line text"></div>
                 <div class="sk-line text short"></div>
@@ -2031,15 +2102,15 @@
             if ("Home" === e) return void renderHome(); const t = db.filter(t => t.Page === e), n = document.getElementById("app"); n.innerHTML = ""; const o = !e.includes("/"); if (t.length > 0) renderRows(t, null, !0, !1, !o); else if (!childrenPagesCheck(e) && !("Personal" === e && quotesDb.length > 0)) return void (n.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn\'t exist in the database yet.</p></div>'); if ("Personal" === e && quotesDb.length > 0) { const q = document.createElement("div"); q.className = "layout-quote section", q.setAttribute("data-title", "Random Quote"), renderQuoteCard(q), n.appendChild(q) } if (o) { const t = [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))]; t.length > 0 && renderRows(t.map(e => db.find(t => t.Page === e)).filter(e => e), null, !0, !0) }
         } function childrenPagesCheck(e) { return [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))].length > 0 }
         function renderIndex() { renderNavigation(null); const e = document.getElementById("app"); e.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>'; const t = e.querySelector(".index-list"), n = [...new Set(db.map(e => e.Page).filter(e => e && "Home" !== e && "Footer" !== e))].sort(), o = {}; n.forEach(e => { const t = e.split("/")[0]; o[t] || (o[t] = []), o[t].push(e) }); for (const [e, n] of Object.entries(o)) { let o = ""; const r = e.toLowerCase(); "projects" === r ? o = "cat-projects" : "professional" === r ? o = "cat-professional" : "personal" === r && (o = "cat-personal"); let i = `<div class="index-group ${o}"><h3>${e}</h3>`; n.forEach(e => { const t = db.find(t => t.Page === e), n = t ? t.Title : e.split("/").pop(), o = e.split("/").length; i += `<a href="#${e}" class="index-link fill-anim ${o > 1 ? `depth-${o}` : ""}">\n${n} \n</a>` }), i += "</div>", t.innerHTML += i } } function renderHome() { const e = db.filter(e => "Home" === e.Page); document.getElementById("app").innerHTML = "", renderRows(e, null, !0); const t = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page), n = {}; t.forEach(e => { n[e.Page] ? n[e.Page] : n[e.Page] = e }); const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0, 6); o.length > 0 && renderRows(o, "Recent Activity", !0, !0, !1, !0) }
-        function processText(e) { if (!e) return ""; const t = e.split(/\n|<br>/); let n = [], s = !1; t.forEach(e => { let t = e.trimEnd(); if (!t) return void (s && (n.push("</ul>"), s = !1)); const o = t.match(/^(#{1,6})\s+(.*)$/); if (o) { s && (n.push("</ul>"), s = !1); const e = o[1].length, r = processSingleLine(o[2]); return void n.push(`<h${e} class="fill-anim">${r}</h${e}>`) } const r = t.match(/^(\s*)-\s+(.*)/); if (r) { s || (n.push("<ul>"), s = !0); const e = processSingleLine(r[2]); return void n.push(`<li>${e}</li>`) } s && (n.push("</ul>"), s = !1), t.startsWith(">") ? n.push(`<blockquote>${processSingleLine(t.replace(/^>\s*/, ""))}</blockquote>`) : "---" === t ? n.push("<hr>") : n.push(`<p>${processSingleLine(t)}</p>`) }); return s && n.push("</ul>"), n.join("") }
+        function processText(e) { if (!e) return ""; const t = e.split(/\n|<br>/); let n = [], s = !1; t.forEach(e => { let t = e.trimEnd(); if (!t) return void (s && (n.push("</ul>"), s = !1)); const o = t.match(/^(#{1,6})\s+(.*)$/); if (o) { s && (n.push("</ul>"), s = !1); const e = o[1].length, r = processSingleLine(o[2]); return void n.push(`<h${e} class="header-fade-anim">${r}</h${e}>`) } const r = t.match(/^(\s*)-\s+(.*)/); if (r) { s || (n.push("<ul>"), s = !0); const e = processSingleLine(r[2]); return void n.push(`<li>${e}</li>`) } s && (n.push("</ul>"), s = !1), t.startsWith(">") ? n.push(`<blockquote>${processSingleLine(t.replace(/^>\s*/, ""))}</blockquote>`) : "---" === t ? n.push("<hr>") : n.push(`<p>${processSingleLine(t)}</p>`) }); return s && n.push("</ul>"), n.join("") }
         function processSingleLine(e) { if (!e) return ""; let t = safeHTML(e); return t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"), t = t.replace(/\*(.*?)\*/g, "<em>$1</em>"), t = t.replace(/`([^`]+)`/g, "<code>$1</code>"), t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="fill-anim">$1</a>'), t }
-        function formatTitle(e, t) { if (!e) return ""; const n = e.match(/^(#{1,6})\s+(.*)$/); let o = t, r = e; return n && (o = "h" + n[1].length, r = n[2]), `<${o} class="fill-anim">${processSingleLine(r)}</${o}>` }
+        function formatTitle(e, t) { if (!e) return ""; const n = e.match(/^(#{1,6})\s+(.*)$/); let o = t, r = e; return n && (o = "h" + n[1].length, r = n[2]), `<${o} class="header-fade-anim">${processSingleLine(r)}</${o}>` }
         function renderRows(e, t, n, o, r = !1, i = !1) {
-            const s = document.getElementById("app"); if (!s) return; if (i && (e.sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)), "Recent Activity" === t && e.sort((e, t) => { const n = e.Tags && e.Tags.toLowerCase().includes("featured") ? 1 : 0; return (t.Tags && t.Tags.toLowerCase().includes("featured") ? 1 : 0) - n })), n ? t && (s.innerHTML += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="fill-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>`) : s.innerHTML = t ? `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="fill-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>` : "", 0 === e.length && !n) return void (s.innerHTML += '<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>'); let a = s.querySelector(".grid-container"); if (n) a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a); else { (o || e.some(e => !e.SectionType || "quote" !== e.SectionType && "hero" !== e.SectionType && "text" !== e.SectionType) && !r) && !a && (a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a)) } e.forEach((e, t) => {
+            const s = document.getElementById("app"); if (!s) return; if (i && (e.sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)), "Recent Activity" === t && e.sort((e, t) => { const n = e.Tags && e.Tags.toLowerCase().includes("featured") ? 1 : 0; return (t.Tags && t.Tags.toLowerCase().includes("featured") ? 1 : 0) - n })), n ? t && (s.innerHTML += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>`) : s.innerHTML = t ? `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>` : "", 0 === e.length && !n) return void (s.innerHTML += '<div class="layout-404"><h2>Nothing Found</h2><p>No entries match your query.</p></div>'); let a = s.querySelector(".grid-container"); if (n) a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a); else { (o || e.some(e => !e.SectionType || "quote" !== e.SectionType && "hero" !== e.SectionType && "text" !== e.SectionType) && !r) && !a && (a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a)) } e.forEach((e, t) => {
                 if (!e.Page || "Footer" === e.Page) return; const i = e => { const t = e.match(/^\[(.*?)\]\((.*?)\)$/); if (t) { const e = t[1], n = t[2]; if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(n)) { return `<a href="${n}" target="_blank" class="chip location" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(e)}</a>` } return `<a href="${n}" target="_blank" class="chip location link" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(e)}</a>` } return `<span class="chip" data-tag="${e}">${safeHTML(e)}</span>` }; let l = e.Media, c = e.Content || "", d = "", m = [], u = safeHTML(e.Title), p = !1; const cardMatch = c.match(/^\[card\]:\s*(.+?)(?:\n|$)/i); let cardPreview = cardMatch ? cardMatch[1].trim() : null; if (cardPreview) { c = c.replace(/^\[card\]:\s*.+?(\n|$)/i, "").trim() } const h = e.Title ? e.Title.match(/^https?:\/\/\S+$/) : null; if (h) { if (m.push(h[0]), p = !0, !l) { const t = extractMediaFromContent(e.Title); t && ("img" === t.type ? d = `<div class="row-media"><img src="${t.url}" loading="lazy"></div>` : "yt" === t.type && (d = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${t.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`), l = "title-embed") } } else u = e.Title; if (l || d) { if (!d && "title-embed" !== l) { const e = getThumbnail(l); e && (d = `<div class="row-media"><img src="${e}" loading="lazy"></div>`) } } else { const e = extractMediaFromContent(c); e && (m.push(e.url), "img" === e.type ? d = `<div class="row-media"><img src="${e.url}" loading="lazy"></div>` : "yt" === e.type && (d = !r || o ? `<div class="row-media"><img src="https://img.youtube.com/vi/${e.id}/mqdefault.jpg" loading="lazy"></div>` : `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${e.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`)) } if (!d && (o || !r)) { const t = e.Page.split("/")[0].toUpperCase(); d = `<div class="row-media placeholder"><span>${t}</span></div>` } let g = processText(c); if (!r || o) { g = cardPreview ? `<div class="grid-text-preview"><p>${processSingleLine(cardPreview)}</p></div>` : "" } let f = !l && d.includes("placeholder"), v = ""; const y = e.Page.toLowerCase(); y.startsWith("projects") ? v = "cat-projects" : y.startsWith("professional") ? v = "cat-professional" : y.startsWith("personal") && (v = "cat-personal"); let b = (e.SectionType || "card").toLowerCase(); const topLevelPages = ["home", "personal", "professional", "projects"]; if (!e.SectionType && topLevelPages.includes(e.Page.toLowerCase()) && !e.Page.includes("/")) { b = "hero" } if (!o && r && "quote" !== b && "hero" !== b) { const n = document.createElement("div"); n.className = "section layout-text", d = d.includes("embed-wrapper") || d.includes("<img") ? d.replace("row-media", "row-media article-mode") : ""; let s = ""; if (0 === t) { if (s = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">SAHIB VIRDEE</a>', e.LinkURL && (s += `<a href="${e.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`), s += '<div class="article-tags">', e.Timestamp) { const t = formatDate(e.Timestamp), n = e.Timestamp.substring(0, 7); s += `<span class="chip date" data-date="${n}" data-val="${t}">${t}</span>` } if (e.Tags) { e.Tags.split(",").map(e => e.trim()).forEach(e => s += i(e)) } const t = (e.Content || "").trim().split(/\s+/).length, n = Math.ceil(t / 200); n > 0 && (s += `<span class="chip" style="opacity:0.6; cursor:default;">${n} min read</span>`), s += "</div></div>" } const a = !p && u ? formatTitle(u, 0 === t ? "h1" : "h2") : ""; return n.innerHTML = `${d}${a}${s}<div class="article-body">${g}</div>`, void s.appendChild(n) } if (!o) {
                     if ("quote" === b) { const t = document.createElement("div"); return t.className = "layout-quote section", t.setAttribute("data-title", e.Title || ""), "random quote" !== (e.Title || "").toLowerCase() && (t.setAttribute("data-static-quote", e.Content || e.Quote || ""), t.setAttribute("data-static-author", e.Author || "Sahib Virdee")), renderQuoteCard(t), void a.appendChild(t) }
                     if ("hero" === b) { const t = document.createElement("div"); t.className = "section layout-hero"; const n = e.LinkURL || ""; if (n) { t.classList.add("clickable-block"), t.classList.add("hero-link"), t.setAttribute("data-link", n), t.setAttribute("data-target", n.startsWith("#") ? "" : "_blank") } let o = ""; if (e.Timestamp) { let t = formatDate(e.Timestamp), n = e.Timestamp.substring(0, 7); o += `<span class="chip date" data-val="${t}" onclick="event.stopPropagation(); window.location.hash='Filter:${n}'">${t}</span>` } if (e.Tags) { e.Tags.split(",").map(e => e.trim()).forEach(e => o += i(e)) } const r = o ? `<div class="hero-meta">${o}</div>` : ""; return t.innerHTML = `${formatTitle(e.Title, "h1")}${r}<p>${processText(e.Content)}</p>`, void a.appendChild(t) } if ("text" === b) { const t = document.createElement("div"); return t.className = "section layout-text", t.innerHTML = `${safeHTML(e.Title) ? formatTitle(e.Title, "h2") : ""}<p>${processText(e.Content)}</p>`, void a.appendChild(t) }
-                } const w = e.LinkURL || "", $ = e.Tags ? e.Tags.split(",").map(e => e.trim()) : []; let T = w; T || (T = `#${e.Page}`); const L = T.startsWith("#") ? "" : "_blank"; let x = ""; if (e.Timestamp || $.length > 0) { if (x = '<div class="meta-row">', e.Timestamp) { let t = formatDate(e.Timestamp); t || (t = e.Timestamp); let n = e.Timestamp.substring(0, 7); x += `<span class="chip date" data-date="${n}" data-val="${t}">${t}</span>` } $.forEach(e => x += i(e)), x += "</div>" } const C = document.createElement("div"); C.className = `layout-grid clickable-block ${v} ${f ? "has-placeholder" : ""}`, C.setAttribute("data-link", T), C.setAttribute("data-target", L); let k = u; p && (k = ""); let S = formatTitle(k, "h3"); p && (S = ""), C.innerHTML = `${d}${S}${g}${x}`, a && a.appendChild(C)
+                } const w = e.LinkURL || "", $ = e.Tags ? e.Tags.split(",").map(e => e.trim()) : []; let T = w; T || (T = `#${e.Page}`); const L = T.startsWith("#") ? "" : "_blank"; let x = ""; if (e.Timestamp || $.length > 0) { if (x = '<div class="meta-row">', e.Timestamp) { let t = formatDate(e.Timestamp); t || (t = e.Timestamp); let n = e.Timestamp.substring(0, 7); x += `<span class="chip date" data-date="${n}" data-val="${t}">${t}</span>` } $.forEach(e => x += i(e)), x += "</div>" } const C = document.createElement("div"); C.className = `layout-grid clickable-block ${v} ${f ? "has-placeholder" : ""}`, C.setAttribute("data-link", T), C.setAttribute("data-target", L); let k = u; p && (k = ""); let S = k ? `<h3 class="fill-anim">${processSingleLine(k)}</h3>` : ""; p && (S = ""), C.innerHTML = `${d}${S}${g}${x}`, a && a.appendChild(C)
             }), setTimeout(() => { "function" == typeof addCopyButtons && addCopyButtons() }, 60)
         }
         function renderQuoteCard(e) { let t, n = !1; if ("random quote" === (e.getAttribute("data-title") || "").toLowerCase()) { if (0 === quotesDb.length) return void (e.innerHTML = "Quote sheet empty."); t = quotesDb[Math.floor(Math.random() * quotesDb.length)], n = !0 } else t = { Quote: e.getAttribute("data-static-quote") || "No content.", Author: e.getAttribute("data-static-author") || "Unknown", Source: null }; let o = t.Author || "Unknown"; t.Source && t.Source.startsWith("http") ? o = `<a href="${t.Source}" target="_blank" class="fill-anim">${safeHTML(o)}</a>` : t.Source && (o += ` — ${safeHTML(t.Source)}`); const r = safeHTML((t.Quote || "").trim().replace(/^"|"$/g, "")), i = r.length; let s = "short"; i > 230 ? s = "xxl" : i > 150 ? s = "xl" : i > 100 ? s = "long" : i > 50 && (s = "medium"); let a = ""; n && (a = '<svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">\n<rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>\n<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n</svg>'), e.innerHTML = `<blockquote class="${s}">"${r}"</blockquote>\n<div class="quote-footer"><span class="author"> &mdash; ${o}</span>${a}</div>` }
@@ -2048,7 +2119,7 @@
         function getThumbnail(e) { if (!e) return null; if (e.includes("youtube.com") || e.includes("youtu.be")) { let t = e.split("v=")[1]; return t && t.includes("&") && (t = t.split("&")[0]), !t && e.includes("youtu.be") && (t = e.split("/").pop()), `https://img.youtube.com/vi/${t}/mqdefault.jpg` } return e.endsWith(".mp4") ? null : e }
         function formatDate(e) { if (!e) return ""; if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`; if (8 === (e = String(e).trim()).length && !isNaN(e)) { const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8), r = new Date(t, n - 1, o, 12, 0, 0); return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}` } const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/); if (t) { const e = parseInt(t[1]), n = parseInt(t[2]), o = parseInt(t[3]); return `${o} ${new Date(e, n - 1, o, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${e}` } if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e; const n = new Date(e); return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}` }
         function updateSEO() { const e = document.getElementById("json-ld-script"); e && e.remove(); const t = document.createElement("script"); t.id = "json-ld-script", t.type = "application/ld+json"; const n = { "@context": "https://schema.org", "@type": "ProfilePage", mainEntity: { "@type": "Person", name: "Sahib Virdee", jobTitle: "Mechanical Engineering Graduate", description: "Specializing in Design and Manufacturing.", url: "https://sahibvirdee.com/", sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"] }, hasPart: db.map(e => { if (!e.Title || !e.Content) return null; return { "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork", name: e.Title, description: e.Content.substring(0, 150) + "...", url: `https://sahibvirdee.com/#${e.Page}` } }).filter(e => e) }; t.textContent = JSON.stringify(n), document.head.appendChild(t) }
-        function renderResume() { renderNavigation("Professional/Resume"); document.getElementById("app").innerHTML = '<div id="resume-view" class="resume-container"></div>'; const e = document.getElementById("resume-view"); generateResumeJSONLD(); const t = resumeDb, n = t.filter(e => e.SectionType && "header" === e.SectionType.toLowerCase()); if (n.length > 0) { const t = n[0], o = t.Title.split("|"), r = o[0].trim(), i = o[1] ? o[1].trim() : ""; e.innerHTML += `\n<div class="resume-header section" style="position:relative;">\n<h1 class="fill-anim" style="margin-top:0;">${r}</h1>\n<div class="resume-sub fill-anim" style="animation-delay:0.1s">${i}</div>\n<div class="resume-contact" style="gap:0 ; row-gap:4px ;">\n${(t.Content || "").split("|").map(e => `<div style="display:inline-block; white-space:nowrap;">${processText(e.trim())}</div>`).join('<span class="contact-sep" style="margin:0 12px; color:#bbb; user-select:text;">|</span>')}\n</div>\n</div>` } e.innerHTML += '<div class="resume-grid section">\n<div class="resume-left"></div>\n<div class="resume-right"></div>\n</div>'; const o = e.querySelector(".resume-left"), r = e.querySelector(".resume-right"), i = {}; t.forEach(e => { if (!e.SectionType) return; const t = e.SectionType.trim().toLowerCase(), n = t.charAt(0).toUpperCase() + t.slice(1); i[n] || (i[n] = []), i[n].push(e) }); const s = (e, t, n, o) => { n && n.length > 0 && (e.innerHTML += `<div class="resume-section">\n${formatTitle(t, "h3")}\n${n.map(o).join("")}\n</div>`) }; s(o, "Education", i.Education, RenderResumeEntry), s(o, "Skills", i.Skills, RenderResumeSkill), s(r, "Professional Experience", i.Experience, RenderResumeEntry), s(r, "Projects", i.Projects || [], RenderResumeEntry), s(r, "Engineering Projects", i.Project, RenderResumeEntry) }
+        function renderResume() { renderNavigation("Professional/Resume"); document.getElementById("app").innerHTML = '<div id="resume-view" class="resume-container"></div>'; const e = document.getElementById("resume-view"); generateResumeJSONLD(); const t = resumeDb, n = t.filter(e => e.SectionType && "header" === e.SectionType.toLowerCase()); if (n.length > 0) { const t = n[0], o = t.Title.split("|"), r = o[0].trim(), i = o[1] ? o[1].trim() : ""; e.innerHTML += `\n<div class="resume-header section" style="position:relative;">\n<h1 class="header-fade-anim" style="margin-top:0;">${r}</h1>\n<div class="resume-sub header-fade-anim" style="animation-delay:0.1s">${i}</div>\n<div class="resume-contact" style="gap:0 ; row-gap:4px ;">\n${(t.Content || "").split("|").map(e => `<div style="display:inline-block; white-space:nowrap;">${processText(e.trim())}</div>`).join('<span class="contact-sep" style="margin:0 12px; color:#bbb; user-select:text;">|</span>')}\n</div>\n</div>` } e.innerHTML += '<div class="resume-grid section">\n<div class="resume-left"></div>\n<div class="resume-right"></div>\n</div>'; const o = e.querySelector(".resume-left"), r = e.querySelector(".resume-right"), i = {}; t.forEach(e => { if (!e.SectionType) return; const t = e.SectionType.trim().toLowerCase(), n = t.charAt(0).toUpperCase() + t.slice(1); i[n] || (i[n] = []), i[n].push(e) }); const s = (e, t, n, o) => { n && n.length > 0 && (e.innerHTML += `<div class="resume-section">\n${formatTitle(t, "h3")}\n${n.map(o).join("")}\n</div>`) }; s(o, "Education", i.Education, RenderResumeEntry), s(o, "Skills", i.Skills, RenderResumeSkill), s(r, "Professional Experience", i.Experience, RenderResumeEntry), s(r, "Projects", i.Projects || [], RenderResumeEntry), s(r, "Engineering Projects", i.Project, RenderResumeEntry) }
         function RenderResumeEntry(e) { let t = e.Title || "", n = ""; if (t.includes("|")) { const e = t.split("|"); t = e[0].trim(), n = e[1].trim() } const o = e.LinkURL ? `<a href="${e.LinkURL}" target="_blank" class="resume-link"><svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:middle;opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : ""; let r = e.Content || ""; r.includes("|") && (r = "- " + r.replace(/\|/g, "\n- ")), r = r.replace(/(\n|^)-\s*([^:\n]+?):/g, "$1- **$2:**"); const i = processText(r); let s = "", a = ""; if (e.Tags) { const t = e => { if ((e = e.trim()).match(/[A-Za-z]{3,}\s+\d{4}/) || e.toLowerCase().includes("present")) return { type: "date", html: safeHTML(e) }; const t = e.match(/^\[(.*?)\]\((.*?)\)$/); if (t) { const e = t[1], n = t[2]; return { type: "loc", html: `<a href="${n}" target="_blank" class="fill-anim" style="text-decoration:none; display:flex; align-items:center;">${/maps\.app\.goo\.gl|google\.com\/maps/i.test(n) ? '<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' : '<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(e)}</a>` } } return { type: "other", html: safeHTML(e) } }, n = e.Tags.includes(";") ? /(?:;|\u2022)\s*/ : /(?:;|,|\u2022)\s*/, o = e.Tags.split(n).filter(e => e.trim()), r = []; o.forEach(e => { const n = t(e); "date" !== n.type || s ? r.push(n.html) : s = n.html }), r.length > 0 && (a = r.join(", ")) } return `\n<div class="resume-entry" id="res-${e.ID || Math.random().toString(36).substr(2, 9)}">\n<div class="resume-entry-header">\n<div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">\n<div class="resume-role">${t} ${o}</div>\n<div class="resume-date-slot">${s}</div>\n</div>\n<div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">\n${n ? `<div class="resume-company">${n}</div>` : "<div></div>"}\n<div class="resume-loc-slot">${a}</div>\n</div>\n</div>\n<div class="resume-list text-content">${i}</div>\n</div>` }
         function RenderResumeSkill(e) { const t = (e.Content || "").split("|").map(e => e.trim()).filter(e => e); let n = ""; return t.forEach(e => { const t = e.indexOf(":"); if (t > -1) { const o = e.substring(0, t).trim(), r = e.substring(t + 1).trim(); n += `<div class="resume-skill-row">\n<span class="resume-skill-cat">${o}:</span> \n<span class="resume-skill-list">${r}</span>\n</div>` } else n += `<div class="resume-skill-row"><span class="resume-skill-list">${e}</span></div>` }), `\n<div class="resume-skill-block">\n${e.Title && "Technical Skills" !== e.Title ? `<div class="resume-skill-title">${e.Title}</div>` : ""}\n${n}\n</div>` }
         function generateResumeJSONLD() { const e = document.getElementById("json-ld-resume"); e && e.remove(); const t = resumeDb, n = t.filter(e => "Header" === e.SectionType); if (0 === n.length) return; const o = n[0], r = o.Title.split("|")[0].trim(), i = o.Title.split("|")[1] ? o.Title.split("|")[1].trim() : "Engineer", s = { "@context": "https://schema.org", "@type": "Person", name: r, jobTitle: i, url: "https://sahibvirdee.com/resume", description: `Resume of ${r}, ${i}.`, knowsAbout: t.filter(e => "Skills" === e.SectionType).map(e => e.Content).join(", ") }, a = document.createElement("script"); a.id = "json-ld-resume", a.type = "application/ld+json", a.textContent = JSON.stringify(s), document.head.appendChild(a) }
@@ -2276,7 +2347,7 @@
                     }
                     const level = headerMatch[1].length;
                     const content = processInlineMarkdown(headerMatch[2]);
-                    output.push(`<h${level}>${content}</h${level}>`);
+                    output.push(`<h${level} class="header-fade-anim">${content}</h${level}>`);
                     continue;
                 }
 
