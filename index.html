@@ -2056,59 +2056,12 @@
         let resumeDb = [];
         let isSearchActive = false;
 
-        // Analytics tracking helpers
-        let currentPage = null;
-        let pageStartTime = null;
-        let scrollDepthTracked = {};
-
+        // Analytics tracking helper - for intentional user actions only
         function trackEvent(eventName, eventData = {}) {
             if (window.umami) {
                 umami.track(eventName, eventData);
             }
         }
-
-        function trackPageView(page) {
-            // Track time on previous page
-            if (currentPage && pageStartTime) {
-                const timeSpent = Math.round((Date.now() - pageStartTime) / 1000);
-                if (timeSpent > 0) {
-                    trackEvent('page-time', { page: currentPage, duration: timeSpent });
-                }
-            }
-
-            // Track new pageview
-            currentPage = page;
-            pageStartTime = Date.now();
-            scrollDepthTracked = {}; // Reset scroll tracking for new page
-
-            if (window.umami) {
-                umami.track(props => ({
-                    ...props,
-                    url: window.location.pathname + '#' + page
-                }));
-            }
-        }
-
-        // Scroll depth tracking
-        function trackScrollDepth() {
-            const scrollPercent = Math.round(
-                (window.scrollY + window.innerHeight) / document.body.scrollHeight * 100
-            );
-
-            const milestones = [25, 50, 75, 100];
-            milestones.forEach(milestone => {
-                if (scrollPercent >= milestone && !scrollDepthTracked[milestone]) {
-                    scrollDepthTracked[milestone] = true;
-                    trackEvent('scroll-depth', { page: currentPage, depth: milestone });
-                }
-            });
-        }
-
-        let scrollTimeout;
-        window.addEventListener('scroll', () => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(trackScrollDepth, 100);
-        });
 
         const CACHE_KEY = 'sahib_v1_cache';
         const CONFIG = {
@@ -2299,7 +2252,7 @@
             }
 
             renderRows(n, `Search results for "${safeHTML(e)}"`, !1, !0, !1, !0)
-        } function handleRouting() { if (isSearchActive) return; const e = document.getElementById("main-header"); e && e.classList.remove("scrolled"), window.scrollTo(0, 0); clearTextSelection(); let t = window.location.hash.substring(1) || "Home"; trackPageView(t); "Index" !== t ? "Professional/Resume" !== t ? (renderNavigation("Home" === t ? null : t), t.startsWith("Filter:") ? renderFiltered(decodeURIComponent(t.split(":")[1])) : renderPage(t)) : renderResume() : renderIndex() } function renderFiltered(e) { const t = e.match(/^(\d{4})-(\d{2})(-\d{2})?$/), n = e.match(/^(\d{4})(\d{2})/); let o = e; t ? o = `${new Date(t[1], parseInt(t[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${t[1]}` : n && (o = `${new Date(n[1], parseInt(n[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${n[1]}`), renderRows(db.filter(t => (t.Timestamp || "").startsWith(e) || t.Tags && t.Tags.includes(e)), `Posts from ${safeHTML(o)}`, !1, !0, !1, !0) }
+        } function handleRouting() { if (isSearchActive) return; const e = document.getElementById("main-header"); e && e.classList.remove("scrolled"), window.scrollTo(0, 0); clearTextSelection(); let t = window.location.hash.substring(1) || "Home"; "Index" !== t ? "Professional/Resume" !== t ? (renderNavigation("Home" === t ? null : t), t.startsWith("Filter:") ? renderFiltered(decodeURIComponent(t.split(":")[1])) : renderPage(t)) : renderResume() : renderIndex() } function renderFiltered(e) { const t = e.match(/^(\d{4})-(\d{2})(-\d{2})?$/), n = e.match(/^(\d{4})(\d{2})/); let o = e; t ? o = `${new Date(t[1], parseInt(t[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${t[1]}` : n && (o = `${new Date(n[1], parseInt(n[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${n[1]}`), renderRows(db.filter(t => (t.Timestamp || "").startsWith(e) || t.Tags && t.Tags.includes(e)), `Posts from ${safeHTML(o)}`, !1, !0, !1, !0) }
         function renderPage(e) {
             if ("Home" === e) return void renderHome(); const t = db.filter(t => t.Page === e), n = document.getElementById("app"); n.innerHTML = ""; const o = !e.includes("/"); if (t.length > 0) renderRows(t, null, !0, !1, !o); else if (!childrenPagesCheck(e) && !("Personal" === e && quotesDb.length > 0)) return void (n.innerHTML = '<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn\'t exist in the database yet.</p></div>'); if ("Personal" === e && quotesDb.length > 0) { const q = document.createElement("div"); q.className = "layout-quote section", q.setAttribute("data-title", "Random Quote"), renderQuoteCard(q), n.appendChild(q) } if (o) { const t = [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))]; t.length > 0 && renderRows(t.map(e => db.find(t => t.Page === e)).filter(e => e), null, !0, !0) }
         } function childrenPagesCheck(e) { return [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))].length > 0 }
@@ -2989,7 +2942,6 @@
         // GLB Viewer Renderer
         window.renderGLBViewer = function (glbPath, isCardMode) {
             const uniqueId = 'viewer-' + Math.random().toString(36).substr(2, 9);
-            const modelName = glbPath.split('/').pop().replace('.glb', '');
 
             // Create HTML
             const html = `
@@ -3005,23 +2957,12 @@
                 </div>
             `;
 
-            // Track model load start
-            const loadStart = Date.now();
-
             // Initialize viewer after a short delay to ensure DOM is ready
             setTimeout(() => {
                 const container = document.getElementById(uniqueId);
                 if (container) {
                     const viewer = initThreeJSViewer(container, glbPath, isCardMode);
                     window._glbViewers[uniqueId] = viewer;
-
-                    // Track successful model load
-                    const loadTime = Date.now() - loadStart;
-                    trackEvent('model-load', {
-                        model: modelName,
-                        loadTime: loadTime,
-                        cardMode: isCardMode
-                    });
                 }
             }, 100);
 
