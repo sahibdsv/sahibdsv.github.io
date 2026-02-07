@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sahib Virdee | Mechanical Design Engineer Portfolio</title>
+    <title>Sahib Virdee | Mechanical Design Engineer Portfolio [UPDATED]</title>
     <link rel="canonical" href="https://sahibvirdee.com/" />
     <meta name="description"
         content="Portfolio of Sahib Virdee, a Mechanical Engineering graduate specializing in detailed CAD design, manufacturing processes, and technical documentation.">
@@ -217,6 +217,7 @@
            Excludes headers, UI chips, nav links, and footers by omission. */
         .article-body a:not(.chip),
         .layout-text a:not(.chip),
+        .resume-contact a,
         .layout-hero p a:not(.chip),
         .resume-entry a:not(.chip),
         #footer-links a,
@@ -226,7 +227,7 @@
             text-decoration-color: rgba(255, 255, 255, 0.4);
             text-decoration-thickness: 1px;
             text-underline-offset: 3px;
-            font-weight: 500;
+            font-weight: inherit;
             transition: color 0.2s ease, text-decoration-color 0.2s ease;
             /* Ensure smooth animation */
         }
@@ -1135,88 +1136,263 @@
         }
 
 
-
-        /* Media Containers - Centered with Consistent Styling */
+        /* Media Containers */
+        /* Media Containers */
         .embed-wrapper,
         .model-viewer-wrapper,
         .media-container {
             position: relative;
             width: 100%;
             max-width: none;
-            margin: 20px auto;
+            margin: 20px 0 0 0;
+            background: transparent;
+            /* Force rounding on the container itself */
             border-radius: var(--card-radius);
-            border: 1px solid rgba(255, 255, 255, 0.08);
             overflow: hidden;
-            background: var(--card-bg-dark);
+            display: block;
+        }
+
+        /* Image Container specific: remove margin from img since container has it */
+        .media-container img {
+            width: 100% !important;
+            height: auto;
+            display: block;
+            max-height: 800px;
+            object-fit: contain;
+            margin: 0 auto;
         }
 
         .embed-wrapper.video {
             aspect-ratio: 16/9;
             padding-top: 0;
             max-width: 700px;
-            /* Larger YouTube embeds */
+            margin-left: auto;
+            margin-right: auto;
+            background: transparent;
+            /* Ensure rounding persists */
+            border-radius: var(--card-radius);
+            overflow: hidden;
         }
 
         .embed-wrapper iframe {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 100% !important;
             height: 100%;
             border: 0;
             display: block;
         }
 
-        /* Image Container */
-        .media-container img {
-            width: 100%;
-            height: auto;
+        /* Standardized Caption Style (Global) */
+        .image-caption {
             display: block;
-            max-height: 600px;
-            /* Prevent images from being too tall */
-            object-fit: contain;
+            padding: 6px 12px 6px 12px;
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 13px;
+            line-height: 1.4;
+            border: none !important;
+            box-shadow: none !important;
+            text-align: center;
+            position: relative;
+            z-index: 5;
+            margin-top: 0;
         }
 
-        /* Side-by-side Images */
+        /* Gallery Layout */
         .media-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: var(--space-sm);
-            margin: 20px auto;
+            margin: 20px 0 0 0;
+            width: 100%;
         }
 
-        .media-gallery .media-container {
-            margin: 0;
+        /* Gallery Item: This acts as the "Card" for gallery items */
+        .gallery-item {
+            overflow: hidden;
+            border-radius: var(--card-radius);
+            background: var(--card-bg-dark);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            position: relative;
         }
 
-        /* Uniform Height Gallery - Auto-adapt to tallest image */
+        /* Reset styles for media INSIDE a gallery item */
+        .gallery-item img,
+        .gallery-item iframe,
+        .gallery-item canvas,
+        .gallery-item .unified-media-wrapper,
+        .gallery-item .media-container,
+        .gallery-item .embed-wrapper,
+        .gallery-item .model-viewer-wrapper {
+            width: 100% !important;
+            display: block;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            /* Let gallery-item handle the rounding */
+            background: transparent !important;
+            overflow: hidden;
+        }
+
+        /* FIX: Side-by-side YouTube needs explicit aspect-ratio to be visible */
+        .gallery-item .embed-wrapper.gallery-embed {
+            flex: 1;
+            width: 100%;
+            /* 16/9 is CRITICAL here so they have height when alone */
+            aspect-ratio: 16/9;
+            height: auto;
+            position: relative;
+            display: block;
+        }
+
+        /* Ensure they stretch if next to a tall image */
+        .media-gallery.uniform-height .gallery-item .embed-wrapper.gallery-embed {
+            height: 100%;
+        }
+
+        .gallery-item img {
+            object-fit: cover;
+            height: 100%;
+        }
+
+        /* Shared Caption Logic */
+        .media-gallery .shared-caption {
+            display: block;
+            flex-basis: 100%;
+            width: 100%;
+            padding: 4px 12px 15px 12px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 13px;
+            border: none !important;
+            background: transparent;
+            margin-top: 0 !important;
+        }
+
+        /* Uniform Height Gallery */
         .media-gallery.uniform-height {
             display: flex;
+            flex-wrap: wrap;
             gap: var(--space-sm);
             align-items: stretch;
+            padding: 0;
         }
 
         .media-gallery.uniform-height .gallery-item {
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-            border-radius: var(--card-radius);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 200px;
+            height: auto;
+            margin: 0;
         }
 
-        .media-gallery.uniform-height .gallery-item img {
+        @media (max-width: 768px) {
+            .media-gallery.uniform-height .gallery-item {
+                flex: 0 0 calc(50% - var(--space-sm));
+                max-width: calc(50% - var(--space-sm));
+                min-width: 0;
+                height: auto;
+            }
+
+            /* On mobile, allow natural aspect ratio for readability */
+            .media-gallery.uniform-height .gallery-item .unified-media-wrapper,
+            .media-gallery.uniform-height .gallery-item .embed-wrapper,
+            .media-gallery.uniform-height .gallery-item .model-viewer-wrapper {
+                height: auto;
+                aspect-ratio: 16/9;
+            }
+
+            .media-gallery.uniform-height .gallery-item img {
+                height: auto;
+                object-fit: cover;
+                aspect-ratio: 16/9;
+            }
+
+            .start-hidden {
+                opacity: 1 !important;
+                animation: none !important;
+            }
+        }
+
+        /* Desktop: Enable equal-height columns */
+        @media (min-width: 769px) {
+
+            /* 1. Reset standard items to fill height */
+            .media-gallery.uniform-height .gallery-item img,
+            .media-gallery.uniform-height .gallery-item .unified-media-wrapper,
+            .media-gallery.uniform-height .gallery-item .model-viewer-wrapper,
+            .media-gallery.uniform-height .gallery-item canvas {
+                height: 100%;
+                width: 100%;
+                object-fit: cover;
+                flex: 1;
+            }
+
+            /* 2. EXCEPTION: Do NOT strip aspect-ratio from Videos/Embeds 
+               This ensures they don't collapse to 0 height when side-by-side */
+            .media-gallery.uniform-height .gallery-item .embed-wrapper {
+                width: 100%;
+                /* Ensure it stays 16/9 so it has intrinsic height */
+                aspect-ratio: 16/9;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* 3. Ensure 3D models and wrappers align correctly */
+            .media-gallery.uniform-height .gallery-item .model-viewer-wrapper {
+                display: flex;
+                flex-direction: column;
+                aspect-ratio: auto;
+                /* Models can stretch */
+            }
+        }
+
+        /* Captions take natural space at bottom */
+        .media-gallery .gallery-item .image-caption {
+            flex: 0 0 auto;
+            width: 100%;
+            background: transparent;
+        }
+
+        /* Fix YouTube/Iframe sizing in Gallery */
+        .media-gallery .embed-wrapper iframe {
+            position: absolute;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            top: 0;
+            left: 0;
+            border-radius: 0;
+        }
+
+        /* Fix 3D Model sizing in Gallery */
+        .media-gallery .model-viewer-wrapper canvas {
             display: block;
+            width: 100%;
+            height: 100%;
+            outline: none;
         }
 
         /* 3D Model Viewer - Three.js */
         .model-viewer-wrapper {
             height: 450px;
-            opacity: 0;
-            animation: fadeIn 0.6s ease forwards;
-            animation-delay: 0.2s;
+            opacity: 1;
+            position: relative;
+            /* Card look: Dark background, rounded corners, NO border */
+            background: var(--card-bg-dark);
+            border: none;
+            border-radius: var(--card-radius);
+            box-sizing: border-box;
+        }
+
+        /* Remove background when inside a gallery (avoid double-background) */
+        .gallery-item .model-viewer-wrapper {
+            background: transparent;
+            border-radius: 0;
+            height: 100%;
         }
 
         .model-viewer-wrapper.card-preview {
@@ -1465,6 +1641,17 @@
             font-size: 14px;
         }
 
+        /* Force underlines on resume body links */
+        .resume-entry a {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .resume-contact a:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
         /* Resume metadata hierarchy - matches previous version */
         .resume-role {
             font-size: 16px;
@@ -1552,46 +1739,97 @@
         }
 
         .article-body {
-            font-size: 16px;
-            line-height: 1.7;
-            color: var(--text-main);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #d0d0d0;
         }
 
         .article-body h2 {
-            font-size: 24px;
-            margin: 40px 0 15px;
-            color: var(--text-bright);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #fff;
         }
 
         .article-body h3 {
-            font-size: 20px;
             margin: 30px 0 12px;
-            color: var(--text-dimmer);
+            font-size: 1.4rem;
+            color: #eee;
         }
 
         .article-body p {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
 
         .article-body ul,
         .article-body ol {
             margin: 15px 0;
             padding-left: 25px;
+            margin-bottom: 20px;
+            padding-left: 20px;
         }
 
         .article-body li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .article-body a {
-            color: #b8b8b8;
-            /* Inherits global link underline and bold styling */
+            color: var(--accent-light);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.2s ease;
         }
 
         .article-body a:hover {
             color: #fff;
             /* Inherits global hover underline styling */
         }
+
+        .article-body a::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            bottom: 3px;
+            /* Standardize visual position */
+            left: 0;
+            background-color: var(--accent-light);
+            /* Explicit color */
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.25s ease-out;
+            opacity: 0.7;
+            /* Match text decoration style */
+        }
+
+        .article-body a:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        /* Standardize layout-text links too */
+        .layout-hero a:not(.btn-pill):not(.chip),
+        .layout-text a:not(.btn-pill):not(.chip),
+        .article-body a:not(.btn-pill):not(.chip) {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-thickness: 1px;
+            text-decoration-color: rgba(255, 255, 255, 0.4);
+            transition: all 0.2s ease;
+            background: none;
+            /* remove legacy gradient underlines */
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .layout-hero a:not(.btn-pill):not(.chip):hover,
+        .layout-text a:not(.btn-pill):not(.chip):hover,
+        .article-body a:not(.btn-pill):not(.chip):hover {
+            color: #fff;
+            text-decoration-color: #fff;
+        }
+
 
         /* Blockquote styling */
         .article-body blockquote,
@@ -1601,9 +1839,60 @@
             margin: 20px 0;
             padding: 10px 20px;
             color: var(--text-dim);
-            font-style: italic;
+            font-style: normal;
+            /* User Request: Remove forced italic */
             background: rgba(255, 255, 255, 0.02);
         }
+
+        .article-body strong {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .article-body em {
+            font-style: italic;
+            color: #e0e0e0;
+        }
+
+        .article-body code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+            color: var(--code-fg, #e6cd69);
+            /* Monokai yellow-ish default */
+        }
+
+        .article-body pre {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: var(--card-radius);
+            overflow-x: auto;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Language tag styling */
+        .article-body pre code {
+            display: block;
+            /* ensure block display inside pre */
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .article-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--card-radius);
+            margin: 20px 0;
+            display: block;
+        }
+
+        /* 
+           Fix the article-body list spacing to match layout-text/layout-description 
+        */
 
         /* List styling - proper indentation */
         .article-body ul,
@@ -1952,126 +2241,6 @@
                 page-break-inside: avoid !important;
             }
         }
-
-        /* --- FLEXIBLE CONTENT BLOCK SYSTEM STYLES --- */
-
-        /* Media Containers (Images, Videos) */
-        .media-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin: 20px auto;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            overflow: hidden;
-            background: #1a1a1a;
-        }
-
-        .media-container img {
-            width: 100%;
-            height: auto;
-            display: block;
-            max-height: 600px;
-            object-fit: contain;
-        }
-
-        /* Image Captions */
-        .image-caption {
-            padding: 12px 16px;
-            font-size: 14px;
-            color: var(--text-dim);
-            text-align: center;
-            background: rgba(0, 0, 0, 0.3);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* YouTube Video Embeds */
-        .embed-wrapper {
-            position: relative;
-            width: 100% !important;
-            max-width: none !important;
-            margin: 20px auto;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            overflow: hidden;
-            background: #1a1a1a;
-        }
-
-        .embed-wrapper.video {
-            aspect-ratio: 16/9;
-            padding-top: 0;
-        }
-
-        .embed-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-            display: block;
-        }
-
-        /* Image Gallery - Uniform Heights */
-        .media-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 10px;
-            margin: 20px auto;
-        }
-
-        .media-gallery .media-container {
-            margin: 0;
-        }
-
-        .media-gallery.uniform-height {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: stretch;
-        }
-
-        .media-gallery.uniform-height .gallery-item {
-            flex: 1 1 200px;
-            min-width: 150px;
-            max-width: calc(50% - 5px);
-            overflow: hidden;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: #1a1a1a;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .media-gallery.uniform-height .gallery-item img {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-            display: block;
-            flex-shrink: 0;
-        }
-
-        .media-gallery.uniform-height .gallery-item .image-caption {
-            padding: 10px 12px;
-            font-size: 13px;
-            color: var(--text-dim);
-            text-align: center;
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .media-gallery .shared-caption {
-            flex-basis: 100%;
-            margin-top: -10px;
-            /* Pull closer to images (overcomes gap:10px) */
-            padding-top: 5px;
-            /* Reduce internal spacing */
-            border-top: none;
-            /* Remove separator line for cleaner look */
-            background: transparent;
-            /* Optional: make it look more like text below gallery */
-            text-align: center;
-            color: #ddd;
-        }
     </style>
 
 
@@ -2386,7 +2555,83 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
-        function initApp() { handleRouting(), window.addEventListener("hashchange", handleRouting), window.addEventListener("scroll", () => { const e = document.getElementById("main-header"); e.classList.toggle("scrolled", window.scrollY > 10) }), window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }), window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { const activeLink = row.querySelector(".active"); if (activeLink) centerNavRow(row, false) }) }, 150) } })()), document.addEventListener("click", e => { const t = document.getElementById("search-overlay"), n = document.getElementById("search-controls"); !t.classList.contains("active") || t.contains(e.target) || n.contains(e.target) || closeSearch() }), document.getElementById("app").addEventListener("click", e => { if (e.target.closest(".refresh-btn")) { trackEvent('quote-refresh'); const t = e.target.closest(".layout-quote"); if (t && !t.classList.contains("loading")) { const e = t.clientHeight; t.style.height = e + "px", t.classList.add("loading"), t.innerHTML = '<div class="sk-box quote" style="height: 100% ;"></div>', setTimeout(() => { renderQuoteCard(t), t.classList.remove("loading"), t.style.height = "auto" }, 600) } return void e.stopPropagation() } if (e.target.classList.contains("chip")) { e.stopPropagation(), isSearchActive && closeSearch(); const t = e.target.getAttribute("data-tag"), n = e.target.getAttribute("data-date"); if (n) { trackEvent('chip-click', { type: 'date', value: n }); window.location.hash = "Filter:" + n; } else if (t) { trackEvent('chip-click', { type: 'tag', value: t }); window.location.hash = "Filter:" + t; } return; } const t = e.target.closest(".clickable-block"); if (t && !e.target.classList.contains("chip")) { const e = t.getAttribute("data-link"), n = t.getAttribute("data-target"); e && ("_blank" === n ? (trackEvent('external-link', { url: e }), window.open(e, "_blank")) : (window.location.href = e, isSearchActive && closeSearch())) } }), document.addEventListener("keydown", e => { const t = "search-input" === (document.activeElement ? document.activeElement.id : ""); if (t) { if ("/" === e.key || "Escape" === e.key) return e.preventDefault(), void closeSearch() } !("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) || isSearchActive || t || (e.preventDefault(), toggleSearch()), "Escape" === e.key && (isSearchActive || document.getElementById("search-overlay").classList.contains("active") ? closeSearch() : window.location.hash && "#Home" !== window.location.hash && resetToHome()) }) }
+        function initApp() {
+            handleRouting(),
+                window.addEventListener("hashchange", handleRouting),
+                window.addEventListener("scroll", () => { const e = document.getElementById("main-header"); e.classList.toggle("scrolled", window.scrollY > 10) }),
+                window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }),
+                window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { const activeLink = row.querySelector(".active"); if (activeLink) centerNavRow(row, false) }) }, 150) } })()),
+
+                // Global Click Handler - Manages Search & Navigation
+                document.addEventListener("click", e => {
+                    const overlay = document.getElementById("search-overlay");
+                    const controls = document.getElementById("search-controls");
+                    const results = document.getElementById("search-results");
+
+                    // 1. Search Dismissal Logic
+                    // Close if clicking outside overlay, controls, AND results
+                    if (overlay.classList.contains("active")) {
+                        const isInsideSearch = overlay.contains(e.target) ||
+                            controls.contains(e.target) ||
+                            (results && results.contains(e.target));
+
+                        if (!isInsideSearch) {
+                            closeSearch();
+                        }
+                    }
+
+                    // 2. Clickable Block Navigation (Delegated)
+                    // generalized to work on document level for both #app and #search-results
+                    const block = e.target.closest(".clickable-block");
+                    if (block && !e.target.classList.contains("chip")) {
+                        const link = block.getAttribute("data-link");
+                        const target = block.getAttribute("data-target");
+
+                        if (link) {
+                            if ("_blank" === target) {
+                                trackEvent('external-link', { url: link });
+                                window.open(link, "_blank");
+                            } else {
+                                window.location.href = link;
+                                if (isSearchActive) closeSearch();
+                            }
+                        }
+                    }
+                }),
+
+                // App-specific handlers (Chip & Refresh)
+                document.getElementById("app").addEventListener("click", e => {
+                    if (e.target.closest(".refresh-btn")) {
+                        trackEvent('quote-refresh');
+                        const t = e.target.closest(".layout-quote");
+                        if (t && !t.classList.contains("loading")) {
+                            const e = t.clientHeight;
+                            t.style.height = e + "px",
+                                t.classList.add("loading"),
+                                t.innerHTML = '<div class="sk-box quote" style="height: 100% ;"></div>',
+                                setTimeout(() => { renderQuoteCard(t), t.classList.remove("loading"), t.style.height = "auto" }, 600)
+                        }
+                        return void e.stopPropagation()
+                    }
+
+                    // Chip handling (still specific to app content)
+                    if (e.target.classList.contains("chip")) {
+                        e.stopPropagation();
+                        if (isSearchActive) closeSearch();
+                        const t = e.target.getAttribute("data-tag"), n = e.target.getAttribute("data-date");
+                        if (n) {
+                            trackEvent('chip-click', { type: 'date', value: n });
+                            window.location.hash = "Filter:" + n;
+                        } else if (t) {
+                            trackEvent('chip-click', { type: 'tag', value: t });
+                            window.location.hash = "Filter:" + t;
+                        }
+                        return;
+                    }
+                }),
+
+                document.addEventListener("keydown", e => { const t = "search-input" === (document.activeElement ? document.activeElement.id : ""); if (t) { if ("/" === e.key || "Escape" === e.key) return e.preventDefault(), void closeSearch() } !("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) || isSearchActive || t || (e.preventDefault(), toggleSearch()), "Escape" === e.key && (isSearchActive || document.getElementById("search-overlay").classList.contains("active") ? closeSearch() : window.location.hash && "#Home" !== window.location.hash && resetToHome()) })
+        }
         function renderNavigation(e) { const t = document.getElementById("nav-stack"), n = document.getElementById("main-header"), o = e && "Home" !== e ? e.split("/") : [], r = o.length + 1, i = []; for (let e = 1; e <= r; e++) { const s = 1 === e ? null : o.slice(0, e - 1).join("/"), a = o.length >= e ? o[e - 1] : null; let l = []; if (l = 1 === e ? [...new Set([...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page).map(e => e.Page.split("/")[0]).filter(e => e), quotesDb.length > 0 ? "Personal" : null].filter(e => e))].sort() : [...new Set(db.filter(e => e.Page && e.Page.startsWith(s + "/")).map(t => t.Page.split("/")[e - 1]).filter(e => e))].sort(), 0 === l.length) break; const c = `nav-row-${e}`; i.push(c); let d = document.getElementById(c); const m = !d; m && (d = document.createElement("nav"), d.id = c, d.className = "nav-row level-" + (e > 1 ? "n" : "1"), a || (d.scrollLeft = 50), t.appendChild(d)); let p = ""; const u = s ? s + "/" : ""; l.forEach(t => { p += `<a href="#${u + t}" class="${1 === e ? "nav-link" : "sub-link"} fill-anim ${t === a ? "active" : ""}" onclick="closeSearch()">${safeHTML(t)}</a>` }), d.innerHTML !== p && (d.innerHTML = p), centerNavRow(d, m && !a) } t.querySelectorAll(".nav-row").forEach(e => { i.includes(e.id) || e.remove() }), updatePadding() } function centerNavRow(e, t) { if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } }
         let resizeTimer;
         let lastScrollPos = 0;
@@ -2534,7 +2779,7 @@
             };
             renderRows([textData], null, true, false);
 
-            // 3. Single Image with Caption (with markdown link in caption)
+            // 3. Single Image with Caption
             const imageData = {
                 Page: 'Demo',
                 Title: 'Image with Caption',
@@ -2570,18 +2815,66 @@
             };
             renderRows([gallerySharedData], null, true, false);
 
-            // 6. YouTube Embed
+            // 6. YouTube Embed (Single)
             const ytData = {
                 Page: 'Demo',
-                Title: 'YouTube Embed',
+                Title: 'YouTube Embed (Single)',
                 SectionType: 'Text',
                 Content: [
                     'YouTube videos embed automatically:',
                     '',
-                    'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+                    'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
+                    '[Caption]: This caption sits outside the rounded video container.'
                 ].join('\n')
             };
             renderRows([ytData], null, true, false);
+
+            // 7. Side-by-Side YouTube
+            const ytGalleryData = {
+                Page: 'Demo',
+                Title: 'Side-by-Side YouTube',
+                SectionType: 'Text',
+                Content: [
+                    'YouTube videos can be placed side-by-side using the gallery syntax:',
+                    '',
+                    'https://www.youtube.com/watch?v=aqz-KE-bpKQ, https://www.youtube.com/watch?v=aqz-KE-bpKQ',
+                    '[Caption]: Shared caption for video gallery'
+                ].join('\n')
+            };
+            renderRows([ytGalleryData], null, true, false);
+
+            // 8. 3D Models (GLB)
+            const glbData = {
+                Page: 'Demo',
+                Title: '3D Models (GLB)',
+                SectionType: 'Text',
+                Content: [
+                    '**Single Model:**',
+                    '',
+                    '[GLB Model]: assets/models/MECH2401-RubberbandCar.glb',
+                    '[Caption]: Interactive 3D Model of a Rubberband Car (Drag to rotate)',
+                    '',
+                    '**Side-by-Side Models (Interactive):**',
+                    '',
+                    'assets/models/MECH2401-RubberbandCar.glb, assets/models/MECH2401-RubberbandCar.glb',
+                    '[Caption]: Interactive 3D models (try dragging!)'
+                ].join('\n')
+            };
+            renderRows([glbData], null, true, false);
+
+            // 9. Mixed Media Gallery
+            const mixedData = {
+                Page: 'Demo',
+                Title: 'Mixed Media Gallery',
+                SectionType: 'Text',
+                Content: [
+                    'Images, Videos, and 3D Models in one row with **individual captions**:',
+                    '',
+                    '![Image Caption](https://picsum.photos/400/300), ![Video Caption](https://www.youtube.com/watch?v=aqz-KE-bpKQ), ![Model Caption](assets/models/MECH2401-RubberbandCar.glb)',
+                    '[Caption]: Truly Unified Media System (Shared Footer)'
+                ].join('\n')
+            };
+            renderRows([mixedData], null, true, false);
         }
         function detectEmbed(e) { return e.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) ? `<img src="${e}" class="inline-img zoomable" loading="lazy">` : `<a href="${e}" target="_blank">${e}</a>` }
         function extractMediaFromContent(e) { if (!e) return null; const t = e.match(/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp)/i); return t ? { type: "img", url: t[0] } : null }
@@ -2631,37 +2924,20 @@
                 lines = lines.slice(0, -1); // Remove caption line from processing
             }
 
-            // Check if this is a gallery (comma-separated images)
+            // Check if this is a gallery (comma-separated items)
             if (lines.length === 1 && lines[0].includes(',')) {
                 const parts = lines[0].split(',').map(p => p.trim());
 
-                // Gallery with individual captions: ![cap](url), ![cap2](url2)
-                const markdownImages = parts.map(part => {
-                    // Use greedy match for caption to support nested brackets/links: ![caption](url)
-                    const match = part.trim().match(/^!\[(.*)\]\(([^)]+)\)$/);
-                    if (match) {
-                        return {
-                            url: match[2].trim(),
-                            caption: match[1].trim() || null
-                        };
-                    }
-                    return null;
-                }).filter(img => img !== null);
+                // Parse every item in the list
+                const mediaItems = parts.map(part => detectMediaItem(part));
 
-                if (markdownImages.length > 1) {
+                // If ALL items are valid media, treat as gallery
+                const allValid = mediaItems.every(item => item !== null);
+
+                if (allValid && mediaItems.length > 1) {
                     return {
                         type: 'gallery',
-                        images: markdownImages,
-                        sharedCaption: null
-                    };
-                }
-
-                // Gallery with shared caption: url1, url2, url3
-                const allImages = parts.every(part => isImageURL(part));
-                if (allImages && parts.length > 1) {
-                    return {
-                        type: 'gallery',
-                        images: parts.map(url => ({ url, caption: null })),
+                        items: mediaItems, // Now contains mixed types (image, youtube, glb)
                         sharedCaption: sharedCaption
                     };
                 }
@@ -2669,7 +2945,7 @@
 
             // Check if it's a single media line
             if (lines.length === 1) {
-                const media = detectMediaType(lines[0]);
+                const media = detectMediaItem(lines[0]);
                 if (media) {
                     // Attach shared caption if present and not already captioned
                     if (sharedCaption && !media.caption) {
@@ -2686,82 +2962,63 @@
             };
         }
 
-        // Detect media type from a single line
-        function detectMediaType(line) {
-            // Trim leading/trailing whitespace for reliable matching
-            line = line.trim();
+        // Detect media type from a string (single item)
+        function detectMediaItem(text) {
+            text = text.trim();
 
-            // [GLB Model]: path syntax (preferred)
-            const glbColonMatch = line.match(/^\[GLB\s+Model\]:\s*(.+\.glb.*)$/i);
-            if (glbColonMatch) {
-                const glbPath = glbColonMatch[1].trim();
-                return {
-                    type: 'glb',
-                    url: glbPath,
-                    filename: glbPath.split('/').pop()
-                };
-            }
-
-            // [Image]: path syntax (for consistency, though images auto-detect)
-            const imgColonMatch = line.match(/^\[Image\]:\s*(.+)$/i);
-            if (imgColonMatch) {
-                const imgPath = imgColonMatch[1].trim();
-                return {
-                    type: 'image',
-                    url: imgPath,
-                    caption: null
-                };
-            }
-
-            // GLB model - markdown style [GLB Model](path)
-            const glbLinkMatch = line.match(/\[GLB\s+Model\]\(([^\)]+\.glb[^\)]*)\)/i);
-            if (glbLinkMatch) {
-                const glbPath = glbLinkMatch[1].trim();
-                return {
-                    type: 'glb',
-                    url: glbPath,
-                    filename: glbPath.split('/').pop()
-                };
-            }
-
-            // GLB model - direct mention  
-            if (line.match(/\.glb$/i) || line.match(/assets\/models\/.*\.glb/i)) {
-                const glbPath = line.startsWith('assets/') ? line : `assets/models/${line}`;
-                return {
-                    type: 'glb',
-                    url: glbPath,
-                    filename: line.split('/').pop()
-                };
-            }
-
-            // YouTube video
-            const ytId = getYouTubeID(line);
-            if (ytId) {
-                return {
-                    type: 'youtube',
-                    id: ytId,
-                    url: line
-                };
-            }
-
-            // Markdown image with caption: ![caption](url)
+            // 1. Markdown Image: ![caption](url)
             // Use greedy match for caption to support nested brackets/links
-            const markdownImgMatch = line.match(/^!\[(.*)\]\(([^)]+)\)$/);
+            const markdownImgMatch = text.match(/^!\[(.*)\]\(([^)]+)\)$/);
             if (markdownImgMatch) {
+                // Check if URL is actually a special media type (GLB/YT hidden in markdown)
+                const url = markdownImgMatch[2].trim();
+                const caption = markdownImgMatch[1].trim() || null;
+
+                // Recursively check the URL to see if it's actually a GLB or YT link
+                // This allows ![My Model](assets/model.glb) to work as a captioned model
+                const subType = detectBasicUrlType(url);
+                if (subType) {
+                    return {
+                        ...subType,
+                        caption: caption // Override/Set caption from markdown
+                    };
+                }
+
+                // Default to Image if not special
                 return {
                     type: 'image',
-                    url: markdownImgMatch[2].trim(),
-                    caption: markdownImgMatch[1].trim() || null
+                    url: url,
+                    caption: caption
                 };
             }
 
-            // Single image (plain URL)
-            if (isImageURL(line)) {
-                return {
-                    type: 'image',
-                    url: line,
-                    caption: null
-                };
+            // 2. Direct URL or Special Syntax
+            return detectBasicUrlType(text);
+        }
+
+        // Helper to detect type from a raw URL or specific tag syntax (without markdown wrapper)
+        function detectBasicUrlType(text) {
+            // [GLB Model]: path syntax (Legacy/Explicit)
+            const glbColonMatch = text.match(/^\[GLB\s+Model\]:\s*(.+\.glb.*)$/i);
+            if (glbColonMatch) {
+                return { type: 'glb', url: glbColonMatch[1].trim() };
+            }
+
+            // GLB file extension
+            if (text.match(/\.glb$/i) || text.match(/assets\/models\/.*\.glb/i)) {
+                const url = text.startsWith('assets/') ? text : `assets/models/${text}`;
+                return { type: 'glb', url: url };
+            }
+
+            // YouTube
+            const ytId = getYouTubeID(text);
+            if (ytId) {
+                return { type: 'youtube', id: ytId, url: text };
+            }
+
+            // Image URL
+            if (isImageURL(text)) {
+                return { type: 'image', url: text, caption: null };
             }
 
             return null;
@@ -2802,6 +3059,64 @@
             return null;
         }
 
+        // Unified Media Renderer (Single Source of Truth)
+        function renderUnifiedMediaItem(item, isGallery = false) {
+            let mediaHTML = '';
+            let captionHTML = '';
+            // For gallery embeds, we use a specific class to handle flex height
+            const embedClass = isGallery ? 'embed-wrapper video gallery-embed' : 'embed-wrapper video';
+
+            // 1. Generate Media HTML
+            if (item.type === 'image') {
+                const style = isGallery ? 'style="height:100%; width:100%; object-fit:cover;"' : '';
+                mediaHTML = `<img src="${item.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style}>`;
+
+                if (!isGallery) {
+                    // Wrap single images in the standard container to get the Border Radius
+                    mediaHTML = `<div class="media-container">${mediaHTML}</div>`;
+                }
+
+            } else if (item.type === 'youtube') {
+                const vidID = item.id || getYouTubeID(item.url);
+                mediaHTML = `<div class="${embedClass}">
+                        <iframe src="https://www.youtube-nocookie.com/embed/${vidID}?modestbranding=1&rel=0" 
+                            title="YouTube video player" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            referrerpolicy="strict-origin-when-cross-origin" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>`;
+
+            } else if (item.type === 'glb') {
+                if (window.renderGLBViewer) {
+                    // renderGLBViewer returns a div with class "model-viewer-wrapper" which has border-radius
+                    mediaHTML = window.renderGLBViewer(item.url, false);
+                }
+            }
+
+            // 2. Generate Caption HTML
+            if (item.caption) {
+                // If it's a single item, we add a small top margin to separate it from the rounded media
+                const captionStyle = isGallery ? '' : 'style="margin-top: 4px;"';
+                captionHTML = `<div class="image-caption" ${captionStyle}>${processInlineMarkdown(item.caption)}</div>`;
+            }
+
+            // 3. Assembly
+            if (isGallery) {
+                // In gallery, the gallery-item handles the rounding and clipping
+                return `<div class="gallery-item">
+                    ${mediaHTML}
+                    ${captionHTML}
+                </div>`;
+            } else {
+                // Single Item:
+                // We return them STACKED. 
+                // The mediaHTML (div) handles its own border-radius.
+                // The captionHTML (div) sits underneath it.
+                return `${mediaHTML}${captionHTML}`;
+            }
+        }
         // Render a block as HTML
         window.renderContentBlock = function (block, index) {
             if (!block) return '';
@@ -2812,34 +3127,28 @@
                     return processMarkdown(block.content);
 
                 case 'image':
-                    const altText = block.caption || `Image ${index + 1}`;
-                    return `<div class="media-container">
-                        <img src="${block.url}" alt="${altText}" loading="lazy">
-                        ${block.caption ? `<div class="image-caption">${processInlineMarkdown(block.caption)}</div>` : ''}
-                    </div>`;
+                case 'youtube':
+                case 'glb':
+                    return renderUnifiedMediaItem(block, false);
 
                 case 'gallery':
-                    return renderGallery(block.images, block.sharedCaption);
-
-                case 'youtube':
-                    return `<div class="embed-wrapper video">
-                        <iframe src="https://www.youtube-nocookie.com/embed/${block.id}?modestbranding=1&rel=0&origin=${window.location.origin}" 
-                            title="YouTube video player" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            referrerpolicy="strict-origin-when-cross-origin" 
-                            allowfullscreen>
-                        </iframe>
-                    </div>`;
-
-                case 'glb':
-                    // Use the renderGLBViewer function
-                    return window.renderGLBViewer ? window.renderGLBViewer(block.url, false) : '';
+                    // Unified Gallery Renderer
+                    return renderUnifiedGallery(block.items, block.sharedCaption);
 
                 default:
                     return '';
             }
-        };
+        }
+
+        // Unified Gallery Renderer (Images, YT, GLB)
+        function renderUnifiedGallery(items, sharedCaption) {
+            const galleryHTML = items.map(item => renderUnifiedMediaItem(item, true)).join('');
+
+            return `<div class="media-gallery uniform-height">
+                ${galleryHTML}
+            </div>
+            ${sharedCaption ? `<div class="image-caption shared-caption">${processInlineMarkdown(sharedCaption)}</div>` : ''}`;
+        }
 
         // Enhanced markdown processor with nested list support
         function processMarkdown(text) {
@@ -3119,7 +3428,7 @@
 
             // Setup scene
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x151515);
+            // scene.background = null; // Transparent background
 
             // Setup camera - adjust position for narrower FOV in card mode
             const camera = new THREE.PerspectiveCamera(
@@ -3129,16 +3438,17 @@
                 1000
             );
             // Card mode needs camera further back due to narrower FOV
-            camera.position.set(isCardMode ? 3 : 2, isCardMode ? 2 : 1.5, isCardMode ? 4 : 3);
+            // Lower Y to 0.8 to center model vertically better (reduce gap at top)
+            camera.position.set(isCardMode ? 3 : 2, isCardMode ? 2 : 0.8, isCardMode ? 4 : 3);
             camera.lookAt(0, 0, 0); // Point camera at model center
 
             // Setup renderer with better colors
             const renderer = new THREE.WebGLRenderer({
                 canvas,
                 antialias: true,
-                alpha: false
+                alpha: true // Enable transparency so card bg shows through
             });
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setSize(container.clientWidth, container.clientHeight, false); // false prevents setting inline style
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.2; // Boost exposure for vivid colors
@@ -3246,7 +3556,7 @@
             function onResize() {
                 camera.aspect = container.clientWidth / container.clientHeight;
                 camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
+                renderer.setSize(container.clientWidth, container.clientHeight, false); // false prevents setting inline style
             }
             window.addEventListener('resize', onResize);
 
@@ -3286,6 +3596,12 @@
                 if (container) {
                     const viewer = initThreeJSViewer(container, glbPath, isCardMode);
                     window._glbViewers[uniqueId] = viewer;
+
+                    // Robust Resize Handling (fixes fullscreen exit gap)
+                    const resizeObserver = new ResizeObserver(() => {
+                        viewer.onResize();
+                    });
+                    resizeObserver.observe(container);
                 }
             }, 100);
 
@@ -3361,8 +3677,11 @@
                         btn.title = 'Fullscreen';
                     }
 
-                    // Resize renderer back to normal
-                    viewer.onResize();
+                    // Force resize back to normal dimensions
+                    // We need to wait a tick for the browser to restore the DOM layout
+                    requestAnimationFrame(() => {
+                        viewer.onResize();
+                    });
                 });
             }
         });
