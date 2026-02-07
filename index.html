@@ -2742,10 +2742,91 @@
         function getThumbnail(e) { if (!e) return null; if (e.includes("youtube.com") || e.includes("youtu.be")) { let t = e.split("v=")[1]; return t && t.includes("&") && (t = t.split("&")[0]), !t && e.includes("youtu.be") && (t = e.split("/").pop()), `https://img.youtube.com/vi/${t}/mqdefault.jpg` } return e.endsWith(".mp4") ? null : e }
         function formatDate(e) { if (!e) return ""; if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`; if (8 === (e = String(e).trim()).length && !isNaN(e)) { const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8), r = new Date(t, n - 1, o, 12, 0, 0); return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}` } const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/); if (t) { const e = parseInt(t[1]), n = parseInt(t[2]), o = parseInt(t[3]); return `${o} ${new Date(e, n - 1, o, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${e}` } if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e; const n = new Date(e); return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}` }
         function updateSEO() { const e = document.getElementById("json-ld-script"); e && e.remove(); const t = document.createElement("script"); t.id = "json-ld-script", t.type = "application/ld+json"; const n = { "@context": "https://schema.org", "@type": "ProfilePage", mainEntity: { "@type": "Person", name: "Sahib Virdee", jobTitle: "Mechanical Engineering Graduate", description: "Specializing in Design and Manufacturing.", url: "https://sahibvirdee.com/", sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"] }, hasPart: db.map(e => { if (!e.Title || !e.Content) return null; return { "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork", name: e.Title, description: e.Content.substring(0, 150) + "...", url: `https://sahibvirdee.com/#${e.Page}` } }).filter(e => e) }; t.textContent = JSON.stringify(n), document.head.appendChild(t) }
-        function renderResume() { renderNavigation("Professional/Resume"); document.getElementById("app").innerHTML = '<div id="resume-view" class="resume-container"></div>'; const e = document.getElementById("resume-view"); generateResumeJSONLD(); const t = resumeDb, n = t.filter(e => e.SectionType && "header" === e.SectionType.toLowerCase()); if (n.length > 0) { const t = n[0], o = t.Title.split("|"), r = o[0].trim(), i = o[1] ? o[1].trim() : ""; e.innerHTML += `\n<div class="resume-header section" style="position:relative;">\n<h1 class="header-fade-anim" style="margin-top:0;">${r}</h1>\n<div class="resume-sub header-fade-anim" style="animation-delay:0.1s">${i}</div>\n<div class="resume-contact" style="gap:0 ; row-gap:4px ;">\n${(t.Content || "").split("|").map(e => `<div style="display:inline-block; white-space:nowrap;">${processContentWithBlocks(e.trim())}</div>`).join('<span class="contact-sep" style="margin:0 12px; color:#bbb; user-select:text;">|</span>')}\n</div>\n</div>` } e.innerHTML += '<div class="resume-grid section">\n<div class="resume-left"></div>\n<div class="resume-right"></div>\n</div>'; const o = e.querySelector(".resume-left"), r = e.querySelector(".resume-right"), i = {}; t.forEach(e => { if (!e.SectionType) return; const t = e.SectionType.trim().toLowerCase(), n = t.charAt(0).toUpperCase() + t.slice(1); i[n] || (i[n] = []), i[n].push(e) }); const s = (e, t, n, o) => { n && n.length > 0 && (e.innerHTML += `<div class="resume-section">\n${formatTitle(t, "h3")}\n${n.map(o).join("")}\n</div>`) }; s(o, "Education", i.Education, RenderResumeEntry), s(o, "Skills", i.Skills, RenderResumeSkill), s(r, "Professional Experience", i.Experience, RenderResumeEntry), s(r, "Projects", i.Projects || [], RenderResumeEntry), s(r, "Engineering Projects", i.Project, RenderResumeEntry) }
+        function formatSectionTitle(type) {
+            if (!type) return null;
+            const normalized = type.toLowerCase().replace(/^#/, '');
+            if (normalized === 'header') return null;
+            // Replace - with space, and Title Case
+            return normalized.split(/[-_ ]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
+        function renderResume() {
+            renderNavigation("Professional/Resume");
+            const app = document.getElementById("app");
+            app.innerHTML = '<div id="resume-view" class="resume-container"></div>';
+            const resumeView = document.getElementById("resume-view");
+            generateResumeJSONLD();
+
+            const data = resumeDb;
+
+            // Helper to get normalized section type
+            const getSection = (e) => (e.SectionType || "").toLowerCase().replace(/^#/, '');
+
+            // 1. Render Header
+            const headerData = data.find(e => getSection(e) === 'header');
+            if (headerData) {
+                const parts = (headerData.Title || "").split("|");
+                const name = parts[0].trim();
+                const sub = parts[1] ? parts[1].trim() : "";
+                const contacts = (headerData.Content || "").split("|")
+                    .map(e => `<div style="display:inline-block; white-space:nowrap;">${processContentWithBlocks(e.trim())}</div>`)
+                    .join('<span class="contact-sep" style="margin:0 12px; color:#bbb; user-select:text;">|</span>');
+
+                resumeView.innerHTML += `
+                <div class="resume-header section" style="position:relative;">
+                    <h1 class="header-fade-anim" style="margin-top:0;">${name}</h1>
+                    <div class="resume-sub header-fade-anim" style="animation-delay:0.1s">${sub}</div>
+                    <div class="resume-contact" style="gap:0 ; row-gap:4px ;">
+                        ${contacts}
+                    </div>
+                </div>`;
+            }
+
+            // 2. Setup Grid
+            resumeView.innerHTML += `
+            <div class="resume-grid section">
+                <div class="resume-left"></div>
+                <div class="resume-right"></div>
+            </div>`;
+
+            const leftCol = resumeView.querySelector(".resume-left");
+            const rightCol = resumeView.querySelector(".resume-right");
+
+            // 3. Group and Render Sections
+            const leftSections = ['education', 'skills', 'awards', 'languages', 'certifications', 'interests'];
+
+            // Get unique section types in order of appearance
+            const sectionTypes = [...new Set(data.map(e => e.SectionType))].filter(t => t && getSection({ SectionType: t }) !== 'header');
+
+            sectionTypes.forEach(type => {
+                const sections = data.filter(e => e.SectionType === type);
+                if (sections.length === 0) return;
+
+                const normalized = getSection({ SectionType: type });
+                const targetCol = leftSections.some(ls => normalized.startsWith(ls)) ? leftCol : rightCol;
+                const formattedTitle = formatSectionTitle(type);
+
+                const sectionHTML = `
+                <div class="resume-section">
+                    ${formattedTitle ? formatTitle(formattedTitle, "h3") : ""}
+                    ${sections.map(s => {
+                    return normalized.includes('skill') ? RenderResumeSkill(s) : RenderResumeEntry(s);
+                }).join("")}
+                </div>`;
+
+                targetCol.innerHTML += sectionHTML;
+            });
+        }
         function RenderResumeEntry(e) { let t = e.Title || "", n = ""; if (t.includes("|")) { const e = t.split("|"); t = e[0].trim(), n = e[1].trim() } const o = e.LinkURL ? `<a href="${e.LinkURL}" target="_blank" class="resume-link"><svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:middle;opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : ""; let r = e.Content || ""; const i = processContentWithBlocks(r); let s = "", a = ""; if (e.Tags) { const t = e => { if ((e = e.trim()).match(/[A-Za-z]{3,}\s+\d{4}/) || e.toLowerCase().includes("present")) return { type: "date", html: safeHTML(e) }; const t = e.match(/^\[(.*?)\]\((.*?)\)$/); if (t) { const e = t[1], n = t[2]; return { type: "loc", html: `<a href="${n}" target="_blank" style="text-decoration:none; display:flex; align-items:center;">${/maps\.app\.goo\.gl|google\.com\/maps/i.test(n) ? '<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' : '<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(e)}</a>` } } return { type: "other", html: safeHTML(e) } }, n = e.Tags.includes(";") ? /(?:;|\u2022)\s*/ : /(?:;|,|\u2022)\s*/, o = e.Tags.split(n).filter(e => e.trim()), r = []; o.forEach(e => { const n = t(e); "date" !== n.type || s ? r.push(n.html) : s = n.html }), r.length > 0 && (a = r.join(", ")) } return `\n<div class="resume-entry" id="res-${e.ID || Math.random().toString(36).substr(2, 9)}">\n<div class="resume-entry-header">\n<div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">\n<div class="resume-role">${t} ${o}</div>\n<div class="resume-date-slot">${s}</div>\n</div>\n<div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">\n${n ? `<div class="resume-company">${n}</div>` : "<div></div>"}\n<div class="resume-loc-slot">${a}</div>\n</div>\n</div>\n<div class="resume-list text-content">${i}</div>\n</div>` }
-        function RenderResumeSkill(e) { const t = (e.Content || "").split("|").map(e => e.trim()).filter(e => e); let n = ""; return t.forEach(e => { const t = e.indexOf(":"); if (t > -1) { const o = e.substring(0, t).trim(), r = e.substring(t + 1).trim(); n += `<div class="resume-skill-row">\n<span class="resume-skill-cat">${o}:</span> \n<span class="resume-skill-list">${r}</span>\n</div>` } else n += `<div class="resume-skill-row"><span class="resume-skill-list">${e}</span></div>` }), `\n<div class="resume-skill-block">\n${e.Title && "Technical Skills" !== e.Title ? `<div class="resume-skill-title">${e.Title}</div>` : ""}\n${n}\n</div>` }
-        function generateResumeJSONLD() { const e = document.getElementById("json-ld-resume"); e && e.remove(); const t = resumeDb, n = t.filter(e => "Header" === e.SectionType); if (0 === n.length) return; const o = n[0], r = o.Title.split("|")[0].trim(), i = o.Title.split("|")[1] ? o.Title.split("|")[1].trim() : "Engineer", s = { "@context": "https://schema.org", "@type": "Person", name: r, jobTitle: i, url: "https://sahibvirdee.com/resume", description: `Resume of ${r}, ${i}.`, knowsAbout: t.filter(e => "Skills" === e.SectionType).map(e => e.Content).join(", ") }, a = document.createElement("script"); a.id = "json-ld-resume", a.type = "application/ld+json", a.textContent = JSON.stringify(s), document.head.appendChild(a) }
+        function RenderResumeSkill(e) { const t = (e.Content || "").split("|").map(e => e.trim()).filter(e => e); let n = ""; return t.forEach(e => { const t = e.indexOf(":"); if (t > -1) { const o = e.substring(0, t).trim(), r = e.substring(t + 1).trim(); n += `<div class="resume-skill-row">\n<span class="resume-skill-cat">${o}:</span> \n<span class="resume-skill-list">${r}</span>\n</div>` } else n += `<div class="resume-skill-row"><span class="resume-skill-list">${e}</span></div>` }), `\n<div class="resume-skill-block">\n${e.Title ? `<div class="resume-skill-title">${e.Title}</div>` : ""}\n${n}\n</div>` }
+        function generateResumeJSONLD() {
+            const e = document.getElementById("json-ld-resume"); e && e.remove();
+            const t = resumeDb, n = t.filter(e => e.SectionType && e.SectionType.toLowerCase().startsWith("#header"));
+            if (0 === n.length) return;
+            const o = n[0], r = o.Title.split("|")[0].trim(), i = o.Title.split("|")[1] ? o.Title.split("|")[1].trim() : "Engineer",
+                s = { "@context": "https://schema.org", "@type": "Person", name: r, jobTitle: i, url: "https://sahibvirdee.com/resume", description: `Resume of ${r}, ${i}.`, knowsAbout: t.filter(e => e.SectionType && e.SectionType.toLowerCase().includes("skill")).map(e => e.Content).join(", ") },
+                a = document.createElement("script"); a.id = "json-ld-resume", a.type = "application/ld+json", a.textContent = JSON.stringify(s), document.head.appendChild(a)
+        }
         // === DEMO PAGE RENDERER ===
         function renderDemo() {
             const app = document.getElementById('app');
