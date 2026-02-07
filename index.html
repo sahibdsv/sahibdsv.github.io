@@ -205,32 +205,87 @@
         }
 
         /* Global link styling - subtle underline, lighter color, bold weight */
-        a:not(.chip):not(.nav-link):not(.fill-anim):not(.icon-btn-wrapper) {
-            color: #b8b8b8;
+        /* Global Reset for Links */
+        a {
             text-decoration: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-            font-weight: 500;
-            line-height: 1.5;
-            padding-bottom: 2px;
-            transition: color var(--anim-quick) ease, border-bottom-color var(--anim-quick) ease;
+            color: inherit;
+            transition: color 0.2s ease, text-decoration-color 0.2s ease;
         }
 
-        a:not(.chip):not(.nav-link):not(.fill-anim):not(.icon-btn-wrapper):hover {
+        /* SCOPED Standard Link Styling
+           Only targets body content, resume entries, and text layouts. 
+           Excludes headers, UI chips, nav links, and footers by omission. */
+        .article-body a:not(.chip),
+        .layout-text a:not(.chip),
+        .layout-hero p a:not(.chip),
+        .resume-entry a:not(.chip),
+        #footer-links a,
+        .layout-quote .author a {
+            color: #e0e0e0;
+            text-decoration: underline;
+            text-decoration-color: rgba(255, 255, 255, 0.4);
+            text-decoration-thickness: 1px;
+            text-underline-offset: 3px;
+            font-weight: 500;
+            transition: color 0.2s ease, text-decoration-color 0.2s ease;
+            /* Ensure smooth animation */
+        }
+
+        .article-body a:not(.chip):hover,
+        .layout-text a:not(.chip):hover,
+        .layout-hero p a:not(.chip):hover,
+        .resume-entry a:not(.chip):hover,
+        #footer-links a:hover,
+        .layout-quote .author a:hover {
             color: #fff;
-            border-bottom-color: rgba(255, 255, 255, 0.6);
+            text-decoration-color: #fff;
         }
 
-        /* Links with fill-anim keep their underline (except navigation) */
-        a.fill-anim:not(.nav-link):not(.sub-link) {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+        /* Make Author Link match Standard Links but keep layout */
+        .author-link {
+            color: #e0e0e0;
+            text-decoration: underline;
+            text-decoration-color: rgba(255, 255, 255, 0.4);
+            text-decoration-thickness: 1px;
+            text-underline-offset: 3px;
+            display: inline-block;
+            /* Fixes spacing/alignment issue */
+        }
+
+        .author-link:hover {
+            color: #fff;
+            text-decoration-color: #fff;
+        }
+
+        /* REFINED CHIP STYLING (Tags & Dates)
+           Standard "Chip" look: Pill shape, no jump animation. */
+        .chip,
+        .chip.date {
+            display: inline-block;
+            padding: 4px 12px;
+            margin-right: 8px;
+            font-size: 12px;
             font-weight: 500;
-            line-height: 1.5;
-            padding-bottom: 2px;
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            /* Pill shape */
+            background: rgba(255, 255, 255, 0.03);
+            text-decoration: none !important;
+            transition: all 0.2s ease;
+            -webkit-text-fill-color: initial !important;
+            line-height: normal;
         }
 
-        a.fill-anim:not(.nav-link):not(.sub-link):hover {
-            border-bottom-color: rgba(255, 255, 255, 0.6);
+        .chip:hover,
+        .chip.date:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            text-decoration: none !important;
+            /* No transform/jump */
         }
+
 
         h1,
         h2,
@@ -706,6 +761,14 @@
             grid-column: 1 / -1;
         }
 
+        .layout-text {
+            width: 100%;
+            max-width: none;
+            margin-left: auto;
+            margin-right: auto;
+            grid-column: 1 / -1;
+        }
+
         /* --- FOOTER STYLES --- */
         footer {
             padding: 6px 15px 30px 15px;
@@ -735,9 +798,9 @@
 
         #footer-links a {
             font-size: 14px;
-            color: var(--text-muted);
+            /* color: var(--text-muted); REPLACED by global scoped rule */
             line-height: 1;
-            text-decoration: none;
+            /* text-decoration: none; REPLACED by global scoped rule */
             font-weight: 500;
             --text-base: var(--text-subtle);
             --text-hover: #fff;
@@ -832,12 +895,7 @@
             line-height: normal
         }
 
-        .layout-quote .author a {
-            --text-base: var(--text-muted);
-            --text-hover: #fff;
-            color: var(--text-muted);
-            /* Inherits global link underline styling */
-        }
+        /* .layout-quote .author a removed to inherit standard link styles */
 
         .layout-quote.loading .quote-footer,
         .layout-quote.loading blockquote {
@@ -1072,7 +1130,7 @@
         .media-container {
             position: relative;
             width: 100%;
-            max-width: 800px;
+            max-width: none;
             margin: 20px auto;
             border-radius: var(--card-radius);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1112,7 +1170,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: var(--space-sm);
-            max-width: 800px;
             margin: 20px auto;
         }
 
@@ -1180,6 +1237,18 @@
             /* Fix mobile aspect ratio - shorter height looks better on narrow screens */
             .model-viewer-wrapper:not(.card-preview) {
                 height: 300px;
+            }
+        }
+
+        /* Desktop: Enable interaction for Article View models (User Request) */
+        @media (min-width: 769px) {
+            .model-viewer-wrapper:not(.card-preview) canvas {
+                pointer-events: auto !important;
+                cursor: grab;
+            }
+
+            .model-viewer-wrapper:not(.card-preview) canvas:active {
+                cursor: grabbing;
             }
         }
 
@@ -1518,6 +1587,87 @@
             /* Inherits global hover underline styling */
         }
 
+        /* Blockquote styling */
+        .article-body blockquote,
+        .layout-hero blockquote,
+        .layout-text blockquote {
+            border-left: 3px solid var(--text-muted);
+            margin: 20px 0;
+            padding: 10px 20px;
+            color: var(--text-dim);
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* List styling - proper indentation */
+        .article-body ul,
+        .article-body ol,
+        .layout-hero ul,
+        .layout-hero ol,
+        .layout-text ul,
+        .layout-text ol {
+            margin: 15px 0;
+            padding-left: 24px;
+        }
+
+        .article-body li,
+        .layout-hero li,
+        .layout-text li {
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        /* Nested lists - additional indent */
+        .article-body ul ul,
+        .article-body ol ol,
+        .layout-hero ul ul,
+        .layout-text ul ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        /* Checkbox styling */
+        .checkbox {
+            display: inline-flex;
+            /* Use Flexbox for perfect centering */
+            justify-content: center;
+            align-items: center;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--text-muted);
+            border-radius: 3px;
+            margin-right: 8px;
+            vertical-align: middle;
+            position: relative;
+            top: -2px;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox.checked {
+            background: #fff;
+            border-color: #fff;
+        }
+
+        .checkbox.checked::after {
+            content: '';
+            width: 4px;
+            height: 8px;
+            border: solid #000;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            margin-top: -2px;
+            /* Slight visual optical adjustment */
+        }
+
+        /* Checkbox list items - no bullet */
+        .article-body li.checkbox-item,
+        .layout-hero li.checkbox-item,
+        .layout-text li.checkbox-item {
+            list-style: none;
+            margin-left: -24px;
+            padding-left: 0;
+        }
+
         .back-link {
             display: inline-block;
             margin-bottom: 20px;
@@ -1533,23 +1683,10 @@
 
         /* --- PRINT STYLES (Restored) --- */
 
-        /* Resume Links - Gradient text fill animation (SCREEN ONLY) */
+        /* Resume Links - Standardized */
         @media screen {
             #resume-view a:not(.btn-pill):not(.chip) {
-                --text-base: var(--text-faded);
-                --text-hover: #fff;
-                background: linear-gradient(to top, var(--text-hover, #fff) 50%, var(--text-base, var(--text-faded)) 50.5%);
-                background-size: 100% 205%;
-                background-position: 0 0;
-                -webkit-background-clip: text;
-                background-clip: text;
-                -webkit-text-fill-color: transparent;
-                transition: background-position var(--anim-primary) cubic-bezier(0.4, 0, 0.2, 1), border-bottom-color var(--anim-primary) cubic-bezier(0.4, 0, 0.2, 1);
-                display: inline-block;
-            }
-
-            #resume-view a:not(.btn-pill):not(.chip):hover {
-                background-position: 0 100%;
+                transition: color 0.2s ease, text-decoration-color 0.2s ease;
             }
         }
 
@@ -1845,8 +1982,8 @@
         /* YouTube Video Embeds */
         .embed-wrapper {
             position: relative;
-            width: 100%;
-            max-width: 700px;
+            width: 100% !important;
+            max-width: none !important;
             margin: 20px auto;
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1874,7 +2011,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 10px;
-            max-width: 800px;
             margin: 20px auto;
         }
 
@@ -1884,24 +2020,51 @@
 
         .media-gallery.uniform-height {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             align-items: stretch;
         }
 
         .media-gallery.uniform-height .gallery-item {
-            flex: 1;
-            min-width: 0;
+            flex: 1 1 200px;
+            min-width: 150px;
+            max-width: calc(50% - 5px);
             overflow: hidden;
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
         }
 
         .media-gallery.uniform-height .gallery-item img {
             width: 100%;
-            height: 100%;
+            height: auto;
             object-fit: cover;
             display: block;
+            flex-shrink: 0;
+        }
+
+        .media-gallery.uniform-height .gallery-item .image-caption {
+            padding: 10px 12px;
+            font-size: 13px;
+            color: var(--text-dim);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .media-gallery .shared-caption {
+            flex-basis: 100%;
+            margin-top: -10px;
+            /* Pull closer to images (overcomes gap:10px) */
+            padding-top: 5px;
+            /* Reduce internal spacing */
+            border-top: none;
+            /* Remove separator line for cleaner look */
+            background: transparent;
+            /* Optional: make it look more like text below gallery */
+            text-align: center;
+            color: #ddd;
         }
     </style>
 
@@ -1984,6 +2147,7 @@
             </div>
         </div>
     </div>
+    <div id="search-results" class="content-container" style="display: none; margin-top: 20px;"></div>
     <footer>
         <div id="footer-links"></div>
     </footer>
@@ -2072,10 +2236,9 @@
 
         // App Initialization
         const init = () => {
-            // Demo mode disabled
-            if (window.location.hash.toLowerCase() === '#demo' || window.location.hash.toLowerCase() === '#test') {
-                console.log('Demo Mode Disabled');
-                resetToHome();
+            // Demo mode check
+            if (window.location.hash.toLowerCase() === '#demo') {
+                renderDemo();
                 return;
             }
 
@@ -2218,66 +2381,202 @@
                 .replace(/'/g, '&#039;');
         }
         function initApp() { handleRouting(), window.addEventListener("hashchange", handleRouting), window.addEventListener("scroll", () => { const e = document.getElementById("main-header"); e.classList.toggle("scrolled", window.scrollY > 10) }), window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }), window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { const activeLink = row.querySelector(".active"); if (activeLink) centerNavRow(row, false) }) }, 150) } })()), document.addEventListener("click", e => { const t = document.getElementById("search-overlay"), n = document.getElementById("search-controls"); !t.classList.contains("active") || t.contains(e.target) || n.contains(e.target) || closeSearch() }), document.getElementById("app").addEventListener("click", e => { if (e.target.closest(".refresh-btn")) { trackEvent('quote-refresh'); const t = e.target.closest(".layout-quote"); if (t && !t.classList.contains("loading")) { const e = t.clientHeight; t.style.height = e + "px", t.classList.add("loading"), t.innerHTML = '<div class="sk-box quote" style="height: 100% ;"></div>', setTimeout(() => { renderQuoteCard(t), t.classList.remove("loading"), t.style.height = "auto" }, 600) } return void e.stopPropagation() } if (e.target.classList.contains("chip")) { e.stopPropagation(), isSearchActive && closeSearch(); const t = e.target.getAttribute("data-tag"), n = e.target.getAttribute("data-date"); if (n) { trackEvent('chip-click', { type: 'date', value: n }); window.location.hash = "Filter:" + n; } else if (t) { trackEvent('chip-click', { type: 'tag', value: t }); window.location.hash = "Filter:" + t; } return; } const t = e.target.closest(".clickable-block"); if (t && !e.target.classList.contains("chip")) { const e = t.getAttribute("data-link"), n = t.getAttribute("data-target"); e && ("_blank" === n ? (trackEvent('external-link', { url: e }), window.open(e, "_blank")) : (window.location.href = e, isSearchActive && closeSearch())) } }), document.addEventListener("keydown", e => { const t = "search-input" === (document.activeElement ? document.activeElement.id : ""); if (t) { if ("/" === e.key || "Escape" === e.key) return e.preventDefault(), void closeSearch() } !("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) || isSearchActive || t || (e.preventDefault(), toggleSearch()), "Escape" === e.key && (isSearchActive || document.getElementById("search-overlay").classList.contains("active") ? closeSearch() : window.location.hash && "#Home" !== window.location.hash && resetToHome()) }) }
-        function renderNavigation(e) { const t = document.getElementById("nav-stack"), n = document.getElementById("main-header"), o = e && "Home" !== e ? e.split("/") : [], r = o.length + 1, i = []; for (let e = 1; e <= r; e++) { const s = 1 === e ? null : o.slice(0, e - 1).join("/"), a = o.length >= e ? o[e - 1] : null; let l = []; if (l = 1 === e ? [...new Set([...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page).map(e => e.Page.split("/")[0]).filter(e => e), quotesDb.length > 0 ? "Personal" : null].filter(e => e))].sort() : [...new Set(db.filter(e => e.Page && e.Page.startsWith(s + "/")).map(t => t.Page.split("/")[e - 1]).filter(e => e))].sort(), 0 === l.length) break; const c = `nav-row-${e}`; i.push(c); let d = document.getElementById(c); const m = !d; m && (d = document.createElement("nav"), d.id = c, d.className = "nav-row level-" + (e > 1 ? "n" : "1"), a || (d.scrollLeft = 50), t.appendChild(d)); let p = ""; const u = s ? s + "/" : ""; l.forEach(t => { p += `<a href="#${u + t}" class="${1 === e ? "nav-link" : "sub-link"} fill-anim ${t === a ? "active" : ""}" onclick="closeSearch()">${safeHTML(t)}</a>` }), d.innerHTML !== p && (d.innerHTML = p), centerNavRow(d, m && !a) } t.querySelectorAll(".nav-row").forEach(e => { i.includes(e.id) || e.remove() }), updatePadding() } function centerNavRow(e, t) { if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } } let resizeTimer; function updatePadding() { const e = document.getElementById("nav-stack").querySelectorAll(".nav-row"); let t = 37; e.forEach(e => { t += e.classList.contains("level-1") ? 26 : 24; t += 1 }), document.body.style.paddingTop = t + 10 + "px" } function resetToHome() { closeSearch(), clearTextSelection(), window.location.hash = "" } function clearTextSelection() { if (window.getSelection) { const e = window.getSelection(); e && e.removeAllRanges && e.removeAllRanges() } else if (document.selection && document.selection.empty) { try { document.selection.empty() } catch (e) { } } }
+        function renderNavigation(e) { const t = document.getElementById("nav-stack"), n = document.getElementById("main-header"), o = e && "Home" !== e ? e.split("/") : [], r = o.length + 1, i = []; for (let e = 1; e <= r; e++) { const s = 1 === e ? null : o.slice(0, e - 1).join("/"), a = o.length >= e ? o[e - 1] : null; let l = []; if (l = 1 === e ? [...new Set([...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page).map(e => e.Page.split("/")[0]).filter(e => e), quotesDb.length > 0 ? "Personal" : null].filter(e => e))].sort() : [...new Set(db.filter(e => e.Page && e.Page.startsWith(s + "/")).map(t => t.Page.split("/")[e - 1]).filter(e => e))].sort(), 0 === l.length) break; const c = `nav-row-${e}`; i.push(c); let d = document.getElementById(c); const m = !d; m && (d = document.createElement("nav"), d.id = c, d.className = "nav-row level-" + (e > 1 ? "n" : "1"), a || (d.scrollLeft = 50), t.appendChild(d)); let p = ""; const u = s ? s + "/" : ""; l.forEach(t => { p += `<a href="#${u + t}" class="${1 === e ? "nav-link" : "sub-link"} fill-anim ${t === a ? "active" : ""}" onclick="closeSearch()">${safeHTML(t)}</a>` }), d.innerHTML !== p && (d.innerHTML = p), centerNavRow(d, m && !a) } t.querySelectorAll(".nav-row").forEach(e => { i.includes(e.id) || e.remove() }), updatePadding() } function centerNavRow(e, t) { if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } }
+        let resizeTimer;
+        let lastScrollPos = 0;
+
+        function updatePadding() { const e = document.getElementById("nav-stack").querySelectorAll(".nav-row"); let t = 37; e.forEach(e => { t += e.classList.contains("level-1") ? 26 : 24; t += 1 }), document.body.style.paddingTop = t + 10 + "px" }
+        function resetToHome() { closeSearch(), clearTextSelection(), window.location.hash = "" }
+        function clearTextSelection() { if (window.getSelection) { const e = window.getSelection(); e && e.removeAllRanges && e.removeAllRanges() } else if (document.selection && document.selection.empty) { try { document.selection.empty() } catch (e) { } } }
+
         function closeSearch() {
-            const wasOpen = document.getElementById("search-overlay").classList.contains("active");
-            document.getElementById("search-overlay").classList.remove("active"), document.body.classList.remove("search-active");
+            document.getElementById("search-overlay").classList.remove("active");
+            document.body.classList.remove("search-active");
             const e = document.getElementById("search-input");
-            e.value = "", e.blur();
-            if (wasOpen && isSearchActive) {
-                isSearchActive = !1, handleRouting()
+            e.value = "";
+            e.blur();
+
+            const resultsContainer = document.getElementById("search-results");
+            const app = document.getElementById("app");
+            if (resultsContainer) {
+                resultsContainer.style.display = "none";
+                resultsContainer.innerHTML = "";
             }
-            isSearchActive = !1
+            if (app) app.style.display = "block";
+
+            if (isSearchActive) {
+                isSearchActive = false;
+                if (lastScrollPos > 0) window.scrollTo(0, lastScrollPos);
+            }
         }
+
         function toggleSearch() {
-            const e = document.getElementById("search-overlay").classList.toggle("active");
-            document.body.classList.toggle("search-active"), e ? (isSearchActive = !0, setTimeout(() => document.getElementById("search-input").focus(), 100)) : closeSearch()
+            const overlay = document.getElementById("search-overlay");
+            const isActive = overlay.classList.toggle("active");
+            document.body.classList.toggle("search-active");
+
+            if (isActive) {
+                lastScrollPos = window.scrollY;
+                isSearchActive = true;
+                setTimeout(() => document.getElementById("search-input").focus(), 100);
+            } else {
+                closeSearch();
+            }
         }
         function handleSearch(e) {
             if (!document.getElementById("search-overlay").classList.contains("active")) return;
+            const resultsContainer = document.getElementById("search-results");
+            const app = document.getElementById("app");
+
             if (!e || e.trim() === "") {
-                const app = document.getElementById("app");
-                if (app) app.innerHTML = '<div class="section layout-hero"><h2 class="header-fade-anim">Search</h2><p style="color:var(--text-dim); font-size:16px;">Type to search across all content...</p></div>';
+                if (resultsContainer) {
+                    resultsContainer.innerHTML = '<div class="section layout-hero"><h2 class="header-fade-anim">Search</h2><p style="color:var(--text-dim); font-size:16px;">Type to search across all content...</p></div>';
+                    resultsContainer.style.display = "block";
+                }
+                if (app) app.style.display = "none";
                 return;
             }
-            // Track search query
             trackEvent('search', { query: e });
 
             const t = e.toLowerCase(), n = db.filter(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t));
             resumeDb.some(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t)) && !n.find(e => "Professional/Resume" === e.Page) && n.push(db.find(e => "Professional/Resume" === e.Page));
 
-            // Track failed searches
             if (n.length === 0) {
                 trackEvent('search-no-results', { query: e });
             }
 
-            renderRows(n, `Search results for "${safeHTML(e)}"`, !1, !0, !1, !0)
+            if (resultsContainer) {
+                resultsContainer.innerHTML = '';
+                renderRows(n, `Search results for "${safeHTML(e)}"`, !1, !0, !1, !0, resultsContainer);
+                resultsContainer.style.display = "block";
+            }
+            if (app) app.style.display = "none";
         } function handleRouting() { if (isSearchActive) return; const e = document.getElementById("main-header"); e && e.classList.remove("scrolled"), window.scrollTo(0, 0); clearTextSelection(); let t = window.location.hash.substring(1) || "Home"; "Index" !== t ? "Professional/Resume" !== t ? (renderNavigation("Home" === t ? null : t), t.startsWith("Filter:") ? renderFiltered(decodeURIComponent(t.split(":")[1])) : renderPage(t)) : renderResume() : renderIndex() } function renderFiltered(e) { const t = e.match(/^(\d{4})-(\d{2})(-\d{2})?$/), n = e.match(/^(\d{4})(\d{2})/); let o = e; t ? o = `${new Date(t[1], parseInt(t[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${t[1]}` : n && (o = `${new Date(n[1], parseInt(n[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${n[1]}`), renderRows(db.filter(t => (t.Timestamp || "").startsWith(e) || t.Tags && t.Tags.includes(e)), `Posts from ${safeHTML(o)}`, !1, !0, !1, !0) }
         function renderPage(e) {
             if ("Home" === e) return void renderHome(); const t = db.filter(t => t.Page === e), n = document.getElementById("app"); n.innerHTML = ""; const o = !e.includes("/"); if (t.length > 0) renderRows(t, null, !0, !1, !o); else if (!childrenPagesCheck(e) && !("Personal" === e && quotesDb.length > 0)) return void (n.innerHTML = '<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn\'t exist in the database yet.</p></div>'); if ("Personal" === e && quotesDb.length > 0) { const q = document.createElement("div"); q.className = "layout-quote section", q.setAttribute("data-title", "Random Quote"), renderQuoteCard(q), n.appendChild(q) } if (o) { const t = [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))]; t.length > 0 && renderRows(t.map(e => db.find(t => t.Page === e)).filter(e => e), null, !0, !0) }
         } function childrenPagesCheck(e) { return [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))].length > 0 }
         function renderIndex() { renderNavigation(null); const e = document.getElementById("app"); e.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>'; const t = e.querySelector(".index-list"), n = [...new Set(db.map(e => e.Page).filter(e => e && "Home" !== e && "Footer" !== e))].sort(), o = {}; n.forEach(e => { const t = e.split("/")[0]; o[t] || (o[t] = []), o[t].push(e) }); for (const [e, n] of Object.entries(o)) { let o = ""; const r = e.toLowerCase(); "projects" === r ? o = "cat-projects" : "professional" === r ? o = "cat-professional" : "personal" === r && (o = "cat-personal"); let i = `<div class="index-group ${o}"><h3>${e}</h3>`; n.forEach(e => { const t = db.find(t => t.Page === e), n = t ? t.Title : e.split("/").pop(), o = e.split("/").length; i += `<a href="#${e}" class="index-link fill-anim ${o > 1 ? `depth-${o}` : ""}">\n${n} \n</a>` }), i += "</div>", t.innerHTML += i } } function renderHome() { const e = db.filter(e => "Home" === e.Page); document.getElementById("app").innerHTML = "", renderRows(e, null, !0); const t = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page), n = {}; t.forEach(e => { n[e.Page] ? n[e.Page] : n[e.Page] = e }); const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0, 6); o.length > 0 && renderRows(o, "Recent Activity", !0, !0, !1, !0) }
         function processText(e) { if (!e) return ""; const t = e.split(/\n|<br>/); let n = [], s = !1; t.forEach(e => { let t = e.trimEnd(); if (!t) return void (s && (n.push("</ul>"), s = !1)); const o = t.match(/^(#{1,6})\s+(.*)$/); if (o) { s && (n.push("</ul>"), s = !1); const e = o[1].length, r = processSingleLine(o[2]); return void n.push(`<h${e} class="header-fade-anim">${r}</h${e}>`) } const r = t.match(/^(\s*)-\s+(.*)/); if (r) { s || (n.push("<ul>"), s = !0); const e = processSingleLine(r[2]); return void n.push(`<li>${e}</li>`) } s && (n.push("</ul>"), s = !1), t.startsWith(">") ? n.push(`<blockquote>${processSingleLine(t.replace(/^>\s*/, ""))}</blockquote>`) : "---" === t ? n.push("<hr>") : n.push(`<p>${processSingleLine(t)}</p>`) }); return s && n.push("</ul>"), n.join("") }
-        function processSingleLine(e) { if (!e) return ""; let t = safeHTML(e); return t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"), t = t.replace(/\*(.*?)\*/g, "<em>$1</em>"), t = t.replace(/`([^`]+)`/g, "<code>$1</code>"), t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="fill-anim">$1</a>'), t }
+        function processSingleLine(e) { if (!e) return ""; let t = safeHTML(e); return t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"), t = t.replace(/\*(.*?)\*/g, "<em>$1</em>"), t = t.replace(/`([^`]+)`/g, "<code>$1</code>"), t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>'), t }
         function formatTitle(e, t) { if (!e) return ""; const n = e.match(/^(#{1,6})\s+(.*)$/); let o = t, r = e; return n && (o = "h" + n[1].length, r = n[2]), `<${o} class="header-fade-anim">${processSingleLine(r)}</${o}>` }
-        function renderRows(e, t, n, o, r = !1, i = !1) {
-            const s = document.getElementById("app"); if (!s) return; if (i && (e.sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)), "Recent Activity" === t && e.sort((e, t) => { const n = e.Tags && e.Tags.toLowerCase().includes("featured") ? 1 : 0; return (t.Tags && t.Tags.toLowerCase().includes("featured") ? 1 : 0) - n })), n ? t && (s.innerHTML += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>`) : s.innerHTML = t ? `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>` : "", 0 === e.length && !n) return void (s.innerHTML += '<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>'); let a = s.querySelector(".grid-container"); if (n) a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a); else { (o || e.some(e => !e.SectionType || "quote" !== e.SectionType && "hero" !== e.SectionType && "text" !== e.SectionType) && !r) && !a && (a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a)) } e.forEach((e, t) => {
-                if (!e.Page || "Footer" === e.Page) return; const i = e => { const t = e.match(/^\[(.*?)\]\((.*?)\)$/); if (t) { const e = t[1], n = t[2]; if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(n)) { return `<a href="${n}" target="_blank" class="chip location" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(e)}</a>` } return `<a href="${n}" target="_blank" class="chip location link" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(e)}</a>` } return `<span class="chip" data-tag="${e}">${safeHTML(e)}</span>` }; let l = e.Media, c = e.Content || "", d = "", m = [], u = safeHTML(e.Title), p = !1; const cardMatch = c.match(/^\[card\]:\s*(.+?)(?:\n|$)/i); let cardPreview = cardMatch ? cardMatch[1].trim() : null; if (cardPreview) { c = c.replace(/^\[card\]:\s*.+?(\n|$)/i, "").trim() } const h = e.Title ? e.Title.match(/^https?:\/\/\S+$/) : null; if (h) { if (m.push(h[0]), p = !0, !l) { const t = extractMediaFromContent(e.Title); t && ("img" === t.type ? d = `<div class="row-media"><img src="${t.url}" loading="lazy"></div>` : "yt" === t.type && (d = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${t.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`), l = "title-embed") } } else if (l || d) { if (!d && "title-embed" !== l) { const e = getThumbnail(l); if (e === 'GLB_VIEWER') { d = `<div class="row-media">${window.renderGLBViewer(l, true)}</div>` } else if (e) { d = `<div class="row-media"><img src="${e}" loading="lazy"></div>` } } } else { const e = extractMediaFromContent(c); e && (m.push(e.url), "img" === e.type ? d = `<div class="row-media"><img src="${e.url}" loading="lazy"></div>` : "yt" === e.type && (d = !r || o ? `<div class="row-media"><img src="https://img.youtube.com/vi/${e.id}/mqdefault.jpg" loading="lazy"></div>` : `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${e.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`)) } if (!d && (o || !r)) { const t = e.Page.split("/")[0].toUpperCase(); d = `<div class="row-media placeholder"><span>${t}</span></div>` } let g = r ? processContentWithBlocks(c) : processText(c); if (!r || o) { g = cardPreview ? `<div class="grid-text-preview"><p>${processSingleLine(cardPreview)}</p></div>` : "" } let f = !l && d.includes("placeholder"), v = ""; const y = e.Page.toLowerCase(); y.startsWith("projects") ? v = "cat-projects" : y.startsWith("professional") ? v = "cat-professional" : y.startsWith("personal") && (v = "cat-personal"); let b = (e.SectionType || "card").toLowerCase(); const topLevelPages = ["home", "personal", "professional", "projects"]; if (!e.SectionType && topLevelPages.includes(e.Page.toLowerCase()) && !e.Page.includes("/")) { b = "hero" } if (!o && r && "quote" !== b && "hero" !== b) { const n = document.createElement("div"); n.className = "section layout-text", d = d.includes("embed-wrapper") || d.includes("<img") ? d.replace("row-media", "row-media article-mode") : ""; let metaHTML = ""; if (0 === t) { if (metaHTML = '<div class="article-meta-row"><a href="#Personal/About" class="author-link fill-anim">Sahib Virdee</a>', e.LinkURL && (metaHTML += `<a href="${e.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`), metaHTML += '<div class="article-tags">', e.Timestamp) { const t = formatDate(e.Timestamp), n = e.Timestamp.substring(0, 7); metaHTML += `<span class="chip date" data-date="${n}" data-val="${t}">${t}</span>` } if (e.Tags) { e.Tags.split(",").map(e => e.trim()).forEach(e => metaHTML += i(e)) } const t = (e.Content || "").trim().split(/\s+/).length, n = Math.ceil(t / 200); n > 0 && (metaHTML += `<span class="chip" style="opacity:0.6; cursor:default;">${n} min read</span>`), metaHTML += "</div></div>" } const a = !p && u ? formatTitle(u, 0 === t ? "h1" : "h2") : ""; return n.innerHTML = `${d}${a}${metaHTML}<div class="article-body">${g}</div>`, void s.appendChild(n) } if (!o) {
+        function renderRows(e, t, n, o, r = !1, i = !1, targetElement = null) {
+            const s = targetElement || document.getElementById("app"); if (!s) return; if (i && (e.sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)), "Recent Activity" === t && e.sort((e, t) => { const n = e.Tags && e.Tags.toLowerCase().includes("featured") ? 1 : 0; return (t.Tags && t.Tags.toLowerCase().includes("featured") ? 1 : 0) - n })), n ? t && (s.innerHTML += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>`) : s.innerHTML = t ? `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>` : "", 0 === e.length && !n) return void (s.innerHTML += '<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>'); let a = s.querySelector(".grid-container"); if (n) a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a); else { (o || e.some(e => !e.SectionType || "quote" !== e.SectionType && "hero" !== e.SectionType && "text" !== e.SectionType) && !r) && !a && (a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a)) } e.forEach((e, t) => {
+                if (!e.Page || "Footer" === e.Page) return; const i = e => { const t = e.match(/^\[(.*?)\]\((.*?)\)$/); if (t) { const e = t[1], n = t[2]; if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(n)) { return `<a href="${n}" target="_blank" class="chip location" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(e)}</a>` } return `<a href="${n}" target="_blank" class="chip location link" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(e)}</a>` } return `<span class="chip" data-tag="${e}">${safeHTML(e)}</span>` }; let l = e.Media, c = e.Content || "", d = "", m = [], u = safeHTML(e.Title), p = !1; const cardMatch = c.match(/^\[card\]:\s*(.+?)(?:\n|$)/i); let cardPreview = cardMatch ? cardMatch[1].trim() : null; if (cardPreview) { c = c.replace(/^\[card\]:\s*.+?(\n|$)/i, "").trim() } const h = e.Title ? e.Title.match(/^https?:\/\/\S+$/) : null; if (h) { if (m.push(h[0]), p = !0, !l) { const t = extractMediaFromContent(e.Title); t && ("img" === t.type ? d = `<div class="row-media"><img src="${t.url}" loading="lazy"></div>` : "yt" === t.type && (d = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${t.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`), l = "title-embed") } } else if (l || d) { if (!d && "title-embed" !== l) { const e = getThumbnail(l); if (e === 'GLB_VIEWER') { d = `<div class="row-media">${window.renderGLBViewer(l, true)}</div>` } else if (e) { d = `<div class="row-media"><img src="${e}" loading="lazy"></div>` } } } else { const e = extractMediaFromContent(c); e && (m.push(e.url), "img" === e.type ? d = `<div class="row-media"><img src="${e.url}" loading="lazy"></div>` : "yt" === e.type && (d = !r || o ? `<div class="row-media"><img src="https://img.youtube.com/vi/${e.id}/mqdefault.jpg" loading="lazy"></div>` : `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${e.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`)) } if (!d && (o || !r)) { const t = e.Page.split("/")[0].toUpperCase(); d = `<div class="row-media placeholder"><span>${t}</span></div>` } let g = r ? processContentWithBlocks(c) : processText(c); if (!r || o) { g = cardPreview ? `<div class="grid-text-preview"><p>${processSingleLine(cardPreview)}</p></div>` : "" } let f = !l && d.includes("placeholder"), v = ""; const y = e.Page.toLowerCase(); y.startsWith("projects") ? v = "cat-projects" : y.startsWith("professional") ? v = "cat-professional" : y.startsWith("personal") && (v = "cat-personal"); let b = (e.SectionType || "card").toLowerCase(); const topLevelPages = ["home", "personal", "professional", "projects"]; if (!e.SectionType && topLevelPages.includes(e.Page.toLowerCase()) && !e.Page.includes("/")) { b = "hero" } if (!o && r && "quote" !== b && "hero" !== b) { const n = document.createElement("div"); n.className = "section layout-text", d = d.includes("embed-wrapper") || d.includes("<img") ? d.replace("row-media", "row-media article-mode") : ""; let metaHTML = ""; if (0 === t) { if (metaHTML = '<div class="article-meta-row"><a href="#Personal/About" class="author-link">Sahib Virdee</a>', e.LinkURL && (metaHTML += `<a href="${e.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`), metaHTML += '<div class="article-tags">', e.Timestamp) { const t = formatDate(e.Timestamp), n = e.Timestamp.substring(0, 7); metaHTML += `<span class="chip date" data-date="${n}" data-val="${t}">${t}</span>` } if (e.Tags) { e.Tags.split(",").map(e => e.trim()).forEach(e => metaHTML += i(e)) } const t = (e.Content || "").trim().split(/\s+/).length, n = Math.ceil(t / 200); n > 0 && (metaHTML += `<span class="chip" style="opacity:0.6; cursor:default;">${n} min read</span>`), metaHTML += "</div></div>" } const a = !p && u ? formatTitle(u, 0 === t ? "h1" : "h2") : ""; return n.innerHTML = `${d}${a}${metaHTML}<div class="article-body">${g}</div>`, void s.appendChild(n) } if (!o) {
                     if ("quote" === b) { const t = document.createElement("div"); return t.className = "layout-quote section", t.setAttribute("data-title", e.Title || ""), "random quote" !== (e.Title || "").toLowerCase() && (t.setAttribute("data-static-quote", e.Content || e.Quote || ""), t.setAttribute("data-static-author", e.Author || "Sahib Virdee")), renderQuoteCard(t), void a.appendChild(t) }
-                    if ("hero" === b) { const t = document.createElement("div"); t.className = "section layout-hero"; const n = e.LinkURL || ""; if (n) { t.classList.add("clickable-block"), t.classList.add("hero-link"), t.setAttribute("data-link", n), t.setAttribute("data-target", n.startsWith("#") ? "" : "_blank") } let o = ""; if (e.Timestamp) { let t = formatDate(e.Timestamp), n = e.Timestamp.substring(0, 7); o += `<span class="chip date" data-val="${t}" onclick="event.stopPropagation(); window.location.hash='Filter:${n}'">${t}</span>` } if (e.Tags) { e.Tags.split(",").map(e => e.trim()).forEach(e => o += i(e)) } const r = o ? `<div class="hero-meta">${o}</div>` : ""; return t.innerHTML = `${formatTitle(e.Title, "h1")}${r}<p>${processText(e.Content)}</p>`, void a.appendChild(t) } if ("text" === b) { const t = document.createElement("div"); return t.className = "section layout-text", t.innerHTML = `${safeHTML(e.Title) ? formatTitle(e.Title, "h2") : ""}<p>${processText(e.Content)}</p>`, void a.appendChild(t) }
+                    if ("hero" === b) { const t = document.createElement("div"); t.className = "section layout-hero"; const n = e.LinkURL || ""; if (n) { t.classList.add("clickable-block"), t.classList.add("hero-link"), t.setAttribute("data-link", n), t.setAttribute("data-target", n.startsWith("#") ? "" : "_blank") } let o = ""; if (e.Timestamp) { let t = formatDate(e.Timestamp), n = e.Timestamp.substring(0, 7); o += `<span class="chip date" data-val="${t}" onclick="event.stopPropagation(); window.location.hash='Filter:${n}'">${t}</span>` } if (e.Tags) { e.Tags.split(",").map(e => e.trim()).forEach(e => o += i(e)) } const r = o ? `<div class="hero-meta">${o}</div>` : ""; return t.innerHTML = `${formatTitle(e.Title, "h1")}${r}${processContentWithBlocks(e.Content)}`, void a.appendChild(t) } if ("text" === b) { const t = document.createElement("div"); return t.className = "section layout-text", t.innerHTML = `${safeHTML(e.Title) ? formatTitle(e.Title, "h2") : ""}${processContentWithBlocks(e.Content)}`, void a.appendChild(t) }
                 } const w = e.LinkURL || "", $ = e.Tags ? e.Tags.split(",").map(e => e.trim()) : []; let T = w; T || (T = `#${e.Page}`); const L = T.startsWith("#") ? "" : "_blank"; let x = ""; if (e.Timestamp || $.length > 0) { if (x = '<div class="meta-row">', e.Timestamp) { let t = formatDate(e.Timestamp); t || (t = e.Timestamp); let n = e.Timestamp.substring(0, 7); x += `<span class="chip date" data-date="${n}" data-val="${t}">${t}</span>` } $.forEach(e => x += i(e)), x += "</div>" } const C = document.createElement("div"); C.className = `layout-grid clickable-block ${v} ${f ? "has-placeholder" : ""}`, C.setAttribute("data-link", T), C.setAttribute("data-target", L); let k = u; p && (k = ""); let S = k ? `<h3 class="fill-anim">${processSingleLine(k)}</h3>` : ""; p && (S = ""), C.innerHTML = `${d}${S}${g}${x}`, a && a.appendChild(C)
             }), setTimeout(() => { "function" == typeof addCopyButtons && addCopyButtons() }, 60)
         }
-        function renderQuoteCard(e) { let t, n = !1; if ("random quote" === (e.getAttribute("data-title") || "").toLowerCase()) { if (0 === quotesDb.length) return void (e.innerHTML = "Quote sheet empty."); t = quotesDb[Math.floor(Math.random() * quotesDb.length)], n = !0 } else t = { Quote: e.getAttribute("data-static-quote") || "No content.", Author: e.getAttribute("data-static-author") || "Unknown", Source: null }; let o = t.Author || "Unknown"; t.Source && t.Source.startsWith("http") ? o = `<a href="${t.Source}" target="_blank" class="fill-anim">${safeHTML(o)}</a>` : t.Source && (o += ` — ${safeHTML(t.Source)}`); const r = safeHTML((t.Quote || "").trim().replace(/^"|"$/g, "")), i = r.length; let s = "short"; i > 230 ? s = "xxl" : i > 150 ? s = "xl" : i > 100 ? s = "long" : i > 50 && (s = "medium"); let a = ""; n && (a = '<svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">\n<rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>\n<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n</svg>'), e.innerHTML = `<blockquote class="${s}">"${r}"</blockquote>\n<div class="quote-footer"><span class="author"> &mdash; ${o}</span>${a}</div>` }
-        function renderFooter() { const e = document.getElementById("footer-links"), t = db.filter(e => "Footer" === e.Page); e.innerHTML = ""; t.forEach(t => { const n = t.Title || "", o = n.match(/\[([^\]]+)\]\(([^)]+)\)/); if (o) { const n = document.createElement("a"); n.href = o[2], n.target = "_blank", n.className = "fill-anim", n.textContent = o[1], e.appendChild(n) } else if (n) { const n = document.createElement("a"); n.href = t.LinkURL || "#", n.target = "_blank", n.className = "fill-anim", n.textContent = n, e.appendChild(n) } }) }
+        function renderQuoteCard(e) { let t, n = !1; if ("random quote" === (e.getAttribute("data-title") || "").toLowerCase()) { if (0 === quotesDb.length) return void (e.innerHTML = "Quote sheet empty."); t = quotesDb[Math.floor(Math.random() * quotesDb.length)], n = !0 } else t = { Quote: e.getAttribute("data-static-quote") || "No content.", Author: e.getAttribute("data-static-author") || "Unknown", Source: null }; let o = t.Author || "Unknown"; t.Source && t.Source.startsWith("http") ? o = `<a href="${t.Source}" target="_blank">${safeHTML(o)}</a>` : t.Source && (o += ` — ${safeHTML(t.Source)}`); const r = safeHTML((t.Quote || "").trim().replace(/^"|"$/g, "")), i = r.length; let s = "short"; i > 230 ? s = "xxl" : i > 150 ? s = "xl" : i > 100 ? s = "long" : i > 50 && (s = "medium"); let a = ""; n && (a = '<svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">\n<rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>\n<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n</svg>'), e.innerHTML = `<blockquote class="${s}">"${r}"</blockquote>\n<div class="quote-footer"><span class="author"> &mdash; ${o}</span>${a}</div>` }
+        function renderFooter() { const e = document.getElementById("footer-links"), t = db.filter(e => "Footer" === e.Page); e.innerHTML = ""; t.forEach(t => { const n = t.Title || "", o = n.match(/\[([^\]]+)\]\(([^)]+)\)/); if (o) { const n = document.createElement("a"); n.href = o[2], n.target = "_blank", n.textContent = o[1], e.appendChild(n) } else if (n) { const n = document.createElement("a"); n.href = t.LinkURL || "#", n.target = "_blank", n.textContent = n, e.appendChild(n) } }) }
         function addCopyButtons() { document.querySelectorAll("pre").forEach(e => { if (e.querySelector(".copy-btn")) return; const t = document.createElement("button"); t.className = "copy-btn", t.textContent = "Copy", t.style.cssText = "position:absolute; top:8px; right:8px; padding:4px 10px; font-size:11px; background:rgba(255,255,255,0.1); color:#ccc; border:1px solid rgba(255,255,255,0.2); border-radius:4px; cursor:pointer; opacity:0; transition:0.2s; backdrop-filter:blur(4px);", e.style.position = "relative", e.onmouseenter = () => t.style.opacity = "1", e.onmouseleave = () => t.style.opacity = "0", t.onclick = () => { const n = e.querySelector("code")?.innerText || e.innerText; navigator.clipboard.writeText(n).then(() => { t.textContent = "Copied!", t.style.color = "#4caf50", t.style.borderColor = "#4caf50", setTimeout(() => { t.textContent = "Copy", t.style.color = "#ccc", t.style.borderColor = "rgba(255,255,255,0.2)" }, 2e3) }) }, e.appendChild(t) }) }
         function getThumbnail(e) { if (!e) return null; if (e.includes("youtube.com") || e.includes("youtu.be")) { let t = e.split("v=")[1]; return t && t.includes("&") && (t = t.split("&")[0]), !t && e.includes("youtu.be") && (t = e.split("/").pop()), `https://img.youtube.com/vi/${t}/mqdefault.jpg` } return e.endsWith(".mp4") ? null : e }
         function formatDate(e) { if (!e) return ""; if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`; if (8 === (e = String(e).trim()).length && !isNaN(e)) { const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8), r = new Date(t, n - 1, o, 12, 0, 0); return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}` } const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/); if (t) { const e = parseInt(t[1]), n = parseInt(t[2]), o = parseInt(t[3]); return `${o} ${new Date(e, n - 1, o, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${e}` } if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e; const n = new Date(e); return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}` }
         function updateSEO() { const e = document.getElementById("json-ld-script"); e && e.remove(); const t = document.createElement("script"); t.id = "json-ld-script", t.type = "application/ld+json"; const n = { "@context": "https://schema.org", "@type": "ProfilePage", mainEntity: { "@type": "Person", name: "Sahib Virdee", jobTitle: "Mechanical Engineering Graduate", description: "Specializing in Design and Manufacturing.", url: "https://sahibvirdee.com/", sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"] }, hasPart: db.map(e => { if (!e.Title || !e.Content) return null; return { "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork", name: e.Title, description: e.Content.substring(0, 150) + "...", url: `https://sahibvirdee.com/#${e.Page}` } }).filter(e => e) }; t.textContent = JSON.stringify(n), document.head.appendChild(t) }
         function renderResume() { renderNavigation("Professional/Resume"); document.getElementById("app").innerHTML = '<div id="resume-view" class="resume-container"></div>'; const e = document.getElementById("resume-view"); generateResumeJSONLD(); const t = resumeDb, n = t.filter(e => e.SectionType && "header" === e.SectionType.toLowerCase()); if (n.length > 0) { const t = n[0], o = t.Title.split("|"), r = o[0].trim(), i = o[1] ? o[1].trim() : ""; e.innerHTML += `\n<div class="resume-header section" style="position:relative;">\n<h1 class="header-fade-anim" style="margin-top:0;">${r}</h1>\n<div class="resume-sub header-fade-anim" style="animation-delay:0.1s">${i}</div>\n<div class="resume-contact" style="gap:0 ; row-gap:4px ;">\n${(t.Content || "").split("|").map(e => `<div style="display:inline-block; white-space:nowrap;">${processText(e.trim())}</div>`).join('<span class="contact-sep" style="margin:0 12px; color:#bbb; user-select:text;">|</span>')}\n</div>\n</div>` } e.innerHTML += '<div class="resume-grid section">\n<div class="resume-left"></div>\n<div class="resume-right"></div>\n</div>'; const o = e.querySelector(".resume-left"), r = e.querySelector(".resume-right"), i = {}; t.forEach(e => { if (!e.SectionType) return; const t = e.SectionType.trim().toLowerCase(), n = t.charAt(0).toUpperCase() + t.slice(1); i[n] || (i[n] = []), i[n].push(e) }); const s = (e, t, n, o) => { n && n.length > 0 && (e.innerHTML += `<div class="resume-section">\n${formatTitle(t, "h3")}\n${n.map(o).join("")}\n</div>`) }; s(o, "Education", i.Education, RenderResumeEntry), s(o, "Skills", i.Skills, RenderResumeSkill), s(r, "Professional Experience", i.Experience, RenderResumeEntry), s(r, "Projects", i.Projects || [], RenderResumeEntry), s(r, "Engineering Projects", i.Project, RenderResumeEntry) }
-        function RenderResumeEntry(e) { let t = e.Title || "", n = ""; if (t.includes("|")) { const e = t.split("|"); t = e[0].trim(), n = e[1].trim() } const o = e.LinkURL ? `<a href="${e.LinkURL}" target="_blank" class="resume-link"><svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:middle;opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : ""; let r = e.Content || ""; r.includes("|") && (r = "- " + r.replace(/\|/g, "\n- ")), r = r.replace(/(\n|^)-\s*([^:\n]+?):/g, "$1- **$2:**"); const i = processText(r); let s = "", a = ""; if (e.Tags) { const t = e => { if ((e = e.trim()).match(/[A-Za-z]{3,}\s+\d{4}/) || e.toLowerCase().includes("present")) return { type: "date", html: safeHTML(e) }; const t = e.match(/^\[(.*?)\]\((.*?)\)$/); if (t) { const e = t[1], n = t[2]; return { type: "loc", html: `<a href="${n}" target="_blank" class="fill-anim" style="text-decoration:none; display:flex; align-items:center;">${/maps\.app\.goo\.gl|google\.com\/maps/i.test(n) ? '<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' : '<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(e)}</a>` } } return { type: "other", html: safeHTML(e) } }, n = e.Tags.includes(";") ? /(?:;|\u2022)\s*/ : /(?:;|,|\u2022)\s*/, o = e.Tags.split(n).filter(e => e.trim()), r = []; o.forEach(e => { const n = t(e); "date" !== n.type || s ? r.push(n.html) : s = n.html }), r.length > 0 && (a = r.join(", ")) } return `\n<div class="resume-entry" id="res-${e.ID || Math.random().toString(36).substr(2, 9)}">\n<div class="resume-entry-header">\n<div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">\n<div class="resume-role">${t} ${o}</div>\n<div class="resume-date-slot">${s}</div>\n</div>\n<div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">\n${n ? `<div class="resume-company">${n}</div>` : "<div></div>"}\n<div class="resume-loc-slot">${a}</div>\n</div>\n</div>\n<div class="resume-list text-content">${i}</div>\n</div>` }
+        function RenderResumeEntry(e) { let t = e.Title || "", n = ""; if (t.includes("|")) { const e = t.split("|"); t = e[0].trim(), n = e[1].trim() } const o = e.LinkURL ? `<a href="${e.LinkURL}" target="_blank" class="resume-link"><svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:middle;opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : ""; let r = e.Content || ""; r.includes("|") && (r = "- " + r.replace(/\|/g, "\n- ")), r = r.replace(/(\n|^)-\s*([^:\n]+?):/g, "$1- **$2:**"); const i = processText(r); let s = "", a = ""; if (e.Tags) { const t = e => { if ((e = e.trim()).match(/[A-Za-z]{3,}\s+\d{4}/) || e.toLowerCase().includes("present")) return { type: "date", html: safeHTML(e) }; const t = e.match(/^\[(.*?)\]\((.*?)\)$/); if (t) { const e = t[1], n = t[2]; return { type: "loc", html: `<a href="${n}" target="_blank" style="text-decoration:none; display:flex; align-items:center;">${/maps\.app\.goo\.gl|google\.com\/maps/i.test(n) ? '<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' : '<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(e)}</a>` } } return { type: "other", html: safeHTML(e) } }, n = e.Tags.includes(";") ? /(?:;|\u2022)\s*/ : /(?:;|,|\u2022)\s*/, o = e.Tags.split(n).filter(e => e.trim()), r = []; o.forEach(e => { const n = t(e); "date" !== n.type || s ? r.push(n.html) : s = n.html }), r.length > 0 && (a = r.join(", ")) } return `\n<div class="resume-entry" id="res-${e.ID || Math.random().toString(36).substr(2, 9)}">\n<div class="resume-entry-header">\n<div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">\n<div class="resume-role">${t} ${o}</div>\n<div class="resume-date-slot">${s}</div>\n</div>\n<div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">\n${n ? `<div class="resume-company">${n}</div>` : "<div></div>"}\n<div class="resume-loc-slot">${a}</div>\n</div>\n</div>\n<div class="resume-list text-content">${i}</div>\n</div>` }
         function RenderResumeSkill(e) { const t = (e.Content || "").split("|").map(e => e.trim()).filter(e => e); let n = ""; return t.forEach(e => { const t = e.indexOf(":"); if (t > -1) { const o = e.substring(0, t).trim(), r = e.substring(t + 1).trim(); n += `<div class="resume-skill-row">\n<span class="resume-skill-cat">${o}:</span> \n<span class="resume-skill-list">${r}</span>\n</div>` } else n += `<div class="resume-skill-row"><span class="resume-skill-list">${e}</span></div>` }), `\n<div class="resume-skill-block">\n${e.Title && "Technical Skills" !== e.Title ? `<div class="resume-skill-title">${e.Title}</div>` : ""}\n${n}\n</div>` }
         function generateResumeJSONLD() { const e = document.getElementById("json-ld-resume"); e && e.remove(); const t = resumeDb, n = t.filter(e => "Header" === e.SectionType); if (0 === n.length) return; const o = n[0], r = o.Title.split("|")[0].trim(), i = o.Title.split("|")[1] ? o.Title.split("|")[1].trim() : "Engineer", s = { "@context": "https://schema.org", "@type": "Person", name: r, jobTitle: i, url: "https://sahibvirdee.com/resume", description: `Resume of ${r}, ${i}.`, knowsAbout: t.filter(e => "Skills" === e.SectionType).map(e => e.Content).join(", ") }, a = document.createElement("script"); a.id = "json-ld-resume", a.type = "application/ld+json", a.textContent = JSON.stringify(s), document.head.appendChild(a) }
+        // === DEMO PAGE RENDERER ===
+        function renderDemo() {
+            const app = document.getElementById('app');
+            app.innerHTML = '';
+            renderNavigation('Demo');
+
+            // 1. Hero with Rich Content
+            const heroData = {
+                Page: 'Demo',
+                Title: 'Feature Demo Page',
+                SectionType: 'Hero',
+                Timestamp: new Date().toISOString().split('T')[0],
+                Tags: 'Demo, Features, Test',
+                Content: [
+                    'This page demonstrates site-wide feature support.',
+                    '',
+                    '![Demo Hero Image](https://picsum.photos/800/300)',
+                    '',
+                    '**Bold text**, *Italic text*, and [Links](#demo) all work in Hero sections.'
+                ].join('\n')
+            };
+            renderRows([heroData], null, true, false);
+
+            // 2. Text Section - Markdown Features
+            const textData = {
+                Page: 'Demo',
+                Title: 'Markdown Features',
+                SectionType: 'Text',
+                Content: [
+                    '### Lists with Indentation',
+                    '',
+                    '- Unordered list item 1',
+                    '- Unordered list item 2',
+                    '  - Nested item (2 spaces)',
+                    '  - Another nested item',
+                    '    - Double nested (4 spaces)',
+                    '- Back to top level',
+                    '',
+                    '> This is a blockquote. It has a left border and italic styling.',
+                    '',
+                    '`Inline code` renders with a monospace font.',
+                    '',
+                    '### Checkbox Support',
+                    '',
+                    '- [ ] Unchecked task',
+                    '- [x] Completed task',
+                    '- [ ] Another pending item'
+                ].join('\n')
+            };
+            renderRows([textData], null, true, false);
+
+            // 3. Single Image with Caption (with markdown link in caption)
+            const imageData = {
+                Page: 'Demo',
+                Title: 'Image with Caption',
+                SectionType: 'Text',
+                Content: '![This caption supports **markdown** and [links](#demo)](https://picsum.photos/600/400)'
+            };
+            renderRows([imageData], null, true, false);
+
+            // 4. Gallery with Individual Captions
+            const galleryIndividualData = {
+                Page: 'Demo',
+                Title: 'Gallery with Individual Captions',
+                SectionType: 'Text',
+                Content: [
+                    'Each image can have its own caption using markdown syntax:',
+                    '',
+                    '![First Image](https://picsum.photos/400/300), ![Second Image](https://picsum.photos/401/300), ![Third Image](https://picsum.photos/402/300)'
+                ].join('\n')
+            };
+            renderRows([galleryIndividualData], null, true, false);
+
+            // 5. Gallery with Shared Caption
+            const gallerySharedData = {
+                Page: 'Demo',
+                Title: 'Gallery with Shared Caption',
+                SectionType: 'Text',
+                Content: [
+                    'Plain URLs can share a caption below:',
+                    '',
+                    'https://picsum.photos/403/300, https://picsum.photos/404/300, https://picsum.photos/405/300',
+                    '[Caption]: Shared caption with **markdown** and [link](#demo) support'
+                ].join('\n')
+            };
+            renderRows([gallerySharedData], null, true, false);
+
+            // 6. YouTube Embed
+            const ytData = {
+                Page: 'Demo',
+                Title: 'YouTube Embed',
+                SectionType: 'Text',
+                Content: [
+                    'YouTube videos embed automatically:',
+                    '',
+                    'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+                ].join('\n')
+            };
+            renderRows([ytData], null, true, false);
+        }
         function detectEmbed(e) { return e.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) ? `<img src="${e}" class="inline-img zoomable" loading="lazy">` : `<a href="${e}" target="_blank">${e}</a>` }
         function extractMediaFromContent(e) { if (!e) return null; const t = e.match(/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp)/i); return t ? { type: "img", url: t[0] } : null }
         document.addEventListener("DOMContentLoaded", () => { window.addEventListener("load", init) });
@@ -2332,7 +2631,8 @@
 
                 // Gallery with individual captions: ![cap](url), ![cap2](url2)
                 const markdownImages = parts.map(part => {
-                    const match = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+                    // Use greedy match for caption to support nested brackets/links: ![caption](url)
+                    const match = part.trim().match(/^!\[(.*)\]\(([^)]+)\)$/);
                     if (match) {
                         return {
                             url: match[2].trim(),
@@ -2364,7 +2664,13 @@
             // Check if it's a single media line
             if (lines.length === 1) {
                 const media = detectMediaType(lines[0]);
-                if (media) return media;
+                if (media) {
+                    // Attach shared caption if present and not already captioned
+                    if (sharedCaption && !media.caption) {
+                        media.caption = sharedCaption;
+                    }
+                    return media;
+                }
             }
 
             // Otherwise it's text content
@@ -2376,6 +2682,9 @@
 
         // Detect media type from a single line
         function detectMediaType(line) {
+            // Trim leading/trailing whitespace for reliable matching
+            line = line.trim();
+
             // [GLB Model]: path syntax (preferred)
             const glbColonMatch = line.match(/^\[GLB\s+Model\]:\s*(.+\.glb.*)$/i);
             if (glbColonMatch) {
@@ -2430,7 +2739,8 @@
             }
 
             // Markdown image with caption: ![caption](url)
-            const markdownImgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+            // Use greedy match for caption to support nested brackets/links
+            const markdownImgMatch = line.match(/^!\[(.*)\]\(([^)]+)\)$/);
             if (markdownImgMatch) {
                 return {
                     type: 'image',
@@ -2499,7 +2809,7 @@
                     const altText = block.caption || `Image ${index + 1}`;
                     return `<div class="media-container">
                         <img src="${block.url}" alt="${altText}" loading="lazy">
-                        ${block.caption ? `<div class="image-caption">${block.caption}</div>` : ''}
+                        ${block.caption ? `<div class="image-caption">${processInlineMarkdown(block.caption)}</div>` : ''}
                     </div>`;
 
                 case 'gallery':
@@ -2559,12 +2869,25 @@
                     continue;
                 }
 
-                // Check for list items with indentation
+                // Check for list items with indentation (including checkboxes)
                 const listMatch = line.match(/^(\s*)-\s+(.*)$/);
                 if (listMatch) {
                     const indent = listMatch[1].length;
-                    const content = processInlineMarkdown(listMatch[2]);
+                    let itemContent = listMatch[2];
                     const currentLevel = Math.floor(indent / 2); // 2 spaces = 1 level
+
+                    // Check for checkbox syntax: [ ] or [x]
+                    let checkboxHTML = '';
+                    let isCheckbox = false;
+                    const checkboxMatch = itemContent.match(/^\[([ xX])\]\s*(.*)$/);
+                    if (checkboxMatch) {
+                        isCheckbox = true;
+                        const isChecked = checkboxMatch[1].toLowerCase() === 'x';
+                        checkboxHTML = `<span class="checkbox ${isChecked ? 'checked' : ''}"></span>`;
+                        itemContent = checkboxMatch[2];
+                    }
+
+                    const content = processInlineMarkdown(itemContent);
 
                     // Adjust list stack to match current level
                     while (listStack.length > currentLevel + 1) {
@@ -2577,7 +2900,11 @@
                         listStack.push(true);
                     }
 
-                    output.push(`<li>${content}</li>`);
+                    if (isCheckbox) {
+                        output.push(`<li class="checkbox-item">${checkboxHTML}${content}</li>`);
+                    } else {
+                        output.push(`<li>${content}</li>`);
+                    }
                     continue;
                 }
 
@@ -2642,12 +2969,14 @@
                 return `
                 <div class="gallery-item">
                     <img src="${imgUrl}" alt="${altText}" loading="lazy">
-                    ${imgCaption ? `<div class="image-caption">${imgCaption}</div>` : ''}
-                </div>
-            `;
+                    ${imgCaption ? `<div class="image-caption">${processInlineMarkdown(imgCaption)}</div>` : ''}
+                </div>`;
             }).join('');
 
-            const sharedCaptionHTML = sharedCaption ? `<div class="image-caption" style="grid-column: 1 / -1; text-align: center;">${sharedCaption}</div>` : '';
+            // Shared caption - uses flex-basis: 100% to force it to a new line below images
+            const sharedCaptionHTML = sharedCaption
+                ? `<div class="image-caption shared-caption">${processInlineMarkdown(sharedCaption)}</div>`
+                : '';
 
             return `<div class="media-gallery uniform-height">${imageItems}${sharedCaptionHTML}</div>`;
         }
@@ -2826,15 +3155,12 @@
             let autoRotateTimeout = null;
             if (!isCardMode) {
                 controls = new OrbitControls(camera, canvas);
-                controls.enableDamping = false; // No floaty movement
+                controls.enableDamping = false; // Direct 1:1 rotation
                 controls.dampingFactor = 0;
-                controls.enableZoom = false; // Disabled by default, enabled in fullscreen
-                controls.enablePan = false;
-                controls.autoRotate = false; // Will enable after delay
-                controls.autoRotateSpeed = 1.0;
-                // Full freedom of movement - no angle constraints
-                // controls.minPolarAngle = Math.PI / 4;
-                // controls.maxPolarAngle = Math.PI / 1.5;
+                controls.enableZoom = false; // Prevent scroll trapping
+                controls.enablePan = false;  // Disable panning
+                controls.autoRotate = false; // Start disabled, enable after delay
+                controls.autoRotateSpeed = 2.0; // Standard speed
 
                 // Stop auto-rotation during user interaction
                 canvas.addEventListener('mousedown', () => {
@@ -2888,12 +3214,7 @@
                 modelGroup.add(model);
                 scene.add(modelGroup);
 
-                // Start auto-rotation after delay for interactive mode
-                if (!isCardMode && controls) {
-                    setTimeout(() => {
-                        controls.autoRotate = true;
-                    }, 5000);
-                }
+
             });
 
             // Animation loop
