@@ -488,13 +488,19 @@
 
         #search-controls {
             position: absolute;
-            right: 10px;
-            top: 0;
+            right: 20px;
+            /* Adjusted for larger button */
+            top: 2px;
+            /* Adjusted for larger button + perfect centering */
             height: var(--brand-row-h);
-            width: 60px;
+            width: auto;
             z-index: 1002;
             transform: translateY(0);
-            transition: transform .6s cubic-bezier(.2, 0, 0, 1), opacity var(--anim-layout) var(--ease), height .6s cubic-bezier(.2, 0, 0, 1)
+            transition: transform .6s cubic-bezier(.2, 0, 0, 1), opacity var(--anim-layout) var(--ease), height .6s cubic-bezier(.2, 0, 0, 1);
+            /* Center the button vertically relative to the row */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #main-header.scrolled #search-controls {
@@ -505,8 +511,9 @@
         }
 
         .icon-btn {
-            width: 48px;
-            height: 48px;
+            /* Desktop Base Size - increased for better visibility and touch target */
+            width: 44px;
+            height: 44px;
             padding: 10px;
             cursor: pointer;
             fill: var(--text-muted);
@@ -689,6 +696,11 @@
                 width: 48px;
                 height: 48px;
                 padding: 10px;
+            }
+
+            .icon-search-mask {
+                -webkit-mask-size: 26px;
+                mask-size: 26px;
             }
 
             .layout-quote {
@@ -1303,25 +1315,23 @@
             font-size: 11px;
             padding: 4px 10px;
             border-radius: var(--radius-md);
-            background: linear-gradient(to top, #fff 50%, var(--text-faded) 50.5%);
-            background-size: 100% 205%;
-            background-position: 0 0;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            border: none;
-            outline: 1px solid var(--border-strong);
+            /* REPLACED: Removed bright gradient fill to be less distracting */
+            color: var(--text-faded);
+            /* #888 default */
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            outline: none;
             outline-offset: -1px;
             box-shadow: none;
             margin-right: 4px;
             margin-bottom: 4px;
             vertical-align: middle;
-            font-weight: 600;
+            font-weight: 500;
             font-family: "Jost", sans-serif;
-            transition: background-position var(--anim-primary) var(--ease), outline-color var(--anim-quick);
+            transition: all var(--anim-quick) ease;
             box-sizing: border-box;
             text-decoration: none !important;
-            border-bottom: none !important;
+            /* border-bottom removed to fix uneven outline */
             cursor: pointer;
             user-select: none;
             -webkit-user-select: none;
@@ -1333,29 +1343,25 @@
         }
 
         .chip:hover {
-            background-position: 0 100%;
-            outline-color: var(--text-subtle);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+            /* Slight brighten on hover */
             box-shadow: none;
         }
 
         .chip.date {
-            background: linear-gradient(to top, #fff 50%, var(--text-muted) 50.5%);
-            background-size: 100% 205%;
-            background-position: 0 0;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 500;
-            border: none;
-            outline: 1px solid var(--border-strong);
-            outline-offset: -1px;
+            /* REPLACED: Removed bright gradient fill */
+            color: var(--text-faded);
+            /* Same subtle gray */
             padding: 3px 8px;
-            box-shadow: none;
+            /* Inherits subtle border/bg from .chip */
         }
 
         .chip.date:hover {
-            background-position: 0 100%;
-            outline-color: var(--text-subtle);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
             box-shadow: none;
         }
 
@@ -3159,23 +3165,19 @@
                 controls.dampingFactor = 0;
                 controls.enableZoom = false; // Prevent scroll trapping
                 controls.enablePan = false;  // Disable panning
-                controls.autoRotate = false; // Start disabled, enable after delay
-                controls.autoRotateSpeed = 2.0; // Standard speed
+                controls.autoRotate = true; // Start IMMEDIATELY
+                controls.autoRotateSpeed = 2.0;
 
-                // Stop auto-rotation during user interaction
-                canvas.addEventListener('mousedown', () => {
+                // Stop auto-rotation instantly on interaction
+                const stopAutoRotate = () => {
                     if (controls) {
                         controls.autoRotate = false;
                         clearTimeout(autoRotateTimeout);
                     }
-                });
+                };
 
-                canvas.addEventListener('touchstart', () => {
-                    if (controls) {
-                        controls.autoRotate = false;
-                        clearTimeout(autoRotateTimeout);
-                    }
-                });
+                canvas.addEventListener('mousedown', stopAutoRotate);
+                canvas.addEventListener('touchstart', stopAutoRotate);
 
                 // Resume auto-rotation 5 seconds after user stops interacting
                 const resumeAutoRotate = () => {
