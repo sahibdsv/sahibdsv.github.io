@@ -2428,11 +2428,6 @@
 
         // App Initialization
         const init = () => {
-            // Demo mode check
-            if (window.location.hash.toLowerCase() === '#demo') {
-                renderDemo();
-                return;
-            }
 
             setTimeout(() => document.body.classList.remove('no-transition'), 1000);
 
@@ -2508,11 +2503,7 @@
                 if (!cached) return null;
 
                 const parsed = JSON.parse(cached);
-                const age = Date.now() - parsed.ts;
-
-                // Cache expires after 1 hour
-                if (age > 3600000) return null;
-
+                // Return data instantly regardless of age (Stale-while-revalidate)
                 return parsed.data;
             } catch (e) {
                 return null;
@@ -2726,17 +2717,265 @@
         function renderIndex() { renderNavigation(null); const e = document.getElementById("app"); e.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>'; const t = e.querySelector(".index-list"), n = [...new Set(db.map(e => e.Page).filter(e => e && "Home" !== e && "Footer" !== e))].sort(), o = {}; n.forEach(e => { const t = e.split("/")[0]; o[t] || (o[t] = []), o[t].push(e) }); for (const [e, n] of Object.entries(o)) { let o = ""; const r = e.toLowerCase(); "projects" === r ? o = "cat-projects" : "professional" === r ? o = "cat-professional" : "personal" === r && (o = "cat-personal"); let i = `<div class="index-group ${o}"><h3>${e}</h3>`; n.forEach(e => { const t = db.find(t => t.Page === e), n = t ? t.Title : e.split("/").pop(), o = e.split("/").length; i += `<a href="#${e}" class="index-link fill-anim ${o > 1 ? `depth-${o}` : ""}">\n${n} \n</a>` }), i += "</div>", t.innerHTML += i } } function renderHome() { const e = db.filter(e => "Home" === e.Page); document.getElementById("app").innerHTML = "", renderRows(e, null, !0); const t = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page), n = {}; t.forEach(e => { n[e.Page] ? n[e.Page] : n[e.Page] = e }); const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0, 6); o.length > 0 && renderRows(o, "Recent Activity", !0, !0, !1, !0) }
         function processSingleLine(e) { if (!e) return ""; let t = safeHTML(e); return t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"), t = t.replace(/\*(.*?)\*/g, "<em>$1</em>"), t = t.replace(/`([^`]+)`/g, "<code>$1</code>"), t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>'), t }
         function formatTitle(e, t) { if (!e) return ""; const n = e.match(/^(#{1,6})\s+(.*)$/); let o = t, r = e; return n && (o = "h" + n[1].length, r = n[2]), `<${o} class="header-fade-anim">${processSingleLine(r)}</${o}>` }
-        function renderRows(e, t, n, o, r = !1, i = !1, targetElement = null) {
-            const s = targetElement || document.getElementById("app"); if (!s) return; if (i && (e.sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)), "Recent Activity" === t && e.sort((e, t) => { const n = e.Tags && e.Tags.toLowerCase().includes("featured") ? 1 : 0; return (t.Tags && t.Tags.toLowerCase().includes("featured") ? 1 : 0) - n })), n ? t && (s.innerHTML += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>`) : s.innerHTML = t ? `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${t}</h2></div>` : "", 0 === e.length && !n) return void (s.innerHTML += '<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>'); let a = s.querySelector(".grid-container"); if (n) a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a); else { (o || e.some(e => !e.SectionType || "quote" !== e.SectionType && "hero" !== e.SectionType && "text" !== e.SectionType) && !r) && !a && (a = document.createElement("div"), a.className = "grid-container section", s.appendChild(a)) } e.forEach((e, t) => {
-                if (!e.Page || "Footer" === e.Page) return; const i = e => { const t = e.match(/^\[(.*?)\]\((.*?)\)$/); if (t) { const e = t[1], n = t[2]; if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(n)) { return `<a href="${n}" target="_blank" class="chip location" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(e)}</a>` } return `<a href="${n}" target="_blank" class="chip location link" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(e)}</a>` } return `<span class="chip" data-tag="${e}">${safeHTML(e)}</span>` }; let l = e.Media, c = e.Content || "", d = "", m = [], u = safeHTML(e.Title), p = !1; const cardMatch = c.match(/^\[card\]:\s*(.+?)(?:\n|$)/i); let cardPreview = cardMatch ? cardMatch[1].trim() : null; if (cardPreview) { c = c.replace(/^\[card\]:\s*.+?(\n|$)/i, "").trim() } const h = e.Title ? e.Title.match(/^https?:\/\/\S+$/) : null; if (h) { if (m.push(h[0]), p = !0, !l) { const t = extractMediaFromContent(e.Title); t && ("img" === t.type ? d = `<div class="row-media"><img src="${t.url}" loading="lazy"></div>` : "yt" === t.type && (d = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${t.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`), l = "title-embed") } } else if (l || d) { if (!d && "title-embed" !== l) { const e = getThumbnail(l); if (e === 'GLB_VIEWER') { d = `<div class="row-media">${window.renderGLBViewer(l, true)}</div>` } else if (e) { d = `<div class="row-media"><img src="${e}" loading="lazy"></div>` } } } else { const e = extractMediaFromContent(c); e && (m.push(e.url), "img" === e.type ? d = `<div class="row-media"><img src="${e.url}" loading="lazy"></div>` : "yt" === e.type && (d = !r || o ? `<div class="row-media"><img src="https://img.youtube.com/vi/${e.id}/mqdefault.jpg" loading="lazy"></div>` : `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${e.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`)) } if (!d && (o || !r)) { const t = e.Page.split("/")[0].toUpperCase(); d = `<div class="row-media placeholder"><span>${t}</span></div>` } let g = processContentWithBlocks(c); if (!r || o) { g = cardPreview ? `<div class="grid-text-preview"><p>${processSingleLine(cardPreview)}</p></div>` : "" } let f = !l && d.includes("placeholder"), v = ""; const y = e.Page.toLowerCase(); y.startsWith("projects") ? v = "cat-projects" : y.startsWith("professional") ? v = "cat-professional" : y.startsWith("personal") && (v = "cat-personal"); let b = (e.SectionType || "card").toLowerCase(); const topLevelPages = ["home", "personal", "professional", "projects"]; if (!e.SectionType && topLevelPages.includes(e.Page.toLowerCase()) && !e.Page.includes("/")) { b = "hero" } if (!o && r && "quote" !== b && "hero" !== b) { const n = document.createElement("div"); n.className = "section layout-text", d = d.includes("embed-wrapper") || d.includes("<img") ? d.replace("row-media", "row-media article-mode") : ""; let metaHTML = ""; if (0 === t) { if (metaHTML = '<div class="article-meta-row"><a href="#Personal/About" class="author-link">Sahib Virdee</a>', e.LinkURL && (metaHTML += `<a href="${e.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`), metaHTML += '<div class="article-tags">', e.Timestamp) { const t = formatDate(e.Timestamp), n = e.Timestamp.substring(0, 7); metaHTML += `<span class="chip date" data-date="${n}" data-val="${t}">${t}</span>` } if (e.Tags) { e.Tags.split(",").map(e => e.trim()).forEach(e => metaHTML += i(e)) } const t = (e.Content || "").trim().split(/\s+/).length, n = Math.ceil(t / 200); n > 0 && (metaHTML += `<span class="chip" style="opacity:0.6; cursor:default;">${n} min read</span>`), metaHTML += "</div></div>" } const a = !p && u ? formatTitle(u, 0 === t ? "h1" : "h2") : ""; return n.innerHTML = `${d}${a}${metaHTML}<div class="article-body">${g}</div>`, void s.appendChild(n) } if (!o) {
-                    if ("quote" === b) { const t = document.createElement("div"); return t.className = "layout-quote section", t.setAttribute("data-title", e.Title || ""), "random quote" !== (e.Title || "").toLowerCase() && (t.setAttribute("data-static-quote", e.Content || e.Quote || ""), t.setAttribute("data-static-author", e.Author || "Sahib Virdee")), renderQuoteCard(t), void a.appendChild(t) }
-                    if ("hero" === b) { const t = document.createElement("div"); t.className = "section layout-hero"; const n = e.LinkURL || ""; if (n) { t.classList.add("clickable-block"), t.classList.add("hero-link"), t.setAttribute("data-link", n), t.setAttribute("data-target", n.startsWith("#") ? "" : "_blank") } let o = ""; if (e.Timestamp) { let t = formatDate(e.Timestamp), n = e.Timestamp.substring(0, 7); o += `<span class="chip date" data-val="${t}" onclick="event.stopPropagation(); window.location.hash='Filter:${n}'">${t}</span>` } if (e.Tags) { e.Tags.split(",").map(e => e.trim()).forEach(e => o += i(e)) } const r = o ? `<div class="hero-meta">${o}</div>` : ""; return t.innerHTML = `${formatTitle(e.Title, "h1")}${r}${processContentWithBlocks(e.Content)}`, void a.appendChild(t) } if ("text" === b) { const t = document.createElement("div"); return t.className = "section layout-text", t.innerHTML = `${safeHTML(e.Title) ? formatTitle(e.Title, "h2") : ""}${processContentWithBlocks(e.Content)}`, void a.appendChild(t) }
-                } const w = e.LinkURL || "", $ = e.Tags ? e.Tags.split(",").map(e => e.trim()) : []; let T = w; T || (T = `#${e.Page}`); const L = T.startsWith("#") ? "" : "_blank"; let x = ""; if (e.Timestamp || $.length > 0) { if (x = '<div class="meta-row">', e.Timestamp) { let t = formatDate(e.Timestamp); t || (t = e.Timestamp); let n = e.Timestamp.substring(0, 7); x += `<span class="chip date" data-date="${n}" data-val="${t}">${t}</span>` } $.forEach(e => x += i(e)), x += "</div>" } const C = document.createElement("div"); C.className = `layout-grid clickable-block ${v} ${f ? "has-placeholder" : ""}`, C.setAttribute("data-link", T), C.setAttribute("data-target", L); let k = u; p && (k = ""); let S = k ? `<h3 class="fill-anim">${processSingleLine(k)}</h3>` : ""; p && (S = ""), C.innerHTML = `${d}${S}${g}${x}`, a && a.appendChild(C)
-            }), setTimeout(() => { "function" == typeof addCopyButtons && addCopyButtons() }, 60)
+        function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecentActivity = false, targetElement = null) {
+            const container = targetElement || document.getElementById("app");
+            if (!container) return;
+
+            // Sorting logic
+            if (isRecentActivity) {
+                data.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
+                if (title === "Recent Activity") {
+                    data.sort((a, b) => {
+                        const aFeatured = a.Tags && a.Tags.toLowerCase().includes("featured") ? 1 : 0;
+                        const bFeatured = b.Tags && b.Tags.toLowerCase().includes("featured") ? 1 : 0;
+                        return bFeatured - aFeatured;
+                    });
+                }
+            }
+
+            // Header rendering
+            if (isHome) {
+                if (title) {
+                    container.innerHTML += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2></div>`;
+                }
+            } else {
+                container.innerHTML = title ? `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2></div>` : "";
+            }
+
+            if (data.length === 0 && !isHome) {
+                container.innerHTML += '<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>';
+                return;
+            }
+
+            let gridContainer = container.querySelector(".grid-container");
+            if (isHome) {
+                gridContainer = document.createElement("div");
+                gridContainer.className = "grid-container section";
+                container.appendChild(gridContainer);
+            } else {
+                const needsGrid = isSubPage || data.some(e => !e.SectionType || (e.SectionType.toLowerCase() !== "quote" && e.SectionType.toLowerCase() !== "hero" && e.SectionType.toLowerCase() !== "text"));
+                if (needsGrid && !isHeroOnly && !gridContainer) {
+                    gridContainer = document.createElement("div");
+                    gridContainer.className = "grid-container section";
+                    container.appendChild(gridContainer);
+                }
+            }
+
+            data.forEach((entry, index) => {
+                if (!entry.Page || entry.Page === "Footer") return;
+
+                // Chip rendering helper
+                const renderChip = (tag) => {
+                    const linkMatch = tag.match(/^\[(.*?)\]\((.*?)\)$/);
+                    if (linkMatch) {
+                        const label = linkMatch[1];
+                        const url = linkMatch[2];
+                        if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(url)) {
+                            return `<a href="${url}" target="_blank" class="chip location" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(label)}</a>`;
+                        }
+                        return `<a href="${url}" target="_blank" class="chip location link" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(label)}</a>`;
+                    }
+                    return `<span class="chip" data-tag="${tag}">${safeHTML(tag)}</span>`;
+                };
+
+                let media = entry.Media;
+                let content = entry.Content || "";
+                let mediaHTML = "";
+                let mediaUrls = [];
+                let titleHTML = safeHTML(entry.Title);
+                let isTitleLink = false;
+
+                // Card preview extraction
+                const cardMatch = content.match(/^\[card\]:\s*(.+?)(?:\n|$)/i);
+                let cardPreview = cardMatch ? cardMatch[1].trim() : null;
+                if (cardPreview) {
+                    content = content.replace(/^\[card\]:\s*.+?(\n|$)/i, "").trim();
+                }
+
+                // Media detection logic
+                const titleUrlMatch = entry.Title ? entry.Title.match(/^https?:\/\/\S+$/) : null;
+                if (titleUrlMatch) {
+                    mediaUrls.push(titleUrlMatch[0]);
+                    isTitleLink = true;
+                    if (!media) {
+                        const extracted = extractMediaFromContent(entry.Title);
+                        if (extracted) {
+                            if (extracted.type === "img") {
+                                mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy"></div>`;
+                            } else if (extracted.type === "yt") {
+                                mediaHTML = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
+                            }
+                            media = "title-embed";
+                        }
+                    }
+                } else if (media || mediaHTML) {
+                    if (!mediaHTML && media !== "title-embed") {
+                        const thumb = getThumbnail(media);
+                        if (thumb === 'GLB_VIEWER') {
+                            mediaHTML = `<div class="row-media">${window.renderGLBViewer(media, true)}</div>`;
+                        } else if (thumb) {
+                            mediaHTML = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+                        }
+                    }
+                } else {
+                    const extracted = extractMediaFromContent(content);
+                    if (extracted) {
+                        mediaUrls.push(extracted.url);
+                        if (extracted.type === "img") {
+                            mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy"></div>`;
+                        } else if (extracted.type === "yt") {
+                            mediaHTML = (!isHeroOnly || isSubPage) ?
+                                `<div class="row-media"><img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy"></div>` :
+                                `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
+                        }
+                    }
+                }
+
+                if (!mediaHTML && (isSubPage || !isHeroOnly)) {
+                    const pageType = entry.Page.split("/")[0].toUpperCase();
+                    mediaHTML = `<div class="row-media placeholder"><span>${pageType}</span></div>`;
+                }
+
+                let processedContent = processContentWithBlocks(content);
+                if (!isHeroOnly || isSubPage) {
+                    processedContent = cardPreview ? `<div class="grid-text-preview"><p>${processSingleLine(cardPreview)}</p></div>` : "";
+                }
+
+                let hasPlaceholder = !media && mediaHTML.includes("placeholder");
+                let categoryClass = "";
+                const pageLower = entry.Page.toLowerCase();
+                if (pageLower.startsWith("projects")) categoryClass = "cat-projects";
+                else if (pageLower.startsWith("professional")) categoryClass = "cat-professional";
+                else if (pageLower.startsWith("personal")) categoryClass = "cat-personal";
+
+                let sectionType = (entry.SectionType || "card").toLowerCase();
+                const topLevelPages = ["home", "personal", "professional", "projects"];
+                if (!entry.SectionType && topLevelPages.includes(entry.Page.toLowerCase()) && !entry.Page.includes("/")) {
+                    sectionType = "hero";
+                }
+
+                // Handle Article/Text Mode
+                if (!isSubPage && isHeroOnly && sectionType !== "quote" && sectionType !== "hero") {
+                    const articleDiv = document.createElement("div");
+                    articleDiv.className = "section layout-text";
+
+                    mediaHTML = mediaHTML.includes("embed-wrapper") || mediaHTML.includes("<img") ?
+                        mediaHTML.replace("row-media", "row-media article-mode") : "";
+
+                    let metaHTML = "";
+                    if (index === 0) {
+                        metaHTML = '<div class="article-meta-row"><a href="#Personal/About" class="author-link">Sahib Virdee</a>';
+                        if (entry.LinkURL) {
+                            metaHTML += `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+                        }
+                        metaHTML += '<div class="article-tags">';
+
+                        if (entry.Timestamp) {
+                            const dateStr = formatDate(entry.Timestamp);
+                            const monthKey = entry.Timestamp.substring(0, 7);
+                            metaHTML += `<span class="chip date" data-date="${monthKey}" data-val="${dateStr}">${dateStr}</span>`;
+                        }
+
+                        if (entry.Tags) {
+                            entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
+                        }
+
+                        const wordCount = (entry.Content || "").trim().split(/\s+/).length;
+                        const readTime = Math.ceil(wordCount / 200);
+                        if (readTime > 0) {
+                            metaHTML += `<span class="chip" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
+                        }
+                        metaHTML += "</div></div>";
+                    }
+
+                    const titleTag = (!isTitleLink && titleHTML) ? formatTitle(titleHTML, index === 0 ? "h1" : "h2") : "";
+                    articleDiv.innerHTML = `${mediaHTML}${titleTag}${metaHTML}<div class="article-body">${processedContent}</div>`;
+                    container.appendChild(articleDiv);
+                    return;
+                }
+
+                // Handle Hub/Hero/Quote Mode
+                if (!isSubPage) {
+                    if (sectionType === "quote") {
+                        const quoteDiv = document.createElement("div");
+                        quoteDiv.className = "layout-quote section";
+                        quoteDiv.setAttribute("data-title", entry.Title || "");
+                        if ((entry.Title || "").toLowerCase() !== "random quote") {
+                            quoteDiv.setAttribute("data-static-quote", entry.Content || entry.Quote || "");
+                            quoteDiv.setAttribute("data-static-author", entry.Author || "Sahib Virdee");
+                        }
+                        renderQuoteCard(quoteDiv);
+                        if (gridContainer) gridContainer.appendChild(quoteDiv);
+                        return;
+                    }
+
+                    if (sectionType === "hero") {
+                        const heroDiv = document.createElement("div");
+                        heroDiv.className = "section layout-hero";
+                        const link = entry.LinkURL || "";
+                        if (link) {
+                            heroDiv.classList.add("clickable-block");
+                            heroDiv.classList.add("hero-link");
+                            heroDiv.setAttribute("data-link", link);
+                            heroDiv.setAttribute("data-target", link.startsWith("#") ? "" : "_blank");
+                        }
+
+                        let metaHTML = "";
+                        if (entry.Timestamp) {
+                            const dateStr = formatDate(entry.Timestamp);
+                            const monthKey = entry.Timestamp.substring(0, 7);
+                            metaHTML += `<span class="chip date" data-val="${dateStr}" onclick="event.stopPropagation(); window.location.hash='Filter:${monthKey}'">${dateStr}</span>`;
+                        }
+                        if (entry.Tags) {
+                            entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
+                        }
+
+                        const metaContainer = metaHTML ? `<div class="hero-meta">${metaHTML}</div>` : "";
+                        heroDiv.innerHTML = `${formatTitle(entry.Title, "h1")}${metaContainer}${processContentWithBlocks(entry.Content)}`;
+                        if (gridContainer) gridContainer.appendChild(heroDiv);
+                        return;
+                    }
+
+                    if (sectionType === "text") {
+                        const textDiv = document.createElement("div");
+                        textDiv.className = "section layout-text";
+                        textDiv.innerHTML = `${safeHTML(entry.Title) ? formatTitle(entry.Title, "h2") : ""}${processContentWithBlocks(entry.Content)}`;
+                        if (gridContainer) gridContainer.appendChild(textDiv);
+                        return;
+                    }
+                }
+
+                // Default: Grid Card Mode
+                const linkUrl = entry.LinkURL || "";
+                const tagsList = entry.Tags ? entry.Tags.split(",").map(t => t.trim()) : [];
+                let finalLink = linkUrl || `#${entry.Page}`;
+                const linkTarget = finalLink.startsWith("#") ? "" : "_blank";
+
+                let metaRowHTML = "";
+                if (entry.Timestamp || tagsList.length > 0) {
+                    metaRowHTML = '<div class="meta-row">';
+                    if (entry.Timestamp) {
+                        let dateStr = formatDate(entry.Timestamp) || entry.Timestamp;
+                        let monthKey = entry.Timestamp.substring(0, 7);
+                        metaRowHTML += `<span class="chip date" data-date="${monthKey}" data-val="${dateStr}">${dateStr}</span>`;
+                    }
+                    tagsList.forEach(t => metaRowHTML += renderChip(t));
+                    metaRowHTML += "</div>";
+                }
+
+                const cardDiv = document.createElement("div");
+                cardDiv.className = `layout-grid clickable-block ${categoryClass} ${hasPlaceholder ? "has-placeholder" : ""}`;
+                cardDiv.setAttribute("data-link", finalLink);
+                cardDiv.setAttribute("data-target", linkTarget);
+
+                const displayTitle = (entry.Title && !isTitleLink) ? `<h3 class="fill-anim">${processSingleLine(entry.Title)}</h3>` : "";
+                cardDiv.innerHTML = `${mediaHTML}${displayTitle}${processedContent}${metaRowHTML}`;
+                if (gridContainer) gridContainer.appendChild(cardDiv);
+            });
+
         }
         function renderQuoteCard(e) { let t, n = !1; if ("random quote" === (e.getAttribute("data-title") || "").toLowerCase()) { if (0 === quotesDb.length) return void (e.innerHTML = "Quote sheet empty."); t = quotesDb[Math.floor(Math.random() * quotesDb.length)], n = !0 } else t = { Quote: e.getAttribute("data-static-quote") || "No content.", Author: e.getAttribute("data-static-author") || "Unknown", Source: null }; let o = t.Author || "Unknown"; t.Source && t.Source.startsWith("http") ? o = `<a href="${t.Source}" target="_blank">${safeHTML(o)}</a>` : t.Source && (o += ` — ${safeHTML(t.Source)}`); const r = safeHTML((t.Quote || "").trim().replace(/^"|"$/g, "")), i = r.length; let s = "short"; i > 230 ? s = "xxl" : i > 150 ? s = "xl" : i > 100 ? s = "long" : i > 50 && (s = "medium"); let a = ""; n && (a = '<svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">\n<rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>\n<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n</svg>'), e.innerHTML = `<blockquote class="${s}">"${r}"</blockquote>\n<div class="quote-footer"><span class="author"> &mdash; ${o}</span>${a}</div>` }
         function renderFooter() { const e = document.getElementById("footer-links"), t = db.filter(e => "Footer" === e.Page); e.innerHTML = ""; t.forEach(t => { const n = t.Title || "", o = n.match(/\[([^\]]+)\]\(([^)]+)\)/); if (o) { const n = document.createElement("a"); n.href = o[2], n.target = "_blank", n.textContent = o[1], e.appendChild(n) } else if (n) { const n = document.createElement("a"); n.href = t.LinkURL || "#", n.target = "_blank", n.textContent = n, e.appendChild(n) } }) }
-        function addCopyButtons() { document.querySelectorAll("pre").forEach(e => { if (e.querySelector(".copy-btn")) return; const t = document.createElement("button"); t.className = "copy-btn", t.textContent = "Copy", t.style.cssText = "position:absolute; top:8px; right:8px; padding:4px 10px; font-size:11px; background:rgba(255,255,255,0.1); color:#ccc; border:1px solid rgba(255,255,255,0.2); border-radius:4px; cursor:pointer; opacity:0; transition:0.2s; backdrop-filter:blur(4px);", e.style.position = "relative", e.onmouseenter = () => t.style.opacity = "1", e.onmouseleave = () => t.style.opacity = "0", t.onclick = () => { const n = e.querySelector("code")?.innerText || e.innerText; navigator.clipboard.writeText(n).then(() => { t.textContent = "Copied!", t.style.color = "#4caf50", t.style.borderColor = "#4caf50", setTimeout(() => { t.textContent = "Copy", t.style.color = "#ccc", t.style.borderColor = "rgba(255,255,255,0.2)" }, 2e3) }) }, e.appendChild(t) }) }
         function getThumbnail(e) { if (!e) return null; if (e.includes("youtube.com") || e.includes("youtu.be")) { let t = e.split("v=")[1]; return t && t.includes("&") && (t = t.split("&")[0]), !t && e.includes("youtu.be") && (t = e.split("/").pop()), `https://img.youtube.com/vi/${t}/mqdefault.jpg` } return e.endsWith(".mp4") ? null : e }
         function formatDate(e) { if (!e) return ""; if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`; if (8 === (e = String(e).trim()).length && !isNaN(e)) { const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8), r = new Date(t, n - 1, o, 12, 0, 0); return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}` } const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/); if (t) { const e = parseInt(t[1]), n = parseInt(t[2]), o = parseInt(t[3]); return `${o} ${new Date(e, n - 1, o, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${e}` } if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e; const n = new Date(e); return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}` }
         function updateSEO() { const e = document.getElementById("json-ld-script"); e && e.remove(); const t = document.createElement("script"); t.id = "json-ld-script", t.type = "application/ld+json"; const n = { "@context": "https://schema.org", "@type": "ProfilePage", mainEntity: { "@type": "Person", name: "Sahib Virdee", jobTitle: "Mechanical Engineering Graduate", description: "Specializing in Design and Manufacturing.", url: "https://sahibvirdee.com/", sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"] }, hasPart: db.map(e => { if (!e.Title || !e.Content) return null; return { "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork", name: e.Title, description: e.Content.substring(0, 150) + "...", url: `https://sahibvirdee.com/#${e.Page}` } }).filter(e => e) }; t.textContent = JSON.stringify(n), document.head.appendChild(t) }
@@ -2815,8 +3054,103 @@
                 targetCol.innerHTML += sectionHTML;
             });
         }
-        function RenderResumeEntry(e) { let t = e.Title || "", n = ""; if (t.includes("|")) { const e = t.split("|"); t = e[0].trim(), n = e[1].trim() } const o = e.LinkURL ? `<a href="${e.LinkURL}" target="_blank" class="resume-link"><svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:middle;opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : ""; let r = e.Content || ""; const i = processContentWithBlocks(r); let s = "", a = ""; if (e.Tags) { const t = e => { if ((e = e.trim()).match(/[A-Za-z]{3,}\s+\d{4}/) || e.toLowerCase().includes("present")) return { type: "date", html: safeHTML(e) }; const t = e.match(/^\[(.*?)\]\((.*?)\)$/); if (t) { const e = t[1], n = t[2]; return { type: "loc", html: `<a href="${n}" target="_blank" style="text-decoration:none; display:flex; align-items:center;">${/maps\.app\.goo\.gl|google\.com\/maps/i.test(n) ? '<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' : '<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(e)}</a>` } } return { type: "other", html: safeHTML(e) } }, n = e.Tags.includes(";") ? /(?:;|\u2022)\s*/ : /(?:;|,|\u2022)\s*/, o = e.Tags.split(n).filter(e => e.trim()), r = []; o.forEach(e => { const n = t(e); "date" !== n.type || s ? r.push(n.html) : s = n.html }), r.length > 0 && (a = r.join(", ")) } return `\n<div class="resume-entry" id="res-${e.ID || Math.random().toString(36).substr(2, 9)}">\n<div class="resume-entry-header">\n<div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">\n<div class="resume-role">${t} ${o}</div>\n<div class="resume-date-slot">${s}</div>\n</div>\n<div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">\n${n ? `<div class="resume-company">${n}</div>` : "<div></div>"}\n<div class="resume-loc-slot">${a}</div>\n</div>\n</div>\n<div class="resume-list text-content">${i}</div>\n</div>` }
-        function RenderResumeSkill(e) { const t = (e.Content || "").split("|").map(e => e.trim()).filter(e => e); let n = ""; return t.forEach(e => { const t = e.indexOf(":"); if (t > -1) { const o = e.substring(0, t).trim(), r = e.substring(t + 1).trim(); n += `<div class="resume-skill-row">\n<span class="resume-skill-cat">${o}:</span> \n<span class="resume-skill-list">${r}</span>\n</div>` } else n += `<div class="resume-skill-row"><span class="resume-skill-list">${e}</span></div>` }), `\n<div class="resume-skill-block">\n${e.Title ? `<div class="resume-skill-title">${e.Title}</div>` : ""}\n${n}\n</div>` }
+        function RenderResumeEntry(entry) {
+            let role = entry.Title || "";
+            let company = "";
+            if (role.includes("|")) {
+                const parts = role.split("|");
+                role = parts[0].trim();
+                company = parts[1].trim();
+            }
+
+            const linkHTML = entry.LinkURL ? `<a href="${entry.LinkURL}" target="_blank" class="resume-link"><svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:middle;opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : "";
+
+            const processedContent = processContentWithBlocks(entry.Content || "");
+
+            let dateHTML = "";
+            let metaHTML = "";
+
+            if (entry.Tags) {
+                const processTag = (tag) => {
+                    tag = tag.trim();
+                    // Detect date-like strings (e.g., "Jan 2020", "Present")
+                    if (tag.match(/[A-Za-z]{3,}\s+\d{4}/) || tag.toLowerCase().includes("present")) {
+                        return { type: "date", html: safeHTML(tag) };
+                    }
+                    // Detect markdown-style links [Label](URL)
+                    const linkMatch = tag.match(/^\[(.*?)\]\((.*?)\)$/);
+                    if (linkMatch) {
+                        const label = linkMatch[1];
+                        const url = linkMatch[2];
+                        const isMap = /maps\.app\.goo\.gl|google\.com\/maps/i.test(url);
+                        const icon = isMap ?
+                            '<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' :
+                            '<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+
+                        return {
+                            type: "loc",
+                            html: `<a href="${url}" target="_blank" style="text-decoration:none; display:flex; align-items:center;">${icon}${safeHTML(label)}</a>`
+                        };
+                    }
+                    return { type: "other", html: safeHTML(tag) };
+                };
+
+                const delimiter = entry.Tags.includes(";") ? /(?:;|\u2022)\s*/ : /(?:;|,|\u2022)\s*/;
+                const tags = entry.Tags.split(delimiter).filter(t => t.trim());
+                let metaItems = [];
+
+                tags.forEach(t => {
+                    const processed = processTag(t);
+                    if (processed.type === "date" && !dateHTML) {
+                        dateHTML = processed.html;
+                    } else {
+                        metaItems.push(processed.html);
+                    }
+                });
+                if (metaItems.length > 0) metaHTML = metaItems.join(", ");
+            }
+
+            return `
+                <div class="resume-entry" id="res-${entry.ID || Math.random().toString(36).substr(2, 9)}">
+                    <div class="resume-entry-header">
+                        <div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">
+                            <div class="resume-role">${role} ${linkHTML}</div>
+                            <div class="resume-date-slot">${dateHTML}</div>
+                        </div>
+                        <div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">
+                            ${company ? `<div class="resume-company">${company}</div>` : "<div></div>"}
+                            <div class="resume-loc-slot">${metaHTML}</div>
+                        </div>
+                    </div>
+                    <div class="resume-list text-content">${processedContent}</div>
+                </div>`;
+        }
+
+        function RenderResumeSkill(entry) {
+            const lines = (entry.Content || "").split("|").map(l => l.trim()).filter(l => l);
+            let skillRowsHTML = "";
+
+            lines.forEach(line => {
+                const colonIndex = line.indexOf(":");
+                if (colonIndex > -1) {
+                    const category = line.substring(0, colonIndex).trim();
+                    const list = line.substring(colonIndex + 1).trim();
+                    skillRowsHTML += `
+                        <div class="resume-skill-row">
+                            <span class="resume-skill-cat">${category}:</span> 
+                            <span class="resume-skill-list">${list}</span>
+                        </div>`;
+                } else {
+                    skillRowsHTML += `<div class="resume-skill-row"><span class="resume-skill-list">${line}</span></div>`;
+                }
+            });
+
+            return `
+                <div class="resume-skill-block">
+                    ${entry.Title ? `<div class="resume-skill-title">${entry.Title}</div>` : ""}
+                    ${skillRowsHTML}
+                </div>`;
+        }
         function generateResumeJSONLD() {
             const e = document.getElementById("json-ld-resume"); e && e.remove();
             const t = resumeDb, n = t.filter(e => e.SectionType && e.SectionType.toLowerCase().startsWith("#header"));
@@ -2825,154 +3159,7 @@
                 s = { "@context": "https://schema.org", "@type": "Person", name: r, jobTitle: i, url: "https://sahibvirdee.com/resume", description: `Resume of ${r}, ${i}.`, knowsAbout: t.filter(e => e.SectionType && e.SectionType.toLowerCase().includes("skill")).map(e => e.Content).join(", ") },
                 a = document.createElement("script"); a.id = "json-ld-resume", a.type = "application/ld+json", a.textContent = JSON.stringify(s), document.head.appendChild(a)
         }
-        // === DEMO PAGE RENDERER ===
-        function renderDemo() {
-            const app = document.getElementById('app');
-            app.innerHTML = '';
-            renderNavigation('Demo');
 
-            // 1. Hero with Rich Content
-            const heroData = {
-                Page: 'Demo',
-                Title: 'Feature Demo Page',
-                SectionType: 'Hero',
-                Timestamp: new Date().toISOString().split('T')[0],
-                Tags: 'Demo, Features, Test',
-                Content: [
-                    'This page demonstrates site-wide feature support.',
-                    '',
-                    '![Demo Hero Image](https://picsum.photos/800/300)',
-                    '',
-                    '**Bold text**, *Italic text*, and [Links](#demo) all work in Hero sections.'
-                ].join('\n')
-            };
-            renderRows([heroData], null, true, false);
-
-            // 2. Text Section - Markdown Features
-            const textData = {
-                Page: 'Demo',
-                Title: 'Markdown Features',
-                SectionType: 'Text',
-                Content: [
-                    '### Lists with Indentation',
-                    '',
-                    '- Unordered list item 1',
-                    '- Unordered list item 2',
-                    '  - Nested item (2 spaces)',
-                    '  - Another nested item',
-                    '    - Double nested (4 spaces)',
-                    '- Back to top level',
-                    '',
-                    '> This is a blockquote. It has a left border and italic styling.',
-                    '',
-                    '`Inline code` renders with a monospace font.',
-                    '',
-                    '### Checkbox Support',
-                    '',
-                    '- [ ] Unchecked task',
-                    '- [x] Completed task',
-                    '- [ ] Another pending item'
-                ].join('\n')
-            };
-            renderRows([textData], null, true, false);
-
-            // 3. Single Image with Caption
-            const imageData = {
-                Page: 'Demo',
-                Title: 'Image with Caption',
-                SectionType: 'Text',
-                Content: '![This caption supports **markdown** and [links](#demo)](https://picsum.photos/600/400)'
-            };
-            renderRows([imageData], null, true, false);
-
-            // 4. Gallery with Individual Captions
-            const galleryIndividualData = {
-                Page: 'Demo',
-                Title: 'Gallery with Individual Captions',
-                SectionType: 'Text',
-                Content: [
-                    'Each image can have its own caption using markdown syntax:',
-                    '',
-                    '![First Image](https://picsum.photos/400/300), ![Second Image](https://picsum.photos/401/300), ![Third Image](https://picsum.photos/402/300)'
-                ].join('\n')
-            };
-            renderRows([galleryIndividualData], null, true, false);
-
-            // 5. Gallery with Shared Caption
-            const gallerySharedData = {
-                Page: 'Demo',
-                Title: 'Gallery with Shared Caption',
-                SectionType: 'Text',
-                Content: [
-                    'Plain URLs can share a caption below:',
-                    '',
-                    'https://picsum.photos/403/300, https://picsum.photos/404/300, https://picsum.photos/405/300',
-                    '[Caption]: Shared caption with **markdown** and [link](#demo) support'
-                ].join('\n')
-            };
-            renderRows([gallerySharedData], null, true, false);
-
-            // 6. YouTube Embed (Single)
-            const ytData = {
-                Page: 'Demo',
-                Title: 'YouTube Embed (Single)',
-                SectionType: 'Text',
-                Content: [
-                    'YouTube videos embed automatically:',
-                    '',
-                    'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
-                    '[Caption]: This caption sits outside the rounded video container.'
-                ].join('\n')
-            };
-            renderRows([ytData], null, true, false);
-
-            // 7. Side-by-Side YouTube
-            const ytGalleryData = {
-                Page: 'Demo',
-                Title: 'Side-by-Side YouTube',
-                SectionType: 'Text',
-                Content: [
-                    'YouTube videos can be placed side-by-side using the gallery syntax:',
-                    '',
-                    'https://www.youtube.com/watch?v=aqz-KE-bpKQ, https://www.youtube.com/watch?v=aqz-KE-bpKQ',
-                    '[Caption]: Shared caption for video gallery'
-                ].join('\n')
-            };
-            renderRows([ytGalleryData], null, true, false);
-
-            // 8. 3D Models (GLB)
-            const glbData = {
-                Page: 'Demo',
-                Title: '3D Models (GLB)',
-                SectionType: 'Text',
-                Content: [
-                    '**Single Model:**',
-                    '',
-                    '[GLB Model]: assets/models/MECH2401-RubberbandCar.glb',
-                    '[Caption]: Interactive 3D Model of a Rubberband Car (Drag to rotate)',
-                    '',
-                    '**Side-by-Side Models (Interactive):**',
-                    '',
-                    'assets/models/MECH2401-RubberbandCar.glb, assets/models/MECH2401-RubberbandCar.glb',
-                    '[Caption]: Interactive 3D models (try dragging!)'
-                ].join('\n')
-            };
-            renderRows([glbData], null, true, false);
-
-            // 9. Mixed Media Gallery
-            const mixedData = {
-                Page: 'Demo',
-                Title: 'Mixed Media Gallery',
-                SectionType: 'Text',
-                Content: [
-                    'Images, Videos, and 3D Models in one row with **individual captions**:',
-                    '',
-                    '![Image Caption](https://picsum.photos/400/300), ![Video Caption](https://www.youtube.com/watch?v=aqz-KE-bpKQ), ![Model Caption](assets/models/MECH2401-RubberbandCar.glb)',
-                    '[Caption]: Truly Unified Media System (Shared Footer)'
-                ].join('\n')
-            };
-            renderRows([mixedData], null, true, false);
-        }
         function detectEmbed(e) { return e.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) ? `<img src="${e}" class="inline-img zoomable" loading="lazy">` : `<a href="${e}" target="_blank">${e}</a>` }
         function extractMediaFromContent(e) { if (!e) return null; const t = e.match(/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp)/i); return t ? { type: "img", url: t[0] } : null }
         document.addEventListener("DOMContentLoaded", () => { window.addEventListener("load", init) });
