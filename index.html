@@ -332,7 +332,7 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            padding: 4px 0 2px 0;
+            padding: 4px 0;
             gap: var(--gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
@@ -412,7 +412,7 @@
             font-size: 15px;
             letter-spacing: 1px;
             line-height: 1.2;
-            padding-bottom: 2px
+            padding-bottom: 0
         }
 
         .layout-grid.cat-projects h3,
@@ -451,7 +451,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            line-height: 1;
+            line-height: 1.2;
             mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%)
         }
@@ -482,7 +482,7 @@
         #main-header.scrolled #brand-name {
             height: 0;
             opacity: 0;
-            margin-bottom: -1px;
+            margin-bottom: 0;
             transform: translateY(-20px);
             pointer-events: none
         }
@@ -511,7 +511,7 @@
             position: absolute;
             right: 20px;
             /* Adjusted for larger button */
-            top: 2px;
+            top: 4px;
             /* Adjusted for larger button + perfect centering */
             height: var(--brand-row-h);
             width: auto;
@@ -583,7 +583,7 @@
             -webkit-backdrop-filter: blur(20px);
             z-index: 9999;
             border-radius: 999px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, var(--op-high));
+            box-shadow: 0 8px 32px rgba(var(--bg-rgb), var(--op-high));
             border: 1px solid var(--border-subtle);
             transition: transform var(--anim-layout) cubic-bezier(.16, 1, .3, 1), opacity var(--anim-layout) ease;
             opacity: 0;
@@ -681,7 +681,7 @@
             /* Larger, more touchable navigation text */
             .nav-row.level-1 .nav-link {
                 font-size: 16px;
-                line-height: 1.3;
+                line-height: 1.2;
             }
 
             .nav-row.level-n {
@@ -924,7 +924,7 @@
 
         .layout-quote.loading .quote-footer,
         .layout-quote.loading blockquote {
-            opacity: .3;
+            opacity: var(--op-line);
             pointer-events: none
         }
 
@@ -936,7 +936,7 @@
             width: 18px;
             height: 18px;
             cursor: pointer;
-            opacity: .3;
+            opacity: var(--op-line);
             transition: transform var(--anim-layout) cubic-bezier(.175, .885, .32, 1.275), opacity var(--anim-layout) ease, color var(--anim-layout) ease;
             -webkit-tap-highlight-color: transparent;
             outline: 0
@@ -954,6 +954,7 @@
         .sk-line {
             background: var(--card-bg-hover);
             background-image: linear-gradient(90deg, var(--card-bg-hover) 0, var(--border-strong) 50%, var(--card-bg-hover) 100%);
+            background-size: 200% 100%;
             border-radius: var(--radius-sm);
             animation: shimmer 1.5s infinite linear;
             display: block
@@ -1464,7 +1465,7 @@
             width: 36px;
             height: 36px;
             padding: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(var(--bg-rgb), 0.6);
             color: var(--text-bright);
             border: 1px solid var(--border-strong);
             border-radius: 50%;
@@ -1485,7 +1486,7 @@
         }
 
         .model-viewer-wrapper .fs-btn:hover {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(var(--bg-rgb), var(--op-high));
             border-color: rgba(var(--bright-rgb), 0.4);
             transform: scale(1.1);
         }
@@ -2201,6 +2202,16 @@
             .resume-section,
             .resume-entry {
                 page-break-inside: avoid !important;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
             }
         }
     </style>
