@@ -829,12 +829,21 @@
             margin: 0;
         }
 
-        #footer-links a {
+        #footer-links a,
+        #footer-links span {
             font-size: 14px;
             line-height: 1;
             font-weight: 500;
+        }
+
+        #footer-links a {
             --text-base: var(--text-dim);
             --text-hover: var(--text-bright);
+        }
+
+        #footer-links span {
+            color: var(--text-muted);
+            user-select: text;
         }
 
         #footer-meta {
@@ -2931,7 +2940,32 @@
 
         }
         function renderQuoteCard(e) { let t, n = !1; if ("random quote" === (e.getAttribute("data-title") || "").toLowerCase()) { if (0 === quotesDb.length) return void (e.innerHTML = "Quote sheet empty."); t = quotesDb[Math.floor(Math.random() * quotesDb.length)], n = !0 } else t = { Quote: e.getAttribute("data-static-quote") || "No content.", Author: e.getAttribute("data-static-author") || "Unknown", Source: null }; let o = t.Author || "Unknown"; t.Source && t.Source.startsWith("http") ? o = `<a href="${t.Source}" target="_blank">${safeHTML(o)}</a>` : t.Source && (o += ` — ${safeHTML(t.Source)}`); const r = safeHTML((t.Quote || "").trim().replace(/^"|"$/g, "")), i = r.length; let s = "short"; i > 230 ? s = "xxl" : i > 150 ? s = "xl" : i > 100 ? s = "long" : i > 50 && (s = "medium"); let a = ""; n && (a = '<svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">\n<rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>\n<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n</svg>'), e.innerHTML = `<blockquote class="${s}">"${r}"</blockquote>\n<div class="quote-footer"><span class="author"> &mdash; ${o}</span>${a}</div>` }
-        function renderFooter() { const e = document.getElementById("footer-links"), t = db.filter(e => "Footer" === e.Page); e.innerHTML = ""; t.forEach(t => { const n = t.Title || "", o = n.match(/\[([^\]]+)\]\(([^)]+)\)/); if (o) { const n = document.createElement("a"); n.href = o[2], n.target = "_blank", n.textContent = o[1], e.appendChild(n) } else if (n) { const n = document.createElement("a"); n.href = t.LinkURL || "#", n.target = "_blank", n.textContent = n, e.appendChild(n) } }) }
+        function renderFooter() {
+            const container = document.getElementById("footer-links");
+            const footerEntries = db.filter(e => "Footer" === e.Page);
+            container.innerHTML = "";
+            footerEntries.forEach(entry => {
+                let title = (entry.Title || "").replace(/{year}/g, new Date().getFullYear());
+                const markdownLink = title.match(/\[([^\]]+)\]\(([^)]+)\)/);
+                if (markdownLink) {
+                    const link = document.createElement("a");
+                    link.href = markdownLink[2];
+                    link.target = "_blank";
+                    link.textContent = markdownLink[1];
+                    container.appendChild(link);
+                } else if (entry.LinkURL) {
+                    const link = document.createElement("a");
+                    link.href = entry.LinkURL;
+                    link.target = "_blank";
+                    link.textContent = title;
+                    container.appendChild(link);
+                } else if (title) {
+                    const span = document.createElement("span");
+                    span.textContent = title;
+                    container.appendChild(span);
+                }
+            });
+        }
         function getThumbnail(e) { if (!e) return null; if (e.includes("youtube.com") || e.includes("youtu.be")) { let t = e.split("v=")[1]; return t && t.includes("&") && (t = t.split("&")[0]), !t && e.includes("youtu.be") && (t = e.split("/").pop()), `https://img.youtube.com/vi/${t}/mqdefault.jpg` } return e.endsWith(".mp4") ? null : e }
         function formatDate(e) { if (!e) return ""; if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`; if (8 === (e = String(e).trim()).length && !isNaN(e)) { const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8), r = new Date(t, n - 1, o, 12, 0, 0); return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}` } const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/); if (t) { const e = parseInt(t[1]), n = parseInt(t[2]), o = parseInt(t[3]); return `${o} ${new Date(e, n - 1, o, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${e}` } if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e; const n = new Date(e); return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}` }
         function updateSEO() { const e = document.getElementById("json-ld-script"); e && e.remove(); const t = document.createElement("script"); t.id = "json-ld-script", t.type = "application/ld+json"; const n = { "@context": "https://schema.org", "@type": "ProfilePage", mainEntity: { "@type": "Person", name: "Sahib Virdee", jobTitle: "Mechanical Engineering Graduate", description: "Specializing in Design and Manufacturing.", url: "https://sahibvirdee.com/", sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"] }, hasPart: db.map(e => { if (!e.Title || !e.Content) return null; return { "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork", name: e.Title, description: e.Content.substring(0, 150) + "...", url: `https://sahibvirdee.com/#${e.Page}` } }).filter(e => e) }; t.textContent = JSON.stringify(n), document.head.appendChild(t) }
