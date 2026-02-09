@@ -62,6 +62,7 @@
             --op-subtle: 0.03;
             --op-low: 0.08;
             --op-medium: 0.2;
+            --op-line: 0.35;
             --op-high: 0.8;
             --op-overlay: 0.1;
             --op-mask: 0.98;
@@ -241,7 +242,7 @@
         .layout-quote .author a {
             color: var(--text-main);
             text-decoration: underline;
-            text-decoration-color: var(--border-strong);
+            text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
             text-decoration-thickness: 1px;
             text-underline-offset: 3px;
             display: inline-block;
@@ -266,7 +267,7 @@
         .author-link {
             color: var(--text-main);
             text-decoration: underline;
-            text-decoration-color: var(--border-strong);
+            text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
             text-decoration-thickness: 1px;
             text-underline-offset: 3px;
             display: inline-block;
@@ -1759,7 +1760,7 @@
             text-decoration: underline;
             text-underline-offset: 3px;
             text-decoration-thickness: 1px;
-            text-decoration-color: var(--border-strong);
+            text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
             transition: color 0.2s ease;
             background: none;
             /* remove legacy gradient underlines */
