@@ -1447,14 +1447,22 @@
             width: 100%;
             display: flex;
             justify-content: center;
-            padding: 15px 0;
-            margin: 5px 0;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 0;
+            margin: 15px 0;
             /* Firewall: Ensure solid rendering by resetting inherited masks */
             mask: none;
             -webkit-mask: none;
             opacity: 1;
             background: none;
             overflow: visible;
+        }
+
+        .article-body .btn-cta-wrapper,
+        .layout-hero .btn-cta-wrapper,
+        .layout-text .btn-cta-wrapper {
+            margin: 15px 0;
         }
 
         .btn-cta {
@@ -1469,7 +1477,9 @@
             opacity: 1;
 
             /* Match successful Chip DNA exactly */
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             vertical-align: middle;
             line-height: normal;
             /* Essential for natural centering */
@@ -2803,8 +2813,8 @@
             let t = safeHTML(e);
 
             // Universal button support (even in titles/previews)
-            t = t.replace(/\[button\]:\s*(.+?)\s*\|\s*(.+)/gi, (match, text, url) => {
-                return window.renderButtonHTML(text.trim(), url.trim());
+            t = t.replace(/\[button\]:\s*(.+?)\s*\|\s*(\S+)/gi, (match, text, url) => {
+                return window.renderButtonHTML(text.trim(), url.trim(), true);
             });
 
             t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
@@ -3392,16 +3402,32 @@
                 }
             }
 
-            // 4. CTA Button: [button]: Text | URL
-            if (lines.length === 1) {
-                const buttonMatch = lines[0].match(/^\[button\]:\s*(.+?)\s*\|\s*(.+)$/i);
+            // 4. CTA Button: [button]: Text | URL (Group consecutive)
+            const buttonLines = [];
+            let i = 0;
+            while (i < lines.length) {
+                const buttonMatch = lines[i].match(/^\[button\]:\s*(.+?)\s*\|\s*(.+)$/i);
                 if (buttonMatch) {
-                    return {
-                        type: 'button',
+                    buttonLines.push({
                         text: buttonMatch[1].trim(),
                         url: buttonMatch[2].trim()
+                    });
+                    i++;
+                } else {
+                    break;
+                }
+            }
+
+            if (buttonLines.length > 0) {
+                // If the block contains only buttons, return as buttons type
+                if (i === lines.length) {
+                    return {
+                        type: 'buttons',
+                        items: buttonLines
                     };
                 }
+                // If it's mixed with other things, we fall through to text processing
+                // or we could split the block here, but parseContentBlocks already split it.
             }
 
             // 5. Embedded Grid: [grid]: followed by [card]: lines
@@ -3630,6 +3656,10 @@
                 case 'button':
                     return window.renderButtonHTML(block.text, block.url);
 
+                case 'buttons':
+                    const btnsHTML = block.items.map(b => window.renderButtonHTML(b.text, b.url, true)).join('');
+                    return `<div class="btn-cta-wrapper">${btnsHTML}</div>`;
+
                 case 'card':
                     return `<div class="markdown-single-card" style="margin: 20px 0;">${window.renderCardHTML(block.data, contextCategory)}</div>`;
 
@@ -3643,14 +3673,18 @@
         }
 
         // Centralized Toolset for Markdown Elements
-        window.renderButtonHTML = function (text, url) {
+        window.renderButtonHTML = function (text, url, isInline = false) {
             const target = (url || "").startsWith('#') ? '' : 'target="_blank"';
-            return `
-            <div class="btn-cta-wrapper">
-                <a href="${url}" class="btn-cta" ${target}>
-                    ${text}
-                </a>
-            </div>`;
+
+            // Allow simple markdown inside button text (bold, italic, underline)
+            const formattedText = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/__(.*?)__/g, '<u>$1</u>');
+
+            const btnHTML = `<a href="${url}" class="btn-cta" ${target}>${formattedText}</a>`;
+            if (isInline) return btnHTML;
+            return `<div class="btn-cta-wrapper">${btnHTML}</div>`;
         };
 
         window.renderMarkdownCard = function (cardData, contextCategory = "") {
@@ -3758,6 +3792,13 @@
                     continue;
                 }
 
+                // Check if the line is JUST a button - if so, render as block (with full 35px margins)
+                const standaloneButtonMatch = trimmed.match(/^\[button\]:\s*(.+?)\s*\|\s*(\S+)$/i);
+                if (standaloneButtonMatch) {
+                    output.push(window.renderButtonHTML(standaloneButtonMatch[1].trim(), standaloneButtonMatch[2].trim(), false));
+                    continue;
+                }
+
                 // Regular paragraph
                 output.push(`<p>${processInlineMarkdown(trimmed)}</p>`);
             }
@@ -3782,12 +3823,13 @@
                 .replace(/>/g, '&gt;');
 
             // Universal button support (inline/paragraph)
-            result = result.replace(/\[button\]:\s*(.+?)\s*\|\s*(.+)/gi, (match, btnText, btnUrl) => {
-                return window.renderButtonHTML(btnText.trim(), btnUrl.trim());
+            result = result.replace(/\[button\]:\s*(.+?)\s*\|\s*(\S+)/gi, (match, btnText, btnUrl) => {
+                return window.renderButtonHTML(btnText.trim(), btnUrl.trim(), true);
             });
 
             // Process markdown
             result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+            result = result.replace(/__(.*?)__/g, '<u>$1</u>'); // Underline
             result = result.replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italic
             result = result.replace(/`([^`]+)`/g, '<code>$1</code>'); // Inline code
             result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>'); // Links
