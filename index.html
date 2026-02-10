@@ -233,13 +233,13 @@
         /* SCOPED Standard Link Styling
            Only targets body content, resume entries, and text layouts. 
            Excludes headers, UI chips, nav links, and footers by omission. */
-        .article-body a:not(.chip),
-        .layout-text a:not(.chip),
-        .resume-contact a,
-        .layout-hero p a:not(.chip),
-        .resume-entry a:not(.chip),
-        #footer-links a,
-        .layout-quote .author a {
+        .article-body a:not(.chip):not(.btn-cta),
+        .layout-text a:not(.chip):not(.btn-cta),
+        .resume-contact a:not(.btn-cta),
+        .layout-hero p a:not(.chip):not(.btn-cta),
+        .resume-entry a:not(.chip):not(.btn-cta),
+        #footer-links a:not(.btn-cta),
+        .layout-quote .author a:not(.btn-cta) {
             color: var(--text-main);
             text-decoration: underline;
             text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
@@ -1439,6 +1439,85 @@
             border-radius: var(--media-radius);
         }
 
+        /* --- MARKDOWN COMPONENT STYLES --- */
+
+        /* CTA Buttons */
+        /* CTA Buttons - Technically identical to Chips but larger */
+        .btn-cta-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 15px 0;
+            margin: 5px 0;
+            /* Firewall: Ensure solid rendering by resetting inherited masks */
+            mask: none;
+            -webkit-mask: none;
+            opacity: 1;
+            background: none;
+            overflow: visible;
+        }
+
+        .btn-cta {
+            /* Persistence: Explicitly block mask/clipping inheritance */
+            -webkit-text-fill-color: initial;
+            -webkit-background-clip: initial;
+            background-clip: padding-box;
+            background-image: none;
+            mask: none;
+            -webkit-mask: none;
+            transform: none;
+            opacity: 1;
+
+            /* Match successful Chip DNA exactly */
+            display: inline-block;
+            vertical-align: middle;
+            line-height: normal;
+            /* Essential for natural centering */
+            padding: 10px 24px;
+            /* Resulting height ~40px */
+
+            /* Typography */
+            font-size: 17px;
+            font-weight: 400;
+            /* Regular weight */
+            color: var(--text-main);
+
+            /* Visuals */
+            background: rgba(var(--bright-rgb), var(--op-subtle));
+            border: 1px solid var(--border-strong);
+            border-radius: 50px;
+
+            text-decoration: none !important;
+            /* Keep only for layout override */
+            cursor: pointer;
+            overflow: visible;
+            transition: color var(--anim-quick) var(--ease), border-color var(--anim-quick) var(--ease), background var(--anim-quick) var(--ease);
+            will-change: color, border-color, background;
+        }
+
+        .btn-cta:hover {
+            color: var(--text-bright);
+            border-color: rgba(var(--bright-rgb), var(--op-high));
+            background: rgba(var(--bright-rgb), var(--op-subtle));
+            transform: none;
+            text-decoration: none !important;
+        }
+
+        /* Markdown Embedded Grids */
+        .markdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        /* Ensure cards inside markdown grids look correct */
+        .markdown-grid .layout-grid {
+            margin-bottom: 0;
+            height: 100%;
+        }
+
         /* Disable pointer events on GLB canvas in article mode on MOBILE ONLY to allow scroll-through */
         @media (max-width: 768px) {
             .model-viewer-wrapper:not(.card-preview) canvas {
@@ -1766,9 +1845,9 @@
         }
 
         /* Standardize layout-text links too */
-        .layout-hero a:not(.btn-pill):not(.chip),
-        .layout-text a:not(.btn-pill):not(.chip),
-        .article-body a:not(.btn-pill):not(.chip) {
+        .layout-hero a:not(.btn-pill):not(.chip):not(.btn-cta),
+        .layout-text a:not(.btn-pill):not(.chip):not(.btn-cta),
+        .article-body a:not(.btn-pill):not(.chip):not(.btn-cta) {
             text-decoration: underline;
             text-underline-offset: 3px;
             text-decoration-thickness: 1px;
@@ -2679,11 +2758,73 @@
             if (app) app.style.display = "none";
         } function handleRouting() { if (isSearchActive) return; const e = document.getElementById("main-header"); e && e.classList.remove("scrolled"), window.scrollTo(0, 0); clearTextSelection(); let t = window.location.hash.substring(1) || "Home"; "Index" !== t ? "Professional/Resume" !== t ? (renderNavigation("Home" === t ? null : t), t.startsWith("Filter:") ? renderFiltered(decodeURIComponent(t.split(":")[1])) : renderPage(t)) : renderResume() : renderIndex() } function renderFiltered(e) { const t = e.match(/^(\d{4})-(\d{2})(-\d{2})?$/), n = e.match(/^(\d{4})(\d{2})/); let o = e; t ? o = `${new Date(t[1], parseInt(t[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${t[1]}` : n && (o = `${new Date(n[1], parseInt(n[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${n[1]}`), renderRows(db.filter(t => (t.Timestamp || "").startsWith(e) || t.Tags && t.Tags.includes(e)), `Posts from ${safeHTML(o)}`, !1, !0, !1, !0) }
         function renderPage(e) {
-            if ("Home" === e) return void renderHome(); const t = db.filter(t => t.Page === e), n = document.getElementById("app"); n.innerHTML = ""; const o = !e.includes("/"); if (t.length > 0) renderRows(t, null, !0, !1, !o); else if (!childrenPagesCheck(e) && !("Personal" === e && quotesDb.length > 0)) return void (n.innerHTML = '<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn\'t exist in the database yet.</p></div>'); if ("Personal" === e && quotesDb.length > 0) { const q = document.createElement("div"); q.className = "layout-quote section", q.setAttribute("data-title", "Random Quote"), renderQuoteCard(q), n.appendChild(q) } if (o) { const t = [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))]; t.length > 0 && renderRows(t.map(e => db.find(t => t.Page === e)).filter(e => e), null, !0, !0) }
-        } function childrenPagesCheck(e) { return [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/")).map(e => e.Page))].length > 0 }
-        function renderIndex() { renderNavigation(null); const e = document.getElementById("app"); e.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>'; const t = e.querySelector(".index-list"), n = [...new Set(db.map(e => e.Page).filter(e => e && "Home" !== e && "Footer" !== e))].sort(), o = {}; n.forEach(e => { const t = e.split("/")[0]; o[t] || (o[t] = []), o[t].push(e) }); for (const [e, n] of Object.entries(o)) { let o = ""; const r = e.toLowerCase(); "projects" === r ? o = "cat-projects" : "professional" === r ? o = "cat-professional" : "personal" === r && (o = "cat-personal"); let i = `<div class="index-group ${o}"><h3>${e}</h3>`; n.forEach(e => { const t = db.find(t => t.Page === e), n = t ? t.Title : e.split("/").pop(), o = e.split("/").length; i += `<a href="#${e}" class="index-link fill-anim ${o > 1 ? `depth-${o}` : ""}">\n${n} \n</a>` }), i += "</div>", t.innerHTML += i } } function renderHome() { const e = db.filter(e => "Home" === e.Page); document.getElementById("app").innerHTML = "", renderRows(e, null, !0); const t = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page), n = {}; t.forEach(e => { n[e.Page] ? n[e.Page] : n[e.Page] = e }); const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0, 6); o.length > 0 && renderRows(o, "Recent Activity", !0, !0, !1, !0) }
-        function processSingleLine(e) { if (!e) return ""; let t = safeHTML(e); return t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"), t = t.replace(/\*(.*?)\*/g, "<em>$1</em>"), t = t.replace(/`([^`]+)`/g, "<code>$1</code>"), t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>'), t }
-        function formatTitle(e, t) { if (!e) return ""; const n = e.match(/^(#{1,6})\s+(.*)$/); let o = t, r = e; return n && (o = "h" + n[1].length, r = n[2]), `<${o} class="header-fade-anim">${processSingleLine(r)}</${o}>` }
+            if ("Home" === e) return void renderHome();
+            const t = db.filter(t => t.Page === e), n = document.getElementById("app");
+            n.innerHTML = "";
+            const o = !e.includes("/");
+            if (t.length > 0) renderRows(t, null, !0, !1, !o);
+            else if (!childrenPagesCheck(e) && !("Personal" === e && quotesDb.length > 0)) {
+                return void (n.innerHTML = '<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn\'t exist in the database yet.</p></div>');
+            }
+
+            if ("Personal" === e && quotesDb.length > 0) {
+                const q = document.createElement("div");
+                q.className = "layout-quote section", q.setAttribute("data-title", "Random Quote"), renderQuoteCard(q), n.appendChild(q)
+            }
+
+            if (o) {
+                // Discovery logic: only show immediate children (depth 1) to keep hubs clean
+                const t = [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/") && t.Page.split("/").length <= 2).map(e => e.Page))];
+                t.length > 0 && renderRows(t.map(e => db.find(t => t.Page === e)).filter(e => e), null, !0, !0)
+            }
+        }
+        function childrenPagesCheck(e) {
+            // Check if ANY children exist (even deep ones) to validate page existence
+            return db.some(t => t.Page && t.Page.startsWith(e + "/"));
+        }
+        function renderIndex() { renderNavigation(null); const e = document.getElementById("app"); e.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>'; const t = e.querySelector(".index-list"), n = [...new Set(db.map(e => e.Page).filter(e => e && "Home" !== e && "Footer" !== e))].sort(), o = {}; n.forEach(e => { const t = e.split("/")[0]; o[t] || (o[t] = []), o[t].push(e) }); for (const [e, n] of Object.entries(o)) { let o = ""; const r = e.toLowerCase(); "projects" === r ? o = "cat-projects" : "professional" === r ? o = "cat-professional" : "personal" === r && (o = "cat-personal"); let i = `<div class="index-group ${o}"><h3>${e}</h3>`; n.forEach(e => { const t = db.find(t => t.Page === e), n = t ? t.Title : e.split("/").pop(), o = e.split("/").length; i += `<a href="#${e}" class="index-link fill-anim ${o > 1 ? `depth-${o}` : ""}">\n${n} \n</a>` }), i += "</div>", t.innerHTML += i } }
+        function renderHome() {
+            const e = db.filter(e => "Home" === e.Page);
+            document.getElementById("app").innerHTML = "";
+            renderRows(e, null, !0);
+            const t = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page);
+            const n = {};
+            t.forEach(e => {
+                // Discovery logic for Recent Activity: only show content up to 1 level deep
+                if (e.Page.split("/").length <= 2) {
+                    n[e.Page] ? n[e.Page] : n[e.Page] = e;
+                }
+            });
+            const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0, 6);
+            o.length > 0 && renderRows(o, "Recent Activity", !0, !0, !1, !0)
+        }
+        function processSingleLine(e) {
+            if (!e) return "";
+            let t = safeHTML(e);
+
+            // Universal button support (even in titles/previews)
+            t = t.replace(/\[button\]:\s*(.+?)\s*\|\s*(.+)/gi, (match, text, url) => {
+                return window.renderButtonHTML(text.trim(), url.trim());
+            });
+
+            t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            t = t.replace(/\*(.*?)\*/g, "<em>$1</em>");
+            t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+            t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            return t;
+        }
+        function formatTitle(e, t) {
+            if (!e) return "";
+            const processed = processSingleLine(e);
+            // If the content is basically just a button, don't wrap it in H tags
+            if (processed.includes('btn-cta-wrapper')) {
+                return processed;
+            }
+            const n = e.match(/^(#{1,6})\s+(.*)$/);
+            let o = t, r = e;
+            n && (o = "h" + n[1].length, r = n[2]);
+            return `<${o} class="header-fade-anim">${processSingleLine(r)}</${o}>`
+        }
         function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecentActivity = false, targetElement = null) {
             const container = targetElement || document.getElementById("app");
             if (!container) return;
@@ -3231,10 +3372,60 @@
                 }
             }
 
+            // 4. CTA Button: [button]: Text | URL
+            if (lines.length === 1) {
+                const buttonMatch = lines[0].match(/^\[button\]:\s*(.+?)\s*\|\s*(.+)$/i);
+                if (buttonMatch) {
+                    return {
+                        type: 'button',
+                        text: buttonMatch[1].trim(),
+                        url: buttonMatch[2].trim()
+                    };
+                }
+            }
+
+            // 5. Embedded Grid: [grid]: followed by [card]: lines
+            if (lines[0].match(/^\[grid\]:/i)) {
+                const cards = [];
+                lines.slice(1).forEach(line => {
+                    const cardMatch = line.match(/^\[card\]:\s*(.+)$/i);
+                    if (cardMatch) {
+                        cards.push(window.parseCardData(cardMatch[1]));
+                    }
+                });
+                return {
+                    type: 'grid',
+                    cards: cards
+                };
+            }
+
+            // 6. Standalone Card: [card]: Title | URL | Desc | Media
+            if (lines.length === 1) {
+                const cardMatch = lines[0].match(/^\[card\]:\s*(.+)$/i);
+                if (cardMatch) {
+                    return {
+                        type: 'card',
+                        data: window.parseCardData(cardMatch[1])
+                    };
+                }
+            }
+
             // Otherwise it's text content
             return {
                 type: 'text',
                 content: lines.join('\n')
+            };
+        }
+
+        // Helper to parse card data: Title | URL | Desc | Media
+        window.parseCardData = function (text) {
+            const parts = text.split('|').map(p => p.trim());
+            return {
+                Page: "markdown-card", // Required for renderRows to process
+                Title: parts[0] || "",
+                LinkURL: parts[1] || "",
+                Content: parts[2] || "",
+                Media: parts[3] || ""
             };
         }
 
@@ -3411,10 +3602,37 @@
                     // Unified Gallery Renderer
                     return renderUnifiedGallery(block.items, block.sharedCaption);
 
+                case 'button':
+                    return window.renderButtonHTML(block.text, block.url);
+
+                case 'card':
+                    return `<div class="markdown-single-card" style="margin: 20px 0;">${window.renderMarkdownCard(block.data)}</div>`;
+
+                case 'grid':
+                    const cardsHTML = block.cards.map(card => window.renderMarkdownCard(card)).join('');
+                    return `<div class="markdown-grid section">${cardsHTML}</div>`;
+
                 default:
                     return '';
             }
         }
+
+        // Centralized Toolset for Markdown Elements
+        window.renderButtonHTML = function (text, url) {
+            const target = (url || "").startsWith('#') ? '' : 'target="_blank"';
+            return `
+            <div class="btn-cta-wrapper">
+                <a href="${url}" class="btn-cta" ${target}>
+                    ${text}
+                </a>
+            </div>`;
+        };
+
+        window.renderMarkdownCard = function (cardData) {
+            const temp = document.createElement('div');
+            renderRows([cardData], null, true, true, false, false, temp);
+            return temp.innerHTML;
+        };
 
         // Unified Gallery Renderer (Images, YT, GLB)
         function renderUnifiedGallery(items, sharedCaption) {
@@ -3539,6 +3757,11 @@
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
+
+            // Universal button support (inline/paragraph)
+            result = result.replace(/\[button\]:\s*(.+?)\s*\|\s*(.+)/gi, (match, btnText, btnUrl) => {
+                return window.renderButtonHTML(btnText.trim(), btnUrl.trim());
+            });
 
             // Process markdown
             result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
