@@ -2825,6 +2825,99 @@
             n && (o = "h" + n[1].length, r = n[2]);
             return `<${o} class="header-fade-anim">${processSingleLine(r)}</${o}>`
         }
+        // Chip rendering helper
+        function renderChip(tag) {
+            if (!tag) return "";
+            const linkMatch = tag.match(/^\[(.*?)\]\((.*?)\)$/);
+            if (linkMatch) {
+                const label = linkMatch[1];
+                const url = linkMatch[2];
+                if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(url)) {
+                    return `<a href="${url}" target="_blank" class="chip location" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(label)}</a>`;
+                }
+                return `<a href="${url}" target="_blank" class="chip location link" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(label)}</a>`;
+            }
+            return `<span class="chip" data-tag="${tag}">${safeHTML(tag)}</span>`;
+        }
+
+        window.renderCardHTML = function (entry, contextCategory = "") {
+            let media = entry.Media;
+            let content = entry.Content || "";
+            let mediaHTML = "";
+            let titleHTML = safeHTML(entry.Title);
+            let isTitleLink = false;
+
+            const titleUrlMatch = entry.Title ? entry.Title.match(/^https?:\/\/\S+$/) : null;
+            if (titleUrlMatch) {
+                isTitleLink = true;
+                if (!media) {
+                    const extracted = extractMediaFromContent(entry.Title);
+                    if (extracted) {
+                        if (extracted.type === "img") {
+                            mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy"></div>`;
+                        } else if (extracted.type === "yt") {
+                            mediaHTML = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
+                        }
+                        media = "title-embed";
+                    }
+                }
+            } else if (media) {
+                const thumb = getThumbnail(media);
+                if (thumb === 'GLB_VIEWER') {
+                    mediaHTML = `<div class="row-media">${window.renderGLBViewer(media, true)}</div>`;
+                } else if (thumb) {
+                    mediaHTML = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+                }
+            } else {
+                const extracted = extractMediaFromContent(content);
+                if (extracted) {
+                    if (extracted.type === "img") {
+                        mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy"></div>`;
+                    } else if (extracted.type === "yt") {
+                        mediaHTML = `<div class="row-media"><img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy"></div>`;
+                    }
+                }
+            }
+
+            if (!mediaHTML) {
+                const cleanTitle = (entry.Title || "").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1');
+                mediaHTML = `<div class="row-media placeholder"><span>${cleanTitle}</span></div>`;
+            }
+
+            let categoryClass = contextCategory;
+            const pageLower = (entry.Page || "").toLowerCase();
+            if (pageLower.startsWith("projects")) categoryClass = "cat-projects";
+            else if (pageLower.startsWith("professional")) categoryClass = "cat-professional";
+            else if (pageLower.startsWith("personal")) categoryClass = "cat-personal";
+
+            const linkUrl = entry.LinkURL || "";
+            const tagsList = entry.Tags ? entry.Tags.split(",").map(t => t.trim()) : [];
+            let finalLink = linkUrl || (entry.Page !== "markdown-card" ? `#${entry.Page}` : "");
+            const linkTarget = (finalLink || "").startsWith("#") ? "" : "_blank";
+
+            let metaRowHTML = "";
+            if (entry.Timestamp || tagsList.length > 0) {
+                metaRowHTML = '<div class="meta-row">';
+                if (entry.Timestamp) {
+                    let dateStr = formatDate(entry.Timestamp) || entry.Timestamp;
+                    let monthKey = entry.Timestamp.substring(0, 7);
+                    metaRowHTML += `<span class="chip date" data-date="${monthKey}" data-val="${dateStr}">${dateStr}</span>`;
+                }
+                tagsList.forEach(t => metaRowHTML += renderChip(t));
+                metaRowHTML += "</div>";
+            }
+
+            const displayTitle = (entry.Title && !isTitleLink) ? `<h3 class="fill-anim">${processSingleLine(entry.Title)}</h3>` : "";
+
+            return `
+                <div class="layout-grid clickable-block ${categoryClass} ${!media ? "has-placeholder" : ""}" 
+                     data-link="${finalLink}" data-target="${linkTarget}">
+                    ${mediaHTML}
+                    ${displayTitle}
+                    ${metaRowHTML}
+                </div>`;
+        };
+
         function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecentActivity = false, targetElement = null) {
             const container = targetElement || document.getElementById("app");
             if (!container) return;
@@ -2872,91 +2965,6 @@
             data.forEach((entry, index) => {
                 if (!entry.Page || entry.Page === "Footer") return;
 
-                // Chip rendering helper
-                const renderChip = (tag) => {
-                    const linkMatch = tag.match(/^\[(.*?)\]\((.*?)\)$/);
-                    if (linkMatch) {
-                        const label = linkMatch[1];
-                        const url = linkMatch[2];
-                        if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(url)) {
-                            return `<a href="${url}" target="_blank" class="chip location" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(label)}</a>`;
-                        }
-                        return `<a href="${url}" target="_blank" class="chip location link" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(label)}</a>`;
-                    }
-                    return `<span class="chip" data-tag="${tag}">${safeHTML(tag)}</span>`;
-                };
-
-                let media = entry.Media;
-                let content = entry.Content || "";
-                let mediaHTML = "";
-                let mediaUrls = [];
-                let titleHTML = safeHTML(entry.Title);
-                let isTitleLink = false;
-
-                // Card preview extraction
-                const cardMatch = content.match(/^\[card\]:\s*(.+?)(?:\n|$)/i);
-                let cardPreview = cardMatch ? cardMatch[1].trim() : null;
-                if (cardPreview) {
-                    content = content.replace(/^\[card\]:\s*.+?(\n|$)/i, "").trim();
-                }
-
-                // Media detection logic
-                const titleUrlMatch = entry.Title ? entry.Title.match(/^https?:\/\/\S+$/) : null;
-                if (titleUrlMatch) {
-                    mediaUrls.push(titleUrlMatch[0]);
-                    isTitleLink = true;
-                    if (!media) {
-                        const extracted = extractMediaFromContent(entry.Title);
-                        if (extracted) {
-                            if (extracted.type === "img") {
-                                mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy"></div>`;
-                            } else if (extracted.type === "yt") {
-                                mediaHTML = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
-                            }
-                            media = "title-embed";
-                        }
-                    }
-                } else if (media || mediaHTML) {
-                    if (!mediaHTML && media !== "title-embed") {
-                        const thumb = getThumbnail(media);
-                        if (thumb === 'GLB_VIEWER') {
-                            mediaHTML = `<div class="row-media">${window.renderGLBViewer(media, true)}</div>`;
-                        } else if (thumb) {
-                            mediaHTML = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
-                        }
-                    }
-                } else {
-                    const extracted = extractMediaFromContent(content);
-                    if (extracted) {
-                        mediaUrls.push(extracted.url);
-                        if (extracted.type === "img") {
-                            mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy"></div>`;
-                        } else if (extracted.type === "yt") {
-                            mediaHTML = (!isHeroOnly || isSubPage) ?
-                                `<div class="row-media"><img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy"></div>` :
-                                `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0&origin=${window.location.origin}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
-                        }
-                    }
-                }
-
-                if (!mediaHTML && (isSubPage || !isHeroOnly)) {
-                    // Strip markdown links and bolding for the placeholder text
-                    const cleanTitle = (entry.Title || "").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1');
-                    mediaHTML = `<div class="row-media placeholder"><span>${cleanTitle}</span></div>`;
-                }
-
-                let processedContent = processContentWithBlocks(content);
-                if (!isHeroOnly || isSubPage) {
-                    processedContent = cardPreview ? `<div class="grid-text-preview"><p>${processSingleLine(cardPreview)}</p></div>` : "";
-                }
-
-                let hasPlaceholder = !media && mediaHTML.includes("placeholder");
-                let categoryClass = "";
-                const pageLower = entry.Page.toLowerCase();
-                if (pageLower.startsWith("projects")) categoryClass = "cat-projects";
-                else if (pageLower.startsWith("professional")) categoryClass = "cat-professional";
-                else if (pageLower.startsWith("personal")) categoryClass = "cat-personal";
-
                 let sectionType = (entry.SectionType || "card").toLowerCase();
                 const topLevelPages = ["home", "personal", "professional", "projects"];
                 if (!entry.SectionType && topLevelPages.includes(entry.Page.toLowerCase()) && !entry.Page.includes("/")) {
@@ -2968,8 +2976,37 @@
                     const articleDiv = document.createElement("div");
                     articleDiv.className = "section layout-text";
 
-                    mediaHTML = mediaHTML.includes("embed-wrapper") || mediaHTML.includes("<img") ?
-                        mediaHTML.replace("row-media", "row-media article-mode") : "";
+                    let mediaHTML = "";
+                    let media = entry.Media;
+                    const content = entry.Content || "";
+
+                    const titleUrlMatch = entry.Title ? entry.Title.match(/^https?:\/\/\S+$/) : null;
+                    if (titleUrlMatch) {
+                        const extracted = extractMediaFromContent(entry.Title);
+                        if (extracted) {
+                            if (extracted.type === "img") {
+                                mediaHTML = `<div class="row-media article-mode"><img src="${extracted.url}" loading="lazy"></div>`;
+                            } else if (extracted.type === "yt") {
+                                mediaHTML = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
+                            }
+                        }
+                    } else if (media) {
+                        const thumb = getThumbnail(media);
+                        if (thumb === 'GLB_VIEWER') {
+                            mediaHTML = `<div class="row-media article-mode">${window.renderGLBViewer(media, true)}</div>`;
+                        } else if (thumb) {
+                            mediaHTML = `<div class="row-media article-mode"><img src="${thumb}" loading="lazy"></div>`;
+                        }
+                    } else {
+                        const extracted = extractMediaFromContent(content);
+                        if (extracted) {
+                            if (extracted.type === "img") {
+                                mediaHTML = `<div class="row-media article-mode"><img src="${extracted.url}" loading="lazy"></div>`;
+                            } else if (extracted.type === "yt") {
+                                mediaHTML = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
+                            }
+                        }
+                    }
 
                     let metaHTML = "";
                     if (index === 0) {
@@ -2997,8 +3034,8 @@
                         metaHTML += "</div></div>";
                     }
 
-                    const titleTag = (!isTitleLink && titleHTML) ? formatTitle(titleHTML, index === 0 ? "h1" : "h2") : "";
-                    articleDiv.innerHTML = `${mediaHTML}${titleTag}${metaHTML}<div class="article-body">${processedContent}</div>`;
+                    const titleTag = entry.Title ? formatTitle(entry.Title, index === 0 ? "h1" : "h2") : "";
+                    articleDiv.innerHTML = `${mediaHTML}${titleTag}${metaHTML}<div class="article-body">${processContentWithBlocks(content)}</div>`;
                     container.appendChild(articleDiv);
                     return;
                 }
@@ -3040,7 +3077,7 @@
                         }
 
                         const metaContainer = metaHTML ? `<div class="hero-meta">${metaHTML}</div>` : "";
-                        heroDiv.innerHTML = `${formatTitle(entry.Title, "h1")}${metaContainer}${processContentWithBlocks(entry.Content)}`;
+                        heroDiv.innerHTML = `${formatTitle(entry.Title, "h1")}${metaContainer}${processContentWithBlocks(entry.Content || "")}`;
                         if (gridContainer) gridContainer.appendChild(heroDiv);
                         return;
                     }
@@ -3048,40 +3085,23 @@
                     if (sectionType === "text") {
                         const textDiv = document.createElement("div");
                         textDiv.className = "section layout-text";
-                        textDiv.innerHTML = `${safeHTML(entry.Title) ? formatTitle(entry.Title, "h2") : ""}${processContentWithBlocks(entry.Content)}`;
+                        textDiv.innerHTML = `${entry.Title ? formatTitle(entry.Title, "h2") : ""}${processContentWithBlocks(entry.Content || "")}`;
                         if (gridContainer) gridContainer.appendChild(textDiv);
                         return;
                     }
                 }
 
                 // Default: Grid Card Mode
-                const linkUrl = entry.LinkURL || "";
-                const tagsList = entry.Tags ? entry.Tags.split(",").map(t => t.trim()) : [];
-                let finalLink = linkUrl || `#${entry.Page}`;
-                const linkTarget = finalLink.startsWith("#") ? "" : "_blank";
+                if (gridContainer) {
+                    let contextCategory = "";
+                    const activePage = (window.location.hash.substring(1) || "Home").toLowerCase();
+                    if (activePage.startsWith("projects")) contextCategory = "cat-projects";
+                    else if (activePage.startsWith("professional")) contextCategory = "cat-professional";
+                    else if (activePage.startsWith("personal")) contextCategory = "cat-personal";
 
-                let metaRowHTML = "";
-                if (entry.Timestamp || tagsList.length > 0) {
-                    metaRowHTML = '<div class="meta-row">';
-                    if (entry.Timestamp) {
-                        let dateStr = formatDate(entry.Timestamp) || entry.Timestamp;
-                        let monthKey = entry.Timestamp.substring(0, 7);
-                        metaRowHTML += `<span class="chip date" data-date="${monthKey}" data-val="${dateStr}">${dateStr}</span>`;
-                    }
-                    tagsList.forEach(t => metaRowHTML += renderChip(t));
-                    metaRowHTML += "</div>";
+                    gridContainer.innerHTML += window.renderCardHTML(entry, contextCategory);
                 }
-
-                const cardDiv = document.createElement("div");
-                cardDiv.className = `layout-grid clickable-block ${categoryClass} ${hasPlaceholder ? "has-placeholder" : ""}`;
-                cardDiv.setAttribute("data-link", finalLink);
-                cardDiv.setAttribute("data-target", linkTarget);
-
-                const displayTitle = (entry.Title && !isTitleLink) ? `<h3 class="fill-anim">${processSingleLine(entry.Title)}</h3>` : "";
-                cardDiv.innerHTML = `${mediaHTML}${displayTitle}${processedContent}${metaRowHTML}`;
-                if (gridContainer) gridContainer.appendChild(cardDiv);
             });
-
         }
         function renderQuoteCard(e) { let t, n = !1; if ("random quote" === (e.getAttribute("data-title") || "").toLowerCase()) { if (0 === quotesDb.length) return void (e.innerHTML = "Quote sheet empty."); t = quotesDb[Math.floor(Math.random() * quotesDb.length)], n = !0 } else t = { Quote: e.getAttribute("data-static-quote") || "No content.", Author: e.getAttribute("data-static-author") || "Unknown", Source: null }; let o = t.Author || "Unknown"; t.Source && t.Source.startsWith("http") ? o = `<a href="${t.Source}" target="_blank">${safeHTML(o)}</a>` : t.Source && (o += ` — ${safeHTML(t.Source)}`); const r = safeHTML((t.Quote || "").trim().replace(/^"|"$/g, "")), i = r.length; let s = "short"; i > 230 ? s = "xxl" : i > 150 ? s = "xl" : i > 100 ? s = "long" : i > 50 && (s = "medium"); let a = ""; n && (a = '<svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">\n<rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>\n<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n</svg>'), e.innerHTML = `<blockquote class="${s}">"${r}"</blockquote>\n<div class="quote-footer"><span class="author"> &mdash; ${o}</span>${a}</div>` }
         function renderFooter() {
@@ -3417,14 +3437,14 @@
             };
         }
 
-        // Helper to parse card data: Title | URL | Desc | Media
+        // Helper to parse card data: Title | URL | Tags | Media
         window.parseCardData = function (text) {
             const parts = text.split('|').map(p => p.trim());
             return {
-                Page: "markdown-card", // Required for renderRows to process
+                Page: "markdown-card", // Required for context inheritance
                 Title: parts[0] || "",
                 LinkURL: parts[1] || "",
-                Content: parts[2] || "",
+                Tags: parts[2] || "",
                 Media: parts[3] || ""
             };
         }
@@ -3588,9 +3608,15 @@
         window.renderContentBlock = function (block, index) {
             if (!block) return '';
 
+            // Detect current page category for inheritance
+            let contextCategory = "";
+            const activePage = (window.location.hash.substring(1) || "Home").toLowerCase();
+            if (activePage.startsWith("projects")) contextCategory = "cat-projects";
+            else if (activePage.startsWith("professional")) contextCategory = "cat-professional";
+            else if (activePage.startsWith("personal")) contextCategory = "cat-personal";
+
             switch (block.type) {
                 case 'text':
-                    // Use our custom markdown processor
                     return processMarkdown(block.content);
 
                 case 'image':
@@ -3599,17 +3625,16 @@
                     return renderUnifiedMediaItem(block, false);
 
                 case 'gallery':
-                    // Unified Gallery Renderer
                     return renderUnifiedGallery(block.items, block.sharedCaption);
 
                 case 'button':
                     return window.renderButtonHTML(block.text, block.url);
 
                 case 'card':
-                    return `<div class="markdown-single-card" style="margin: 20px 0;">${window.renderMarkdownCard(block.data)}</div>`;
+                    return `<div class="markdown-single-card" style="margin: 20px 0;">${window.renderCardHTML(block.data, contextCategory)}</div>`;
 
                 case 'grid':
-                    const cardsHTML = block.cards.map(card => window.renderMarkdownCard(card)).join('');
+                    const cardsHTML = block.cards.map(card => window.renderCardHTML(card, contextCategory)).join('');
                     return `<div class="markdown-grid section">${cardsHTML}</div>`;
 
                 default:
@@ -3628,10 +3653,8 @@
             </div>`;
         };
 
-        window.renderMarkdownCard = function (cardData) {
-            const temp = document.createElement('div');
-            renderRows([cardData], null, true, true, false, false, temp);
-            return temp.innerHTML;
+        window.renderMarkdownCard = function (cardData, contextCategory = "") {
+            return window.renderCardHTML(cardData, contextCategory);
         };
 
         // Unified Gallery Renderer (Images, YT, GLB)
