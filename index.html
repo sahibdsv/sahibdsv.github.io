@@ -1121,25 +1121,62 @@
 
         /* Placeholder thumbnails for cards without images */
         .row-media.placeholder {
-            background: linear-gradient(135deg, var(--card-bg-dark) 0, var(--border) 100%);
+            /* 5-stop easing gradient for butter-smooth diagonal blend */
+            background: linear-gradient(135deg,
+                    var(--card-bg-dark) 0%,
+                    rgba(30, 30, 30, 0.8) 25%,
+                    rgba(40, 40, 40, 0.6) 50%,
+                    rgba(50, 50, 50, 0.4) 75%,
+                    var(--border) 100%);
             border-bottom: 1px solid var(--border);
             padding: 20px;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        /* Hover Overlay for perfectly smooth alpha-blend transition */
+        .row-media.placeholder::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                    rgba(var(--bright-rgb), 0.08) 0%,
+                    rgba(var(--bright-rgb), 0.04) 50%,
+                    rgba(var(--bright-rgb), 0.02) 100%);
+            opacity: 0;
+            transition: opacity 0.4s cubic-bezier(0.2, 0, 0, 1);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .layout-grid:hover .row-media.placeholder::after {
+            opacity: 1;
         }
 
         .row-media.placeholder span {
             font-size: 13px;
             font-weight: 700;
             text-transform: uppercase;
-            color: var(--border-strong);
-            letter-spacing: 1px;
+            color: var(--text-faded);
+            letter-spacing: 1.5px;
             line-height: 1.2;
-            transition: color .3s;
+            transition: color 0.4s cubic-bezier(0.2, 0, 0, 1), opacity 0.4s;
             max-width: 90%;
             display: block;
+            z-index: 2;
+            opacity: 0.6;
+        }
+
+        .layout-grid:hover .row-media.placeholder span {
+            opacity: 1;
         }
 
         .layout-grid.cat-projects:hover .row-media.placeholder span {
