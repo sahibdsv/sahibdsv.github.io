@@ -144,10 +144,14 @@
 
         html {
             scroll-behavior: smooth;
-            width: 100%
+            width: 100%;
+            margin: 0;
+            padding: 0;
         }
 
         body {
+            margin: 0;
+            padding: 0;
             background-color: var(--bg);
             color: var(--text-main);
             font-family: "Jost", sans-serif;
@@ -183,7 +187,9 @@
             user-select: text;
             -webkit-user-select: text;
             -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent
+            -webkit-tap-highlight-color: transparent;
+            line-height: 1.2;
+            margin: 0;
         }
 
         #brand-name {
@@ -282,11 +288,17 @@
            Standard "Chip" look: Pill shape, no jump animation. */
         .chip,
         .chip.date {
-            display: inline-block;
-            padding: 4px 12px;
-            margin-right: 8px;
-            font-size: 12px;
-            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            /* Tighter horizontal padding */
+            font-size: 11px;
+            /* Tighter font */
+            font-weight: 600;
+            /* Bolder weight */
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            /* Reduced to avoid excessive width */
             color: var(--text-main);
             border: 1px solid var(--border-strong);
             border-radius: 50px;
@@ -295,15 +307,18 @@
             -webkit-text-fill-color: initial !important;
             vertical-align: middle;
             transform: translateZ(0);
-            line-height: normal;
+            line-height: 1;
+            /* Match centering */
             box-sizing: border-box;
-            will-change: border-color, background;
+            transition: all var(--anim-quick) var(--ease);
+            will-change: border-color, background, color;
         }
 
         .chip:hover,
         .chip.date:hover {
             color: var(--text-bright);
             border-color: rgba(var(--bright-rgb), var(--op-high));
+            background: rgba(var(--bright-rgb), var(--op-subtle));
             text-decoration: none !important;
         }
 
@@ -311,7 +326,8 @@
         h1,
         h2,
         h3 {
-            font-weight: 600
+            font-weight: 600;
+            margin: 0;
         }
 
         h1.fill-anim,
@@ -768,6 +784,7 @@
 
         .section {
             margin-bottom: 15px;
+            /* Tightened from 25px */
             opacity: 0;
             animation: fadeIn .4s forwards;
             position: relative
@@ -782,8 +799,10 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             column-gap: 20px;
-            row-gap: 10px;
-            margin-bottom: 15px
+            row-gap: 12px;
+            /* Standardize with card visual rhythm */
+            margin-bottom: 15px;
+            /* Tightened from 25px */
         }
 
         .layout-hero {
@@ -792,6 +811,11 @@
             margin-left: auto;
             margin-right: auto;
             grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            /* Extreme tightening for Hero */
+            align-items: center;
         }
 
         .layout-text {
@@ -800,6 +824,10 @@
             margin-left: auto;
             margin-right: auto;
             grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            /* Extreme tightening for Text */
         }
 
         /* --- FOOTER STYLES --- */
@@ -1009,21 +1037,22 @@
         .layout-grid .sk-img {
             width: 100%;
             height: 160px;
-            margin-bottom: 10px;
-            border-radius: var(--radius-sm)
+            margin-bottom: 0;
+            border-radius: var(--media-radius)
         }
 
         .layout-grid .sk-line.title {
             height: 18px;
             width: 80%;
-            margin: 0 0 10px
+            margin: 0
         }
 
         .layout-grid .sk-line.text {
             height: 14px;
             width: 100%;
-            margin-bottom: 6px
+            margin: 0;
         }
+
 
         /* --- RESTORED COMPONENTS --- */
 
@@ -1031,33 +1060,44 @@
         .layout-grid {
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            padding: var(--card-padding);
+            gap: 8px;
+            /* Balanced: 4px was too tight, 12px too loose */
+            padding: 12px;
+            /* Tightened from var(--card-padding) which was likely 15px */
             border-radius: var(--card-radius);
             border: 1px solid var(--border-subtle);
             height: 100%;
+            justify-content: flex-start;
+            /* Ensure content clusters at top */
             position: relative;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             transition: background var(--anim-instant), border-color var(--anim-instant);
             user-select: none;
             -webkit-user-select: none;
+            background: var(--card-bg);
+            /* Ensure baseline background */
         }
+
 
         .layout-grid:hover {
             background: var(--card-bg-hover);
             border-color: rgba(var(--bright-rgb), 0.15);
         }
 
-        .layout-grid h3 {
+        .layout-grid h3,
+        .layout-grid h3.fill-anim {
             font-size: 20px;
             margin: 0;
+            /* Explicitly zero out margin to prevent overrides */
             display: flex;
             align-items: center;
             gap: var(--space-xs);
             --text-base: var(--text-dim);
             --text-hover: var(--text-bright);
             font-weight: 600;
+            line-height: 1.2;
+            /* Tighten for better visual centering */
             /* NO transition here - let .fill-anim handle its own timing */
         }
 
@@ -1081,16 +1121,16 @@
             color: var(--text-dim);
             font-weight: 400;
             line-height: 1.4;
-            margin: 0 0 2px;
+            margin: 0;
         }
 
         .meta-row {
             display: flex;
-            gap: var(--space-xs);
-            margin-top: auto;
+            gap: 8px;
+            /* Slightly tighter internal gap for the meta row */
             flex-wrap: wrap;
             align-items: center;
-            padding-top: 4px;
+            padding-top: 0;
         }
 
         .row-media {
@@ -1099,7 +1139,7 @@
             overflow: hidden;
             border-radius: var(--media-radius);
             background: var(--card-bg);
-            margin-bottom: 8px;
+            margin-bottom: 0;
             position: relative;
         }
 
@@ -1129,7 +1169,7 @@
                     #131313 75%,
                     #161616 100%);
             border-bottom: 1px solid var(--border);
-            padding: 20px;
+            padding: 12px !important;
             text-align: center;
             display: flex;
             align-items: center;
@@ -1193,9 +1233,35 @@
             color: var(--accent-personal);
         }
 
-        .layout-grid.has-placeholder h3 {
-            margin-top: 5px;
+        /* RESTORED: Context-aware title colors (Persistent Variable) */
+        .layout-grid.cat-projects h3,
+        .layout-grid.cat-projects h3.fill-anim {
+            --text-hover: var(--accent-projects);
         }
+
+        .layout-grid.cat-projects:hover h3 {
+            color: var(--accent-projects);
+        }
+
+        .layout-grid.cat-professional h3,
+        .layout-grid.cat-professional h3.fill-anim {
+            --text-hover: var(--accent-prof);
+        }
+
+        .layout-grid.cat-professional:hover h3 {
+            color: var(--accent-prof);
+        }
+
+        .layout-grid.cat-personal h3,
+        .layout-grid.cat-personal h3.fill-anim {
+            --text-hover: var(--accent-personal);
+        }
+
+        .layout-grid.cat-personal:hover h3 {
+            color: var(--accent-personal);
+        }
+
+
 
 
         /* Media Containers */
@@ -1206,7 +1272,8 @@
             position: relative;
             width: 100%;
             max-width: none;
-            margin: 20px 0 0 0;
+            margin: 0;
+            /* Unified gap-based rhythm */
             background: transparent;
             /* Force rounding on the container itself */
             border-radius: var(--card-radius);
@@ -1556,8 +1623,10 @@
         .markdown-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+            gap: 12px;
+            /* Unified with cards and containers */
+            margin: 12px 0;
+            /* Tightened from 25px */
             width: 100%;
         }
 
@@ -1776,38 +1845,46 @@
         .article-view {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px 40px;
+            padding: 0 40px 20px 40px;
+            /* Removed top padding */
         }
 
         .article-title {
             font-size: 32px;
             color: var(--text-dimmer);
-            margin-bottom: 12px;
+            margin-bottom: 4px;
+            /* Extreme tightening */
             font-weight: 600;
             line-height: 1.2;
+            margin-top: 0;
         }
 
         .article-meta {
             display: flex;
-            gap: 12px;
+            gap: 8px;
+            /* Standardize gap to 8px */
             flex-wrap: wrap;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
+            margin-bottom: 0;
+            /* Force zeroing to kill gaps */
+            padding-bottom: 4px;
+            /* Tightened */
             border-bottom: 1px solid var(--border-subtle);
         }
 
         .article-meta-row {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             flex-wrap: wrap;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 0;
+            /* Force zeroing to kill gaps */
         }
 
         .article-tags {
             display: flex;
-            gap: 6px;
+            gap: 8px;
+            /* Consistent 8px gap */
             flex-wrap: wrap;
             align-items: center;
         }
