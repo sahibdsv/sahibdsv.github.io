@@ -1121,13 +1121,13 @@
 
         /* Placeholder thumbnails for cards without images */
         .row-media.placeholder {
-            /* 5-stop easing gradient for butter-smooth diagonal blend */
+            /* Velvet Dark: Deep, solid-based diagonal blend to ensure richness */
             background: linear-gradient(135deg,
-                    var(--card-bg-dark) 0%,
-                    rgba(30, 30, 30, 0.8) 25%,
-                    rgba(40, 40, 40, 0.6) 50%,
-                    rgba(50, 50, 50, 0.4) 75%,
-                    var(--border) 100%);
+                    #0a0a0a 0%,
+                    #0c0c0c 25%,
+                    #0f0f0f 50%,
+                    #131313 75%,
+                    #161616 100%);
             border-bottom: 1px solid var(--border);
             padding: 20px;
             text-align: center;
@@ -1139,7 +1139,7 @@
             overflow: hidden;
         }
 
-        /* Hover Overlay for perfectly smooth alpha-blend transition */
+        /* High-Fidelity Soft Glow Overlay */
         .row-media.placeholder::after {
             content: '';
             position: absolute;
@@ -1147,12 +1147,13 @@
             left: 0;
             right: 0;
             bottom: 0;
+            /* Subtly brighter, solid-based hover target */
             background: linear-gradient(135deg,
-                    rgba(var(--bright-rgb), 0.08) 0%,
-                    rgba(var(--bright-rgb), 0.04) 50%,
-                    rgba(var(--bright-rgb), 0.02) 100%);
+                    #1a1a1a 0%,
+                    #151515 50%,
+                    #111111 100%);
             opacity: 0;
-            transition: opacity 0.4s cubic-bezier(0.2, 0, 0, 1);
+            transition: opacity 0.5s var(--ease);
             z-index: -1;
             pointer-events: none;
         }
@@ -1165,18 +1166,19 @@
             font-size: 13px;
             font-weight: 700;
             text-transform: uppercase;
-            color: var(--text-faded);
-            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
             line-height: 1.2;
-            transition: color 0.4s cubic-bezier(0.2, 0, 0, 1), opacity 0.4s;
+            transition: color 0.5s var(--ease), opacity 0.5s var(--ease);
             max-width: 90%;
             display: block;
             z-index: 2;
-            opacity: 0.6;
+            opacity: 0.4;
         }
 
         .layout-grid:hover .row-media.placeholder span {
-            opacity: 1;
+            opacity: 0.9;
+            color: var(--text-main);
         }
 
         .layout-grid.cat-projects:hover .row-media.placeholder span {
