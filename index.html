@@ -2962,7 +2962,6 @@
                     navStack.appendChild(row);
                     setupHapticScroll(row);
                 }
-                if (row._resetHaptic) row._resetHaptic();
 
                 let html = "";
                 const prefix = parentPath ? parentPath + "/" : "";
@@ -2982,6 +2981,7 @@
                         }
                     });
                 } else {
+                    if (row._resetHaptic) row._resetHaptic(); // Reset haptics only on full re-render
                     row.innerHTML = items.map(item => {
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
                         const activeClass = item === activeName ? "active" : "";
