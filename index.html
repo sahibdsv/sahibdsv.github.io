@@ -247,10 +247,16 @@
             color: var(--text-base, var(--text-dim))
         }
 
-        .fill-anim.active,
-        .fill-anim:not(h1):not(h2):not(h3):hover {
+        .fill-anim.active {
             background-position: 0 100%;
             color: var(--text-hover, var(--text-bright))
+        }
+
+        @media (hover: hover) {
+            .fill-anim:not(h1):not(h2):not(h3):hover {
+                background-position: 0 100%;
+                color: var(--text-hover, var(--text-bright))
+            }
         }
 
         /* Simple fade animation for non-clickable headers */
@@ -289,29 +295,21 @@
             /* Ensure smooth animation */
         }
 
-        .article-body a:not(.chip):hover,
-        .layout-text a:not(.chip):hover,
-        .layout-hero p a:not(.chip):hover,
-        .resume-entry a:not(.chip):hover,
-        .resume-contact a:hover,
-        #footer-links a:hover,
-        .layout-quote .author a:hover {
-            text-decoration-color: var(--text-bright);
-        }
+        @media (hover: hover) {
 
-        /* Make Author Link match Standard Links but keep layout */
-        .author-link {
-            color: var(--text-main);
-            text-decoration: underline;
-            text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
-            text-decoration-thickness: 1px;
-            text-underline-offset: 3px;
-            display: inline-block;
-            transition: color 0.2s ease;
-        }
+            .article-body a:not(.chip):hover,
+            .layout-text a:not(.chip):hover,
+            .layout-hero p a:not(.chip):hover,
+            .resume-entry a:not(.chip):hover,
+            .resume-contact a:hover,
+            #footer-links a:hover,
+            .layout-quote .author a:hover {
+                text-decoration-color: var(--text-bright);
+            }
 
-        .author-link:hover {
-            text-decoration-color: var(--text-bright);
+            .author-link:hover {
+                text-decoration-color: var(--text-bright);
+            }
         }
 
         /* REFINED CHIP STYLING (Tags & Dates)
@@ -344,12 +342,15 @@
             will-change: border-color, background, color;
         }
 
-        .chip:hover,
-        .chip.date:hover {
-            color: var(--text-bright);
-            border-color: rgba(var(--bright-rgb), var(--op-high));
-            background: rgba(var(--bright-rgb), var(--op-subtle));
-            text-decoration: none !important;
+        @media (hover: hover) {
+
+            .chip:hover,
+            .chip.date:hover {
+                color: var(--text-bright);
+                border-color: rgba(var(--bright-rgb), var(--op-high));
+                background: rgba(var(--bright-rgb), var(--op-subtle));
+                text-decoration: none !important;
+            }
         }
 
 
@@ -392,8 +393,8 @@
             text-transform: uppercase;
             user-select: text;
             -webkit-tap-highlight-color: transparent;
+            /* Default base color - specific categories will override --text-hover */
             --text-base: var(--text-dim);
-            --text-hover: var(--text-bright)
         }
 
         #brand-name {
@@ -417,11 +418,18 @@
             background-position: 0 0;
             -webkit-background-clip: text;
             background-clip: text;
-            -webkit-text-fill-color: transparent
+            -webkit-text-fill-color: transparent;
+            --text-hover: var(--text-bright);
         }
 
-        #brand-name:hover {
-            background-position: 0 100%
+        #brand-name.active {
+            background-position: 0 100%;
+        }
+
+        @media (hover: hover) {
+            #brand-name:hover {
+                background-position: 0 100%
+            }
         }
 
         #nav-stack,
@@ -463,41 +471,27 @@
             padding-bottom: 0
         }
 
-        .layout-grid.cat-projects h3,
-        #nav-stack .nav-link[href="#Projects"],
-        #nav-stack .nav-link[href="#Projects"]:hover,
-        #nav-stack .nav-link[href="#Projects"].active {
-            --text-hover: var(--accent-projects);
+        /* REFINED Category Colors - Exact for Nav, Class for Cards */
+        .cat-projects,
+        [href="#Projects"] {
+            --text-hover: var(--accent-projects)
         }
 
-        #nav-stack .nav-link[href="#Projects"].active {
-            --text-base: var(--accent-projects)
-        }
-
-        .layout-grid.cat-professional h3,
-        #nav-stack .nav-link[href="#Professional"],
-        #nav-stack .nav-link[href="#Professional"]:hover {
-            --text-hover: var(--accent-prof);
-        }
-
-        #nav-stack .nav-link[href="#Professional"].active {
-            --text-base: var(--accent-prof);
+        .cat-professional,
+        [href="#Professional"] {
             --text-hover: var(--accent-prof)
         }
 
-        .layout-grid.cat-personal h3,
-        #nav-stack .nav-link[href="#Personal"],
-        #nav-stack .nav-link[href="#Personal"]:hover {
-            --text-hover: var(--accent-personal);
-        }
-
-        #nav-stack .nav-link[href="#Personal"].active {
+        .cat-personal,
+        [href="#Personal"] {
             --text-hover: var(--accent-personal)
         }
 
-        .nav-link[href="#Personal"].active {
-            --text-base: var(--accent-personal)
-        }
+        /* 
+           FIX: Removed .nav-row .fill-anim.active { --text-base: var(--text-hover) }
+           Letting background-position: 0 100% handle the highlight ensures 
+           the 0.5s fill animation is actually visible.
+        */
 
         .nav-row.level-n {
             height: var(--sub-row-h);
@@ -512,7 +506,7 @@
         }
 
         .nav-row.level-n .sub-link {
-            scroll-snap-align: center;
+            scroll-snap-align: center
         }
 
         .nav-row.level-n .nav-link {
@@ -521,7 +515,7 @@
         }
 
         .nav-row.level-n .nav-link.active {
-            --text-base: var(--text-bright)
+            background-position: 0 100%;
         }
 
         .nav-row.level-n::after,
@@ -571,19 +565,14 @@
 
         #search-controls {
             position: absolute;
-            right: 20px;
-            /* Adjusted for larger button */
+            right: 12px;
             top: var(--header-pad-top);
-            /* Adjusted for larger button + perfect centering */
             height: var(--brand-row-h);
-            width: auto;
-            z-index: 1002;
-            transform: translateY(0);
-            transition: transform .6s cubic-bezier(.2, 0, 0, 1), opacity var(--anim-layout) var(--ease), height .6s cubic-bezier(.2, 0, 0, 1);
-            /* Center the button vertically relative to the row */
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 1002;
+            transition: transform .6s cubic-bezier(.2, 0, 0, 1), opacity var(--anim-layout) var(--ease), height .6s cubic-bezier(.2, 0, 0, 1);
         }
 
         #main-header.scrolled #search-controls {
@@ -594,16 +583,27 @@
         }
 
         .icon-btn {
-            /* Dynamic Base Size - matches brand row height for perfect alignment */
-            width: var(--brand-row-h);
-            height: var(--brand-row-h);
-            padding: 8px;
+            width: 28px;
+            height: 28px;
+            padding: 4px;
             cursor: pointer;
             fill: var(--text-muted);
             transition: all var(--anim-layout);
             transform-origin: center;
             position: relative;
-            -webkit-tap-highlight-color: transparent
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn-wrapper {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
 
         .icon-btn:hover {
@@ -782,16 +782,7 @@
             hyphens: auto
         }
 
-        .icon-btn {
-            width: 48px;
-            height: 48px;
-            padding: 10px;
-        }
-
-        .icon-search-mask {
-            -webkit-mask-size: 26px;
-            mask-size: 26px;
-        }
+        /* Removed 48px hit-target override to prevent overlap */
 
         .layout-quote {
             min-height: 280px;
@@ -1134,9 +1125,11 @@
         }
 
 
-        .layout-grid:hover {
-            background: var(--card-bg-hover);
-            border-color: rgba(var(--bright-rgb), 0.15);
+        @media (hover: hover) {
+            .layout-grid:hover {
+                background: var(--card-bg-hover);
+                border-color: rgba(var(--bright-rgb), 0.15);
+            }
         }
 
         .layout-grid h3,
@@ -1155,19 +1148,14 @@
             /* NO transition here - let .fill-anim handle its own timing */
         }
 
-        /* Title color change on card hover (only for non-fill-anim titles) */
-        .layout-grid:hover h3:not(.fill-anim) {
-            color: var(--text-hover, var(--text-bright));
-        }
+        @media (hover: hover) {
+            .layout-grid:hover h3:not(.fill-anim) {
+                color: var(--text-hover, var(--text-bright));
+            }
 
-        /* Transition for non-fill-anim titles only */
-        .layout-grid h3:not(.fill-anim) {
-            transition: color var(--anim-instant) ease;
-        }
-
-        /* Trigger fill animation when hovering card */
-        .layout-grid:hover h3.fill-anim {
-            background-position: 0 100%;
+            .layout-grid:hover h3.fill-anim {
+                background-position: 0 100%;
+            }
         }
 
         .layout-grid p {
@@ -1209,8 +1197,10 @@
             -webkit-font-smoothing: subpixel-antialiased;
         }
 
-        .layout-grid:hover .row-media img {
-            filter: grayscale(0%);
+        @media (hover: hover) {
+            .layout-grid:hover .row-media img {
+                filter: grayscale(0%);
+            }
         }
 
         /* Placeholder thumbnails for cards without images */
@@ -1223,7 +1213,7 @@
                     #131313 75%,
                     #161616 100%);
             border-bottom: 1px solid var(--border);
-            padding: 12px !important;
+            padding: 12px;
             text-align: center;
             display: flex;
             align-items: center;
@@ -1252,8 +1242,10 @@
             pointer-events: none;
         }
 
-        .layout-grid:hover .row-media.placeholder::after {
-            opacity: 1;
+        @media (hover: hover) {
+            .layout-grid:hover .row-media.placeholder::after {
+                opacity: 1;
+            }
         }
 
         .row-media.placeholder span {
@@ -1272,50 +1264,25 @@
             opacity: 0.4;
         }
 
-        .layout-grid:hover .row-media.placeholder span {
-            opacity: 0.9;
-            color: var(--text-main);
+        @media (hover: hover) {
+            .layout-grid:hover .row-media.placeholder span {
+                opacity: 0.9;
+                color: var(--text-main);
+            }
+
+            .layout-grid.cat-projects:hover .row-media.placeholder span {
+                color: var(--accent-projects);
+            }
+
+            .layout-grid.cat-professional:hover .row-media.placeholder span {
+                color: var(--accent-prof);
+            }
+
+            .layout-grid.cat-personal:hover .row-media.placeholder span {
+                color: var(--accent-personal);
+            }
         }
 
-        .layout-grid.cat-projects:hover .row-media.placeholder span {
-            color: var(--accent-projects);
-        }
-
-        .layout-grid.cat-professional:hover .row-media.placeholder span {
-            color: var(--accent-prof);
-        }
-
-        .layout-grid.cat-personal:hover .row-media.placeholder span {
-            color: var(--accent-personal);
-        }
-
-        /* RESTORED: Context-aware title colors (Persistent Variable) */
-        .layout-grid.cat-projects h3,
-        .layout-grid.cat-projects h3.fill-anim {
-            --text-hover: var(--accent-projects);
-        }
-
-        .layout-grid.cat-projects:hover h3 {
-            color: var(--accent-projects);
-        }
-
-        .layout-grid.cat-professional h3,
-        .layout-grid.cat-professional h3.fill-anim {
-            --text-hover: var(--accent-prof);
-        }
-
-        .layout-grid.cat-professional:hover h3 {
-            color: var(--accent-prof);
-        }
-
-        .layout-grid.cat-personal h3,
-        .layout-grid.cat-personal h3.fill-anim {
-            --text-hover: var(--accent-personal);
-        }
-
-        .layout-grid.cat-personal:hover h3 {
-            color: var(--accent-personal);
-        }
 
 
 
@@ -2490,18 +2457,10 @@
         /* START: Touch Device Fixes */
         @media (hover: none) {
 
-            /* 
-               We WANT the "sticky hover" fill effect on mobile for Brand & Nav items,
-               but we MUST ensure only one item stays filled at a time.
-               Force non-active/non-pressed links back to gray.
-            */
+            /* Ensure only one item stays filled at a time on mobile */
             .fill-anim:not(.active):not(:active) {
-                background-position: 0 0 !important;
-                --text-hover: var(--text-base) !important;
-            }
-
-            .icon-btn:hover {
-                fill: var(--text-muted);
+                background-position: 0 0;
+                --text-hover: var(--text-base);
             }
 
             /* Restore feedback on tap (press) */
@@ -2510,13 +2469,14 @@
             .icon-btn:active,
             #brand-name:active,
             .icon-btn:active .fill-anim-mask {
-                background-position: 0 100% !important;
+                background-position: 0 100%;
+                color: var(--text-hover, var(--text-bright));
             }
 
-            /* Ensure active state/class pops and stays filled */
+            /* Ensure active state/class stays filled */
             .fill-anim.active {
-                background-position: 0 100% !important;
-                color: var(--text-hover, var(--text-bright)) !important;
+                background-position: 0 100%;
+                color: var(--text-hover, var(--text-bright));
             }
         }
     </style>
@@ -2539,7 +2499,6 @@
 </head>
 
 <body class="no-transition">
-    <script>if (history.scrollRestoration) { history.scrollRestoration = 'manual'; }</script>
     <div id="search-overlay"><input type="search" id="search-input" name="q" role="searchbox" inputmode="search"
             placeholder="Type to search..." onkeyup="handleSearch(this.value)" autocomplete="off" autocorrect="off"
             autocapitalize="off" spellcheck="false" aria-autocomplete="none"></div>
@@ -2605,6 +2564,11 @@
         <div id="footer-links"></div>
     </footer>
     <script>
+        // Set scroll restoration to manual to prevent browser jumps
+        if (history.scrollRestoration) {
+            history.scrollRestoration = 'manual';
+        }
+
         // === CORE APPLICATION (app.js inlined) ===
 
         // CSV Parser
@@ -2995,26 +2959,26 @@
                 let html = "";
                 const prefix = parentPath ? parentPath + "/" : "";
 
-                // Check if we can do a non-destructive update (only classes changed)
-                const currentLinks = Array.from(row.children);
-                const canUpdateInPlace = currentLinks.length === items.length &&
-                    currentLinks.every((link, i) => link.textContent === safeHTML(items[i]));
+                // Optimized non-destructive update
+                const current = Array.from(row.children);
+                const canUpdateInPlace = current.length === items.length &&
+                    current.every((link, i) => link.textContent === safeHTML(items[i]));
 
                 if (canUpdateInPlace) {
                     items.forEach((item, i) => {
-                        const link = currentLinks[i];
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
                         const activeClass = item === activeName ? "active" : "";
                         const newClass = `${linkClass} fill-anim ${activeClass}`;
-                        if (link.className !== newClass) link.className = newClass;
+                        if (current[i].className !== newClass) {
+                            current[i].className = newClass;
+                        }
                     });
                 } else {
-                    items.forEach(item => {
+                    row.innerHTML = items.map(item => {
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
                         const activeClass = item === activeName ? "active" : "";
-                        html += `<a href="#${prefix + item}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
-                    });
-                    if (row.innerHTML !== html) row.innerHTML = html;
+                        return `<a href="#${(parentPath ? parentPath + "/" : "") + item}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
+                    }).join("");
                 }
 
                 /* Force preview slide animation for ANY update if no specific item is active */
@@ -3041,12 +3005,9 @@
         }
 
         function haptic(ms) { navigator.vibrate && navigator.vibrate(ms || 2); }
-        /* Prime vibration API — browser requires user activation. Capture ANY first interaction. */
-        const primeHaptics = () => {
-            if (navigator.vibrate) navigator.vibrate(1);
-            ["pointerdown", "touchstart", "keydown"].forEach(e => document.removeEventListener(e, primeHaptics));
-        };
-        ["pointerdown", "touchstart", "keydown"].forEach(e => document.addEventListener(e, primeHaptics, { passive: true }));
+        /* Prime vibration API — browser requires user activation. Capture only touchstart for mobile. */
+        const primeHaptics = () => { if (navigator.vibrate) { navigator.vibrate(1); document.removeEventListener("touchstart", primeHaptics); } };
+        document.addEventListener("touchstart", primeHaptics, { passive: true });
 
         let _pickerScrollingRow = null;
 
@@ -3133,9 +3094,8 @@
                             const newPath = href.substring(1);
                             if (newPath) {
                                 history.replaceState(null, "", "#" + newPath);
-                                // Drive both content AND sub-navigation updates instantly during the swipe
-                                renderPage(newPath);
-                                renderNavigation(newPath);
+                                // Drive the full navigation cycle (includes special page checks like Resume)
+                                navigateTo(newPath, true);
 
                                 /* Live active toggle for nav aesthetics */
                                 links.forEach(l => l.classList.remove("active"));
@@ -3160,26 +3120,28 @@
         /* Global click haptic — tiered intensity based on interaction importance */
         document.addEventListener("click", e => {
             if (!navigator.vibrate) return;
-            const t = e.target;
-            /* Tier 3 (2ms) — Deliberate actions: brand, search, main nav, action buttons */
-            if (t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link, [onclick], .footer-link")) { haptic(2); return; }
-            /* Tier 2 (1ms) — Standard navigation: cards, sub-links, buttons */
-            if (t.closest(".card, .card-img-wrapper, button, .sub-link, .layout-grid > div")) { haptic(1); return; }
-            /* Tier 1 (1ms) — Light/passive: images, chips, generic links */
-            if (t.closest("a, img, .chip, .photo-grid > div")) { haptic(1); }
+            const t = e.target.closest("#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], .layout-grid > div, a, .chip");
+            if (t) haptic(t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link") ? 2 : 1);
         }, { passive: true });
 
         let resizeTimer;
         let lastScrollPos = 0;
 
         function updatePadding() {
-            const rows = document.getElementById("nav-stack").querySelectorAll(".nav-row");
-            let height = 37;
+            const navStack = document.getElementById("nav-stack");
+            if (!navStack) return;
+            const rows = navStack.querySelectorAll(".nav-row");
+            let height = 37; // Base brand row padding-top
+
             rows.forEach(row => {
-                height += row.classList.contains("level-1") ? 26 : 24;
-                height += 1;
+                if (row.classList.contains("level-1")) {
+                    height += 27; // Brand row height contribution
+                } else {
+                    height += 25; // Sub-nav row height contribution
+                }
             });
-            document.body.style.paddingTop = height + 10 + "px";
+
+            document.body.style.paddingTop = (height + 10) + "px";
         }
         let resizeTimeout;
         let ticking = false;
@@ -3285,28 +3247,38 @@
             if (app) app.style.display = "none";
         }
 
-        function handleRouting() {
-            if (isSearchActive) return;
+        function navigateTo(path, isSwipe = false) {
+            if (isSearchActive && !isSwipe) return;
 
             const header = document.getElementById("main-header");
-            if (header) header.classList.remove("scrolled");
-            window.scrollTo(0, 0);
+            if (header && !isSwipe) header.classList.remove("scrolled");
+            if (!isSwipe) window.scrollTo(0, 0);
             clearTextSelection();
 
-            const path = window.location.hash.substring(1) || "Home";
+            const cleanPath = path || "Home";
 
-            if (path === "Index") {
-                renderIndex();
-            } else if (path === "Professional/Resume") {
-                renderResume();
-            } else {
-                renderNavigation(path === "Home" ? null : path);
-                if (path.startsWith("Filter:")) {
-                    renderFiltered(decodeURIComponent(path.split(":")[1]));
+            // 1. Immediately update navigation to prioritize the fill animation
+            renderNavigation(cleanPath === "Home" ? null : cleanPath);
+
+            // 2. Defer heavy content rendering for buttery smooth page transitions
+            requestAnimationFrame(() => {
+                if (cleanPath === "Index") {
+                    renderIndex();
+                } else if (cleanPath === "Professional/Resume") {
+                    renderResume();
                 } else {
-                    renderPage(path);
+                    if (cleanPath.startsWith("Filter:")) {
+                        renderFiltered(decodeURIComponent(cleanPath.split(":")[1]));
+                    } else {
+                        renderPage(cleanPath);
+                    }
                 }
-            }
+            });
+        }
+
+        function handleRouting() {
+            const path = window.location.hash.substring(1) || "Home";
+            navigateTo(path);
         }
 
         function renderFiltered(filter) {
