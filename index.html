@@ -3615,8 +3615,18 @@
                 if (!entry.Page || entry.Page === "Footer") return;
 
                 let sectionType = (entry.SectionType || "card").toLowerCase();
+                const titleLower = (entry.Title || "").toLowerCase();
+
+                // Priority Check: Special triggers
+                // This ensures `{Random Quote}` forces quote mode even on top-level pages like "Personal"
+                // which would otherwise default to "Hero" mode if SectionType is empty.
+                if (titleLower === "{random quote}" || titleLower === "random quote") {
+                    sectionType = "quote";
+                }
+
                 const topLevelPages = ["home", "personal", "professional", "projects"];
-                if (!entry.SectionType && topLevelPages.includes(entry.Page.toLowerCase()) && !entry.Page.includes("/")) {
+                // Only default to hero if NOT already forced to quote
+                if (sectionType !== "quote" && !entry.SectionType && topLevelPages.includes(entry.Page.toLowerCase()) && !entry.Page.includes("/")) {
                     sectionType = "hero";
                 }
 
