@@ -687,7 +687,7 @@
                 --main-row-h: 22px;
                 --sub-row-h: 20px;
                 --gap: 3px;
-                --header-pad-top: 3px;
+                --header-pad-top: 4px;
                 --header-pad-bottom: 3px;
                 --header-gap: 3px;
                 --nav-font-size: 16px;
@@ -2796,7 +2796,7 @@
                 window.addEventListener("hashchange", handleRouting),
                 window.addEventListener("scroll", () => { const e = document.getElementById("main-header"); e.classList.toggle("scrolled", window.scrollY > 10) }),
                 window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }),
-                window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { const activeLink = row.querySelector(".active"); if (activeLink) centerNavRow(row, false) }) }, 150) } })()),
+                window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { centerNavRow(row, true) }) }, 150) } })()),
 
                 // Global Click Handler - Manages Search & Navigation
                 document.addEventListener("click", e => {
