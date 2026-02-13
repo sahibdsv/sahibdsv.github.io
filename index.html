@@ -2948,7 +2948,7 @@
                     html += `<a href="#${prefix + item}" class="${linkClass} fill-anim" data-name="${safeHTML(item)}" onclick="closeSearch()">${safeHTML(item)}</a>`;
                 });
 
-                if (row.innerHTML !== html) {
+                if (row.innerHTML !== html && row !== _pickerScrollingRow) {
                     row.innerHTML = html;
                     /* Defer .active class so the fill-anim CSS transition plays */
                     if (activeName) {
@@ -3069,6 +3069,7 @@
                                 const path = href.substring(1);
                                 history.replaceState(null, "", "#" + path);
                                 renderPage(path);
+                                renderNavigation(path);
                             }
                         }
                         hTicking = false;
