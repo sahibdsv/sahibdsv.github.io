@@ -54,6 +54,10 @@
 
         :root {
             /* --- COLOR PALETTE --- */
+            /* Base Colors */
+            --bg-dark: #0a0a0a;
+            --bg-trans: rgba(10, 10, 10, 0.85);
+
             /* RGB Components for Dynamic Opacity */
             --bright-rgb: 255, 255, 255;
             --bg-rgb: 5, 5, 5;
@@ -69,7 +73,6 @@
 
             /* Backgrounds */
             --bg: rgb(var(--bg-rgb));
-            --bg-trans: rgba(var(--bg-rgb), var(--op-mask));
             --card-bg: #111111;
             --card-bg-hover: #1a1a1a;
             --card-bg-dark: #131313;
@@ -104,10 +107,20 @@
             --border-hover: var(--border-strong);
 
             /* --- LAYOUT & SPACING --- */
-            --brand-row-h: 28px;
+            /* --- HEADER CONFIGURATION --- */
+            /* Default (Desktop) Values */
+            --brand-row-h: 30px;
             --main-row-h: 20px;
-            --sub-row-h: 18px;
-            --gap: 0px;
+            --sub-row-h: 22px;
+            --gap: 2px;
+            --header-pad-top: 8px;
+            --header-pad-bottom: 5px;
+            --header-gap: 3px;
+
+            /* Typography */
+            --brand-font-size: 28px;
+            --brand-letter-spacing: 1.5px;
+            --nav-font-size: 15px;
 
             /* Radius */
             --card-radius: 18px;
@@ -352,8 +365,8 @@
             gap: var(--header-gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
-            transition: transform var(--anim-layout) var(--ease);
-            will-change: transform;
+            transition: padding 0.4s var(--ease), gap 0.4s var(--ease), background-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
+            will-change: padding, gap;
         }
 
         #brand-name,
@@ -427,35 +440,41 @@
         }
 
         .nav-row.level-1 .nav-link {
-            font-size: 15px;
+            font-size: var(--nav-font-size);
             letter-spacing: 1px;
             line-height: 1.2;
             padding-bottom: 0
         }
 
         .layout-grid.cat-projects h3,
-        .nav-link[href="#Projects"],
-        .nav-link[href="#Projects"].active {
-            --text-hover: var(--accent-projects)
+        #nav-stack .nav-link[href="#Projects"],
+        #nav-stack .nav-link[href="#Projects"]:hover,
+        #nav-stack .nav-link[href="#Projects"].active {
+            --text-hover: var(--accent-projects);
         }
 
-        .nav-link[href="#Projects"].active {
+        #nav-stack .nav-link[href="#Projects"].active {
             --text-base: var(--accent-projects)
         }
 
         .layout-grid.cat-professional h3,
-        .nav-link[href="#Professional"] {
-            --text-hover: var(--accent-prof)
+        #nav-stack .nav-link[href="#Professional"],
+        #nav-stack .nav-link[href="#Professional"]:hover {
+            --text-hover: var(--accent-prof);
         }
 
-        .nav-link[href="#Professional"].active {
+        #nav-stack .nav-link[href="#Professional"].active {
             --text-base: var(--accent-prof);
             --text-hover: var(--accent-prof)
         }
 
         .layout-grid.cat-personal h3,
-        .nav-link[href="#Personal"],
-        .nav-link[href="#Personal"].active {
+        #nav-stack .nav-link[href="#Personal"],
+        #nav-stack .nav-link[href="#Personal"]:hover {
+            --text-hover: var(--accent-personal);
+        }
+
+        #nav-stack .nav-link[href="#Personal"].active {
             --text-hover: var(--accent-personal)
         }
 
@@ -507,8 +526,7 @@
 
         #main-header.scrolled {
             gap: 0;
-            padding: 2px 0;
-            /* Balanced top/bottom for vertical centering */
+            padding: 4px 0 2px 0;
         }
 
         #main-header.scrolled #nav-stack {
@@ -675,6 +693,8 @@
                 --header-pad-top: 4px;
                 --header-pad-bottom: 2px;
                 --header-gap: 2px;
+                /* Mobile Override */
+                --nav-font-size: 16px;
             }
 
             /* Clean header padding - equal top/bottom for visual balance */
@@ -686,8 +706,9 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 28px;
-                letter-spacing: 1.5px;
+                justify-content: center;
+                font-size: var(--brand-font-size);
+                letter-spacing: var(--brand-letter-spacing);
                 line-height: 1;
             }
 
@@ -717,7 +738,7 @@
 
         /* Larger, more touchable navigation text */
         .nav-row.level-1 .nav-link {
-            font-size: 16px;
+            font-size: var(--nav-font-size);
             line-height: 1.2;
         }
 
@@ -776,15 +797,11 @@
 
         /* Desktop Header Spacing - Increase row heights for better balance on large screens */
         @media (min-width: 769px) {
-            :root {
-                --brand-row-h: 34px !important;
-                --main-row-h: 24px !important;
-                --sub-row-h: 22px !important;
-                --gap: 2px !important;
-                --header-pad-top: 5px;
-                --header-pad-bottom: 2px;
-                --header-gap: 2px;
-            }
+            /* Desktop uses :root defaults defined at top of file.
+               Overrides here only if strictly necessary, but we moved defaults to global :root.
+               Keeping this block if specific desktop-only overrides are needed later,
+               but for now the global :root covers desktop defaults.
+            */
         }
 
         /* --- CONTENT LAYOUT --- */
@@ -2486,7 +2503,7 @@
         <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
         <div id="nav-stack"></div>
         <div id="search-controls">
-            <div id="search-trigger-wrapper" class="icon-btn-wrapper" onclick="toggleSearch()" title="Search (Ctrl+K)">
+            <div id="search-trigger-wrapper" class="icon-btn-wrapper" onclick="toggleSearch()" title="Search (/)">
                 <div id="search-trigger" class="icon-btn icon-search-mask fill-anim-mask"></div>
             </div>
         </div>
@@ -2871,6 +2888,31 @@
         let lastScrollPos = 0;
 
         function updatePadding() { const e = document.getElementById("nav-stack").querySelectorAll(".nav-row"); let t = 37; e.forEach(e => { t += e.classList.contains("level-1") ? 26 : 24; t += 1 }), document.body.style.paddingTop = t + 10 + "px" }
+        let resizeTimeout;
+        let ticking = false;
+        window.addEventListener("scroll", () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const t = window.scrollY;
+                    const e = document.getElementById("main-header");
+                    if (e) {
+                        e.classList.toggle("scrolled", t > 10);
+                        // Optional: Toggle shadow only when scrolled to save paints
+                        e.style.boxShadow = t > 10 ? "0 4px 30px rgba(0, 0, 0, 0.5)" : "none";
+                    }
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+        window.addEventListener('resize', () => {
+            if (resizeTimeout) cancelAnimationFrame(resizeTimeout);
+            resizeTimeout = requestAnimationFrame(() => {
+                if (window.innerWidth > 768) {
+                    document.querySelectorAll('.nav-row').forEach(e => e.scrollLeft = 0);
+                }
+            });
+        });
         function resetToHome() { closeSearch(), clearTextSelection(), window.location.hash = "" }
         function clearTextSelection() { if (window.getSelection) { const e = window.getSelection(); e && e.removeAllRanges && e.removeAllRanges() } else if (document.selection && document.selection.empty) { try { document.selection.empty() } catch (e) { } } }
 
