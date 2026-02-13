@@ -2942,13 +2942,30 @@
 
                 let html = "";
                 const prefix = parentPath ? parentPath + "/" : "";
-                items.forEach(item => {
-                    const linkClass = level === 1 ? "nav-link" : "sub-link";
-                    const activeClass = item === activeName ? "active" : "";
-                    html += `<a href="#${prefix + item}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
-                });
 
-                if (row.innerHTML !== html) row.innerHTML = html;
+                // Check if we can do a non-destructive update (only classes changed)
+                const currentLinks = Array.from(row.children);
+                const canUpdateInPlace = currentLinks.length === items.length &&
+                    currentLinks.every((link, i) => link.textContent === safeHTML(items[i]));
+
+                if (canUpdateInPlace) {
+                    items.forEach((item, i) => {
+                        const link = currentLinks[i];
+                        const linkClass = level === 1 ? "nav-link" : "sub-link";
+                        const activeClass = item === activeName ? "active" : "";
+                        const newClass = `${linkClass} fill-anim ${activeClass}`;
+                        if (link.className !== newClass) link.className = newClass;
+                    });
+                } else {
+                    items.forEach(item => {
+                        const linkClass = level === 1 ? "nav-link" : "sub-link";
+                        const activeClass = item === activeName ? "active" : "";
+                        html += `<a href="#${prefix + item}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
+                    });
+                    if (row.innerHTML !== html) row.innerHTML = html;
+                }
+
+                // Only center if we didn't just scroll it ourselves (picker mode)
                 centerNavRow(row, isNew && !activeName);
                 if (level > 1) setupHapticScroll(row);
             }
@@ -2960,8 +2977,12 @@
         }
 
         function haptic(ms) { navigator.vibrate && navigator.vibrate(ms || 2); }
-        /* Prime vibration API — browser requires a user activation before vibrate() works */
-        if (navigator.vibrate) document.addEventListener("pointerdown", () => { navigator.vibrate(1); }, { passive: true, once: true });
+        /* Prime vibration API — browser requires user activation. Capture ANY first interaction. */
+        const primeHaptics = () => {
+            if (navigator.vibrate) navigator.vibrate(1);
+            ["pointerdown", "touchstart", "keydown"].forEach(e => document.removeEventListener(e, primeHaptics));
+        };
+        ["pointerdown", "touchstart", "keydown"].forEach(e => document.addEventListener(e, primeHaptics, { passive: true }));
 
         let _pickerScrollingRow = null;
 
@@ -2998,7 +3019,10 @@
             let fingerDown = false;
             let settleTimer;
 
+            let startScrollLeft = 0;
+
             row.addEventListener("touchstart", () => {
+                startScrollLeft = row.scrollLeft;
                 fingerDown = true;
                 userTouching = true;
                 didScroll = false;
@@ -3017,6 +3041,9 @@
 
             row.addEventListener("scroll", () => {
                 if (!userTouching) return;
+
+                // Tolerance check: ignore micro-movements (< 5px) during taps
+                if (!didScroll && Math.abs(row.scrollLeft - startScrollLeft) < 5) return;
                 didScroll = true;
 
                 /* Haptic tick + live visual feedback + instant page change */
