@@ -3013,11 +3013,16 @@
             updatePadding();
         }
 
+        let _lastHaptic = 0;
         function haptic(tier) {
             try {
                 if (!navigator.vibrate) return;
-                // Only vibrate if the user has interacted (Chrome requirement)
-                if (navigator.userActivation && !navigator.userActivation.isActive) return;
+
+                // Allow long-scroll haptics by relying on browser's native activation tracking
+                // and simply throttling to prevent spam-blocking (15ms safety gap)
+                const now = Date.now();
+                if (now - _lastHaptic < 15) return;
+                _lastHaptic = now;
 
                 const tiers = {
                     tick: 1,
