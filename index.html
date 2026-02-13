@@ -2877,20 +2877,27 @@
         }
         function renderNavigation(e) { const t = document.getElementById("nav-stack"), n = document.getElementById("main-header"), o = e && "Home" !== e ? e.split("/") : [], r = o.length + 1, i = []; for (let e = 1; e <= r; e++) { const s = 1 === e ? null : o.slice(0, e - 1).join("/"), a = o.length >= e ? o[e - 1] : null; let l = []; if (l = 1 === e ? [...new Set([...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page).map(e => e.Page.split("/")[0]).filter(e => e), quotesDb.length > 0 ? "Personal" : null].filter(e => e))].sort() : [...new Set(db.filter(e => e.Page && e.Page.startsWith(s + "/")).map(t => t.Page.split("/")[e - 1]).filter(e => e))].sort(), 0 === l.length) break; const c = `nav-row-${e}`; i.push(c); let d = document.getElementById(c); const m = !d; m && (d = document.createElement("nav"), d.id = c, d.className = "nav-row level-" + (e > 1 ? "n" : "1"), a || (d.scrollLeft = 50), t.appendChild(d)); let p = ""; const u = s ? s + "/" : ""; l.forEach(t => { p += `<a href="#${u + t}" class="${1 === e ? "nav-link" : "sub-link"} fill-anim ${t === a ? "active" : ""}" onclick="closeSearch()">${safeHTML(t)}</a>` }), d.innerHTML !== p && (d.innerHTML = p), centerNavRow(d, m && !a); if (e > 1) setupHapticScroll(d) } t.querySelectorAll(".nav-row").forEach(e => { i.includes(e.id) || e.remove() }), updatePadding() }
 
-        let _suppressHaptic = false;
         function haptic(ms) { navigator.vibrate && navigator.vibrate(ms || 2); }
-        function centerNavRow(e, t) { if (window.innerWidth > 768) return; if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; _suppressHaptic = true; setTimeout(() => { _suppressHaptic = false }, 500); const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } }
+        function centerNavRow(e, t) { if (window.innerWidth > 768) return; if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } }
 
-        /* Haptic System — Subtle vibration feedback */
+        /* Haptic System — Touch-gated vibration feedback */
         const _hapticRows = new WeakSet();
         function setupHapticScroll(row) {
             if (_hapticRows.has(row) || !navigator.vibrate) return;
             _hapticRows.add(row);
             let lastCentered = null;
+            let lastNavigatedHref = null;
             let hTicking = false;
             let scrollEndTimer;
+            let userTouching = false;
+
+            row.addEventListener("touchstart", () => { userTouching = true; }, { passive: true });
+            row.addEventListener("touchend", () => {
+                /* Keep true during momentum — cleared when scroll settles */
+            }, { passive: true });
+
             row.addEventListener("scroll", () => {
-                if (_suppressHaptic) { clearTimeout(scrollEndTimer); return; }
+                if (!userTouching) return;
                 /* Haptic tick + live visual feedback on item change */
                 if (!hTicking) {
                     hTicking = true;
@@ -2917,7 +2924,7 @@
                 /* Auto-navigate on scroll settle */
                 clearTimeout(scrollEndTimer);
                 scrollEndTimer = setTimeout(() => {
-                    if (_suppressHaptic) return;
+                    userTouching = false;
                     const links = row.querySelectorAll(".sub-link");
                     if (!links.length) return;
                     const center = row.scrollLeft + row.clientWidth / 2;
@@ -2927,7 +2934,9 @@
                         const dist = Math.abs(mid - center);
                         if (dist < minDist) { minDist = dist; closest = link; }
                     });
-                    if (closest && !closest.classList.contains("active")) {
+                    const href = closest ? closest.getAttribute("href") : null;
+                    if (closest && href !== lastNavigatedHref) {
+                        lastNavigatedHref = href;
                         haptic(3);
                         closest.click();
                     }
@@ -2935,11 +2944,16 @@
             }, { passive: true });
         }
 
-        /* Global click haptic — tiny taps on all interactive elements */
+        /* Global click haptic — tiered intensity based on interaction importance */
         document.addEventListener("click", e => {
             if (!navigator.vibrate) return;
-            const el = e.target.closest("a, button, .icon-btn-wrapper, .card, .card-img-wrapper, #brand-name, .chip, img, .layout-grid > div, .photo-grid > div");
-            if (el) haptic(2);
+            const t = e.target;
+            /* Tier 3 (3ms) — Deliberate actions: brand, search, main nav, action buttons */
+            if (t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link, [onclick], .footer-link")) { haptic(3); return; }
+            /* Tier 2 (2ms) — Standard navigation: cards, sub-links, buttons */
+            if (t.closest(".card, .card-img-wrapper, button, .sub-link, .layout-grid > div")) { haptic(2); return; }
+            /* Tier 1 (1ms) — Light/passive: images, chips, generic links */
+            if (t.closest("a, img, .chip, .photo-grid > div")) { haptic(1); }
         }, { passive: true });
 
         let resizeTimer;
