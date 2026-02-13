@@ -2951,13 +2951,17 @@
                 if (row.innerHTML !== html && row !== _pickerScrollingRow) {
                     row.innerHTML = html;
                     if (activeName) {
-                        if (_pickerScrollingRow) {
-                            /* During picker scroll — apply .active instantly (no animation flash) */
+                        /* On mobile (user request) OR during picker scroll — apply .active instantly (no animation flash/lag) */
+                        /* Exception: Level 1 (Main Headers) keeps animation on mobile */
+                        const isMobile = window.innerWidth <= 768;
+                        const shouldSkipAnim = _pickerScrollingRow || (isMobile && level > 1);
+
+                        if (shouldSkipAnim) {
                             const target = row.querySelector(`[data-name="${CSS.escape(activeName)}"]`);
                             if (target) target.classList.add("active");
                             centerNavRow(row, false);
                         } else {
-                            /* Normal navigation — defer .active for fill-anim CSS transition */
+                            /* Normal navigation on Desktop — defer .active for fill-anim CSS transition */
                             requestAnimationFrame(() => {
                                 requestAnimationFrame(() => {
                                     const target = row.querySelector(`[data-name="${CSS.escape(activeName)}"]`);
@@ -3075,7 +3079,12 @@
                             if (href) {
                                 const path = href.substring(1);
                                 history.replaceState(null, "", "#" + path);
-                                renderPage(path);
+
+                                /* Dispatch to correct renderer (Resume/Index/Page) */
+                                if (path === "Professional/Resume") renderResume();
+                                else if (path === "Index") renderIndex();
+                                else renderPage(path);
+
                                 renderNavigation(path);
                             }
                         }
