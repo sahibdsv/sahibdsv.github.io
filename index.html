@@ -3014,11 +3014,13 @@
             let didScroll = false;
             let fingerDown = false;
             let settleTimer;
+            let scrollStartLeft = 0;
 
             row.addEventListener("touchstart", () => {
                 fingerDown = true;
                 userTouching = true;
                 didScroll = false;
+                scrollStartLeft = row.scrollLeft;
                 _pickerScrollingRow = row;
             }, { passive: true });
 
@@ -3034,6 +3036,8 @@
 
             row.addEventListener("scroll", () => {
                 if (!userTouching) return;
+                /* Only engage picker after 5px of scroll — prevents tap wobble */
+                if (!didScroll && Math.abs(row.scrollLeft - scrollStartLeft) < 5) return;
                 didScroll = true;
 
                 /* Haptic tick + live visual feedback + instant page change */
@@ -3053,8 +3057,11 @@
                         if (closest && href !== lastCenteredHref) {
                             lastCenteredHref = href;
                             haptic(1);
-                            /* Live active toggle */
-                            links.forEach(l => l.classList.remove("active"));
+                            /* Live active toggle — instant transition during scroll */
+                            links.forEach(l => {
+                                l.classList.remove("active");
+                                l.style.transition = "none";
+                            });
                             closest.classList.add("active");
                             /* Instant page switch — silent URL update + direct render */
                             if (href) {
@@ -3073,6 +3080,8 @@
                     if (!fingerDown) {
                         userTouching = false;
                         _pickerScrollingRow = null;
+                        /* Restore transitions after scroll settles */
+                        row.querySelectorAll(".sub-link").forEach(l => l.style.transition = "");
                     }
                 }, 150);
             }, { passive: true });
