@@ -3087,7 +3087,7 @@
                         const href = closest ? closest.getAttribute("href") : null;
                         if (closest && href !== lastCenteredHref) {
                             lastCenteredHref = href;
-                            haptic(2);
+                            haptic(1);
                             /* Live active toggle */
                             links.forEach(l => l.classList.remove("active"));
                             closest.classList.add("active");
@@ -3113,10 +3113,10 @@
         document.addEventListener("click", e => {
             if (!navigator.vibrate) return;
             const t = e.target;
-            /* Tier 3 (3ms) — Deliberate actions: brand, search, main nav, action buttons */
-            if (t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link, [onclick], .footer-link")) { haptic(3); return; }
-            /* Tier 2 (2ms) — Standard navigation: cards, sub-links, buttons */
-            if (t.closest(".card, .card-img-wrapper, button, .sub-link, .layout-grid > div")) { haptic(2); return; }
+            /* Tier 3 (2ms) — Deliberate actions: brand, search, main nav, action buttons */
+            if (t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link, [onclick], .footer-link")) { haptic(2); return; }
+            /* Tier 2 (1ms) — Standard navigation: cards, sub-links, buttons */
+            if (t.closest(".card, .card-img-wrapper, button, .sub-link, .layout-grid > div")) { haptic(1); return; }
             /* Tier 1 (1ms) — Light/passive: images, chips, generic links */
             if (t.closest("a, img, .chip, .photo-grid > div")) { haptic(1); }
         }, { passive: true });
