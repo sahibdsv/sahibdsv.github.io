@@ -2473,11 +2473,11 @@
                 color: var(--text-hover, var(--text-bright));
             }
 
-            /* Ensure active state/class stays filled */
-            .fill-anim.active {
-                background-position: 0 100%;
-                color: var(--text-hover, var(--text-bright));
-            }
+        }
+
+        /* State persistence for navigation rows */
+        .nav-row.hidden {
+            display: none !important;
         }
     </style>
 
@@ -2570,6 +2570,8 @@
         }
 
         // === CORE APPLICATION (app.js inlined) ===
+        let _activeRenderPath = null;
+        let _renderRAF = null;
 
         // CSV Parser
         function parseCSV(csvText) {
@@ -2994,7 +2996,8 @@
             }
 
             navStack.querySelectorAll(".nav-row").forEach(row => {
-                if (!activeRowIds.includes(row.id)) row.remove();
+                const isActive = activeRowIds.includes(row.id);
+                row.classList.toggle("hidden", !isActive);
             });
 
             // Focus Brand Name if at home
@@ -3156,7 +3159,7 @@
         function updatePadding() {
             const navStack = document.getElementById("nav-stack");
             if (!navStack) return;
-            const rows = navStack.querySelectorAll(".nav-row");
+            const rows = Array.from(navStack.querySelectorAll(".nav-row:not(.hidden)"));
             let height = 37; // Base brand row padding-top
 
             rows.forEach(row => {
@@ -3282,12 +3285,18 @@
             clearTextSelection();
 
             const cleanPath = path || "Home";
+            _activeRenderPath = cleanPath;
 
-            // 1. Immediately update navigation to prioritize the fill animation
+            // 1. Immediately update navigation metadata (Header Fill + Active States)
             renderNavigation(cleanPath === "Home" ? null : cleanPath);
 
-            // 2. Defer heavy content rendering for buttery smooth page transitions
-            requestAnimationFrame(() => {
+            // 2. Debounced heavy rendering pipeline
+            if (_renderRAF) cancelAnimationFrame(_renderRAF);
+
+            _renderRAF = requestAnimationFrame(() => {
+                // Render Guard: Only build the page if this is still the final target
+                if (_activeRenderPath !== cleanPath) return;
+
                 if (cleanPath === "Index") {
                     renderIndex();
                 } else if (cleanPath === "Professional/Resume") {
@@ -3299,6 +3308,7 @@
                         renderPage(cleanPath);
                     }
                 }
+                _renderRAF = null;
             });
         }
 
