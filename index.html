@@ -2501,6 +2501,18 @@
                 fill: var(--text-muted) !important;
             }
 
+            /* Restore feedback on tap (press) */
+            .nav-link:active,
+            .sub-link:active,
+            .icon-btn:active,
+            #brand-name:active {
+                background-position: 0 100% !important;
+                --text-hover: var(--text-bright) !important;
+                fill: var(--text-bright) !important;
+                transition: none !important;
+                /* Instant feedback on touch */
+            }
+
             /* Ensure active state still pops */
             .nav-link.active,
             .sub-link.active {
