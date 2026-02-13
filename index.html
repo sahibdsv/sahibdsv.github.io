@@ -691,10 +691,10 @@
                 --brand-row-h: 34px;
                 --main-row-h: 22px;
                 --sub-row-h: 20px;
-                --gap: 3px;
-                --header-pad-top: 4px;
+                --gap: 1px;
+                --header-pad-top: 3.5px;
                 --header-pad-bottom: 3px;
-                --header-gap: 3px;
+                --header-gap: 0px;
                 --nav-font-size: 16px;
             }
 
@@ -705,6 +705,8 @@
                 font-size: var(--brand-font-size);
                 letter-spacing: var(--brand-letter-spacing);
                 line-height: 1;
+                margin-bottom: -2px;
+                /* Pull nav closer to match 13px visual gap */
             }
 
             /* Search icon - use flexbox and match brand row height for perfect alignment */
