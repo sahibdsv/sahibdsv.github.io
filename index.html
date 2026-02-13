@@ -2582,6 +2582,7 @@
         let db = [];
         let quotesDb = [];
         let resumeDb = [];
+        let quoteBag = []; // New state for shuffle logic
         let isSearchActive = false;
 
         // Analytics tracking helper - for intentional user actions only
@@ -2597,6 +2598,29 @@
             quotes_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv',
             resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv'
         };
+
+        // Quote Randomness Logic (Fisher-Yates Shuffle Bag)
+        function refillQuoteBag() {
+            // Create a shallow copy of indices [0, 1, ... n-1]
+            quoteBag = quotesDb.map((_, index) => index);
+
+            // Fisher-Yates Shuffle
+            for (let i = quoteBag.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [quoteBag[i], quoteBag[j]] = [quoteBag[j], quoteBag[i]];
+            }
+        }
+
+        function getNextQuote() {
+            if (quotesDb.length === 0) return null;
+
+            if (quoteBag.length === 0) {
+                refillQuoteBag();
+            }
+
+            const index = quoteBag.pop();
+            return quotesDb[index];
+        }
 
         // App Initialization
         const init = () => {
@@ -3229,7 +3253,64 @@
                 }
             });
         }
-        function renderQuoteCard(e) { let t, n = !1; if ("random quote" === (e.getAttribute("data-title") || "").toLowerCase()) { if (0 === quotesDb.length) return void (e.innerHTML = "Quote sheet empty."); t = quotesDb[Math.floor(Math.random() * quotesDb.length)], n = !0 } else t = { Quote: e.getAttribute("data-static-quote") || "No content.", Author: e.getAttribute("data-static-author") || "Unknown", Source: null }; let o = t.Author || "Unknown"; t.Source && t.Source.startsWith("http") ? o = `<a href="${t.Source}" target="_blank">${safeHTML(o)}</a>` : t.Source && (o += ` — ${safeHTML(t.Source)}`); const r = safeHTML((t.Quote || "").trim().replace(/^"|"$/g, "")), i = r.length; let s = "short"; i > 230 ? s = "xxl" : i > 150 ? s = "xl" : i > 100 ? s = "long" : i > 50 && (s = "medium"); let a = ""; n && (a = '<svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">\n<rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>\n<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>\n<circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>\n</svg>'), e.innerHTML = `<blockquote class="${s}">"${r}"</blockquote>\n<div class="quote-footer"><span class="author"> &mdash; ${o}</span>${a}</div>` }
+        function renderQuoteCard(container) {
+            let quoteData;
+            let isRandom = false;
+            const title = (container.getAttribute("data-title") || "").toLowerCase();
+
+            if (title === "random quote") {
+                if (quotesDb.length === 0) {
+                    container.innerHTML = "Quote sheet empty.";
+                    return;
+                }
+                // Use the new bag logic instead of random selection
+                quoteData = getNextQuote();
+                isRandom = true;
+            } else {
+                quoteData = {
+                    Quote: container.getAttribute("data-static-quote") || "No content.",
+                    Author: container.getAttribute("data-static-author") || "Unknown",
+                    Source: null
+                };
+            }
+
+            if (!quoteData) return;
+
+            let author = quoteData.Author || "Unknown";
+            if (quoteData.Source) {
+                if (quoteData.Source.startsWith("http")) {
+                    author = `<a href="${quoteData.Source}" target="_blank">${safeHTML(author)}</a>`;
+                } else {
+                    author += ` — ${safeHTML(quoteData.Source)}`;
+                }
+            }
+
+            const rawQuote = (quoteData.Quote || "").trim().replace(/^"|"$/g, "");
+            const safeQuote = safeHTML(rawQuote);
+            const len = rawQuote.length;
+
+            let sizeClass = "short";
+            if (len > 230) sizeClass = "xxl";
+            else if (len > 150) sizeClass = "xl";
+            else if (len > 100) sizeClass = "long";
+            else if (len > 50) sizeClass = "medium";
+
+            let refreshBtnHTML = "";
+            if (isRandom) {
+                refreshBtnHTML = `
+                <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">
+                    <rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                </svg>`;
+            }
+
+            container.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
+                                <div class="quote-footer"><span class="author"> &mdash; ${author}</span>${refreshBtnHTML}</div>`;
+        }
         function renderFooter() {
             const container = document.getElementById("footer-links");
             const footerEntries = db.filter(e => "Footer" === e.Page);
