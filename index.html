@@ -294,13 +294,13 @@
             /* Tighter horizontal padding */
             font-size: 11px;
             /* Tighter font */
-            font-weight: 600;
+            font-weight: 500;
             /* Bolder weight */
             text-transform: uppercase;
             letter-spacing: 0.4px;
             /* Reduced to avoid excessive width */
-            color: var(--text-main);
-            border: 1px solid var(--border-strong);
+            color: var(--text-dim);
+            border: 1px solid var(--border-subtle);
             border-radius: 50px;
             background: rgba(var(--bright-rgb), var(--op-subtle));
             text-decoration: none !important;
@@ -798,9 +798,8 @@
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            column-gap: 20px;
-            row-gap: 12px;
-            /* Standardize with card visual rhythm */
+            gap: 16px;
+            /* Balanced: 16px provides a tighter, more cohesive grid than 20px */
             margin-bottom: 15px;
             /* Tightened from 25px */
         }
@@ -1622,11 +1621,11 @@
         /* Markdown Embedded Grids */
         .markdown-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 12px;
-            /* Unified with cards and containers */
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            /* Standardized with .grid-container */
+            gap: 16px;
+            /* Standardized 16px gap */
             margin: 12px 0;
-            /* Tightened from 25px */
             width: 100%;
         }
 
