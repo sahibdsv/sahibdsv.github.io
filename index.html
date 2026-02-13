@@ -3129,12 +3129,13 @@
                             lastCenteredHref = href;
                             haptic(1);
 
-                            /* Instant page switch — change hash AND render content for buttery feel */
+                            /* Instant page switch — change hash AND render content/nav for buttery feel */
                             const newPath = href.substring(1);
                             if (newPath) {
                                 history.replaceState(null, "", "#" + newPath);
-                                // Drive the content swap instantly during the swipe
+                                // Drive both content AND sub-navigation updates instantly during the swipe
                                 renderPage(newPath);
+                                renderNavigation(newPath);
 
                                 /* Live active toggle for nav aesthetics */
                                 links.forEach(l => l.classList.remove("active"));
