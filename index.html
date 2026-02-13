@@ -2961,10 +2961,10 @@
 
         function haptic(ms) { navigator.vibrate && navigator.vibrate(ms || 2); }
 
-        let _isPickerScrolling = false;
+        let _pickerScrollingRow = null;
 
         function centerNavRow(row, centerDefault) {
-            if (_isPickerScrolling) return;
+            if (row === _pickerScrollingRow) return;
             if (window.innerWidth > 768) return;
             if (!row) return;
             if (row.scrollWidth <= row.clientWidth + 5) return;
@@ -2993,19 +2993,22 @@
             let hTicking = false;
             let userTouching = false;
             let didScroll = false;
+            let fingerDown = false;
             let settleTimer;
 
             row.addEventListener("touchstart", () => {
+                fingerDown = true;
                 userTouching = true;
                 didScroll = false;
-                _isPickerScrolling = true;
+                _pickerScrollingRow = row;
             }, { passive: true });
 
             row.addEventListener("touchend", () => {
+                fingerDown = false;
                 if (!didScroll) {
                     /* Tap, not swipe — clear immediately so programmatic scroll doesn't fire haptics */
                     userTouching = false;
-                    _isPickerScrolling = false;
+                    _pickerScrollingRow = null;
                 }
                 /* If didScroll, keep flags true — cleared when scroll momentum settles */
             }, { passive: true });
@@ -3044,8 +3047,10 @@
                 /* Settle timer — clear picker mode when momentum stops */
                 clearTimeout(settleTimer);
                 settleTimer = setTimeout(() => {
-                    userTouching = false;
-                    _isPickerScrolling = false;
+                    if (!fingerDown) {
+                        userTouching = false;
+                        _pickerScrollingRow = null;
+                    }
                 }, 150);
             }, { passive: true });
         }
