@@ -145,14 +145,6 @@
             --ease: cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        @media (max-width: 768px) {
-            :root {
-                --header-pad-top: 35px;
-                --header-gap: 25px;
-            }
-        }
-
-
 
 
         * {
@@ -497,21 +489,10 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             line-height: 1.2;
-            scroll-snap-type: x mandatory;
+            scroll-snap-type: x proximity;
             mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%)
         }
-
-        /* Fix for Inactive/Active State on Mobile (No fill-anim) */
-        .nav-row.level-n .nav-link {
-            color: var(--text-dim);
-            transition: color 0.2s ease;
-        }
-
-        .nav-row.level-n .nav-link.active {
-            color: var(--text-bright);
-        }
-
 
         .nav-row.level-n .sub-link {
             scroll-snap-align: center;
@@ -2918,7 +2899,6 @@
                 })
         }
         function renderNavigation(currentPath) {
-            _pickerScrollingRow = null;
             const navStack = document.getElementById("nav-stack");
             const header = document.getElementById("main-header");
             const pathParts = currentPath && "Home" !== currentPath ? currentPath.split("/") : [];
@@ -2963,84 +2943,25 @@
                 let html = "";
                 const prefix = parentPath ? parentPath + "/" : "";
                 items.forEach(item => {
-                    /* Fix Color: Ensure 'nav-link' is present on sub-items so they pick up CSS variables */
-                    const linkClass = level === 1 ? "nav-link" : "nav-link sub-link";
-                    /* Mobile: Keep fill-anim for Main Headers, remove for Sub-headers to avoid lag */
-                    const isMobile = window.innerWidth <= 768;
-                    const animClass = (isMobile && level > 1) ? "" : " fill-anim";
-                    html += `<a href="#${prefix + item}" class="${linkClass}${animClass}" data-name="${safeHTML(item)}" onclick="closeSearch()">${safeHTML(item)}</a>`;
+                    const linkClass = level === 1 ? "nav-link" : "sub-link";
+                    const activeClass = item === activeName ? "active" : "";
+                    html += `<a href="#${prefix + item}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
                 });
 
-                /* Fix Flicker & State Leakage: Check content hash before re-rendering */
-                const contentHash = items.join('|');
-                const isContentDifferent = row.dataset.contentHash !== contentHash;
-
-                if (isContentDifferent) {
-                    row.innerHTML = html;
-                    row.dataset.contentHash = contentHash;
-
-                    /* Fix State Leakage: Reset scroll on fresh content */
-                    row.scrollLeft = 0;
-
-                    if (activeName) {
-                        /* Active State logic handles the rest */
-                    } else {
-                        centerNavRow(row, isNew);
-                    }
-                }
-
-                /* Always update active state (even if no re-render) */
-                if (activeName) {
-                    /* Clean previous active states first (crucial since we might skip innerHTML wipe) */
-                    row.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
-
-                    /* Apply new active */
-                    const target = row.querySelector(`[data-name="${CSS.escape(activeName)}"]`);
-                    const isMobile = window.innerWidth <= 768;
-                    /* Level 1 (Main Headers) always animate. Level > 1 (Sub) skip on mobile/picker. */
-                    const shouldSkipAnim = _pickerScrollingRow || (isMobile && level > 1);
-
-                    if (target) {
-                        if (shouldSkipAnim) {
-                            target.classList.add("active");
-                            centerNavRow(row, false);
-                        } else {
-                            /* Defer for desktop/fill-anim */
-                            requestAnimationFrame(() => {
-                                requestAnimationFrame(() => {
-                                    target.classList.add("active");
-                                    centerNavRow(row, false);
-                                });
-                            });
-                        }
-                    }
-                }
+                if (row.innerHTML !== html) row.innerHTML = html;
+                centerNavRow(row, isNew && !activeName);
                 if (level > 1) setupHapticScroll(row);
             }
 
             navStack.querySelectorAll(".nav-row").forEach(row => {
                 if (!activeRowIds.includes(row.id)) row.remove();
             });
-            /* Optim: Skip padding update during picker scroll to prevent layout thrashing/flash */
-            if (!_pickerScrollingRow) updatePadding();
+            updatePadding();
         }
 
-        /* Updated Haptic Helper - Safe Guarded */
-        function haptic(ms) {
-            if (navigator.vibrate) {
-                try { navigator.vibrate(ms || 2); } catch (e) { /* ignore */ }
-            }
-        }
-
-        /* Prime vibration API — cast wide net across all user activation events */
-        if (navigator.vibrate) {
-            /* Removed optimistic call to prevent 'Blocked call' error */
-            ["pointerdown", "pointerup", "mousedown", "touchstart", "touchend", "touchmove", "click"].forEach(evt => {
-                document.addEventListener(evt, () => {
-                    try { navigator.vibrate(1); } catch (e) { }
-                }, { passive: true, once: true });
-            });
-        }
+        function haptic(ms) { navigator.vibrate && navigator.vibrate(ms || 2); }
+        /* Prime vibration API — browser requires a user activation before vibrate() works */
+        if (navigator.vibrate) document.addEventListener("pointerdown", () => { navigator.vibrate(1); }, { passive: true, once: true });
 
         let _pickerScrollingRow = null;
 
@@ -3076,14 +2997,11 @@
             let didScroll = false;
             let fingerDown = false;
             let settleTimer;
-            let historyTimer;
-            let scrollStartLeft = 0;
 
             row.addEventListener("touchstart", () => {
                 fingerDown = true;
                 userTouching = true;
                 didScroll = false;
-                scrollStartLeft = row.scrollLeft;
                 _pickerScrollingRow = row;
             }, { passive: true });
 
@@ -3099,83 +3017,54 @@
 
             row.addEventListener("scroll", () => {
                 if (!userTouching) return;
-                /* Only engage picker after 5px of scroll — prevents tap wobble */
-                if (!didScroll && Math.abs(row.scrollLeft - scrollStartLeft) < 5) return;
                 didScroll = true;
 
-                /* Haptic tick + live visual feedback ONLY */
+                /* Haptic tick + live visual feedback + instant page change */
                 if (!hTicking) {
                     hTicking = true;
                     requestAnimationFrame(() => {
                         const links = row.querySelectorAll(".sub-link");
-                        let closest = null;
-                        let minDist = Infinity;
-                        const rowCenter = row.scrollLeft + row.clientWidth / 2;
-
-                        links.forEach(l => {
-                            const center = l.offsetLeft + l.offsetWidth / 2;
-                            const dist = Math.abs(center - rowCenter);
-                            if (dist < minDist) {
-                                minDist = dist;
-                                closest = l;
-                            }
+                        if (!links.length) { hTicking = false; return; }
+                        const center = row.scrollLeft + row.clientWidth / 2;
+                        let closest = null, minDist = Infinity;
+                        links.forEach(link => {
+                            const mid = link.offsetLeft + link.offsetWidth / 2;
+                            const dist = Math.abs(mid - center);
+                            if (dist < minDist) { minDist = dist; closest = link; }
                         });
-
                         const href = closest ? closest.getAttribute("href") : null;
                         if (closest && href !== lastCenteredHref) {
                             lastCenteredHref = href;
-                            haptic(1); /* Tick */
-
-                            /* Visual: Instant highlight update (lightweight) */
-                            links.forEach(l => {
-                                l.classList.remove("active");
-                                l.style.transition = "none";
-                            });
+                            haptic(2);
+                            /* Live active toggle */
+                            links.forEach(l => l.classList.remove("active"));
                             closest.classList.add("active");
-
-                            /* INSTANT CONTENT UPDATE (SPA Feel) */
-                            /* Guaranteed safe because _pickerScrollingRow stops renderNavigation from destroying this row */
-                            if (href) {
-                                const path = href.substring(1);
-
-                                /* DEBOUNCED: History API (Heavy - causes stutter) */
-                                clearTimeout(historyTimer);
-                                historyTimer = setTimeout(() => {
-                                    history.replaceState(null, "", "#" + path);
-                                }, 150);
-
-                                /* INSTANT: Render Page Content */
-                                if (path === "Professional/Resume") renderResume();
-                                else if (path === "Index") renderIndex();
-                                else renderPage(path);
-
-                                renderNavigation(path);
-                            }
+                            /* Instant page switch — change hash without centerNavRow override */
+                            if (href) window.location.hash = href.substring(1);
                         }
-
-                        /* Scroll End Detection: Reset locks and transitions when momentum stops */
-                        clearTimeout(settleTimer);
-                        settleTimer = setTimeout(() => {
-                            links.forEach(l => l.style.transition = "");
-                            _pickerScrollingRow = null;
-                            userTouching = false;
-                        }, 150);
-
                         hTicking = false;
                     });
                 }
-            }, { passive: true });
 
+                /* Settle timer — clear picker mode when momentum stops */
+                clearTimeout(settleTimer);
+                settleTimer = setTimeout(() => {
+                    if (!fingerDown) {
+                        userTouching = false;
+                        _pickerScrollingRow = null;
+                    }
+                }, 150);
+            }, { passive: true });
         }
 
         /* Global click haptic — tiered intensity based on interaction importance */
         document.addEventListener("click", e => {
             if (!navigator.vibrate) return;
             const t = e.target;
-            /* Tier 2 (2ms) — Deliberate actions: brand, search, main nav, action buttons */
-            if (t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link, [onclick], .footer-link")) { haptic(2); return; }
-            /* Tier 1 (1ms) — Standard navigation: cards, sub-links, buttons */
-            if (t.closest(".card, .card-img-wrapper, button, .sub-link, .layout-grid > div")) { haptic(1); return; }
+            /* Tier 3 (3ms) — Deliberate actions: brand, search, main nav, action buttons */
+            if (t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link, [onclick], .footer-link")) { haptic(3); return; }
+            /* Tier 2 (2ms) — Standard navigation: cards, sub-links, buttons */
+            if (t.closest(".card, .card-img-wrapper, button, .sub-link, .layout-grid > div")) { haptic(2); return; }
             /* Tier 1 (1ms) — Light/passive: images, chips, generic links */
             if (t.closest("a, img, .chip, .photo-grid > div")) { haptic(1); }
         }, { passive: true });
