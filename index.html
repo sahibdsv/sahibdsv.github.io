@@ -147,6 +147,23 @@
 
 
 
+        /* Slide Animation for Deep Levels */
+        @keyframes slideInRight {
+            0% {
+                transform: translateX(30px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.4s var(--ease) forwards;
+        }
+
         * {
             box-sizing: border-box;
             outline: 0;
@@ -2987,6 +3004,13 @@
                         html += `<a href="#${prefix + item}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
                     });
                     if (row.innerHTML !== html) row.innerHTML = html;
+                }
+
+                /* Force preview slide animation for ANY update if no specific item is active */
+                if (!activeName && level > 1) {
+                    row.classList.remove("slide-in-right");
+                    void row.offsetWidth; // Trigger reflow
+                    row.classList.add("slide-in-right");
                 }
 
                 // Only center if we didn't just scroll it ourselves (picker mode)
