@@ -3146,7 +3146,8 @@
         /* Global click haptic — tiered intensity based on interaction importance */
         document.addEventListener("click", e => {
             if (!navigator.vibrate) return;
-            const t = e.target.closest("#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], .layout-grid > div, a, .chip");
+            // Catch anything interactive: links, buttons, cards, chips, OR anything with an onclick/role=button
+            const t = e.target.closest("#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid > div, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip");
             if (t) {
                 const isMajor = t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link");
                 haptic(isMajor ? 'pulse' : 'tap');
