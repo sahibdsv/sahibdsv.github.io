@@ -2490,34 +2490,31 @@
         /* START: Touch Device Fixes */
         @media (hover: none) {
 
-            /* Kill sticky hover states on touch */
+            /* Kill sticky hover states on touch - revert to gray state */
             .nav-link:hover,
             .sub-link:hover,
             .icon-btn:hover,
             #brand-name:hover {
-                /* Revert to base state - active class will handle highlighting */
-                background-position: 0 0 !important;
-                --text-hover: var(--text-base) !important;
-                fill: var(--text-muted) !important;
+                background-position: 0 0;
+                --text-hover: var(--text-base);
+                fill: var(--text-muted);
             }
 
-            /* Restore feedback on tap (press) */
+            /* Restore feedback on tap (press) - allow transitions for fill effect */
             .nav-link:active,
             .sub-link:active,
             .icon-btn:active,
-            #brand-name:active {
+            #brand-name:active,
+            .icon-btn:active .fill-anim-mask {
                 background-position: 0 100% !important;
                 --text-hover: var(--text-bright) !important;
                 fill: var(--text-bright) !important;
-                transition: none !important;
-                /* Instant feedback on touch */
             }
 
-            /* Ensure active state still pops */
+            /* Ensure active state/class still pops */
             .nav-link.active,
             .sub-link.active {
                 background-position: 0 100% !important;
-                /* Force fill */
             }
         }
     </style>
