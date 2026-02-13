@@ -3682,7 +3682,9 @@
 
                 if (!isSubPage) {
                     if (sectionType === "quote") {
-                        const staticQuote = ((entry.Title || "").toLowerCase() !== "random quote") ? (entry.Content || entry.Quote || "") : "";
+                        const titleLower = (entry.Title || "").toLowerCase();
+                        const isRandom = titleLower === "{random quote}" || titleLower === "random quote"; // Support both for now, guide to newer
+                        const staticQuote = !isRandom ? (entry.Content || entry.Quote || "") : "";
                         const staticAuthor = staticQuote ? (entry.Author || "Sahib Virdee") : "";
                         htmlBuffer += `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${staticQuote}" data-static-author="${staticAuthor}" data-needs-init="true"></div>`;
                         return;
@@ -3747,7 +3749,7 @@
             let isRandom = false;
             const title = (container.getAttribute("data-title") || "").toLowerCase();
 
-            if (title === "random quote") {
+            if (title === "{random quote}" || title === "random quote") {
                 if (quotesDb.length === 0) {
                     container.innerHTML = "Quote sheet empty.";
                     return;
