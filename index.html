@@ -3004,7 +3004,16 @@
             updatePadding();
         }
 
-        function haptic(ms) { navigator.vibrate && navigator.vibrate(ms || 2); }
+        function haptic(tier) {
+            if (!navigator.vibrate) return;
+            const tiers = {
+                tick: 1,
+                tap: 2,
+                bump: 5,
+                pulse: [1, 20, 1]
+            };
+            navigator.vibrate(tiers[tier] || tier || 2);
+        }
         /* Prime vibration API — browser requires user activation. Capture only touchstart for mobile. */
         const primeHaptics = () => { if (navigator.vibrate) { navigator.vibrate(1); document.removeEventListener("touchstart", primeHaptics); } };
         document.addEventListener("touchstart", primeHaptics, { passive: true });
@@ -3046,39 +3055,59 @@
             let settleTimer;
 
             let startScrollLeft = 0;
+            let hitStart = false; // Wall bump state
+            let hitEnd = false;   // Wall bump state
 
             row.addEventListener("touchstart", () => {
                 startScrollLeft = row.scrollLeft;
                 fingerDown = true;
                 userTouching = true;
                 didScroll = false;
+                hitStart = false;
+                hitEnd = false;
                 _pickerScrollingRow = row;
             }, { passive: true });
 
             row.addEventListener("touchend", () => {
                 fingerDown = false;
                 if (!didScroll) {
-                    /* Tap, not swipe — clear immediately so programmatic scroll doesn't fire haptics */
                     userTouching = false;
                     _pickerScrollingRow = null;
                 }
-                /* If didScroll, keep flags true — cleared when scroll momentum settles */
             }, { passive: true });
 
             row.addEventListener("scroll", () => {
                 if (!userTouching) return;
 
-                // Tolerance check: ignore micro-movements (< 5px) during taps
-                if (!didScroll && Math.abs(row.scrollLeft - startScrollLeft) < 5) return;
+                const currentScroll = row.scrollLeft;
+                const maxScroll = row.scrollWidth - row.clientWidth;
+
+                // Wall Bump Logic: Trigger once when hitting either end during a drag
+                if (currentScroll <= 0) {
+                    if (!hitStart) {
+                        haptic('bump');
+                        hitStart = true;
+                    }
+                } else if (currentScroll >= maxScroll - 1) { // 1px tolerance
+                    if (!hitEnd) {
+                        haptic('bump');
+                        hitEnd = true;
+                    }
+                } else {
+                    // Reset boundary flags once moved away from the wall
+                    hitStart = false;
+                    hitEnd = false;
+                }
+
+                if (!didScroll && Math.abs(currentScroll - startScrollLeft) < 5) return;
                 didScroll = true;
 
-                /* Haptic tick + live visual feedback + instant page change */
                 if (!hTicking) {
                     hTicking = true;
                     requestAnimationFrame(() => {
                         const links = row.querySelectorAll(".sub-link");
                         if (!links.length) { hTicking = false; return; }
-                        const center = row.scrollLeft + row.clientWidth / 2;
+                        const center = currentScroll + row.clientWidth / 2;
                         let closest = null, minDist = Infinity;
                         links.forEach(link => {
                             const mid = link.offsetLeft + link.offsetWidth / 2;
@@ -3088,16 +3117,11 @@
                         const href = closest ? closest.getAttribute("href") : null;
                         if (closest && href !== lastCenteredHref) {
                             lastCenteredHref = href;
-                            haptic(1);
-
-                            /* Instant page switch — change hash AND render content/nav for buttery feel */
+                            haptic('tick');
                             const newPath = href.substring(1);
                             if (newPath) {
                                 history.replaceState(null, "", "#" + newPath);
-                                // Drive the full navigation cycle (includes special page checks like Resume)
                                 navigateTo(newPath, true);
-
-                                /* Live active toggle for nav aesthetics */
                                 links.forEach(l => l.classList.remove("active"));
                                 closest.classList.add("active");
                             }
@@ -3106,7 +3130,6 @@
                     });
                 }
 
-                /* Settle timer — clear picker mode when momentum stops */
                 clearTimeout(settleTimer);
                 settleTimer = setTimeout(() => {
                     if (!fingerDown) {
@@ -3121,7 +3144,10 @@
         document.addEventListener("click", e => {
             if (!navigator.vibrate) return;
             const t = e.target.closest("#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], .layout-grid > div, a, .chip");
-            if (t) haptic(t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link") ? 2 : 1);
+            if (t) {
+                const isMajor = t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link");
+                haptic(isMajor ? 'pulse' : 'tap');
+            }
         }, { passive: true });
 
         let resizeTimer;
