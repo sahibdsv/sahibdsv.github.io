@@ -2950,7 +2950,6 @@
 
                 if (row.innerHTML !== html) {
                     row.innerHTML = html;
-                    row._hapticGen = (row._hapticGen || 0) + 1;
                     /* Defer .active class so the fill-anim CSS transition plays */
                     if (activeName) {
                         requestAnimationFrame(() => {
@@ -3011,13 +3010,14 @@
             let didScroll = false;
             let fingerDown = false;
             let settleTimer;
-            let myGen = row._hapticGen || 0;
 
             row.addEventListener("touchstart", () => {
                 fingerDown = true;
                 userTouching = true;
                 didScroll = false;
                 _pickerScrollingRow = row;
+                /* Ensure vibration API is primed on first touch */
+                if (navigator.vibrate) navigator.vibrate(1);
             }, { passive: true });
 
             row.addEventListener("touchend", () => {
@@ -3031,14 +3031,6 @@
             }, { passive: true });
 
             row.addEventListener("scroll", () => {
-                /* Reset state if row content changed (different category) */
-                if (row._hapticGen !== myGen) {
-                    myGen = row._hapticGen;
-                    lastCenteredHref = null;
-                    userTouching = false;
-                    fingerDown = false;
-                    return;
-                }
                 if (!userTouching) return;
                 didScroll = true;
 
@@ -3062,8 +3054,12 @@
                             /* Live active toggle */
                             links.forEach(l => l.classList.remove("active"));
                             closest.classList.add("active");
-                            /* Instant page switch — change hash without centerNavRow override */
-                            if (href) window.location.hash = href.substring(1);
+                            /* Instant page switch — silent URL update + direct render */
+                            if (href) {
+                                const path = href.substring(1);
+                                history.replaceState(null, "", "#" + path);
+                                renderPage(path);
+                            }
                         }
                         hTicking = false;
                     });
