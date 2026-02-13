@@ -2490,31 +2490,33 @@
         /* START: Touch Device Fixes */
         @media (hover: none) {
 
-            /* Kill sticky hover states on touch - revert to gray state */
-            .nav-link:hover,
-            .sub-link:hover,
-            .icon-btn:hover,
-            #brand-name:hover {
-                background-position: 0 0;
-                --text-hover: var(--text-base);
+            /* 
+               We WANT the "sticky hover" fill effect on mobile for Brand & Nav items,
+               but we MUST ensure only one item stays filled at a time.
+               Force non-active/non-pressed links back to gray.
+            */
+            .fill-anim:not(.active):not(:active) {
+                background-position: 0 0 !important;
+                --text-hover: var(--text-base) !important;
+            }
+
+            .icon-btn:hover {
                 fill: var(--text-muted);
             }
 
-            /* Restore feedback on tap (press) - allow transitions for fill effect */
+            /* Restore feedback on tap (press) */
             .nav-link:active,
             .sub-link:active,
             .icon-btn:active,
             #brand-name:active,
             .icon-btn:active .fill-anim-mask {
                 background-position: 0 100% !important;
-                --text-hover: var(--text-bright) !important;
-                fill: var(--text-bright) !important;
             }
 
-            /* Ensure active state/class still pops */
-            .nav-link.active,
-            .sub-link.active {
+            /* Ensure active state/class pops and stays filled */
+            .fill-anim.active {
                 background-position: 0 100% !important;
+                color: var(--text-hover, var(--text-bright)) !important;
             }
         }
     </style>
@@ -3030,6 +3032,11 @@
             navStack.querySelectorAll(".nav-row").forEach(row => {
                 if (!activeRowIds.includes(row.id)) row.remove();
             });
+
+            // Focus Brand Name if at home
+            const brand = document.getElementById("brand-name");
+            if (brand) brand.classList.toggle("active", !currentPath || currentPath === "Home");
+
             updatePadding();
         }
 
@@ -3121,11 +3128,18 @@
                         if (closest && href !== lastCenteredHref) {
                             lastCenteredHref = href;
                             haptic(1);
-                            /* Live active toggle */
-                            links.forEach(l => l.classList.remove("active"));
-                            closest.classList.add("active");
-                            /* Instant page switch — change hash without centerNavRow override */
-                            if (href) window.location.hash = href.substring(1);
+
+                            /* Instant page switch — change hash AND render content for buttery feel */
+                            const newPath = href.substring(1);
+                            if (newPath) {
+                                history.replaceState(null, "", "#" + newPath);
+                                // Drive the content swap instantly during the swipe
+                                renderPage(newPath);
+
+                                /* Live active toggle for nav aesthetics */
+                                links.forEach(l => l.classList.remove("active"));
+                                closest.classList.add("active");
+                            }
                         }
                         hTicking = false;
                     });
