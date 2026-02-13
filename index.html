@@ -348,8 +348,8 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            padding: 4px 0;
-            gap: var(--gap);
+            padding: var(--header-pad-top) 0 var(--header-pad-bottom) 0;
+            gap: var(--header-gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
             transition: transform var(--anim-layout) var(--ease);
@@ -367,7 +367,9 @@
         }
 
         #brand-name {
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: auto;
             flex: 0 0 auto;
             align-self: center;
@@ -503,9 +505,15 @@
             pointer-events: none
         }
 
-        #main-header.scrolled,
+        #main-header.scrolled {
+            gap: 0;
+            padding: 2px 0;
+            /* Balanced top/bottom for vertical centering */
+        }
+
         #main-header.scrolled #nav-stack {
-            gap: 0
+            gap: 0;
+            padding: 0;
         }
 
         #main-header.scrolled.deep-nav .nav-row:not(:nth-last-child(-n+2)) {
@@ -527,7 +535,7 @@
             position: absolute;
             right: 20px;
             /* Adjusted for larger button */
-            top: 4px;
+            top: var(--header-pad-top);
             /* Adjusted for larger button + perfect centering */
             height: var(--brand-row-h);
             width: auto;
@@ -548,10 +556,10 @@
         }
 
         .icon-btn {
-            /* Desktop Base Size - increased for better visibility and touch target */
-            width: 44px;
-            height: 44px;
-            padding: 10px;
+            /* Dynamic Base Size - matches brand row height for perfect alignment */
+            width: var(--brand-row-h);
+            height: var(--brand-row-h);
+            padding: 8px;
             cursor: pointer;
             fill: var(--text-muted);
             transition: all var(--anim-layout);
@@ -660,16 +668,18 @@
 
             /* Improved touch targets and visual balance on mobile */
             :root {
-                --brand-row-h: 40px;
+                --brand-row-h: 34px;
                 --main-row-h: 22px;
                 --sub-row-h: 20px;
-                --gap: 5px;
+                --gap: 2px;
+                --header-pad-top: 4px;
+                --header-pad-bottom: 2px;
+                --header-gap: 2px;
             }
 
             /* Clean header padding - equal top/bottom for visual balance */
-            #main-header {
-                padding: 5px 0 5px 0;
-            }
+            /* Clean header padding - controlled by CSS variables */
+
 
             /* Flexbox-based brand name centering for robust alignment */
             #brand-name {
@@ -686,71 +696,76 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                top: 5px;
-                /* Match header top padding for perfect alignment with brand name */
+                /* Top position handled globally via --header-pad-top */
             }
 
             /* Sub-nav always left-aligned on mobile for proper scrolling */
             .nav-row.level-n {
                 justify-content: flex-start
             }
-
-            .nav-row.level-n::after,
-            .nav-row.level-n::before {
-                display: block
-            }
-
-            /* Larger, more touchable navigation text */
-            .nav-row.level-1 .nav-link {
-                font-size: 16px;
-                line-height: 1.2;
-            }
-
-            .nav-row.level-n {
-                font-size: 14px;
-                line-height: 1.2;
-            }
-
-            .grid-container {
-                grid-template-columns: 1fr
-            }
-
-            footer {
-                flex-direction: column;
-                gap: 20px;
-                text-align: center
-            }
-
-
-
-            .content-container {
-                padding: 10px 15px 0
-            }
-
-            .article-title {
-                font-size: 18px;
-                line-height: 1.1;
-                overflow-wrap: anywhere;
-                word-break: break-word;
-                hyphens: auto
-            }
-
-            .icon-btn {
-                width: 48px;
-                height: 48px;
-                padding: 10px;
-            }
-
-            .icon-search-mask {
-                -webkit-mask-size: 26px;
-                mask-size: 26px;
-            }
-
-            .layout-quote {
-                min-height: 280px;
-                padding: 40px 15px
-            }
         }
+
+        /* Ensure sub-links use the fill-anim system correctly (no !important) */
+        .sub-link {
+            /* Let fill-anim handle colors via CSS vars */
+        }
+
+        .nav-row.level-n::after,
+        .nav-row.level-n::before {
+            display: block
+        }
+
+        /* Larger, more touchable navigation text */
+        .nav-row.level-1 .nav-link {
+            font-size: 16px;
+            line-height: 1.2;
+        }
+
+        .nav-row.level-n {
+            font-size: 14px;
+            line-height: 1.2;
+        }
+
+        .grid-container {
+            grid-template-columns: 1fr
+        }
+
+        footer {
+            flex-direction: column;
+            gap: 20px;
+            text-align: center
+        }
+
+
+
+        .content-container {
+            padding: 10px 15px 0
+        }
+
+        .article-title {
+            font-size: 18px;
+            line-height: 1.1;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            hyphens: auto
+        }
+
+        .icon-btn {
+            width: 48px;
+            height: 48px;
+            padding: 10px;
+        }
+
+        .icon-search-mask {
+            -webkit-mask-size: 26px;
+            mask-size: 26px;
+        }
+
+        .layout-quote {
+            min-height: 280px;
+            padding: 40px 15px
+        }
+
 
         /* Very narrow screens - enable level-1 nav scrolling */
         @media (max-width: 360px) {
@@ -766,6 +781,9 @@
                 --main-row-h: 24px !important;
                 --sub-row-h: 22px !important;
                 --gap: 2px !important;
+                --header-pad-top: 5px;
+                --header-pad-bottom: 2px;
+                --header-gap: 2px;
             }
         }
 
@@ -2147,7 +2165,7 @@
             position: absolute;
             left: -24px;
             /* PULL IT BACK to where the bullet was */
-            top: 3px;
+            top: var(--header-pad-top);
             /* Optical alignment with the text */
             margin-right: 0;
         }
@@ -2848,7 +2866,7 @@
 
                 document.addEventListener("keydown", e => { const t = "search-input" === (document.activeElement ? document.activeElement.id : ""); if (t) { if ("/" === e.key || "Escape" === e.key) return e.preventDefault(), void closeSearch() } !("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) || isSearchActive || t || (e.preventDefault(), toggleSearch()), "Escape" === e.key && (isSearchActive || document.getElementById("search-overlay").classList.contains("active") ? closeSearch() : window.location.hash && "#Home" !== window.location.hash && resetToHome()) })
         }
-        function renderNavigation(e) { const t = document.getElementById("nav-stack"), n = document.getElementById("main-header"), o = e && "Home" !== e ? e.split("/") : [], r = o.length + 1, i = []; for (let e = 1; e <= r; e++) { const s = 1 === e ? null : o.slice(0, e - 1).join("/"), a = o.length >= e ? o[e - 1] : null; let l = []; if (l = 1 === e ? [...new Set([...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page).map(e => e.Page.split("/")[0]).filter(e => e), quotesDb.length > 0 ? "Personal" : null].filter(e => e))].sort() : [...new Set(db.filter(e => e.Page && e.Page.startsWith(s + "/")).map(t => t.Page.split("/")[e - 1]).filter(e => e))].sort(), 0 === l.length) break; const c = `nav-row-${e}`; i.push(c); let d = document.getElementById(c); const m = !d; m && (d = document.createElement("nav"), d.id = c, d.className = "nav-row level-" + (e > 1 ? "n" : "1"), a || (d.scrollLeft = 50), t.appendChild(d)); let p = ""; const u = s ? s + "/" : ""; l.forEach(t => { p += `<a href="#${u + t}" class="${1 === e ? "nav-link" : "sub-link"} fill-anim ${t === a ? "active" : ""}" onclick="closeSearch()">${safeHTML(t)}</a>` }), d.innerHTML !== p && (d.innerHTML = p), centerNavRow(d, m && !a) } t.querySelectorAll(".nav-row").forEach(e => { i.includes(e.id) || e.remove() }), updatePadding() } function centerNavRow(e, t) { if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } }
+        function renderNavigation(e) { const t = document.getElementById("nav-stack"), n = document.getElementById("main-header"), o = e && "Home" !== e ? e.split("/") : [], r = o.length + 1, i = []; for (let e = 1; e <= r; e++) { const s = 1 === e ? null : o.slice(0, e - 1).join("/"), a = o.length >= e ? o[e - 1] : null; let l = []; if (l = 1 === e ? [...new Set([...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page).map(e => e.Page.split("/")[0]).filter(e => e), quotesDb.length > 0 ? "Personal" : null].filter(e => e))].sort() : [...new Set(db.filter(e => e.Page && e.Page.startsWith(s + "/")).map(t => t.Page.split("/")[e - 1]).filter(e => e))].sort(), 0 === l.length) break; const c = `nav-row-${e}`; i.push(c); let d = document.getElementById(c); const m = !d; m && (d = document.createElement("nav"), d.id = c, d.className = "nav-row level-" + (e > 1 ? "n" : "1"), a || (d.scrollLeft = 50), t.appendChild(d)); let p = ""; const u = s ? s + "/" : ""; l.forEach(t => { p += `<a href="#${u + t}" class="${1 === e ? "nav-link" : "sub-link"} fill-anim ${t === a ? "active" : ""}" onclick="closeSearch()">${safeHTML(t)}</a>` }), d.innerHTML !== p && (d.innerHTML = p), centerNavRow(d, m && !a) } t.querySelectorAll(".nav-row").forEach(e => { i.includes(e.id) || e.remove() }), updatePadding() } function centerNavRow(e, t) { if (window.innerWidth > 768) return; if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } }
         let resizeTimer;
         let lastScrollPos = 0;
 
