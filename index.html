@@ -114,7 +114,7 @@
             --sub-row-h: 22px;
             --gap: 2px;
             --header-pad-top: 8px;
-            --header-pad-bottom: 5px;
+            --header-pad-bottom: 3px;
             --header-gap: 3px;
 
             /* Typography */
@@ -526,11 +526,9 @@
 
         #main-header.scrolled {
             gap: 0;
-            padding: 4px 0 2px 0;
         }
 
         #main-header.scrolled #nav-stack {
-            gap: 0;
             padding: 0;
         }
 
@@ -675,7 +673,6 @@
         }
 
         /* Ensure app (results) stays visible and interactive */
-        /* Ensure app (results) stays visible and interactive */
         body.search-active #app {
             opacity: 1;
             filter: none;
@@ -689,23 +686,16 @@
                 --brand-row-h: 34px;
                 --main-row-h: 22px;
                 --sub-row-h: 20px;
-                --gap: 2px;
+                --gap: 1px;
                 --header-pad-top: 4px;
                 --header-pad-bottom: 2px;
-                --header-gap: 2px;
-                /* Mobile Override */
+                --header-gap: 0px;
                 --nav-font-size: 16px;
             }
 
-            /* Clean header padding - equal top/bottom for visual balance */
-            /* Clean header padding - controlled by CSS variables */
-
-
-            /* Flexbox-based brand name centering for robust alignment */
             #brand-name {
                 display: flex;
                 align-items: center;
-                justify-content: center;
                 justify-content: center;
                 font-size: var(--brand-font-size);
                 letter-spacing: var(--brand-letter-spacing);
@@ -726,10 +716,7 @@
             }
         }
 
-        /* Ensure sub-links use the fill-anim system correctly (no !important) */
-        .sub-link {
-            /* Let fill-anim handle colors via CSS vars */
-        }
+
 
         .nav-row.level-n::after,
         .nav-row.level-n::before {
