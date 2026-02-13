@@ -2973,11 +2973,12 @@
         }
 
         function haptic(ms) { navigator.vibrate && navigator.vibrate(ms || 2); }
-        /* Prime vibration API — multiple layers to ensure it's active for scroll haptics */
+        /* Prime vibration API — cast wide net across all user activation events */
         if (navigator.vibrate) {
-            navigator.vibrate(1); /* Optimistic: try at page load (may silently fail) */
-            document.addEventListener("touchstart", () => { navigator.vibrate(1); }, { passive: true, once: true });
-            document.addEventListener("pointerdown", () => { navigator.vibrate(1); }, { passive: true, once: true });
+            navigator.vibrate(1); /* Optimistic: try at page load */
+            ["pointerdown", "pointerup", "mousedown", "touchstart", "touchend", "touchmove", "click"].forEach(evt => {
+                document.addEventListener(evt, () => { navigator.vibrate(1); }, { passive: true, once: true });
+            });
         }
 
         let _pickerScrollingRow = null;
