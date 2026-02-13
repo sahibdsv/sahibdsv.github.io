@@ -145,6 +145,14 @@
             --ease: cubic-bezier(0.25, 1, 0.5, 1);
         }
 
+        @media (max-width: 768px) {
+            :root {
+                --header-pad-top: 35px;
+                --header-gap: 25px;
+            }
+        }
+
+
 
 
         * {
@@ -3068,6 +3076,7 @@
             let didScroll = false;
             let fingerDown = false;
             let settleTimer;
+            let historyTimer;
             let scrollStartLeft = 0;
 
             row.addEventListener("touchstart", () => {
@@ -3094,35 +3103,48 @@
                 if (!didScroll && Math.abs(row.scrollLeft - scrollStartLeft) < 5) return;
                 didScroll = true;
 
-                /* Haptic tick + live visual feedback + instant page change */
+                /* Haptic tick + live visual feedback ONLY */
                 if (!hTicking) {
                     hTicking = true;
                     requestAnimationFrame(() => {
                         const links = row.querySelectorAll(".sub-link");
-                        if (!links.length) { hTicking = false; return; }
-                        const center = row.scrollLeft + row.clientWidth / 2;
-                        let closest = null, minDist = Infinity;
-                        links.forEach(link => {
-                            const mid = link.offsetLeft + link.offsetWidth / 2;
-                            const dist = Math.abs(mid - center);
-                            if (dist < minDist) { minDist = dist; closest = link; }
+                        let closest = null;
+                        let minDist = Infinity;
+                        const rowCenter = row.scrollLeft + row.clientWidth / 2;
+
+                        links.forEach(l => {
+                            const center = l.offsetLeft + l.offsetWidth / 2;
+                            const dist = Math.abs(center - rowCenter);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                closest = l;
+                            }
                         });
+
                         const href = closest ? closest.getAttribute("href") : null;
                         if (closest && href !== lastCenteredHref) {
                             lastCenteredHref = href;
-                            haptic(1);
-                            /* Live active toggle — instant transition during scroll */
+                            haptic(1); /* Tick */
+
+                            /* Visual: Instant highlight update (lightweight) */
                             links.forEach(l => {
                                 l.classList.remove("active");
                                 l.style.transition = "none";
                             });
                             closest.classList.add("active");
-                            /* Instant page switch — silent URL update + direct render */
+
+                            /* INSTANT CONTENT UPDATE (SPA Feel) */
+                            /* Guaranteed safe because _pickerScrollingRow stops renderNavigation from destroying this row */
                             if (href) {
                                 const path = href.substring(1);
-                                history.replaceState(null, "", "#" + path);
 
-                                /* Dispatch to correct renderer (Resume/Index/Page) */
+                                /* DEBOUNCED: History API (Heavy - causes stutter) */
+                                clearTimeout(historyTimer);
+                                historyTimer = setTimeout(() => {
+                                    history.replaceState(null, "", "#" + path);
+                                }, 150);
+
+                                /* INSTANT: Render Page Content */
                                 if (path === "Professional/Resume") renderResume();
                                 else if (path === "Index") renderIndex();
                                 else renderPage(path);
@@ -3130,23 +3152,20 @@
                                 renderNavigation(path);
                             }
                         }
+
+                        /* Scroll End Detection: Reset locks and transitions when momentum stops */
+                        clearTimeout(settleTimer);
+                        settleTimer = setTimeout(() => {
+                            links.forEach(l => l.style.transition = "");
+                            _pickerScrollingRow = null;
+                            userTouching = false;
+                        }, 150);
+
                         hTicking = false;
                     });
                 }
-
-                /* Settle timer — clear picker mode when momentum stops */
-                clearTimeout(settleTimer);
-                settleTimer = setTimeout(() => {
-                    if (!fingerDown) {
-                        userTouching = false;
-                        _pickerScrollingRow = null;
-                        /* Restore transitions after scroll settles */
-                        row.querySelectorAll(".sub-link").forEach(l => l.style.transition = "");
-                        /* Final padding update now that picker mode is off */
-                        updatePadding();
-                    }
-                }, 150);
             }, { passive: true });
+
         }
 
         /* Global click haptic — tiered intensity based on interaction importance */
