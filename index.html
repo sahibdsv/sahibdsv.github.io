@@ -2891,7 +2891,7 @@
             let scrollEndTimer;
             row.addEventListener("scroll", () => {
                 if (_suppressHaptic) { clearTimeout(scrollEndTimer); return; }
-                /* Haptic tick on item change */
+                /* Haptic tick + live visual feedback on item change */
                 if (!hTicking) {
                     hTicking = true;
                     requestAnimationFrame(() => {
@@ -2907,6 +2907,9 @@
                         if (closest && closest !== lastCentered) {
                             lastCentered = closest;
                             haptic(2);
+                            /* Live active toggle */
+                            links.forEach(l => l.classList.remove("active"));
+                            closest.classList.add("active");
                         }
                         hTicking = false;
                     });
@@ -2928,14 +2931,14 @@
                         haptic(3);
                         closest.click();
                     }
-                }, 300);
+                }, 80);
             }, { passive: true });
         }
 
         /* Global click haptic — tiny taps on all interactive elements */
         document.addEventListener("click", e => {
             if (!navigator.vibrate) return;
-            const el = e.target.closest("a, button, .icon-btn-wrapper, .card, #brand-name, .chip, img.card-img, .photo-grid img");
+            const el = e.target.closest("a, button, .icon-btn-wrapper, .card, .card-img-wrapper, #brand-name, .chip, img, .layout-grid > div, .photo-grid > div");
             if (el) haptic(2);
         }, { passive: true });
 
