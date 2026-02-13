@@ -3069,7 +3069,6 @@
                                 const path = href.substring(1);
                                 history.replaceState(null, "", "#" + path);
                                 renderPage(path);
-                                renderNavigation(path);
                             }
                         }
                         hTicking = false;
@@ -3084,6 +3083,9 @@
                         _pickerScrollingRow = null;
                         /* Restore transitions after scroll settles */
                         row.querySelectorAll(".sub-link").forEach(l => l.style.transition = "");
+                        /* Update nav rows (sub-sub-headings) now that scroll is done */
+                        const currentPath = window.location.hash.substring(1) || "Home";
+                        if (currentPath !== "Home") renderNavigation(currentPath);
                     }
                 }, 150);
             }, { passive: true });
