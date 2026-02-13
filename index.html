@@ -2867,6 +2867,7 @@
                 // App-specific handlers (Chip & Refresh)
                 document.getElementById("app").addEventListener("click", e => {
                     if (e.target.closest(".refresh-btn")) {
+                        haptic('tap');
                         trackEvent('quote-refresh');
                         const t = e.target.closest(".layout-quote");
                         if (t && !t.classList.contains("loading")) {
@@ -3390,10 +3391,7 @@
             // If t has content, renderRows will clear #app and render content
             renderRows(t, null, false, false, !isTopLevel);
 
-            if ("Personal" === e && quotesDb.length > 0) {
-                const q = document.createElement("div");
-                q.className = "layout-quote section", q.setAttribute("data-title", "Random Quote"), renderQuoteCard(q), document.getElementById("app").appendChild(q)
-            }
+
 
             if (isTopLevel) {
                 // Discovery logic: only show immediate children (depth 1) to keep hubs clean
