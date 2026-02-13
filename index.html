@@ -112,10 +112,10 @@
             --brand-row-h: 30px;
             --main-row-h: 20px;
             --sub-row-h: 22px;
-            --gap: 2px;
-            --header-pad-top: 8px;
-            --header-pad-bottom: 3px;
-            --header-gap: 3px;
+            --gap: 5px;
+            --header-pad-top: 5px;
+            --header-pad-bottom: 5px;
+            --header-gap: 5px;
 
             /* Typography */
             --brand-font-size: 28px;
@@ -686,10 +686,10 @@
                 --brand-row-h: 34px;
                 --main-row-h: 22px;
                 --sub-row-h: 20px;
-                --gap: 1px;
-                --header-pad-top: 4px;
-                --header-pad-bottom: 2px;
-                --header-gap: 0px;
+                --gap: 3px;
+                --header-pad-top: 3px;
+                --header-pad-bottom: 3px;
+                --header-gap: 3px;
                 --nav-font-size: 16px;
             }
 
@@ -2870,7 +2870,37 @@
 
                 document.addEventListener("keydown", e => { const t = "search-input" === (document.activeElement ? document.activeElement.id : ""); if (t) { if ("/" === e.key || "Escape" === e.key) return e.preventDefault(), void closeSearch() } !("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) || isSearchActive || t || (e.preventDefault(), toggleSearch()), "Escape" === e.key && (isSearchActive || document.getElementById("search-overlay").classList.contains("active") ? closeSearch() : window.location.hash && "#Home" !== window.location.hash && resetToHome()) })
         }
-        function renderNavigation(e) { const t = document.getElementById("nav-stack"), n = document.getElementById("main-header"), o = e && "Home" !== e ? e.split("/") : [], r = o.length + 1, i = []; for (let e = 1; e <= r; e++) { const s = 1 === e ? null : o.slice(0, e - 1).join("/"), a = o.length >= e ? o[e - 1] : null; let l = []; if (l = 1 === e ? [...new Set([...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page).map(e => e.Page.split("/")[0]).filter(e => e), quotesDb.length > 0 ? "Personal" : null].filter(e => e))].sort() : [...new Set(db.filter(e => e.Page && e.Page.startsWith(s + "/")).map(t => t.Page.split("/")[e - 1]).filter(e => e))].sort(), 0 === l.length) break; const c = `nav-row-${e}`; i.push(c); let d = document.getElementById(c); const m = !d; m && (d = document.createElement("nav"), d.id = c, d.className = "nav-row level-" + (e > 1 ? "n" : "1"), a || (d.scrollLeft = 50), t.appendChild(d)); let p = ""; const u = s ? s + "/" : ""; l.forEach(t => { p += `<a href="#${u + t}" class="${1 === e ? "nav-link" : "sub-link"} fill-anim ${t === a ? "active" : ""}" onclick="closeSearch()">${safeHTML(t)}</a>` }), d.innerHTML !== p && (d.innerHTML = p), centerNavRow(d, m && !a) } t.querySelectorAll(".nav-row").forEach(e => { i.includes(e.id) || e.remove() }), updatePadding() } function centerNavRow(e, t) { if (window.innerWidth > 768) return; if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } }
+        function renderNavigation(e) { const t = document.getElementById("nav-stack"), n = document.getElementById("main-header"), o = e && "Home" !== e ? e.split("/") : [], r = o.length + 1, i = []; for (let e = 1; e <= r; e++) { const s = 1 === e ? null : o.slice(0, e - 1).join("/"), a = o.length >= e ? o[e - 1] : null; let l = []; if (l = 1 === e ? [...new Set([...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page).map(e => e.Page.split("/")[0]).filter(e => e), quotesDb.length > 0 ? "Personal" : null].filter(e => e))].sort() : [...new Set(db.filter(e => e.Page && e.Page.startsWith(s + "/")).map(t => t.Page.split("/")[e - 1]).filter(e => e))].sort(), 0 === l.length) break; const c = `nav-row-${e}`; i.push(c); let d = document.getElementById(c); const m = !d; m && (d = document.createElement("nav"), d.id = c, d.className = "nav-row level-" + (e > 1 ? "n" : "1"), a || (d.scrollLeft = 50), t.appendChild(d)); let p = ""; const u = s ? s + "/" : ""; l.forEach(t => { p += `<a href="#${u + t}" class="${1 === e ? "nav-link" : "sub-link"} fill-anim ${t === a ? "active" : ""}" onclick="closeSearch()">${safeHTML(t)}</a>` }), d.innerHTML !== p && (d.innerHTML = p), centerNavRow(d, m && !a); if (e > 1) setupHapticScroll(d) } t.querySelectorAll(".nav-row").forEach(e => { i.includes(e.id) || e.remove() }), updatePadding() } function centerNavRow(e, t) { if (window.innerWidth > 768) return; if (!e) return; if (e.scrollWidth <= e.clientWidth + 5) return; const n = e.querySelector(".active"); if (n) { const t = n.offsetLeft + n.offsetWidth / 2 - e.clientWidth / 2; e.scrollTo({ left: t, behavior: "smooth" }) } else if (t) requestAnimationFrame(() => { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) }); else { const t = (e.scrollWidth - e.clientWidth) / 2; e.scrollTo({ left: t, behavior: "smooth" }) } }
+
+        /* Haptic Scroll Feedback — iOS Clock-style vibration on sub-nav scroll */
+        const _hapticRows = new WeakSet();
+        function setupHapticScroll(row) {
+            if (_hapticRows.has(row) || !navigator.vibrate) return;
+            _hapticRows.add(row);
+            let lastCentered = null;
+            let hTicking = false;
+            row.addEventListener("scroll", () => {
+                if (hTicking) return;
+                hTicking = true;
+                requestAnimationFrame(() => {
+                    const links = row.querySelectorAll(".sub-link");
+                    if (!links.length) { hTicking = false; return; }
+                    const center = row.scrollLeft + row.clientWidth / 2;
+                    let closest = null, minDist = Infinity;
+                    links.forEach(link => {
+                        const mid = link.offsetLeft + link.offsetWidth / 2;
+                        const dist = Math.abs(mid - center);
+                        if (dist < minDist) { minDist = dist; closest = link; }
+                    });
+                    if (closest && closest !== lastCentered) {
+                        lastCentered = closest;
+                        navigator.vibrate(10);
+                    }
+                    hTicking = false;
+                });
+            }, { passive: true });
+        }
+
         let resizeTimer;
         let lastScrollPos = 0;
 
