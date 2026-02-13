@@ -2467,6 +2467,28 @@
                 background-position: -200% 0;
             }
         }
+
+        /* START: Touch Device Fixes */
+        @media (hover: none) {
+
+            /* Kill sticky hover states on touch */
+            .nav-link:hover,
+            .sub-link:hover,
+            .icon-btn:hover,
+            #brand-name:hover {
+                /* Revert to base state - active class will handle highlighting */
+                background-position: 0 0 !important;
+                --text-hover: var(--text-base) !important;
+                fill: var(--text-muted) !important;
+            }
+
+            /* Ensure active state still pops */
+            .nav-link.active,
+            .sub-link.active {
+                background-position: 0 100% !important;
+                /* Force fill */
+            }
+        }
     </style>
 
 
@@ -2992,19 +3014,20 @@
             if (!row) return;
             if (row.scrollWidth <= row.clientWidth + 5) return;
 
-            const activeLink = row.querySelector(".active");
-            if (activeLink) {
-                const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
-                row.scrollTo({ left: targetScroll, behavior: "smooth" });
-            } else if (centerDefault) {
-                requestAnimationFrame(() => {
+            /* Force layout read before scroll using rAF to ensure smooth animation plays */
+            requestAnimationFrame(() => {
+                const activeLink = row.querySelector(".active");
+                if (activeLink) {
+                    const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
+                    row.scrollTo({ left: targetScroll, behavior: "smooth" });
+                } else if (centerDefault) {
                     const midpoint = (row.scrollWidth - row.clientWidth) / 2;
                     row.scrollTo({ left: midpoint, behavior: "smooth" });
-                });
-            } else {
-                const midpoint = (row.scrollWidth - row.clientWidth) / 2;
-                row.scrollTo({ left: midpoint, behavior: "smooth" });
-            }
+                } else {
+                    const midpoint = (row.scrollWidth - row.clientWidth) / 2;
+                    row.scrollTo({ left: midpoint, behavior: "smooth" });
+                }
+            });
         }
 
         /* Haptic System — Touch-gated, instant-navigate scroll picker */
