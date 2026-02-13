@@ -833,6 +833,9 @@
             position: relative
         }
 
+        /* Glide-Mode Suppression: Ensures rigid, instant content swaps during swipe */
+        /* REMOVED: Global suppression logic deleted as part of simplification */
+
         .skeleton-visible {
             opacity: 1;
             animation: none
@@ -2639,6 +2642,7 @@
         let resumeDb = [];
         let quoteBag = []; // New state for shuffle logic
         let isSearchActive = false;
+        let _lastRenderedPath = null;
 
         // Analytics tracking helper - for intentional user actions only
         function trackEvent(eventName, eventData = {}) {
@@ -2953,10 +2957,12 @@
                 if (isNew) {
                     row = document.createElement("nav");
                     row.id = rowId;
-                    row.className = "nav-row level-" + (level > 1 ? "n" : "1");
+                    row.className = "nav-row level-" + (level > 1 ? "n" : "1") + " slide-in-right";
                     if (!activeName) row.scrollLeft = 50;
                     navStack.appendChild(row);
+                    setupHapticScroll(row);
                 }
+                if (row._resetHaptic) row._resetHaptic();
 
                 let html = "";
                 const prefix = parentPath ? parentPath + "/" : "";
@@ -2983,8 +2989,8 @@
                     }).join("");
                 }
 
-                /* Force preview slide animation for ANY update if no specific item is active */
-                if (!activeName && level > 1) {
+                // Restore slide-in animation if re-appearing
+                if (!isNew && row.classList.contains("hidden")) {
                     row.classList.remove("slide-in-right");
                     void row.offsetWidth; // Trigger reflow
                     row.classList.add("slide-in-right");
@@ -3008,18 +3014,20 @@
         }
 
         function haptic(tier) {
-            if (!navigator.vibrate) return;
-            const tiers = {
-                tick: 1,
-                tap: 2,
-                bump: 5,
-                pulse: [1, 20, 1]
-            };
-            navigator.vibrate(tiers[tier] || tier || 2);
+            try {
+                if (!navigator.vibrate) return;
+                // Only vibrate if the user has interacted (Chrome requirement)
+                if (navigator.userActivation && !navigator.userActivation.isActive) return;
+
+                const tiers = {
+                    tick: 1,
+                    tap: 2,
+                    bump: 5,
+                    pulse: [1, 20, 1]
+                };
+                navigator.vibrate(tiers[tier] || tier || 2);
+            } catch (e) { }
         }
-        /* Prime vibration API — browser requires user activation. Capture only touchstart for mobile. */
-        const primeHaptics = () => { if (navigator.vibrate) { navigator.vibrate(1); document.removeEventListener("touchstart", primeHaptics); } };
-        document.addEventListener("touchstart", primeHaptics, { passive: true });
 
         let _pickerScrollingRow = null;
 
@@ -3062,6 +3070,10 @@
             let hitEnd = false;   // Wall bump state
 
             row.addEventListener("touchstart", () => {
+                // Instant touch interrupt: Kills any ongoing programmatic smooth-scroll 
+                // giving the user immediate 100% manual control.
+                row.scrollTo({ left: row.scrollLeft, behavior: 'auto' });
+
                 startScrollLeft = row.scrollLeft;
                 fingerDown = true;
                 userTouching = true;
@@ -3121,13 +3133,14 @@
                         if (closest && href !== lastCenteredHref) {
                             lastCenteredHref = href;
                             haptic('tick');
+
+                            // 1. Instant Visual Feedback (Cheap)
+                            links.forEach(l => l.classList.remove("active"));
+                            closest.classList.add("active");
+
+                            // 2. Instant Live Render (Glide-Mode)
                             const newPath = href.substring(1);
-                            if (newPath) {
-                                history.replaceState(null, "", "#" + newPath);
-                                navigateTo(newPath, true);
-                                links.forEach(l => l.classList.remove("active"));
-                                closest.classList.add("active");
-                            }
+                            if (newPath) navigateTo(newPath, true);
                         }
                         hTicking = false;
                     });
@@ -3135,12 +3148,25 @@
 
                 clearTimeout(settleTimer);
                 settleTimer = setTimeout(() => {
+                    // Update History & Final Logic only once the scroll lands or slows down
+                    // This prevents "IPC Flooding" and browser throttling errors.
+                    if (lastCenteredHref) {
+                        const newPath = lastCenteredHref.substring(1);
+                        if (newPath) {
+                            history.replaceState(null, "", "#" + newPath);
+                            // Final sync to ensure landing content is 100% correct
+                            navigateTo(newPath, true);
+                        }
+                    }
+
                     if (!fingerDown) {
                         userTouching = false;
                         _pickerScrollingRow = null;
                     }
-                }, 150);
+                }, 100); // 100ms settle threshold for "landing"
             }, { passive: true });
+            // Reset helper to clear haptic state when row content changes
+            row._resetHaptic = () => { lastCenteredHref = null; };
         }
 
         /* Global click haptic — tiered intensity based on interaction importance */
@@ -3291,7 +3317,12 @@
             // 1. Immediately update navigation metadata (Header Fill + Active States)
             renderNavigation(cleanPath === "Home" ? null : cleanPath);
 
-            // 2. Debounced heavy rendering pipeline
+            // 2. Optimization: If we're swiping and the content is already there, SKIP rendering.
+            if (isSwipe && cleanPath === _lastRenderedPath) {
+                return;
+            }
+
+            // 3. Debounced heavy rendering pipeline
             if (_renderRAF) cancelAnimationFrame(_renderRAF);
 
             _renderRAF = requestAnimationFrame(() => {
@@ -3309,6 +3340,9 @@
                         renderPage(cleanPath);
                     }
                 }
+
+                // Mark this path as rendered so subsequent identical swipes don't trigger re-renders
+                _lastRenderedPath = cleanPath;
                 _renderRAF = null;
             });
         }
@@ -3336,23 +3370,30 @@
         }
         function renderPage(e) {
             if ("Home" === e) return void renderHome();
-            const t = db.filter(t => t.Page === e), n = document.getElementById("app");
-            n.innerHTML = "";
-            const o = !e.includes("/");
-            if (t.length > 0) renderRows(t, null, !0, !1, !o);
-            else if (!childrenPagesCheck(e) && !("Personal" === e && quotesDb.length > 0)) {
-                return void (n.innerHTML = '<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn\'t exist in the database yet.</p></div>');
+            const t = db.filter(t => t.Page === e);
+            const isTopLevel = !e.includes("/");
+            const hasChildren = childrenPagesCheck(e);
+
+            // 404 Logic: If no content AND no children AND not personal/quotes -> 404
+            if (t.length === 0 && !hasChildren && !("Personal" === e && quotesDb.length > 0)) {
+                document.getElementById("app").innerHTML = '<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn\'t exist in the database yet.</p></div>';
+                return;
             }
+
+            // ATOMIC RENDER: Always call renderRows first to clear the container
+            // If t is empty, renderRows will clear #app and return (correct behavior)
+            // If t has content, renderRows will clear #app and render content
+            renderRows(t, null, false, false, !isTopLevel);
 
             if ("Personal" === e && quotesDb.length > 0) {
                 const q = document.createElement("div");
-                q.className = "layout-quote section", q.setAttribute("data-title", "Random Quote"), renderQuoteCard(q), n.appendChild(q)
+                q.className = "layout-quote section", q.setAttribute("data-title", "Random Quote"), renderQuoteCard(q), document.getElementById("app").appendChild(q)
             }
 
-            if (o) {
+            if (isTopLevel) {
                 // Discovery logic: only show immediate children (depth 1) to keep hubs clean
                 const t = [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/") && t.Page.split("/").length <= 2).map(e => e.Page))];
-                t.length > 0 && renderRows(t.map(e => db.find(t => t.Page === e)).filter(e => e), null, !0, !0)
+                t.length > 0 && renderRows(t.map(e => db.find(t => t.Page === e)).filter(e => e), null, true, true)
             }
         }
         function childrenPagesCheck(e) {
@@ -3396,18 +3437,20 @@
         }
         function renderHome() {
             const e = db.filter(e => "Home" === e.Page);
-            document.getElementById("app").innerHTML = "";
-            renderRows(e, null, !0);
+            // Render the core Home page content (This will clear #app because isHome=false)
+            renderRows(e, null, false);
+
             const t = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page);
             const n = {};
             t.forEach(e => {
                 // Discovery logic for Recent Activity: only show content up to 1 level deep
                 if (e.Page.split("/").length <= 2) {
-                    n[e.Page] ? n[e.Page] : n[e.Page] = e;
+                    n[e.Page] = e;
                 }
             });
             const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0, 6);
-            o.length > 0 && renderRows(o, "Recent Activity", !0, !0, !1, !0)
+            // Append Recent Activity (isHome=true)
+            o.length > 0 && renderRows(o, "Recent Activity", true, true, false, true)
         }
         function processSingleLine(e) {
             if (!e) return "";
@@ -3533,7 +3576,7 @@
             const container = targetElement || document.getElementById("app");
             if (!container) return;
 
-            // Sorting logic
+            // 1. Sorting logic
             if (isRecentActivity) {
                 data.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
                 if (title === "Recent Activity") {
@@ -3545,32 +3588,24 @@
                 }
             }
 
-            // Header rendering
-            if (isHome) {
-                if (title) {
-                    container.innerHTML += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2></div>`;
-                }
-            } else {
-                container.innerHTML = title ? `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2></div>` : "";
+            let htmlBuffer = "";
+            let gridBuffer = "";
+
+            // 2. Header rendering
+            if (title) {
+                htmlBuffer += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2></div>`;
             }
 
-            if (data.length === 0 && !isHome) {
-                container.innerHTML += '<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>';
+            if (data.length === 0 && title && !isHome) {
+                htmlBuffer += '<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>';
+                container.innerHTML = htmlBuffer;
                 return;
             }
 
-            let gridContainer = container.querySelector(".grid-container");
-            if (isHome) {
-                gridContainer = document.createElement("div");
-                gridContainer.className = "grid-container section";
-                container.appendChild(gridContainer);
-            } else {
-                const needsGrid = isSubPage || data.some(e => !e.SectionType || (e.SectionType.toLowerCase() !== "quote" && e.SectionType.toLowerCase() !== "hero" && e.SectionType.toLowerCase() !== "text"));
-                if (needsGrid && !isHeroOnly && !gridContainer) {
-                    gridContainer = document.createElement("div");
-                    gridContainer.className = "grid-container section";
-                    container.appendChild(gridContainer);
-                }
+            // Implicit clear for parent pages that just want to empty the container
+            if (data.length === 0) {
+                container.innerHTML = "";
+                return;
             }
 
             data.forEach((entry, index) => {
@@ -3584,9 +3619,6 @@
 
                 // Handle Article/Text Mode
                 if (!isSubPage && isHeroOnly && sectionType !== "quote" && sectionType !== "hero") {
-                    const articleDiv = document.createElement("div");
-                    articleDiv.className = "section layout-text";
-
                     let mediaHTML = "";
                     let media = entry.Media;
                     const content = entry.Content || "";
@@ -3626,57 +3658,37 @@
                             metaHTML += `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
                         }
                         metaHTML += '<div class="article-tags">';
-
                         if (entry.Timestamp) {
                             const dateStr = formatDate(entry.Timestamp);
                             const monthKey = entry.Timestamp.substring(0, 7);
                             metaHTML += `<span class="chip date" data-date="${monthKey}" data-val="${dateStr}">${dateStr}</span>`;
                         }
-
                         if (entry.Tags) {
                             entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
                         }
-
                         const wordCount = (entry.Content || "").trim().split(/\s+/).length;
                         const readTime = Math.ceil(wordCount / 200);
-                        if (readTime > 0) {
-                            metaHTML += `<span class="chip" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
-                        }
+                        if (readTime > 0) metaHTML += `<span class="chip" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
                         metaHTML += "</div></div>";
                     }
 
                     const titleTag = entry.Title ? formatTitle(entry.Title, index === 0 ? "h1" : "h2") : "";
-                    articleDiv.innerHTML = `${mediaHTML}${titleTag}${metaHTML}<div class="article-body">${processContentWithBlocks(content)}</div>`;
-                    container.appendChild(articleDiv);
+                    htmlBuffer += `<div class="section layout-text">${mediaHTML}${titleTag}${metaHTML}<div class="article-body">${processContentWithBlocks(content)}</div></div>`;
                     return;
                 }
 
-                // Handle Hub/Hero/Quote Mode
                 if (!isSubPage) {
                     if (sectionType === "quote") {
-                        const quoteDiv = document.createElement("div");
-                        quoteDiv.className = "layout-quote section";
-                        quoteDiv.setAttribute("data-title", entry.Title || "");
-                        if ((entry.Title || "").toLowerCase() !== "random quote") {
-                            quoteDiv.setAttribute("data-static-quote", entry.Content || entry.Quote || "");
-                            quoteDiv.setAttribute("data-static-author", entry.Author || "Sahib Virdee");
-                        }
-                        renderQuoteCard(quoteDiv);
-                        if (gridContainer) gridContainer.appendChild(quoteDiv);
+                        const staticQuote = ((entry.Title || "").toLowerCase() !== "random quote") ? (entry.Content || entry.Quote || "") : "";
+                        const staticAuthor = staticQuote ? (entry.Author || "Sahib Virdee") : "";
+                        htmlBuffer += `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${staticQuote}" data-static-author="${staticAuthor}" data-needs-init="true"></div>`;
                         return;
                     }
 
                     if (sectionType === "hero") {
-                        const heroDiv = document.createElement("div");
-                        heroDiv.className = "section layout-hero";
                         const link = entry.LinkURL || "";
-                        if (link) {
-                            heroDiv.classList.add("clickable-block");
-                            heroDiv.classList.add("hero-link");
-                            heroDiv.setAttribute("data-link", link);
-                            heroDiv.setAttribute("data-target", link.startsWith("#") ? "" : "_blank");
-                        }
-
+                        const clickableClass = link ? "clickable-block hero-link" : "";
+                        const target = link.startsWith("#") ? "" : "_blank";
                         let metaHTML = "";
                         if (entry.Timestamp) {
                             const dateStr = formatDate(entry.Timestamp);
@@ -3686,32 +3698,45 @@
                         if (entry.Tags) {
                             entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
                         }
-
                         const metaContainer = metaHTML ? `<div class="hero-meta">${metaHTML}</div>` : "";
-                        heroDiv.innerHTML = `${formatTitle(entry.Title, "h1")}${metaContainer}${processContentWithBlocks(entry.Content || "")}`;
-                        if (gridContainer) gridContainer.appendChild(heroDiv);
+                        htmlBuffer += `<div class="section layout-hero ${clickableClass}" data-link="${link}" data-target="${target}">
+                            ${formatTitle(entry.Title, "h1")}${metaContainer}${processContentWithBlocks(entry.Content || "")}
+                        </div>`;
                         return;
                     }
 
                     if (sectionType === "text") {
-                        const textDiv = document.createElement("div");
-                        textDiv.className = "section layout-text";
-                        textDiv.innerHTML = `${entry.Title ? formatTitle(entry.Title, "h2") : ""}${processContentWithBlocks(entry.Content || "")}`;
-                        if (gridContainer) gridContainer.appendChild(textDiv);
+                        htmlBuffer += `<div class="section layout-text">
+                            ${entry.Title ? formatTitle(entry.Title, "h2") : ""}${processContentWithBlocks(entry.Content || "")}
+                        </div>`;
                         return;
                     }
                 }
 
-                // Default: Grid Card Mode
-                if (gridContainer) {
-                    let contextCategory = "";
-                    const activePage = (window.location.hash.substring(1) || "Home").toLowerCase();
-                    if (activePage.startsWith("projects")) contextCategory = "cat-projects";
-                    else if (activePage.startsWith("professional")) contextCategory = "cat-professional";
-                    else if (activePage.startsWith("personal")) contextCategory = "cat-personal";
+                // Grid Card Mode
+                let contextCategory = "";
+                const activePage = (window.location.hash.substring(1) || "Home").toLowerCase();
+                if (activePage.startsWith("projects")) contextCategory = "cat-projects";
+                else if (activePage.startsWith("professional")) contextCategory = "cat-professional";
+                else if (activePage.startsWith("personal")) contextCategory = "cat-personal";
+                gridBuffer += window.renderCardHTML(entry, contextCategory);
+            });
 
-                    gridContainer.innerHTML += window.renderCardHTML(entry, contextCategory);
-                }
+            if (gridBuffer) {
+                htmlBuffer += `<div class="grid-container section">${gridBuffer}</div>`;
+            }
+
+            // 3. ATOMIC UPDATE: Perform a single DOM write
+            if (isHome) {
+                container.innerHTML += htmlBuffer;
+            } else {
+                container.innerHTML = htmlBuffer;
+            }
+
+            // 4. Post-render logic: Initialize dynamic components
+            container.querySelectorAll('[data-needs-init="true"]').forEach(el => {
+                if (el.classList.contains("layout-quote")) renderQuoteCard(el);
+                el.removeAttribute('data-needs-init');
             });
         }
         function renderQuoteCard(container) {
@@ -3812,14 +3837,11 @@
         function renderResume() {
             renderNavigation("Professional/Resume");
             const app = document.getElementById("app");
-            app.innerHTML = '<div id="resume-view" class="resume-container"></div>';
-            const resumeView = document.getElementById("resume-view");
-            generateResumeJSONLD();
-
             const data = resumeDb;
-
-            // Helper to get normalized section type
             const getSection = (e) => (e.SectionType || "").toLowerCase().replace(/^#/, '');
+
+            let buffer = '<div id="resume-view" class="resume-container">';
+            generateResumeJSONLD();
 
             // 1. Render Header
             const headerData = data.find(e => getSection(e) === 'header');
@@ -3830,7 +3852,7 @@
                 const contacts = (headerData.Content || "").split("|")
                     .map(e => `<span style="white-space:nowrap; vertical-align:top;">${processInlineMarkdown(e.trim())}</span>`)
                     .join('<span class="contact-sep" style="margin:0 12px; color:var(--text-dim); user-select:text; vertical-align:top;">|</span>');
-                resumeView.innerHTML += `
+                buffer += `
                 <div class="resume-header section" style="position:relative;">
                     <h1 class="header-fade-anim" style="margin-top:0;">${name}</h1>
                     <div class="resume-sub header-fade-anim" style="animation-delay:0.1s">${sub}</div>
@@ -3840,28 +3862,18 @@
                 </div>`;
             }
 
-            // 2. Setup Grid
-            resumeView.innerHTML += `
-            <div class="resume-grid section">
-                <div class="resume-left"></div>
-                <div class="resume-right"></div>
-            </div>`;
-
-            const leftCol = resumeView.querySelector(".resume-left");
-            const rightCol = resumeView.querySelector(".resume-right");
-
-            // 3. Group and Render Sections
+            // 2. Group Sections
             const leftSections = ['education', 'skills', 'awards', 'languages', 'certifications', 'interests'];
-
-            // Get unique section types in order of appearance
             const sectionTypes = [...new Set(data.map(e => e.SectionType))].filter(t => t && getSection({ SectionType: t }) !== 'header');
+
+            let leftColBuffer = "";
+            let rightColBuffer = "";
 
             sectionTypes.forEach(type => {
                 const sections = data.filter(e => e.SectionType === type);
                 if (sections.length === 0) return;
 
                 const normalized = getSection({ SectionType: type });
-                const targetCol = leftSections.some(ls => normalized.startsWith(ls)) ? leftCol : rightCol;
                 const formattedTitle = formatSectionTitle(type);
 
                 const sectionHTML = `
@@ -3872,8 +3884,23 @@
                 }).join("")}
                 </div>`;
 
-                targetCol.innerHTML += sectionHTML;
+                if (leftSections.some(ls => normalized.startsWith(ls))) {
+                    leftColBuffer += sectionHTML;
+                } else {
+                    rightColBuffer += sectionHTML;
+                }
             });
+
+            buffer += `
+            <div class="resume-grid section">
+                <div class="resume-left">${leftColBuffer}</div>
+                <div class="resume-right">${rightColBuffer}</div>
+            </div>`;
+
+            buffer += '</div>';
+
+            // 3. ATOMIC SWAP
+            app.innerHTML = buffer;
         }
         function RenderResumeEntry(entry) {
             let role = entry.Title || "";
