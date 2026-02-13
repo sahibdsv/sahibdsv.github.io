@@ -489,10 +489,21 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             line-height: 1.2;
-            scroll-snap-type: x proximity;
+            scroll-snap-type: x mandatory;
             mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%)
         }
+
+        /* Fix for Inactive/Active State on Mobile (No fill-anim) */
+        .nav-row.level-n .nav-link {
+            color: var(--text-dim);
+            transition: color 0.2s ease;
+        }
+
+        .nav-row.level-n .nav-link.active {
+            color: var(--text-bright);
+        }
+
 
         .nav-row.level-n .sub-link {
             scroll-snap-align: center;
@@ -2944,34 +2955,56 @@
                 let html = "";
                 const prefix = parentPath ? parentPath + "/" : "";
                 items.forEach(item => {
-                    const linkClass = level === 1 ? "nav-link" : "sub-link";
-                    html += `<a href="#${prefix + item}" class="${linkClass} fill-anim" data-name="${safeHTML(item)}" onclick="closeSearch()">${safeHTML(item)}</a>`;
+                    /* Fix Color: Ensure 'nav-link' is present on sub-items so they pick up CSS variables */
+                    const linkClass = level === 1 ? "nav-link" : "nav-link sub-link";
+                    /* Mobile: Keep fill-anim for Main Headers, remove for Sub-headers to avoid lag */
+                    const isMobile = window.innerWidth <= 768;
+                    const animClass = (isMobile && level > 1) ? "" : " fill-anim";
+                    html += `<a href="#${prefix + item}" class="${linkClass}${animClass}" data-name="${safeHTML(item)}" onclick="closeSearch()">${safeHTML(item)}</a>`;
                 });
 
-                if (row.innerHTML !== html && row !== _pickerScrollingRow) {
-                    row.innerHTML = html;
-                    if (activeName) {
-                        /* On mobile (user request) OR during picker scroll — apply .active instantly (no animation flash/lag) */
-                        /* Exception: Level 1 (Main Headers) keeps animation on mobile */
-                        const isMobile = window.innerWidth <= 768;
-                        const shouldSkipAnim = _pickerScrollingRow || (isMobile && level > 1);
+                /* Fix Flicker & State Leakage: Check content hash before re-rendering */
+                const contentHash = items.join('|');
+                const isContentDifferent = row.dataset.contentHash !== contentHash;
 
+                if (isContentDifferent) {
+                    row.innerHTML = html;
+                    row.dataset.contentHash = contentHash;
+
+                    /* Fix State Leakage: Reset scroll on fresh content */
+                    row.scrollLeft = 0;
+
+                    if (activeName) {
+                        /* Active State logic handles the rest */
+                    } else {
+                        centerNavRow(row, isNew);
+                    }
+                }
+
+                /* Always update active state (even if no re-render) */
+                if (activeName) {
+                    /* Clean previous active states first (crucial since we might skip innerHTML wipe) */
+                    row.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+
+                    /* Apply new active */
+                    const target = row.querySelector(`[data-name="${CSS.escape(activeName)}"]`);
+                    const isMobile = window.innerWidth <= 768;
+                    /* Level 1 (Main Headers) always animate. Level > 1 (Sub) skip on mobile/picker. */
+                    const shouldSkipAnim = _pickerScrollingRow || (isMobile && level > 1);
+
+                    if (target) {
                         if (shouldSkipAnim) {
-                            const target = row.querySelector(`[data-name="${CSS.escape(activeName)}"]`);
-                            if (target) target.classList.add("active");
+                            target.classList.add("active");
                             centerNavRow(row, false);
                         } else {
-                            /* Normal navigation on Desktop — defer .active for fill-anim CSS transition */
+                            /* Defer for desktop/fill-anim */
                             requestAnimationFrame(() => {
                                 requestAnimationFrame(() => {
-                                    const target = row.querySelector(`[data-name="${CSS.escape(activeName)}"]`);
-                                    if (target) target.classList.add("active");
+                                    target.classList.add("active");
                                     centerNavRow(row, false);
                                 });
                             });
                         }
-                    } else {
-                        centerNavRow(row, isNew);
                     }
                 }
                 if (level > 1) setupHapticScroll(row);
@@ -2980,15 +3013,24 @@
             navStack.querySelectorAll(".nav-row").forEach(row => {
                 if (!activeRowIds.includes(row.id)) row.remove();
             });
+            /* Optim: Skip padding update during picker scroll to prevent layout thrashing/flash */
             if (!_pickerScrollingRow) updatePadding();
         }
 
-        function haptic(ms) { navigator.vibrate && navigator.vibrate(ms || 2); }
+        /* Updated Haptic Helper - Safe Guarded */
+        function haptic(ms) {
+            if (navigator.vibrate) {
+                try { navigator.vibrate(ms || 2); } catch (e) { /* ignore */ }
+            }
+        }
+
         /* Prime vibration API — cast wide net across all user activation events */
         if (navigator.vibrate) {
-            navigator.vibrate(1); /* Optimistic: try at page load */
+            /* Removed optimistic call to prevent 'Blocked call' error */
             ["pointerdown", "pointerup", "mousedown", "touchstart", "touchend", "touchmove", "click"].forEach(evt => {
-                document.addEventListener(evt, () => { navigator.vibrate(1); }, { passive: true, once: true });
+                document.addEventListener(evt, () => {
+                    try { navigator.vibrate(1); } catch (e) { }
+                }, { passive: true, once: true });
             });
         }
 
