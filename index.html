@@ -2950,15 +2950,22 @@
 
                 if (row.innerHTML !== html && row !== _pickerScrollingRow) {
                     row.innerHTML = html;
-                    /* Defer .active class so the fill-anim CSS transition plays */
                     if (activeName) {
-                        requestAnimationFrame(() => {
+                        if (_pickerScrollingRow) {
+                            /* During picker scroll — apply .active instantly (no animation flash) */
+                            const target = row.querySelector(`[data-name="${CSS.escape(activeName)}"]`);
+                            if (target) target.classList.add("active");
+                            centerNavRow(row, false);
+                        } else {
+                            /* Normal navigation — defer .active for fill-anim CSS transition */
                             requestAnimationFrame(() => {
-                                const target = row.querySelector(`[data-name="${CSS.escape(activeName)}"]`);
-                                if (target) target.classList.add("active");
-                                centerNavRow(row, false);
+                                requestAnimationFrame(() => {
+                                    const target = row.querySelector(`[data-name="${CSS.escape(activeName)}"]`);
+                                    if (target) target.classList.add("active");
+                                    centerNavRow(row, false);
+                                });
                             });
-                        });
+                        }
                     } else {
                         centerNavRow(row, isNew);
                     }
@@ -2969,7 +2976,7 @@
             navStack.querySelectorAll(".nav-row").forEach(row => {
                 if (!activeRowIds.includes(row.id)) row.remove();
             });
-            updatePadding();
+            if (!_pickerScrollingRow) updatePadding();
         }
 
         function haptic(ms) { navigator.vibrate && navigator.vibrate(ms || 2); }
@@ -3069,6 +3076,7 @@
                                 const path = href.substring(1);
                                 history.replaceState(null, "", "#" + path);
                                 renderPage(path);
+                                renderNavigation(path);
                             }
                         }
                         hTicking = false;
@@ -3083,9 +3091,8 @@
                         _pickerScrollingRow = null;
                         /* Restore transitions after scroll settles */
                         row.querySelectorAll(".sub-link").forEach(l => l.style.transition = "");
-                        /* Update nav rows (sub-sub-headings) now that scroll is done */
-                        const currentPath = window.location.hash.substring(1) || "Home";
-                        if (currentPath !== "Home") renderNavigation(currentPath);
+                        /* Final padding update now that picker mode is off */
+                        updatePadding();
                     }
                 }, 150);
             }, { passive: true });
