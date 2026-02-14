@@ -2492,8 +2492,8 @@
 
 
 
-    <script defer src="https://cloud.umami.is/script.js"
-        data-website-id="74d145bb-4d10-4b7b-ab9f-7d1eb7a4db49"></script>
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="74d145bb-4d10-4b7b-ab9f-7d1eb7a4db49"
+        data-auto-track="false"></script>
 
     <!-- Three.js for 3D model rendering -->
     <script type="importmap">
@@ -2650,10 +2650,62 @@
         let isSearchActive = false;
         let _lastRenderedPath = null;
 
-        // Analytics tracking helper - for intentional user actions only
+        // === ROBUST SPA ANALYTICS SYSTEM ===
+        let _dwellTimer = null;
+        let _heartbeatTimer = null;
+        let _currentScrubbedPath = null;
+
+        function scrubPath(path) {
+            if (!path || path === "Home") return "/";
+            // Convert "#Professional/SARIT" or "Professional/SARIT" to "/professional/sarit"
+            let clean = path.replace(/^#/, "").toLowerCase();
+            if (!clean.startsWith("/")) clean = "/" + clean;
+            return clean;
+        }
+
+        function trackPageView(path) {
+            const newScrubbedPath = scrubPath(path);
+            if (newScrubbedPath === _currentScrubbedPath) return;
+
+            // Dwell Threshold: Only log if user stays for >1.5s
+            if (_dwellTimer) clearTimeout(_dwellTimer);
+            _dwellTimer = setTimeout(() => {
+                _currentScrubbedPath = newScrubbedPath;
+                if (window.umami) {
+                    umami.track((props) => ({
+                        ...props,
+                        url: _currentScrubbedPath,
+                        title: document.title
+                    }));
+                }
+                // (Re)start heartbeat on new page view
+                startHeartbeat();
+            }, 1500);
+        }
+
+        function startHeartbeat() {
+            if (_heartbeatTimer) clearInterval(_heartbeatTimer);
+            // 5s Frequency for high-fidelity duration data
+            _heartbeatTimer = setInterval(() => {
+                if (document.visibilityState === 'visible' && window.umami) {
+                    umami.track('heartbeat', { url: _currentScrubbedPath });
+                }
+            }, 5000);
+        }
+
+        // Visibility Awareness: Stop heartbeat when tab is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                if (_heartbeatTimer) clearInterval(_heartbeatTimer);
+            } else {
+                startHeartbeat();
+            }
+        });
+
         function trackEvent(eventName, eventData = {}) {
             if (window.umami) {
-                umami.track(eventName, eventData);
+                // Attach current scrubbed path to all custom events for context
+                umami.track(eventName, { ...eventData, url: _currentScrubbedPath });
             }
         }
 
@@ -2747,6 +2799,9 @@
             initApp();
             updateSEO();
             renderFooter();
+
+            // Initial track for entry page
+            trackPageView(window.location.hash.substring(1) || "Home");
 
             requestAnimationFrame(() => {
                 setTimeout(() => {
@@ -3325,6 +3380,9 @@
 
             const cleanPath = path || "Home";
             _activeRenderPath = cleanPath;
+
+            // Trigger Robust Analytics (Debounced)
+            trackPageView(cleanPath);
 
             // 1. Immediately update navigation metadata (Header Fill + Active States)
             renderNavigation(cleanPath === "Home" ? null : cleanPath);
