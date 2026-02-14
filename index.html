@@ -1145,7 +1145,6 @@
         .layout-grid h3.fill-anim {
             font-size: 20px;
             margin: 0;
-            /* Explicitly zero out margin to prevent overrides */
             display: flex;
             align-items: center;
             gap: var(--space-xs);
@@ -1153,8 +1152,19 @@
             --text-hover: var(--text-bright);
             font-weight: 600;
             line-height: 1.2;
-            /* Tighten for better visual centering */
-            /* NO transition here - let .fill-anim handle its own timing */
+        }
+
+        /* Category-Specific Color Overrides for Card Titles */
+        .layout-grid.cat-projects h3 {
+            --text-hover: var(--accent-projects);
+        }
+
+        .layout-grid.cat-professional h3 {
+            --text-hover: var(--accent-prof);
+        }
+
+        .layout-grid.cat-personal h3 {
+            --text-hover: var(--accent-personal);
         }
 
         @media (hover: hover) {
@@ -2650,54 +2660,19 @@
         let isSearchActive = false;
         let _lastRenderedPath = null;
 
-        // === LEAN UNIVERSAL ANALYTICS ===
+        // === NO-BS UMAMI ANALYTICS ===
         let _dwellTimer = null;
-        let _heartbeatTimer = null;
-        let _currentScrubbedPath = null;
+        let _currentPath = null;
 
-        function scrubPath(path) {
-            if (!path || path === "Home") return "#Home";
-            // Return literal hash path to match address bar 1:1
-            return path.startsWith("#") ? path : "#" + path;
-        }
-
-        function trackPageView(path) {
-            const newScrubbedPath = scrubPath(path);
-            if (newScrubbedPath === _currentScrubbedPath) return;
+        function trackPage(path) {
+            const literalPath = path.startsWith("#") ? path : "#" + path;
+            if (literalPath === _currentPath) return;
 
             if (_dwellTimer) clearTimeout(_dwellTimer);
             _dwellTimer = setTimeout(() => {
-                _currentScrubbedPath = newScrubbedPath;
-                if (window.umami) {
-                    umami.track((props) => ({ ...props, url: _currentScrubbedPath, title: document.title }));
-                }
-                startHeartbeat();
+                _currentPath = literalPath;
+                if (window.umami) umami.track(props => ({ ...props, url: _currentPath, title: document.title }));
             }, 1500);
-        }
-
-        function startHeartbeat() {
-            if (_heartbeatTimer) clearInterval(_heartbeatTimer);
-            // 5s Pulse for high-fidelity duration data
-            _heartbeatTimer = setInterval(() => {
-                const path = _currentScrubbedPath || scrubPath(window.location.hash);
-                if (document.visibilityState === 'visible' && window.umami) {
-                    umami.track('ping', { url: path });
-                }
-            }, 5000);
-        }
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                if (_heartbeatTimer) clearInterval(_heartbeatTimer);
-            } else {
-                startHeartbeat();
-            }
-        });
-
-        function trackEvent(eventName, eventData = {}) {
-            if (window.umami) {
-                umami.track(eventName, { ...eventData, url: _currentScrubbedPath });
-            }
         }
 
         const CACHE_KEY = 'sahib_v1_cache';
@@ -2783,7 +2758,7 @@
             window.addEventListener('beforeprint', () => {
                 const currentPageStr = window.location.hash.substring(1);
                 if (currentPageStr.includes('Resume')) {
-                    trackEvent('resume-print');
+                    if (window.umami) umami.track('resume-print', { url: window.location.hash });
                 }
             });
 
@@ -2792,8 +2767,7 @@
             renderFooter();
 
             // Initial track for entry page
-            trackPageView(window.location.hash.substring(1) || "Home");
-            startHeartbeat();
+            trackPage(window.location.hash || "#Home");
 
             requestAnimationFrame(() => {
                 setTimeout(() => {
@@ -2907,7 +2881,7 @@
 
                         if (link) {
                             if ("_blank" === target) {
-                                trackEvent('click', { url: link, text: block.innerText.trim() || 'Block Click', type: 'block' });
+                                if (window.umami) umami.track('click', { url: link, text: block.innerText.trim() || 'Block Click', type: 'block' });
                                 window.open(link, "_blank");
                             } else {
                                 window.location.href = link;
@@ -2922,11 +2896,13 @@
                     const a = e.target.closest("a");
                     if (!a || !a.href || a.closest(".clickable-block")) return;
 
-                    trackEvent('click', {
-                        url: a.href,
-                        text: a.innerText.trim() || a.getAttribute('title') || 'Link Click',
-                        type: 'link'
-                    });
+                    if (window.umami) {
+                        umami.track('click', {
+                            url: a.href,
+                            text: a.innerText.trim() || a.getAttribute('title') || 'Link Click',
+                            type: 'link'
+                        });
+                    }
                 }, { passive: true }),
 
                 // App-specific handlers (Chip & Refresh)
@@ -2936,7 +2912,7 @@
                         haptic('tap');
                         const container = refreshBtn.closest(".layout-quote");
                         if (container) {
-                            trackEvent('refresh', { type: 'quote', context: container.getAttribute('data-title') || 'Random' });
+                            if (window.umami) umami.track('refresh', { type: 'quote', context: container.getAttribute('data-title') || 'Random' });
                             if (!container.classList.contains("loading")) {
                                 const rect = container.clientHeight;
                                 container.style.height = rect + "px";
@@ -2960,10 +2936,10 @@
                         if (isSearchActive) closeSearch();
                         const t = chip.getAttribute("data-tag"), n = chip.getAttribute("data-date");
                         if (n) {
-                            trackEvent('click', { type: 'tag', value: n, label: chip.innerText.trim() });
+                            if (window.umami) umami.track('click', { type: 'tag', value: n, label: chip.innerText.trim() });
                             window.location.hash = "Filter:" + n;
                         } else if (t) {
-                            trackEvent('click', { type: 'tag', value: t, label: chip.innerText.trim() });
+                            if (window.umami) umami.track('click', { type: 'tag', value: t, label: chip.innerText.trim() });
                             window.location.hash = "Filter:" + t;
                         }
                         return;
@@ -3388,8 +3364,8 @@
             const cleanPath = path || "Home";
             _activeRenderPath = cleanPath;
 
-            // Trigger Robust Analytics (Debounced)
-            trackPageView(cleanPath);
+            // Trigger Direct Analytics (Debounced)
+            trackPage(cleanPath);
 
             // 1. Immediately update navigation metadata (Header Fill + Active States)
             renderNavigation(cleanPath === "Home" ? null : cleanPath);
