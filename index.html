@@ -1041,20 +1041,24 @@
 
         /* --- SKELETON LOADING STYLES --- */
         .sk-box,
-        .sk-img,
+        .sk-img {
+            background: var(--card-bg-hover);
+            background-image: linear-gradient(90deg, var(--card-bg-hover) 0, var(--border-strong) 50%, var(--card-bg-hover) 100%);
+            background-size: 200% 100%;
+            border-radius: var(--card-radius);
+            animation: shimmer 1.5s infinite linear;
+            display: block
+        }
+
         .sk-line {
             background: var(--card-bg-hover);
             background-image: linear-gradient(90deg, var(--card-bg-hover) 0, var(--border-strong) 50%, var(--card-bg-hover) 100%);
             background-size: 200% 100%;
             border-radius: var(--radius-sm);
             animation: shimmer 1.5s infinite linear;
-            display: block
-        }
-
-        .sk-line {
+            display: block;
             margin-bottom: 10px;
         }
-
 
 
         .sk-line.title {
@@ -3847,7 +3851,7 @@
             if (isRandom) {
                 refreshBtnHTML = `
                 <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">
-                    <rect x="4" y="4" width="16" height="16" rx="3" ry="3" fill="none" stroke="currentColor"></rect>
+                    <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor"></rect>
                     <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
                     <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
                     <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
@@ -3941,9 +3945,7 @@
                 const sectionHTML = `
                 <div class="resume-section">
                     ${formattedTitle ? formatTitle(formattedTitle, "h3") : ""}
-                    ${sections.map(s => {
-                    return normalized.includes('skill') ? RenderResumeSkill(s) : RenderResumeEntry(s);
-                }).join("")}
+                    ${sections.map(s => RenderResumeEntry(s)).join("")}
                 </div>`;
 
                 if (leftSections.some(ls => normalized.startsWith(ls))) {
@@ -4036,31 +4038,6 @@
                 </div>`;
         }
 
-        function RenderResumeSkill(entry) {
-            const lines = (entry.Content || "").split("|").map(l => l.trim()).filter(l => l);
-            let skillRowsHTML = "";
-
-            lines.forEach(line => {
-                const colonIndex = line.indexOf(":");
-                if (colonIndex > -1) {
-                    const category = line.substring(0, colonIndex).trim();
-                    const list = line.substring(colonIndex + 1).trim();
-                    skillRowsHTML += `
-                        <div class="resume-skill-row">
-                            <span class="resume-skill-cat">${category}:</span> 
-                            <span class="resume-skill-list">${list}</span>
-                        </div>`;
-                } else {
-                    skillRowsHTML += `<div class="resume-skill-row"><span class="resume-skill-list">${line}</span></div>`;
-                }
-            });
-
-            return `
-                <div class="resume-skill-block">
-                    ${entry.Title ? `<div class="resume-skill-title">${entry.Title}</div>` : ""}
-                    ${skillRowsHTML}
-                </div>`;
-        }
         function generateResumeJSONLD() {
             const e = document.getElementById("json-ld-resume"); e && e.remove();
             const t = resumeDb, n = t.filter(e => e.SectionType && e.SectionType.toLowerCase().startsWith("#header"));
@@ -4070,8 +4047,6 @@
                 a = document.createElement("script"); a.id = "json-ld-resume", a.type = "application/ld+json", a.textContent = JSON.stringify(s), document.head.appendChild(a)
         }
 
-        function detectEmbed(e) { return e.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) ? `<img src="${e}" class="inline-img zoomable" loading="lazy">` : `<a href="${e}" target="_blank">${e}</a>` }
-        function extractMediaFromContent(e) { if (!e) return null; const t = e.match(/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp)/i); return t ? { type: "img", url: t[0] } : null }
         document.addEventListener("DOMContentLoaded", () => { window.addEventListener("load", init) });
 
         // === FLEXIBLE CONTENT BLOCK SYSTEM ===
