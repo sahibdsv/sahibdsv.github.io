@@ -2650,14 +2650,13 @@
         let isSearchActive = false;
         let _lastRenderedPath = null;
 
-        // === ROBUST SPA ANALYTICS SYSTEM ===
+        // === LEAN UNIVERSAL ANALYTICS ===
         let _dwellTimer = null;
         let _heartbeatTimer = null;
         let _currentScrubbedPath = null;
 
         function scrubPath(path) {
             if (!path || path === "Home") return "/";
-            // Convert "#Professional/SARIT" or "Professional/SARIT" to "/professional/sarit"
             let clean = path.replace(/^#/, "").toLowerCase();
             if (!clean.startsWith("/")) clean = "/" + clean;
             return clean;
@@ -2667,33 +2666,26 @@
             const newScrubbedPath = scrubPath(path);
             if (newScrubbedPath === _currentScrubbedPath) return;
 
-            // Dwell Threshold: Only log if user stays for >1.5s
             if (_dwellTimer) clearTimeout(_dwellTimer);
             _dwellTimer = setTimeout(() => {
                 _currentScrubbedPath = newScrubbedPath;
                 if (window.umami) {
-                    umami.track((props) => ({
-                        ...props,
-                        url: _currentScrubbedPath,
-                        title: document.title
-                    }));
+                    umami.track((props) => ({ ...props, url: _currentScrubbedPath, title: document.title }));
                 }
-                // (Re)start heartbeat on new page view
                 startHeartbeat();
             }, 1500);
         }
 
         function startHeartbeat() {
             if (_heartbeatTimer) clearInterval(_heartbeatTimer);
-            // 5s Frequency for high-fidelity duration data
+            // 5s Pulse to maintain duration accuracy
             _heartbeatTimer = setInterval(() => {
                 if (document.visibilityState === 'visible' && window.umami) {
-                    umami.track('heartbeat', { url: _currentScrubbedPath });
+                    umami.track('ping', { url: _currentScrubbedPath });
                 }
             }, 5000);
         }
 
-        // Visibility Awareness: Stop heartbeat when tab is hidden
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
                 if (_heartbeatTimer) clearInterval(_heartbeatTimer);
@@ -2704,7 +2696,6 @@
 
         function trackEvent(eventName, eventData = {}) {
             if (window.umami) {
-                // Attach current scrubbed path to all custom events for context
                 umami.track(eventName, { ...eventData, url: _currentScrubbedPath });
             }
         }
@@ -2915,7 +2906,7 @@
 
                         if (link) {
                             if ("_blank" === target) {
-                                trackEvent('external-link', { url: link });
+                                trackEvent('click', { url: link, text: block.innerText.trim() || 'Block Click', type: 'block' });
                                 window.open(link, "_blank");
                             } else {
                                 window.location.href = link;
@@ -2925,37 +2916,58 @@
                     }
                 }),
 
+                // Universal Click Tracker
+                document.addEventListener("click", e => {
+                    const a = e.target.closest("a");
+                    if (!a || !a.href || a.closest(".clickable-block")) return;
+
+                    trackEvent('click', {
+                        url: a.href,
+                        text: a.innerText.trim() || a.getAttribute('title') || 'Link Click',
+                        type: 'link'
+                    });
+                }, { passive: true }),
+
                 // App-specific handlers (Chip & Refresh)
                 document.getElementById("app").addEventListener("click", e => {
-                    if (e.target.closest(".refresh-btn")) {
+                    const refreshBtn = e.target.closest(".refresh-btn");
+                    if (refreshBtn) {
                         haptic('tap');
-                        trackEvent('quote-refresh');
-                        const t = e.target.closest(".layout-quote");
-                        if (t && !t.classList.contains("loading")) {
-                            const e = t.clientHeight;
-                            t.style.height = e + "px",
-                                t.classList.add("loading"),
-                                t.innerHTML = '<div class="sk-box quote" style="height: 100% ;"></div>',
-                                setTimeout(() => { renderQuoteCard(t), t.classList.remove("loading"), t.style.height = "auto" }, 600)
+                        const container = refreshBtn.closest(".layout-quote");
+                        if (container) {
+                            trackEvent('refresh', { type: 'quote', context: container.getAttribute('data-title') || 'Random' });
+                            if (!container.classList.contains("loading")) {
+                                const rect = container.clientHeight;
+                                container.style.height = rect + "px";
+                                container.classList.add("loading");
+                                container.innerHTML = '<div class="sk-box quote" style="height: 100%;"></div>';
+                                setTimeout(() => {
+                                    renderQuoteCard(container);
+                                    container.classList.remove("loading");
+                                    container.style.height = "auto";
+                                }, 600);
+                            }
                         }
-                        return void e.stopPropagation()
+                        return void e.stopPropagation();
                     }
 
-                    // Chip handling (still specific to app content)
-                    if (e.target.classList.contains("chip")) {
-                        e.stopPropagation();
+                    const chip = e.target.closest(".chip");
+                    if (chip) {
+                        // Allow <a> chips to bubble for analytics
+                        if (chip.tagName !== 'A') e.stopPropagation();
+
                         if (isSearchActive) closeSearch();
-                        const t = e.target.getAttribute("data-tag"), n = e.target.getAttribute("data-date");
+                        const t = chip.getAttribute("data-tag"), n = chip.getAttribute("data-date");
                         if (n) {
-                            trackEvent('chip-click', { type: 'date', value: n });
+                            trackEvent('click', { type: 'tag', value: n, label: chip.innerText.trim() });
                             window.location.hash = "Filter:" + n;
                         } else if (t) {
-                            trackEvent('chip-click', { type: 'tag', value: t });
+                            trackEvent('click', { type: 'tag', value: t, label: chip.innerText.trim() });
                             window.location.hash = "Filter:" + t;
                         }
                         return;
                     }
-                }),
+                }, { passive: false }), // Set to false to allow stopPropagation to work correctly for chips
 
                 document.addEventListener("keydown", e => {
                     const isSearchFocused = "search-input" === (document.activeElement ? document.activeElement.id : "");
@@ -3353,14 +3365,8 @@
                 if (app) app.style.display = "none";
                 return;
             }
-            trackEvent('search', { query: e });
-
             const t = e.toLowerCase(), n = db.filter(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t));
             resumeDb.some(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t)) && !n.find(e => "Professional/Resume" === e.Page) && n.push(db.find(e => "Professional/Resume" === e.Page));
-
-            if (n.length === 0) {
-                trackEvent('search-no-results', { query: e });
-            }
 
             if (resultsContainer) {
                 resultsContainer.innerHTML = '';
@@ -3554,9 +3560,9 @@
                 const label = linkMatch[1];
                 const url = linkMatch[2];
                 if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(url)) {
-                    return `<a href="${url}" target="_blank" class="chip location" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(label)}</a>`;
+                    return `<a href="${url}" target="_blank" class="chip location">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(label)}</a>`;
                 }
-                return `<a href="${url}" target="_blank" class="chip location link" onclick="event.stopPropagation()">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(label)}</a>`;
+                return `<a href="${url}" target="_blank" class="chip location link">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(label)}</a>`;
             }
             return `<span class="chip" data-tag="${tag}">${safeHTML(tag)}</span>`;
         }
@@ -4994,4 +5000,4 @@
     </script>
 </body>
 
-</html>
+<!-- </html>\k, -->
