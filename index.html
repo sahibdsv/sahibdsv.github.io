@@ -2656,10 +2656,9 @@
         let _currentScrubbedPath = null;
 
         function scrubPath(path) {
-            if (!path || path === "Home") return "/";
-            let clean = path.replace(/^#/, "").toLowerCase();
-            if (!clean.startsWith("/")) clean = "/" + clean;
-            return clean;
+            if (!path || path === "Home") return "#Home";
+            // Return literal hash path to match address bar 1:1
+            return path.startsWith("#") ? path : "#" + path;
         }
 
         function trackPageView(path) {
@@ -2678,10 +2677,11 @@
 
         function startHeartbeat() {
             if (_heartbeatTimer) clearInterval(_heartbeatTimer);
-            // 5s Pulse to maintain duration accuracy
+            // 5s Pulse for high-fidelity duration data
             _heartbeatTimer = setInterval(() => {
+                const path = _currentScrubbedPath || scrubPath(window.location.hash);
                 if (document.visibilityState === 'visible' && window.umami) {
-                    umami.track('ping', { url: _currentScrubbedPath });
+                    umami.track('ping', { url: path });
                 }
             }, 5000);
         }
@@ -2793,6 +2793,7 @@
 
             // Initial track for entry page
             trackPageView(window.location.hash.substring(1) || "Home");
+            startHeartbeat();
 
             requestAnimationFrame(() => {
                 setTimeout(() => {
