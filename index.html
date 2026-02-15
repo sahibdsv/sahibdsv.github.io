@@ -3690,7 +3690,7 @@
         }
 
         window.renderCardHTML = function (entry, contextCategory = "") {
-            let media = entry.Media;
+            let media = entry.Thumbnail;
             let content = entry.Content || "";
             let mediaHTML = "";
             let titleHTML = safeHTML(entry.Title);
@@ -3829,7 +3829,7 @@
                 // Handle Article/Text Mode
                 if (!isSubPage && isHeroOnly && sectionType !== "quote" && sectionType !== "hero") {
                     let mediaHTML = "";
-                    let media = entry.Media;
+                    let media = entry.Thumbnail;
                     const content = entry.Content || "";
 
                     const titleUrlMatch = entry.Title ? entry.Title.match(/^https?:\/\/\S+$/) : null;
