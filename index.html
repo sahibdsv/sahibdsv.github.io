@@ -4,6 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function () {
+            const saved = localStorage.getItem('theme');
+            const system = window.matchMedia('(prefers-color-scheme: light)').matches;
+            document.documentElement.setAttribute('data-theme', saved || (system ? 'light' : 'dark'));
+        })();
+    </script>
     <title>Sahib Virdee</title>
     <link rel="canonical" href="https://sahibvirdee.com/" />
     <meta name="description"
@@ -36,6 +43,11 @@
             to {
                 opacity: 1
             }
+        }
+
+        .no-transition,
+        .no-transition * {
+            transition: none !important;
         }
 
         @keyframes dice-spin {
@@ -1477,6 +1489,18 @@
             display: block;
         }
 
+        /* GLB Entrance Animation */
+        .model-viewer-wrapper canvas {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 1.2s var(--ease), transform 1.2s var(--ease);
+        }
+
+        .model-viewer-wrapper.loaded canvas {
+            opacity: 1;
+            transform: scale(1);
+        }
+
         /* Image Container specific: remove margin from img since container has it */
         .media-container img {
             width: 100% !important;
@@ -2825,58 +2849,59 @@
 
         // App Initialization
         const init = () => {
-            // --- THEME INITIALIZATION ---
-            const savedTheme = localStorage.getItem('theme');
-            const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-            const initialTheme = savedTheme || (systemPrefersLight ? 'light' : 'dark');
-
-            document.documentElement.setAttribute('data-theme', initialTheme);
-
-            // Listen for system theme changes
+            // Theme preference listener only (Theme apply handled in HEAD)
             window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
                 if (!localStorage.getItem('theme')) {
                     document.documentElement.setAttribute('data-theme', e.matches ? 'light' : 'dark');
                 }
             });
 
-            setTimeout(() => document.body.classList.remove('no-transition'), 1000);
+            // Re-enable transitions after initial paint
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    document.body.classList.remove('no-transition');
+                    const header = document.getElementById('main-header');
+                    if (header) header.classList.remove('no-transition');
+                    updatePadding();
+                }, 50);
+            });
+        };
 
-            loadFromCache().then(cachedData => {
-                const showDrafts = localStorage.getItem('preview_drafts') === 'true' || window.location.hostname === 'localhost';
+        loadFromCache().then(cachedData => {
+            const showDrafts = localStorage.getItem('preview_drafts') === 'true' || window.location.hostname === 'localhost';
 
-                if (cachedData) {
-                    db = cachedData.main;
-                    quotesDb = cachedData.quotes;
-                    resumeDb = cachedData.resume || [];
+            if (cachedData) {
+                db = cachedData.main;
+                quotesDb = cachedData.quotes;
+                resumeDb = cachedData.resume || [];
 
+                if (!showDrafts) {
+                    db = db.filter(e => !e.Tags || !e.Tags.includes('Draft'));
+                    quotesDb = quotesDb.filter(e => !e.Tags || !e.Tags.includes('Draft'));
+                }
+
+                // Expose db to window for GLB injection
+                window.db = db;
+
+                startApp();
+
+                // Fetch fresh data in background
+                fetchDataAndCache().then(() => {
                     if (!showDrafts) {
                         db = db.filter(e => !e.Tags || !e.Tags.includes('Draft'));
                         quotesDb = quotesDb.filter(e => !e.Tags || !e.Tags.includes('Draft'));
                     }
-
-                    // Expose db to window for GLB injection
-                    window.db = db;
-
+                });
+            } else {
+                fetchDataAndCache().then(() => {
+                    if (!showDrafts) {
+                        db = db.filter(e => !e.Tags || !e.Tags.includes('Draft'));
+                        quotesDb = quotesDb.filter(e => !e.Tags || !e.Tags.includes('Draft'));
+                    }
                     startApp();
-
-                    // Fetch fresh data in background
-                    fetchDataAndCache().then(() => {
-                        if (!showDrafts) {
-                            db = db.filter(e => !e.Tags || !e.Tags.includes('Draft'));
-                            quotesDb = quotesDb.filter(e => !e.Tags || !e.Tags.includes('Draft'));
-                        }
-                    });
-                } else {
-                    fetchDataAndCache().then(() => {
-                        if (!showDrafts) {
-                            db = db.filter(e => !e.Tags || !e.Tags.includes('Draft'));
-                            quotesDb = quotesDb.filter(e => !e.Tags || !e.Tags.includes('Draft'));
-                        }
-                        startApp();
-                    });
-                }
-            });
-        };
+                });
+            }
+        });
 
         function startApp() {
             // Clean URL
@@ -3829,36 +3854,9 @@
                 // Handle Article/Text Mode
                 if (!isSubPage && isHeroOnly && sectionType !== "quote" && sectionType !== "hero") {
                     let mediaHTML = "";
-                    let media = entry.Thumbnail;
                     const content = entry.Content || "";
-
-                    const titleUrlMatch = entry.Title ? entry.Title.match(/^https?:\/\/\S+$/) : null;
-                    if (titleUrlMatch) {
-                        const extracted = extractMediaFromContent(entry.Title);
-                        if (extracted) {
-                            if (extracted.type === "img") {
-                                mediaHTML = `<div class="row-media article-mode"><img src="${extracted.url}" loading="lazy"></div>`;
-                            } else if (extracted.type === "yt") {
-                                mediaHTML = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
-                            }
-                        }
-                    } else if (media) {
-                        const thumb = getThumbnail(media);
-                        if (thumb === 'GLB_VIEWER') {
-                            mediaHTML = `<div class="row-media article-mode">${window.renderGLBViewer(media, true)}</div>`;
-                        } else if (thumb) {
-                            mediaHTML = `<div class="row-media article-mode"><img src="${thumb}" loading="lazy"></div>`;
-                        }
-                    } else {
-                        const extracted = extractMediaFromContent(content);
-                        if (extracted) {
-                            if (extracted.type === "img") {
-                                mediaHTML = `<div class="row-media article-mode"><img src="${extracted.url}" loading="lazy"></div>`;
-                            } else if (extracted.type === "yt") {
-                                mediaHTML = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
-                            }
-                        }
-                    }
+                    // [DECOUPLED] Automatically repeating the 'Thumbnail' here causes duplication.
+                    // Users now have total control: to show media in an article, add it to the 'Content' column.
 
                     let metaHTML = "";
                     if (index === 0) {
@@ -4987,6 +4985,11 @@
                 const modelGroup = new THREE.Group();
                 modelGroup.add(model);
                 scene.add(modelGroup);
+
+                // Entrance Animation
+                requestAnimationFrame(() => {
+                    container.classList.add('loaded');
+                });
 
 
             });
