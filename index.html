@@ -59,51 +59,68 @@
         }
 
         :root {
-            /* --- COLOR PALETTE --- */
-            /* Base Colors */
+            /* --- COLOR PALETTE (DARK DEFAULT) --- */
             --bg-dark: #0a0a0a;
             --bg-trans: rgba(10, 10, 10, 0.85);
-
-            /* RGB Components for Dynamic Opacity */
             --bright-rgb: 255, 255, 255;
             --bg-rgb: 5, 5, 5;
-
-            /* Opacity Levels */
-            --op-subtle: 0.03;
-            --op-low: 0.08;
-            --op-medium: 0.2;
-            --op-line: 0.35;
-            --op-high: 0.8;
-            --op-overlay: 0.1;
-            --op-mask: 0.98;
-
-            /* Backgrounds */
             --bg: rgb(var(--bg-rgb));
             --card-bg: #111111;
             --card-bg-hover: #1a1a1a;
             --card-bg-dark: #131313;
             --code-bg: #1e1e1e;
-
-            /* Text */
             --text-bright: rgb(var(--bright-rgb));
             --text-main: #d4d4d4;
             --text-dim: #999999;
             --text-muted: #666666;
             --text-inv: #000000;
             --code-fg: #e6cd69;
-
-            /* Borders & UI */
-            --border-subtle: rgba(var(--bright-rgb), var(--op-low));
-            --border-strong: rgba(var(--bright-rgb), var(--op-medium));
+            --border-subtle: rgba(var(--bright-rgb), 0.08);
+            --border-strong: rgba(var(--bright-rgb), 0.2);
             --border-header: #1a1a1a;
             --search-bg: #111111;
-            --search-glow: rgba(var(--bright-rgb), var(--op-medium));
-            --search-border: rgba(var(--bright-rgb), 0.4);
-
-            /* Accents */
+            --search-glow: rgba(255, 255, 255, 0.1);
+            --search-border: rgba(255, 255, 255, 0.3);
             --accent-personal: #00ff6a;
             --accent-prof: #00e5ff;
             --accent-projects: #ffaa00;
+
+            /* Shadows - Balanced & Symmetric */
+            --shadow-subtle: 0 0 15px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 0 30px rgba(0, 0, 0, 0.2);
+            --shadow-heavy: 0 0 80px 20px rgba(0, 0, 0, 0.95);
+
+            /* Placeholders (Dark) */
+            --placeholder-gradient: linear-gradient(135deg, #0a0a0a 0%, #0c0c0c 25%, #0f0f0f 50%, #131313 75%, #161616 100%);
+            --placeholder-hover: linear-gradient(135deg, #1a1a1a 0%, #151515 50%, #111111 100%);
+
+            /* --- LAYOUT & SPACING --- */
+            --brand-row-h: 30px;
+            --main-row-h: 20px;
+            --sub-row-h: 22px;
+            --gap: 5px;
+            --header-pad-top: 5px;
+            --header-pad-bottom: 5px;
+            --header-gap: 5px;
+            --brand-font-size: 28px;
+            --brand-letter-spacing: 1.5px;
+            --nav-font-size: 15px;
+            --card-radius: 18px;
+            --card-padding: 12px;
+            --media-radius: calc(var(--card-radius) - var(--card-padding));
+            --radius-md: 12px;
+            --radius-sm: 4px;
+            --space-xs: 6px;
+            --space-sm: 10px;
+            --space-md: 15px;
+            --space-lg: 20px;
+            --space-xl: 30px;
+            --space-2xl: 40px;
+            --anim-primary: 0.50s;
+            --anim-layout: 0.40s;
+            --anim-quick: 0.30s;
+            --anim-instant: 0.20s;
+            --ease: cubic-bezier(0.25, 1, 0.5, 1);
 
             /* Legacy Aliases (Gradual Migration) */
             --text-dimmer: var(--text-main);
@@ -112,43 +129,84 @@
             --border: var(--border-subtle);
             --border-hover: var(--border-strong);
 
-            /* --- LAYOUT & SPACING --- */
-            /* --- HEADER CONFIGURATION --- */
-            /* Default (Desktop) Values */
-            --brand-row-h: 30px;
-            --main-row-h: 20px;
-            --sub-row-h: 22px;
-            --gap: 5px;
-            --header-pad-top: 5px;
-            --header-pad-bottom: 5px;
-            --header-gap: 5px;
+            /* Opacity Variables */
+            --op-line: 0.25;
+            --op-high: 0.8;
+            --op-subtle: 0.05;
+            --op-low: 0.1;
+        }
 
-            /* Typography */
-            --brand-font-size: 28px;
-            --brand-letter-spacing: 1.5px;
-            --nav-font-size: 15px;
+        /* --- LIGHT MODE OVERRIDES --- */
+        :root[data-theme="light"] {
+            /* Base Colors */
+            --bg-dark: #e0e0e0;
+            --bg-trans: rgba(250, 250, 250, 0.9);
+            --bright-rgb: 0, 0, 0;
+            --bg-rgb: 250, 250, 250;
+            --bg: #fafafa;
+            --card-bg: #ffffff;
+            --card-bg-hover: #f2f2f2;
+            --card-bg-dark: #f0f0f0;
+            --code-bg: #f5f5f5;
+            --text-bright: #000000;
+            --text-main: #1a1a1a;
+            --text-dim: #777777;
+            /* Darker for better fill-anim contrast */
+            --text-muted: #aaaaaa;
+            --text-inv: #ffffff;
+            --code-fg: #bf8d00;
+            --border-subtle: rgba(0, 0, 0, 0.1);
+            /* Increased for clarity */
+            --border-strong: rgba(0, 0, 0, 0.2);
+            /* Increased for clarity */
+            --border-header: #efefef;
+            --search-bg: #ffffff;
+            --search-glow: rgba(0, 0, 0, 0.06);
+            --search-border: rgba(0, 0, 0, 0.15);
 
-            /* Radius */
-            --card-radius: 18px;
-            --card-padding: 12px;
-            --media-radius: calc(var(--card-radius) - var(--card-padding));
-            --radius-md: 12px;
-            --radius-sm: 4px;
+            /* Shadows - Balanced & Symmetric */
+            --shadow-subtle: 0 0 15px rgba(0, 0, 0, 0.04);
+            --shadow-medium: 0 0 30px rgba(0, 0, 0, 0.06);
+            --shadow-heavy: 0 0 60px rgba(0, 0, 0, 0.12);
 
-            /* Spacing Scale */
-            --space-xs: 6px;
-            --space-sm: 10px;
-            --space-md: 15px;
-            --space-lg: 20px;
-            --space-xl: 30px;
-            --space-2xl: 40px;
+            /* Vibrant Accents */
+            --accent-personal: #00cc55;
+            --accent-prof: #0088cc;
+            --accent-projects: #ff9900;
 
-            /* Animations */
-            --anim-primary: 0.50s;
-            --anim-layout: 0.40s;
-            --anim-quick: 0.30s;
-            --anim-instant: 0.20s;
-            --ease: cubic-bezier(0.25, 1, 0.5, 1);
+            /* Shadows */
+            --shadow-subtle: 0 2px 12px rgba(0, 0, 0, 0.04);
+            --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.06);
+
+            /* Placeholders (Light) */
+            --placeholder-gradient: linear-gradient(135deg, #f0f0f0 0%, #ececec 25%, #e8e8e8 50%, #e4e4e4 75%, #e0e0e0 100%);
+            --placeholder-hover: linear-gradient(135deg, #ffffff 0%, #fcfcfc 50%, #f9f9f9 100%);
+
+            /* Legacy Aliases (Gradual Migration) */
+            --text-dimmer: var(--text-main);
+            --text-faded: var(--text-dim);
+            --text-subtle: var(--text-dim);
+            --border: var(--border-subtle);
+            --border-hover: var(--border-strong);
+
+            /* Opacity Variables (Matched for Light Mode) */
+            --op-line: 0.25;
+            --op-high: 0.8;
+            --op-subtle: 0.05;
+            --op-low: 0.1;
+        }
+
+        /* Theme transition for all relevant properties */
+        body {
+            transition: background-color var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease), padding-top .4s var(--ease);
+        }
+
+        #main-header,
+        .layout-grid,
+        .layout-quote,
+        footer,
+        #search-overlay {
+            transition: background-color var(--anim-quick) var(--ease), border-color var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease), box-shadow var(--anim-quick) var(--ease);
         }
 
 
@@ -278,15 +336,16 @@
             transition: color 0.2s ease;
         }
 
-        /* SCOPED Standard Link Styling
-           Only targets body content, resume entries, and text layouts. 
-           Excludes headers, UI chips, nav links, and footers by omission. */
+        /* UNIVERSAL Link Styling (The Craftsman Standard)
+           Unified across Articles, Bio, Resume, Footer, and Quotes.
+           Instant structural feedback without color/weight shifts. */
         .article-body a:not(.chip):not(.btn-cta),
         .layout-text a:not(.chip):not(.btn-cta),
         .resume-contact a:not(.btn-cta),
         .layout-hero p a:not(.chip):not(.btn-cta),
         .resume-entry a:not(.chip):not(.btn-cta),
         #footer-links a:not(.btn-cta),
+        .author-link,
         .layout-quote .author a:not(.btn-cta) {
             color: var(--text-main);
             text-decoration: underline;
@@ -297,8 +356,8 @@
             vertical-align: top;
             font-weight: inherit;
             transform: translateZ(0);
-            transition: color 0.2s ease;
-            /* Ensure smooth animation */
+            /* NO Transitions for "simple straight thing" logic */
+            transition: none;
         }
 
         @media (hover: hover) {
@@ -309,12 +368,13 @@
             .resume-entry a:not(.chip):hover,
             .resume-contact a:hover,
             #footer-links a:hover,
+            .author-link:hover,
             .layout-quote .author a:hover {
-                text-decoration-color: var(--text-bright);
-            }
-
-            .author-link:hover {
-                text-decoration-color: var(--text-bright);
+                text-decoration-color: rgba(var(--bright-rgb), var(--op-high));
+                text-decoration-thickness: 2px;
+                /* Preserve text integrity */
+                color: var(--text-main) !important;
+                font-weight: inherit !important;
             }
         }
 
@@ -569,9 +629,9 @@
             justify-content: center
         }
 
+        #left-controls,
         #search-controls {
             position: absolute;
-            right: 12px;
             top: var(--header-pad-top);
             height: var(--brand-row-h);
             display: flex;
@@ -581,6 +641,16 @@
             transition: transform .6s cubic-bezier(.2, 0, 0, 1), opacity var(--anim-layout) var(--ease), height .6s cubic-bezier(.2, 0, 0, 1);
         }
 
+        #left-controls {
+            left: 12px;
+        }
+
+        #search-controls {
+            right: 12px;
+            gap: 12px;
+        }
+
+        #main-header.scrolled #left-controls,
         #main-header.scrolled #search-controls {
             opacity: 0;
             height: 0;
@@ -594,13 +664,17 @@
             padding: 4px;
             cursor: pointer;
             fill: var(--text-muted);
+            color: var(--text-muted);
             transition: all var(--anim-layout);
-            transform-origin: center;
+            transform-origin: center center;
+            /* Precise center lock */
             position: relative;
             -webkit-tap-highlight-color: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-sizing: border-box;
+            /* Ensure padding doesn't shift the box */
         }
 
         .icon-btn-wrapper {
@@ -610,6 +684,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            position: relative;
         }
 
         .icon-btn:hover {
@@ -627,14 +702,67 @@
         }
 
         .icon-search-mask {
-            -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5l5 5"/></svg>')no-repeat center;
-            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5l5 5"/></svg>')no-repeat center;
+            -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5l5 5"/></svg>') no-repeat center;
+            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5l5 5"/></svg>') no-repeat center;
             -webkit-mask-size: 26px;
-            mask-size: 26px
+            mask-size: 26px;
+        }
+
+        .icon-theme-mask {
+            -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><path d="M12 4.5v15a7.5 7.5 0 0 0 0-15z" fill="black"/></svg>') no-repeat center;
+            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><path d="M12 4.5v15a7.5 7.5 0 0 0 0-15z" fill="black"/></svg>') no-repeat center;
+            -webkit-mask-size: 22px;
+            /* Teeny bit tinier for perfect center/prominence */
+            mask-size: 22px;
+            background: var(--text-muted) !important;
+            /* Solid Humble Gray */
+            opacity: 1 !important;
+            width: 28px;
+            /* Lock to hit-box dimensions */
+            height: 28px;
+            padding: 0 !important;
+            box-sizing: border-box;
+
+            /* Hardware-Accelerated Zero-Drift Rotation */
+            will-change: transform;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            -webkit-transform-style: preserve-3d;
+            transform-style: preserve-3d;
+            transform-origin: center center !important;
+
+            transition: transform var(--anim-quick) var(--ease);
+        }
+
+        /* No hover transitions per user request */
+        .icon-btn-wrapper:hover .icon-theme-mask {
+            opacity: 1 !important;
+            background: var(--text-muted) !important;
+        }
+
+        /* Enforce utility neutrality for header controls */
+        #left-controls .fill-anim-mask,
+        #search-controls .fill-anim-mask {
+            --text-base: var(--text-muted);
+            --text-hover: var(--text-bright);
         }
 
         .icon-btn-wrapper:hover .fill-anim-mask {
-            background-position: 0 100%
+            background-position: 0 100%;
+        }
+
+        /* Theme Toggle Morphing Animation */
+        /* Simplified Theme Toggle (Day/Night Balance) */
+        .theme-toggle-icon {
+            transition: transform var(--anim-quick) var(--ease);
+        }
+
+        :root[data-theme="light"] .theme-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .theme-toggle-symbol {
+            fill: currentColor;
         }
 
 
@@ -651,13 +779,11 @@
             transform: translate3d(-50%, -40px, 0) scale(.9);
             /* Solid background to prevent text clash, no blur */
             /* Solid background to prevent text clash, no blur */
-            background: rgba(var(--bg-rgb), 1);
-            /* backdrop-filter removed per user request */
-            /* backdrop-filter removed per user request */
+            background: var(--search-bg);
             z-index: 9999;
             border-radius: 999px;
-            /* Heavy shadow for "fade to black" vicinity effect per user request */
-            box-shadow: 0 25px 100px 40px rgba(0, 0, 0, 0.95);
+            /* Symmetric Shadow per user request */
+            box-shadow: var(--shadow-heavy, 0 25px 100px 40px rgba(0, 0, 0, 0.95));
             border: 1px solid var(--border-strong);
             /* Matched to CTA buttons per user request */
             transition: transform var(--anim-layout) cubic-bezier(.16, 1, .3, 1), opacity var(--anim-layout) ease;
@@ -1134,6 +1260,8 @@
             user-select: none;
             -webkit-user-select: none;
             background: var(--card-bg);
+            /* Enhance depth in Light Mode */
+            box-shadow: var(--shadow-subtle, none);
             /* Ensure baseline background */
         }
 
@@ -1214,11 +1342,25 @@
             height: 100%;
             object-fit: cover;
             filter: grayscale(100%);
-            transition: filter .3s ease;
-            will-change: filter;
+            transition: filter 0.6s var(--ease), opacity 0.4s var(--ease);
+            will-change: filter, opacity;
             transform: translateZ(0);
             backface-visibility: hidden;
             -webkit-font-smoothing: subpixel-antialiased;
+        }
+
+        /* Anti-flash: hide and grayscale images in Light Mode until analyzed
+           Using 0.01 opacity instead of 0 ensures skeletons remain visible if analysis hangs. */
+        :root[data-theme="light"] .layout-grid img:not(.analyzed),
+        :root[data-theme="light"] .layout-text .media-container img:not(.analyzed) {
+            opacity: 0.01 !important;
+            filter: grayscale(100%) !important;
+            transition: none !important;
+        }
+
+        :root[data-theme="light"] .layout-grid img.analyzed,
+        :root[data-theme="light"] .layout-text .media-container img.analyzed {
+            opacity: 1;
         }
 
         @media (hover: hover) {
@@ -1229,16 +1371,24 @@
             }
         }
 
+        /* Smart Image Inversion for Dark Media in Light Mode */
+        :root[data-theme="light"] .layout-grid.invert-media .row-media img,
+        :root[data-theme="light"] .layout-text .media-container.invert-media img {
+            /* Flip lightness (Black->White) but rotate hue back to preserve natural colors */
+            filter: grayscale(100%) invert(1) hue-rotate(180deg) brightness(1.1);
+            transition: filter 0.6s var(--ease), opacity 0.4s var(--ease);
+        }
+
+        :root[data-theme="light"] .layout-grid.invert-media:hover .row-media img,
+        :root[data-theme="light"] .layout-text .media-container.invert-media:hover img {
+            /* Sticky Lightness: Keep the background White, but restore hues/saturation */
+            filter: grayscale(0%) invert(1) hue-rotate(180deg) brightness(1.1);
+        }
+
         /* Placeholder thumbnails for cards without images */
         .row-media.placeholder {
-            /* Velvet Dark: Deep, solid-based diagonal blend to ensure richness */
-            background: linear-gradient(135deg,
-                    #0a0a0a 0%,
-                    #0c0c0c 25%,
-                    #0f0f0f 50%,
-                    #131313 75%,
-                    #161616 100%);
-            border-bottom: 1px solid var(--border);
+            background: var(--placeholder-gradient);
+            border-bottom: 1px solid var(--border-subtle);
             padding: 12px;
             text-align: center;
             display: flex;
@@ -1257,11 +1407,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            /* Subtly brighter, solid-based hover target */
-            background: linear-gradient(135deg,
-                    #1a1a1a 0%,
-                    #151515 50%,
-                    #111111 100%);
+            background: var(--placeholder-hover);
             opacity: 0;
             transition: opacity 0.5s var(--ease);
             z-index: -1;
@@ -1287,7 +1433,8 @@
             max-width: 90%;
             display: block;
             z-index: 2;
-            opacity: 0.4;
+            opacity: 0.6;
+            /* Increased for Light Mode visibility */
         }
 
         @media (hover: hover) {
@@ -1997,48 +2144,7 @@
             transition: color 0.2s ease;
         }
 
-        .article-body a::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 1px;
-            bottom: 3px;
-            /* Standardize visual position */
-            left: 0;
-            background-color: var(--accent-prof);
-            /* Explicit color */
-            transform: scaleX(0);
-            transform-origin: bottom right;
-            transition: transform 0.25s ease-out;
-            opacity: 0.7;
-            /* Match text decoration style */
-        }
-
-        .article-body a:hover::after {
-            transform: scaleX(1);
-            transform-origin: bottom left;
-        }
-
-        /* Standardize layout-text links too */
-        .layout-hero a:not(.btn-pill):not(.chip):not(.btn-cta),
-        .layout-text a:not(.btn-pill):not(.chip):not(.btn-cta),
-        .article-body a:not(.btn-pill):not(.chip):not(.btn-cta) {
-            text-decoration: underline;
-            text-underline-offset: 3px;
-            text-decoration-thickness: 1px;
-            text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
-            transition: color 0.2s ease;
-            background: none;
-            /* remove legacy gradient underlines */
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .layout-hero a:not(.btn-pill):not(.chip):hover,
-        .layout-text a:not(.btn-pill):not(.chip):hover,
-        .article-body a:not(.btn-pill):not(.chip):hover {
-            text-decoration-color: var(--text-bright);
-        }
+        /* Legacy link blocks removed for Universally Unified standard */
 
 
         /* Blockquote styling */
@@ -2529,6 +2635,11 @@
             placeholder="Type to search..." onkeyup="handleSearch(this.value)" autocomplete="off" autocorrect="off"
             autocapitalize="off" spellcheck="false" aria-autocomplete="none"></div>
     <header id="main-header" class="no-transition">
+        <div id="left-controls">
+            <div id="theme-toggle" class="icon-btn-wrapper" onclick="toggleTheme()" title="Toggle Theme">
+                <div class="icon-btn theme-toggle-icon icon-theme-mask"></div>
+            </div>
+        </div>
         <div id="brand-name" class="fill-anim" onclick="resetToHome()" role="button">SAHIB VIRDEE</div>
         <div id="nav-stack"></div>
         <div id="search-controls">
@@ -2714,6 +2825,19 @@
 
         // App Initialization
         const init = () => {
+            // --- THEME INITIALIZATION ---
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+            const initialTheme = savedTheme || (systemPrefersLight ? 'light' : 'dark');
+
+            document.documentElement.setAttribute('data-theme', initialTheme);
+
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
+                if (!localStorage.getItem('theme')) {
+                    document.documentElement.setAttribute('data-theme', e.matches ? 'light' : 'dark');
+                }
+            });
 
             setTimeout(() => document.body.classList.remove('no-transition'), 1000);
 
@@ -3336,6 +3460,20 @@
                 closeSearch();
             }
         }
+
+        function toggleTheme() {
+            haptic('pulse');
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Re-trigger analysis when switching to light mode to prevent white thumbnails
+            if (newTheme === 'light') {
+                autoDetectDarkMedia(document.body);
+            }
+        }
         function handleSearch(e) {
             if (!document.getElementById("search-overlay").classList.contains("active")) return;
             const resultsContainer = document.getElementById("search-results");
@@ -3436,7 +3574,7 @@
 
             // 404 Logic: If no content AND no children AND not personal/quotes -> 404
             if (t.length === 0 && !hasChildren && !("Personal" === e && quotesDb.length > 0)) {
-                document.getElementById("app").innerHTML = '<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn\'t exist in the database yet.</p></div>';
+                document.getElementById("app").innerHTML = `<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn't exist in the database yet.</p></div>`;
                 return;
             }
 
@@ -3565,7 +3703,7 @@
                     const extracted = extractMediaFromContent(entry.Title);
                     if (extracted) {
                         if (extracted.type === "img") {
-                            mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy"></div>`;
+                            mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy" crossorigin="anonymous"></div>`;
                         } else if (extracted.type === "yt") {
                             mediaHTML = `<div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`;
                         }
@@ -3579,22 +3717,22 @@
                 } else if (thumb && thumb.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
                     mediaHTML = `<div class="row-media"><video src="${thumb}" autoplay muted loop playsinline></video></div>`;
                 } else if (thumb) {
-                    mediaHTML = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
+                    mediaHTML = `<div class="row-media"><img src="${thumb}" loading="lazy" crossorigin="anonymous"></div>`;
                 }
             } else {
                 const extracted = extractMediaFromContent(content);
                 if (extracted) {
                     if (extracted.type === "img") {
-                        mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy"></div>`;
+                        mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy" crossorigin="anonymous"></div>`;
                     } else if (extracted.type === "video") {
                         mediaHTML = `<div class="row-media"><video src="${extracted.url}" autoplay muted loop playsinline></video></div>`;
                     } else if (extracted.type === "yt") {
-                        mediaHTML = `<div class="row-media"><img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy"></div>`;
+                        mediaHTML = `<div class="row-media"><img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy" crossorigin="anonymous"></div>`;
                     }
                 }
             }
 
-            if (!mediaHTML) {
+            if (!mediaHTML && !isTitleLink) {
                 const cleanTitle = (entry.Title || "").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1');
                 mediaHTML = `<div class="row-media placeholder"><span>${cleanTitle}</span></div>`;
             }
@@ -3654,11 +3792,11 @@
 
             // 2. Header rendering
             if (title) {
-                htmlBuffer += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:#888; --text-hover:#fff;">${title}</h2></div>`;
+                htmlBuffer += `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:var(--text-dim); --text-hover:var(--text-bright);">${title}</h2></div>`;
             }
 
             if (data.length === 0 && title && !isHome) {
-                htmlBuffer += '<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>';
+                htmlBuffer += `<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>`;
                 container.innerHTML = htmlBuffer;
                 return;
             }
@@ -3811,6 +3949,61 @@
                 if (el.classList.contains("layout-quote")) renderQuoteCard(el);
                 el.removeAttribute('data-needs-init');
             });
+
+            // 5. Auto-detect dark media for inversion in Light Mode
+            requestAnimationFrame(() => autoDetectDarkMedia(container));
+        }
+
+        async function autoDetectDarkMedia(container) {
+            if (document.documentElement.getAttribute('data-theme') !== 'light') return;
+
+            const images = container.querySelectorAll('.layout-grid img, .layout-text .media-container img');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+            // Sample size: 50x50 is plenty for darkness detection and keeps it fast
+            canvas.width = 50;
+            canvas.height = 50;
+
+            images.forEach(img => {
+                const block = img.closest('.layout-grid, .media-container');
+                if (!block || block.classList.contains('invert-media')) return;
+
+                const processImage = () => {
+                    if (img.classList.contains('analyzed')) return;
+                    try {
+                        ctx.drawImage(img, 0, 0, 50, 50);
+                        const imageData = ctx.getImageData(0, 0, 50, 50).data;
+                        let darkPixels = 0;
+                        const totalPixels = 50 * 50;
+
+                        for (let i = 0; i < imageData.length; i += 4) {
+                            const luminance = (0.2126 * imageData[i] + 0.7152 * imageData[i + 1] + 0.0722 * imageData[i + 2]);
+                            if (luminance < 50) darkPixels++;
+                        }
+
+                        if ((darkPixels / totalPixels) > 0.6) {
+                            block.classList.add('invert-media');
+                        }
+                    } catch (e) {
+                        // Fail silently but ensure the image is shown
+                    } finally {
+                        img.classList.add('analyzed');
+                    }
+                };
+
+                if (img.complete) {
+                    processImage();
+                } else {
+                    img.addEventListener('load', processImage, { once: true });
+                    img.addEventListener('error', processImage, { once: true }); // Fallback for failed loads
+                }
+            });
+
+            // Ultimate Fallback: Force show everything after 2s if analysis stalled
+            setTimeout(() => {
+                images.forEach(img => img.classList.add('analyzed'));
+            }, 2000);
         }
         function renderQuoteCard(container) {
             let quoteData;
