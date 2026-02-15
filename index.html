@@ -1208,7 +1208,8 @@
             position: relative;
         }
 
-        .row-media img {
+        .row-media img,
+        .row-media video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -1221,7 +1222,9 @@
         }
 
         @media (hover: hover) {
-            .layout-grid:hover .row-media img {
+
+            .layout-grid:hover .row-media img,
+            .layout-grid:hover .row-media video {
                 filter: grayscale(0%);
             }
         }
@@ -3573,6 +3576,8 @@
                 const thumb = getThumbnail(media);
                 if (thumb === 'GLB_VIEWER') {
                     mediaHTML = `<div class="row-media">${window.renderGLBViewer(media, true)}</div>`;
+                } else if (thumb && thumb.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+                    mediaHTML = `<div class="row-media"><video src="${thumb}" autoplay muted loop playsinline></video></div>`;
                 } else if (thumb) {
                     mediaHTML = `<div class="row-media"><img src="${thumb}" loading="lazy"></div>`;
                 }
@@ -3581,6 +3586,8 @@
                 if (extracted) {
                     if (extracted.type === "img") {
                         mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy"></div>`;
+                    } else if (extracted.type === "video") {
+                        mediaHTML = `<div class="row-media"><video src="${extracted.url}" autoplay muted loop playsinline></video></div>`;
                     } else if (extracted.type === "yt") {
                         mediaHTML = `<div class="row-media"><img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy"></div>`;
                     }
@@ -3889,7 +3896,7 @@
                 }
             });
         }
-        function getThumbnail(e) { if (!e) return null; if (e.includes("youtube.com") || e.includes("youtu.be")) { let t = e.split("v=")[1]; return t && t.includes("&") && (t = t.split("&")[0]), !t && e.includes("youtu.be") && (t = e.split("/").pop()), `https://img.youtube.com/vi/${t}/mqdefault.jpg` } return e.endsWith(".mp4") ? null : e }
+        function getThumbnail(e) { if (!e) return null; if (e.includes("youtube.com") || e.includes("youtu.be")) { let t = e.split("v=")[1]; return t && t.includes("&") && (t = t.split("&")[0]), !t && e.includes("youtu.be") && (t = e.split("/").pop()), `https://img.youtube.com/vi/${t}/mqdefault.jpg` } return e }
         function formatDate(e) { if (!e) return ""; if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`; if (8 === (e = String(e).trim()).length && !isNaN(e)) { const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8), r = new Date(t, n - 1, o, 12, 0, 0); return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}` } const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/); if (t) { const e = parseInt(t[1]), n = parseInt(t[2]), o = parseInt(t[3]); return `${o} ${new Date(e, n - 1, o, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${e}` } if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e; const n = new Date(e); return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}` }
         function updateSEO() { const e = document.getElementById("json-ld-script"); e && e.remove(); const t = document.createElement("script"); t.id = "json-ld-script", t.type = "application/ld+json"; const n = { "@context": "https://schema.org", "@type": "ProfilePage", mainEntity: { "@type": "Person", name: "Sahib Virdee", jobTitle: "Mechanical Engineering Graduate", description: "Specializing in Design and Manufacturing.", url: "https://sahibvirdee.com/", sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"] }, hasPart: db.map(e => { if (!e.Title || !e.Content) return null; return { "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork", name: e.Title, description: e.Content.substring(0, 150) + "...", url: `https://sahibvirdee.com/#${e.Page}` } }).filter(e => e) }; t.textContent = JSON.stringify(n), document.head.appendChild(t) }
         function formatSectionTitle(type) {
@@ -4251,9 +4258,9 @@
                 return { type: 'youtube', id: ytId, url: text };
             }
 
-            // Image URL
-            if (isImageURL(text)) {
-                return { type: 'image', url: text, caption: null };
+            // Video URL
+            if (text.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+                return { type: 'video', url: text, caption: null };
             }
 
             return null;
@@ -4322,6 +4329,9 @@
                             allowfullscreen>
                         </iframe>
                     </div>`;
+
+            } else if (item.type === 'video') {
+                mediaHTML = `<div class="media-container"><video src="${item.url}" autoplay muted loop playsinline style="width:100%; display:block; border-radius:var(--card-radius);"></video></div>`;
 
             } else if (item.type === 'glb') {
                 if (window.renderGLBViewer) {
@@ -4639,10 +4649,10 @@
                 return { type: 'img', url: imgMatch[0] };
             }
 
-            // Check for YouTube
-            const ytId = window.getYouTubeID(content);
-            if (ytId) {
-                return { type: 'yt', id: ytId, url: content };
+            // Check for Video
+            const videoMatch = content.match(/https?:\/\/\S+\.(?:mp4|webm|mov|ogg)/i);
+            if (videoMatch) {
+                return { type: 'video', url: videoMatch[0] };
             }
 
             return null;
@@ -4675,12 +4685,7 @@
                 return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
             }
 
-            // If it ends with .mp4, return null (video)
-            if (media.endsWith(".mp4")) {
-                return null;
-            }
-
-            // Otherwise assume it's an image URL
+            // Otherwise assume it's the original URL (image or video)
             return media;
         };
 
