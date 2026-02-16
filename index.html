@@ -1479,18 +1479,50 @@
         .media-container {
             position: relative;
             width: 100%;
+            aspect-ratio: 16/9;
+            /* Maintain structure even before load */
             max-width: none;
             margin: 0;
-            /* Unified gap-based rhythm */
             background: transparent;
-            /* Force rounding on the container itself */
             border-radius: var(--card-radius);
             overflow: hidden;
             display: block;
         }
 
+        .model-viewer-wrapper.card-preview {
+            aspect-ratio: 1.4/1;
+            /* Slightly wider portrait-friendly ratio for cards */
+            background: var(--placeholder-gradient);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        /* Soft Glow Overlay for 3D Cards */
+        .model-viewer-wrapper.card-preview::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--placeholder-hover);
+            opacity: 0;
+            transition: opacity 0.5s var(--ease);
+            z-index: 1;
+            /* Behind model (canvas is z-index auto, need to check) */
+            pointer-events: none;
+        }
+
+        .model-viewer-wrapper.card-preview canvas {
+            position: relative;
+            z-index: 2;
+            /* Sit above the glow */
+        }
+
         /* GLB Entrance Animation */
         .model-viewer-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
             opacity: 0;
             transform: scale(0.95);
             transition: opacity 1.2s var(--ease), transform 1.2s var(--ease);
@@ -3420,8 +3452,6 @@
                     const e = document.getElementById("main-header");
                     if (e) {
                         e.classList.toggle("scrolled", t > 10);
-                        // Optional: Toggle shadow only when scrolled to save paints
-                        e.style.boxShadow = t > 10 ? "0 4px 30px rgba(0, 0, 0, 0.5)" : "none";
                     }
                     ticking = false;
                 });
@@ -4087,7 +4117,207 @@
                 }
             });
         }
-        function getThumbnail(e) { if (!e) return null; if (e.includes("youtube.com") || e.includes("youtu.be")) { let t = e.split("v=")[1]; return t && t.includes("&") && (t = t.split("&")[0]), !t && e.includes("youtu.be") && (t = e.split("/").pop()), `https://img.youtube.com/vi/${t}/mqdefault.jpg` } return e }
+        function getYouTubeID(url) {
+            const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+
+        function getYouTubeThumbnail(videoId) {
+            return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        }
+
+        function extractMediaFromContent(content) {
+            if (!content) return null;
+
+            // Check for markdown-style GLB link: [GLB Model](path)
+            const glbLinkMatch = content.match(/\[GLB\s+Model\]\(([^\)]+\.glb[^\)]*)\)/i);
+            if (glbLinkMatch) {
+                const glbPath = glbLinkMatch[1].trim();
+                return { type: 'glb', url: glbPath, filename: glbPath.split('/').pop() };
+            }
+
+            // Check for GLB files (direct mentions)
+            const glbMatch = content.match(/(?:assets\/models\/)?([a-zA-Z0-9_-]+\.glb)/i);
+            if (glbMatch) {
+                const glbPath = glbMatch[0].startsWith('assets/') ? glbMatch[0] : `assets/models/${glbMatch[0]}`;
+                return { type: 'glb', url: glbPath, filename: glbMatch[1] };
+            }
+
+            // Check for images
+            const imgMatch = content.match(/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp)/i);
+            if (imgMatch) {
+                return { type: 'img', url: imgMatch[0] };
+            }
+
+            // Check for Video
+            const videoMatch = content.match(/https?:\/\/\S+\.(?:mp4|webm|mov|ogg)/i);
+            if (videoMatch) {
+                return { type: 'video', url: videoMatch[0] };
+            }
+
+            return null;
+        }
+
+        function getThumbnail(media) {
+            if (!media) return null;
+
+            // GLB support
+            if (media.match(/\.glb(?:\?.*)?$/i)) {
+                return 'GLB_VIEWER';
+            }
+
+            // YouTube handling
+            if (media.includes("youtube.com") || media.includes("youtu.be")) {
+                let videoId = getYouTubeID(media);
+                return videoId ? getYouTubeThumbnail(videoId) : media;
+            }
+
+            // Video handling
+            if (media.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+                return media;
+            }
+
+            return media;
+        }
+
+        // Expose to window for card rendering
+        window.getYouTubeID = getYouTubeID;
+        window.getYouTubeThumbnail = getYouTubeThumbnail;
+        window.extractMediaFromContent = extractMediaFromContent;
+        window.getThumbnail = getThumbnail;
+
+        // Staggered GLB initialization
+        window._glbInitQueue = [];
+        window._isProcessingGlbQueue = false;
+
+        function processGlbQueue(deadline) {
+            // RELAXED DEADLINE: Only defer if the browser is currently under heavy load.
+            // If the browser forced the callback via timeout (didTimeout), we MUST proceed to avoid blank models.
+            if (deadline && !deadline.didTimeout && deadline.timeRemaining() <= 10) {
+                window.requestIdleCallback(processGlbQueue, { timeout: 2000 });
+                return;
+            }
+
+            if (window._glbInitQueue.length === 0) {
+                window._isProcessingGlbQueue = false;
+                return;
+            }
+            window._isProcessingGlbQueue = true;
+
+            const nextItem = window._glbInitQueue.shift();
+            const { uniqueId, glbPath, isCardMode } = nextItem;
+            const container = document.getElementById(uniqueId);
+
+            if (container && window.initThreeJSViewer) {
+                if (!window._glbViewers[uniqueId]) {
+                    const viewer = window.initThreeJSViewer(container, glbPath, isCardMode);
+                    window._glbViewers[uniqueId] = viewer;
+                    new ResizeObserver(() => viewer.onResize()).observe(container);
+                }
+            }
+
+            // Defer next item even if we have time, to let browser breathe
+            if (window._glbInitQueue.length > 0) {
+                window.requestIdleCallback(processGlbQueue, { timeout: 3000 });
+            } else {
+                window._isProcessingGlbQueue = false;
+            }
+        }
+
+        // Initialize the IntersectionObserver for lazy loading
+        window._glbObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const uniqueId = entry.target.id;
+                    const glbPath = entry.target.dataset.glbPath;
+                    const isCardMode = entry.target.classList.contains('card-preview');
+
+                    // Queue the initialization
+                    window._glbInitQueue.push({ uniqueId, glbPath, isCardMode });
+                    if (!window._isProcessingGlbQueue) {
+                        window._isProcessingGlbQueue = true;
+                        if (window.requestIdleCallback) {
+                            window.requestIdleCallback(processGlbQueue);
+                        } else {
+                            setTimeout(processGlbQueue, 100);
+                        }
+                    }
+
+                    // Stop observing once queued
+                    window._glbObserver.unobserve(entry.target);
+                }
+            });
+        }, { rootMargin: '100px' }); // Load closer to viewport to save resources
+
+        // GLB Viewer Renderer
+        window.renderGLBViewer = function (glbPath, isCardMode) {
+            const uniqueId = 'viewer-' + Math.random().toString(36).substr(2, 9);
+            const html = `
+                <div class="model-viewer-wrapper ${isCardMode ? 'card-preview' : ''}" 
+                     id="${uniqueId}" 
+                     data-glb-path="${glbPath}">
+                    <canvas></canvas>
+                    ${!isCardMode ? `
+                        <button class="fs-btn" onclick="toggleFullscreen('${uniqueId}')" title="Fullscreen">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                            </svg>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+
+            // Start observing for lazy initialization
+            setTimeout(() => {
+                const container = document.getElementById(uniqueId);
+                if (container) {
+                    window._glbObserver.observe(container);
+                }
+            }, 50);
+
+            return html;
+        };
+
+        window.toggleFullscreen = function (viewerId) {
+            const wrapper = document.getElementById(viewerId);
+            if (!wrapper) return;
+            const viewer = window._glbViewers[viewerId];
+            const btn = wrapper.querySelector('.fs-btn');
+
+            if (!document.fullscreenElement) {
+                wrapper.requestFullscreen().then(() => {
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>';
+                    btn.title = 'Exit Fullscreen';
+                    if (viewer && viewer.controls) {
+                        viewer.controls.enableZoom = true;
+                        viewer.controls.minDistance = 0.2;
+                        viewer.controls.maxDistance = 100; // Let her rip
+                        viewer.controls.zoomSpeed = 0.6;
+                    }
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(() => { });
+                    }
+                    if (viewer) viewer.onResize();
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        };
+
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+                Object.values(window._glbViewers).forEach(viewer => {
+                    if (viewer.controls) viewer.controls.enableZoom = false;
+                    const btn = viewer.canvas.parentElement.querySelector('.fs-btn');
+                    if (btn) {
+                        btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>';
+                        btn.title = 'Fullscreen';
+                    }
+                });
+            }
+        });
         function formatDate(e) { if (!e) return ""; if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`; if (8 === (e = String(e).trim()).length && !isNaN(e)) { const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8), r = new Date(t, n - 1, o, 12, 0, 0); return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}` } const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/); if (t) { const e = parseInt(t[1]), n = parseInt(t[2]), o = parseInt(t[3]); return `${o} ${new Date(e, n - 1, o, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${e}` } if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e; const n = new Date(e); return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}` }
         function updateSEO() { const e = document.getElementById("json-ld-script"); e && e.remove(); const t = document.createElement("script"); t.id = "json-ld-script", t.type = "application/ld+json"; const n = { "@context": "https://schema.org", "@type": "ProfilePage", mainEntity: { "@type": "Person", name: "Sahib Virdee", jobTitle: "Mechanical Engineering Graduate", description: "Specializing in Design and Manufacturing.", url: "https://sahibvirdee.com/", sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"] }, hasPart: db.map(e => { if (!e.Title || !e.Content) return null; return { "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork", name: e.Title, description: e.Content.substring(0, 150) + "...", url: `https://sahibvirdee.com/#${e.Page}` } }).filter(e => e) }; t.textContent = JSON.stringify(n), document.head.appendChild(t) }
         function formatSectionTitle(type) {
@@ -4801,86 +5031,61 @@
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        // Store all active viewers for cleanup
+        // Global Rendering Orchestrator
         window._glbViewers = window._glbViewers || {};
+        window._glbRegistry = [];
+        window._glbLastFrameTime = 0;
+        window._glbTimeBudget = 8; // ms per frame for rendering
 
-        // YouTube Helper Functions
-        window.getYouTubeID = function (url) {
-            const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-            const match = url.match(regex);
-            return match ? match[1] : null;
-        };
+        // SCROLL THROTTLING: Pause 3D during active scroll for 60fps navigation
+        window._isGlbScrolling = false;
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            window._isGlbScrolling = true;
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                window._isGlbScrolling = false;
+            }, 150);
+        }, { passive: true });
 
-        window.getYouTubeThumbnail = function (videoId) {
-            return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-        };
+        let _glbCircularIndex = 0;
+        function globalAnimate(now) {
+            requestAnimationFrame(globalAnimate);
 
-        // Override extractMediaFromContent to support GLB
-        window.extractMediaFromContent = function (content) {
-            if (!content) return null;
+            if (window._glbRegistry.length === 0) return;
 
-            // Check for markdown-style GLB link: [GLB Model](path)
-            const glbLinkMatch = content.match(/\[GLB\s+Model\]\(([^\)]+\.glb[^\)]*)\)/i);
-            if (glbLinkMatch) {
-                const glbPath = glbLinkMatch[1].trim();
-                //  Handle both internal (assets/models/) and external (http) paths
-                return { type: 'glb', url: glbPath, filename: glbPath.split('/').pop() };
+            // Priority 1: User Navigation (Prioritize scroll smoothness above all)
+            if (window._isGlbScrolling) return;
+
+            // ADAPTIVE BUDGET: If frame took too long last time, tighten budget
+            const frameTime = now - window._glbLastFrameTime;
+            window._glbLastFrameTime = now;
+
+            // If we're dropping below 50fps (20ms), slash the 3D budget to 4ms
+            const budget = frameTime > 20 ? 4 : 8;
+
+            const startTime = performance.now();
+            const total = window._glbRegistry.length;
+
+            // PRIORITY: Render visible models first to eliminate on-screen jitter
+            const visibleViewers = [];
+            const hiddenViewers = [];
+
+            for (let i = 0; i < total; i++) {
+                const viewer = window._glbRegistry[i];
+                if (viewer.isVisible()) visibleViewers.push(viewer);
+                else hiddenViewers.push(viewer);
             }
 
-            // Check for GLB files (direct mentions)
-            const glbMatch = content.match(/(?:assets\/models\/)?([a-zA-Z0-9_-]+\.glb)/i);
-            if (glbMatch) {
-                const glbPath = glbMatch[0].startsWith('assets/') ? glbMatch[0] : `assets/models/${glbMatch[0]}`;
-                return { type: 'glb', url: glbPath, filename: glbMatch[1] };
+            const prioritized = [...visibleViewers, ...hiddenViewers];
+
+            for (let i = 0; i < prioritized.length; i++) {
+                const viewer = prioritized[i];
+                if (performance.now() - startTime > budget) break;
+                viewer.update(now);
             }
-
-            // Check for images
-            const imgMatch = content.match(/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp)/i);
-            if (imgMatch) {
-                return { type: 'img', url: imgMatch[0] };
-            }
-
-            // Check for Video
-            const videoMatch = content.match(/https?:\/\/\S+\.(?:mp4|webm|mov|ogg)/i);
-            if (videoMatch) {
-                return { type: 'video', url: videoMatch[0] };
-            }
-
-            return null;
-        };
-
-        // Override getThumbnail to handle GLB files
-        const originalGetThumbnail = window.getThumbnail;
-        window.getThumbnail = function (media) {
-            if (!media) return null;
-
-            // For GLB files, return special marker so renderRows creates viewer immediately
-            if (media.match(/\.glb(?:\?.*)?$/i)) {
-                return 'GLB_VIEWER';
-            }
-
-            // Fallback to original implementation
-            if (originalGetThumbnail) {
-                return originalGetThumbnail(media);
-            }
-
-            // YouTube handling
-            if (media.includes("youtube.com") || media.includes("youtu.be")) {
-                let videoId = media.split("v=")[1];
-                if (videoId && videoId.includes("&")) {
-                    videoId = videoId.split("&")[0];
-                }
-                if (!videoId && media.includes("youtu.be")) {
-                    videoId = media.split("/").pop();
-                }
-                return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-            }
-
-            // Otherwise assume it's the original URL (image or video)
-            return media;
-        };
-
-        // GLB viewers are now created immediately during render, no interval needed
+        }
+        requestAnimationFrame(globalAnimate);
 
         // Initialize Three.js viewer - expose to window for card previews
         window.initThreeJSViewer = function initThreeJSViewer(container, glbPath, isCardMode) {
@@ -4891,25 +5096,43 @@
             // scene.background = null; // Transparent background
 
             // Setup camera - adjust position for narrower FOV in card mode
+            // Setup camera - cache dimensions to avoid layout thrashing in rAF
+            let width = container.clientWidth || 100;
+            let height = container.clientHeight || 100;
+
             const camera = new THREE.PerspectiveCamera(
                 isCardMode ? 20 : 22,
-                container.clientWidth / container.clientHeight,
+                width / height,
                 0.1,
                 1000
             );
             // Card mode needs camera further back due to narrower FOV
             // Lower Y to 0.8 to center model vertically better (reduce gap at top)
-            camera.position.set(isCardMode ? 3 : 2, isCardMode ? 2 : 0.8, isCardMode ? 4 : 3);
+            // FIT-TO-FRAME: Pulled camera closer and raised Y slightly for better framing
+            camera.position.set(
+                isCardMode ? 2.4 : 2.0,
+                isCardMode ? 1.6 : 0.6,
+                isCardMode ? 3.2 : 5.0
+            );
+
+            // MOBILE ADAPTATION: If on phone, pull camera back to prevent "zoomed in" look
+            if (!isCardMode && window.innerWidth <= 768) {
+                camera.position.z = 7.5;
+            }
+
             camera.lookAt(0, 0, 0); // Point camera at model center
 
-            // Setup renderer with better colors
+            // Setup renderer with premium defaults
             const renderer = new THREE.WebGLRenderer({
                 canvas,
                 antialias: true,
-                alpha: true // Enable transparency so card bg shows through
+                alpha: true,
+                powerPreference: "high-performance",
+                precision: "highp"
             });
-            renderer.setSize(container.clientWidth, container.clientHeight, false); // false prevents setting inline style
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(width, height, false);
+            renderer.setPixelRatio(window.devicePixelRatio); // Full High-DPI clarity
+            renderer.setClearColor(0x000000, 0); // Guarantee alpha transparency
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.2; // Boost exposure for vivid colors
             renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -4976,7 +5199,9 @@
                 const center = box.getCenter(new THREE.Vector3());
                 const size = box.getSize(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z);
-                const scale = 2.0 / maxDim;
+
+                // FIT-TO-FRAME: Increase base scale for more presence
+                const scale = (isCardMode ? 2.4 : 2.2) / maxDim;
 
                 model.scale.multiplyScalar(scale);
                 model.position.sub(center.multiplyScalar(scale));
@@ -4994,162 +5219,82 @@
 
             });
 
-            // Animation loop
-            function animate() {
-                requestAnimationFrame(animate);
+            // Visibility tracking for rendering optimization
+            let isVisible = true;
+            const visibilityObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    isVisible = entry.isIntersecting;
+                });
+            }, { threshold: 0.05 });
+            visibilityObserver.observe(container);
 
-                // Card mode: rotate the model group for proper center rotation
-                if (isCardMode && model) {
-                    // The model is inside modelGroup, which is in the scene
-                    // So model.parent is modelGroup
-                    const modelGroup = model.parent;
-                    if (modelGroup && modelGroup.type === 'Group') {
-                        autoRotateAngle += 0.0044; // ~15deg/sec
-                        modelGroup.rotation.y = autoRotateAngle;
-                    }
-                }
+            // Viewer logic moved into an update function for the orchestrator
+            let lastFrameTime = 0;
+            const fpsLimit = isCardMode ? 30 : 60;
+            const frameInterval = 1000 / fpsLimit;
 
-                if (controls) {
-                    controls.update();
-                }
-
-                renderer.render(scene, camera);
-            }
-            animate();
-
-            // Handle resize
-            function onResize() {
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight, false); // false prevents setting inline style
-            }
-            window.addEventListener('resize', onResize);
-
-            // Store viewer data for cleanup
-            return {
+            const viewerInstance = {
                 scene,
                 camera,
                 renderer,
                 controls,
                 canvas,
-                onResize,
+                onResize: () => {
+                    const newW = container.clientWidth;
+                    const newH = container.clientHeight;
+                    if (newW === width && newH === height) return;
+                    width = newW;
+                    height = newH;
+                    camera.aspect = width / height;
+                    camera.updateProjectionMatrix();
+                    renderer.setPixelRatio(window.devicePixelRatio); // Uncapped High-DPI clarity
+                    renderer.setClearColor(0x000000, 0); // Guarantee alpha transparency
+                },
+                update: (now) => {
+                    if (!isVisible) return false;
+
+                    // Stabilized Delta: Prevents "teleporting" jumps during heavy load
+                    let delta = lastFrameTime ? (now - lastFrameTime) : 16.6;
+                    lastFrameTime = now;
+
+                    // Cap delta at 50ms to prevent huge jumps if browser stutters
+                    delta = Math.min(delta, 50);
+
+                    // PREMIER MOTION: Graceful, slower rotation (0.005 base)
+                    const rotationStep = (Math.min(delta, 64) / 16.6) * 0.0034;
+
+                    if (isCardMode && model) {
+                        const modelGroup = model.parent;
+                        if (modelGroup && modelGroup.type === 'Group') {
+                            autoRotateAngle += rotationStep;
+                            modelGroup.rotation.y = autoRotateAngle;
+                        }
+                    }
+
+                    if (controls) {
+                        // Match OrbitControls autoRotate speed to the slowed standard
+                        controls.autoRotateSpeed = 0.8 * (Math.min(delta, 64) / 16.6);
+                        controls.update();
+                    }
+                    renderer.render(scene, camera);
+                    return true;
+                },
+                isVisible: () => isVisible,
+                cleanup: () => {
+                    visibilityObserver.disconnect();
+                    window._glbRegistry = window._glbRegistry.filter(v => v !== viewerInstance);
+                    renderer.dispose();
+                    scene.clear();
+                },
                 model: () => model
             };
+
+            // Register with the global orchestrator
+            window._glbRegistry.push(viewerInstance);
+
+            return viewerInstance;
         }
 
-        // GLB Viewer Renderer
-        window.renderGLBViewer = function (glbPath, isCardMode) {
-            const uniqueId = 'viewer-' + Math.random().toString(36).substr(2, 9);
-
-            // Create HTML
-            const html = `
-                <div class="model-viewer-wrapper ${isCardMode ? 'card-preview' : ''}" id="${uniqueId}">
-                    <canvas></canvas>
-                    ${!isCardMode ? `
-                        <button class="fs-btn" onclick="toggleFullscreen('${uniqueId}')" title="Fullscreen">
-                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-                            </svg>
-                        </button>
-                    ` : ''}
-                </div>
-            `;
-
-            // Initialize viewer after a short delay to ensure DOM is ready
-            setTimeout(() => {
-                const container = document.getElementById(uniqueId);
-                if (container) {
-                    const viewer = initThreeJSViewer(container, glbPath, isCardMode);
-                    window._glbViewers[uniqueId] = viewer;
-
-                    // Robust Resize Handling (fixes fullscreen exit gap)
-                    const resizeObserver = new ResizeObserver(() => {
-                        viewer.onResize();
-                    });
-                    resizeObserver.observe(container);
-                }
-            }, 100);
-
-            return html;
-        };
-
-        // Fullscreen Toggle with Mobile Landscape Support
-        window.toggleFullscreen = function (viewerId) {
-            const wrapper = document.getElementById(viewerId);
-            if (!wrapper) return;
-
-            const viewer = window._glbViewers[viewerId];
-            const btn = wrapper.querySelector('.fs-btn');
-
-            // Track fullscreen toggle - extract model name from viewer or wrapper
-            const canvas = wrapper.querySelector('canvas');
-            let modelName = 'unknown';
-            if (canvas && canvas.dataset && canvas.dataset.model) {
-                modelName = canvas.dataset.model;
-            }
-
-            if (!document.fullscreenElement) {
-                trackEvent('model-fullscreen', { model: modelName, action: 'enter' });
-
-                wrapper.requestFullscreen().then(() => {
-                    btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>';
-                    btn.title = 'Exit Fullscreen';
-
-                    // Enable zoom in fullscreen with close-up capability
-                    if (viewer && viewer.controls) {
-                        viewer.controls.enableZoom = true;
-                        viewer.controls.minDistance = 0.2; // Allow very close zoom for details
-                        viewer.controls.maxDistance = 20; // Allow zooming far out
-
-                        // Faster zoom speed (fewer scrolls needed)
-                        viewer.controls.zoomSpeed = 0.6;
-                    }
-
-                    // Lock to landscape on mobile devices
-                    if (screen.orientation && screen.orientation.lock) {
-                        screen.orientation.lock('landscape').catch(err => {
-                            console.log('Orientation lock not supported or failed:', err);
-                        });
-                    }
-
-                    // Resize renderer for fullscreen
-                    if (viewer) {
-                        viewer.onResize();
-                    }
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        };
-
-        // Listen for fullscreen changes
-        document.addEventListener('fullscreenchange', function () {
-            if (!document.fullscreenElement) {
-                // Unlock orientation when exiting fullscreen
-                if (screen.orientation && screen.orientation.unlock) {
-                    screen.orientation.unlock();
-                }
-
-                // Disable zoom and restore button
-                Object.values(window._glbViewers).forEach(viewer => {
-                    if (viewer.controls) {
-                        viewer.controls.enableZoom = false;
-                    }
-
-                    const btn = viewer.canvas.parentElement.querySelector('.fs-btn');
-                    if (btn) {
-                        btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>';
-                        btn.title = 'Fullscreen';
-                    }
-
-                    // Force resize back to normal dimensions
-                    // We need to wait a tick for the browser to restore the DOM layout
-                    requestAnimationFrame(() => {
-                        viewer.onResize();
-                    });
-                });
-            }
-        });
     </script>
 </body>
 
