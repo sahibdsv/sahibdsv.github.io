@@ -1295,15 +1295,18 @@
         .layout-grid h3.fill-anim {
             font-size: 20px;
             margin: 0;
-            padding: 12px 14px 4px 14px;
-            /* Internal content padding */
+            padding: 0;
+            /* Padding managed by .card-info */
             display: flex;
             align-items: center;
             gap: var(--space-xs);
             --text-base: var(--text-dim);
             --text-hover: var(--text-bright);
             font-weight: 600;
-            line-height: 1.2;
+            line-height: 1.1;
+            /* Root Fix: Reduced from 1.2 to minimize font-internal asymmetry */
+            transform: translateY(-1px);
+            /* Root Fix: Visual center compensation for Jost font metrics */
         }
 
         /* Category-Specific Color Overrides for Card Titles */
@@ -1337,13 +1340,24 @@
             margin: 0;
         }
 
+        .card-info {
+            padding: 12px 14px;
+            /* Standardized mathematical equality */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+
         .meta-row {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
             align-items: center;
-            padding: 0 14px 14px 14px;
-            /* Internal content padding */
+            padding: 0;
+            /* Padding managed by .card-info parent */
             margin-top: auto;
             /* Push to bottom of card */
         }
@@ -2699,39 +2713,51 @@
         <div class="grid-container section skeleton-visible">
             <div class="layout-grid">
                 <div class="sk-img" style="border-radius: var(--media-radius);"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
+                <div class="card-info">
+                    <div class="sk-line title"></div>
+                    <div class="sk-line text"></div>
+                    <div class="sk-line text short"></div>
+                </div>
             </div>
             <div class="layout-grid">
                 <div class="sk-img" style="border-radius: var(--media-radius);"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
+                <div class="card-info">
+                    <div class="sk-line title"></div>
+                    <div class="sk-line text"></div>
+                    <div class="sk-line text short"></div>
+                </div>
             </div>
             <div class="layout-grid">
                 <div class="sk-img" style="border-radius: var(--media-radius);"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
+                <div class="card-info">
+                    <div class="sk-line title"></div>
+                    <div class="sk-line text"></div>
+                    <div class="sk-line text short"></div>
+                </div>
             </div>
             <div class="layout-grid">
                 <div class="sk-img" style="border-radius: var(--media-radius);"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
+                <div class="card-info">
+                    <div class="sk-line title"></div>
+                    <div class="sk-line text"></div>
+                    <div class="sk-line text short"></div>
+                </div>
             </div>
             <div class="layout-grid">
                 <div class="sk-img" style="border-radius: var(--media-radius);"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
+                <div class="card-info">
+                    <div class="sk-line title"></div>
+                    <div class="sk-line text"></div>
+                    <div class="sk-line text short"></div>
+                </div>
             </div>
             <div class="layout-grid">
                 <div class="sk-img" style="border-radius: var(--media-radius);"></div>
-                <div class="sk-line title"></div>
-                <div class="sk-line text"></div>
-                <div class="sk-line text short"></div>
+                <div class="card-info">
+                    <div class="sk-line title"></div>
+                    <div class="sk-line text"></div>
+                    <div class="sk-line text short"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -3826,8 +3852,10 @@
                 <div class="layout-grid clickable-block ${categoryClass} ${!media ? "has-placeholder" : ""}" 
                      data-link="${finalLink}" data-target="${linkTarget}">
                     ${mediaHTML}
-                    ${displayTitle}
-                    ${metaRowHTML}
+                    <div class="card-info">
+                        ${displayTitle}
+                        ${metaRowHTML}
+                    </div>
                 </div>`;
         };
 
