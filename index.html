@@ -3532,6 +3532,14 @@
 
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
+
+            // SYNC GLB: Update clear colors for all active viewers to prevent flicker during theme changes
+            if (window._glbViewers) {
+                const clearColor = newTheme === 'light' ? 0xffffff : 0x000000;
+                Object.values(window._glbViewers).forEach(viewer => {
+                    if (viewer.renderer) viewer.renderer.setClearColor(clearColor, 0);
+                });
+            }
         }
         function handleSearch(e) {
             if (!document.getElementById("search-overlay").classList.contains("active")) return;
@@ -4313,15 +4321,19 @@
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) {
                 if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
-                Object.values(window._glbViewers).forEach(viewer => {
-                    if (viewer.controls) viewer.controls.enableZoom = false;
-                    const btn = viewer.canvas.parentElement.querySelector('.fs-btn');
-                    if (btn) {
-                        btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>';
-                        btn.title = 'Fullscreen';
-                    }
-                    if (viewer.onResize) viewer.onResize();
-                });
+
+                // STABILIZATION: Delay resize on exit to allow browser layout to settle (especially on mobile)
+                setTimeout(() => {
+                    Object.values(window._glbViewers).forEach(viewer => {
+                        if (viewer.controls) viewer.controls.enableZoom = false;
+                        const btn = viewer.canvas.parentElement?.querySelector('.fs-btn');
+                        if (btn) {
+                            btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>';
+                            btn.title = 'Fullscreen';
+                        }
+                        if (viewer.onResize) viewer.onResize();
+                    });
+                }, 50); // 50ms is usually enough for the layout swap to settle
             }
         });
 
@@ -5150,22 +5162,14 @@
             let height = container.clientHeight || 100;
 
             const camera = new THREE.PerspectiveCamera(
-                isCardMode ? 20 : 22,
+                15, // CAD-Precision: Low FOV (Telephoto) eliminated parallax for an orthographic look
                 width / height,
-                0.1,
+                0.01, // Near-Plane Precision: Prevents clipping on heroic close-ups
                 1000
             );
             // UNIFIED CAMERA: Enforce exact same perspective for Cards and Article
             // If user says Cards are perfect, we mirror that settings 1:1
             camera.position.set(2.4, 1.6, 2.8); // Standard "Perfect" Card Angle
-
-            // MOBILE ADAPTATION: Split logic based on user feedback
-            // Card: Needs to be much closer (2.5) to fill the small grid frame
-            // Article: Users liked 4.0, so we keep that "Good" setting
-            if (window.innerWidth <= 768) {
-                camera.position.z = isCardMode ? 2.5 : 4.0;
-            }
-
 
             camera.lookAt(0, 0, 0); // Point camera at model center
 
@@ -5180,7 +5184,9 @@
             renderer.setSize(width, height, false);
             // Limit pixel ratio to 3.0 to prevent internal browser throttling on ultra-high-density screens
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3.0));
-            renderer.setClearColor(0x000000, 0); // Guarantee alpha transparency
+            // THEME-AWARE STABILITY: Sync clear color with current theme to eliminate contrast flicker (especially in light mode)
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            renderer.setClearColor(isLight ? 0xffffff : 0x000000, 0);
             renderer.shadowMap.enabled = true; // Enable Shadows for depth
             renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -5329,22 +5335,37 @@
                 canvas,
                 fitStage: () => {
                     if (!model) return;
-                    const box = new THREE.Box3().setFromObject(model);
-                    const size = box.getSize(new THREE.Vector3());
 
+                    // Root Fix: Use Bounding Sphere instead of Box3 (AABB)
+                    // Bounding Sphere radius is rotationally invariant, eliminating "breathing".
+                    if (!viewerInstance._modelRadius) {
+                        const box = new THREE.Box3().setFromObject(model);
+                        const sphere = box.getBoundingSphere(new THREE.Sphere());
+                        viewerInstance._modelRadius = sphere.radius;
+                    }
+
+                    const radius = viewerInstance._modelRadius;
                     const vFOV = camera.fov * (Math.PI / 180);
                     const hFOV = 2 * Math.atan(Math.tan(vFOV / 2) * camera.aspect);
 
-                    const distVertical = (size.y / 2) / Math.tan(vFOV / 2);
-                    const distHorizontal = (Math.max(size.x, size.z) / 2) / Math.tan(hFOV / 2);
+                    // BOTTLENECK-BASED SAFETY (Option A):
+                    // 1. Find the "Boss Bottleneck" - the axis requiring the most distance for a 100% fit.
+                    // 2. Start from that safety point and zoom in exactly 15% for consistent heroics.
+                    const distVertical = radius / Math.tan(vFOV / 2);
+                    const distHorizontal = radius / Math.tan(hFOV / 2);
 
-                    let cameraDist = Math.max(distVertical, distHorizontal);
-                    cameraDist *= 1.1; // 10% margin
+                    const multiplier = isCardMode ? 0.85 : 0.65;
+                    const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
+
+                    // VISUAL CENTER DISPLACEMENT (Y-Shift):
+                    // Pointing slightly below the origin physically lifts the model's mass
+                    // UP into the visual center of the 4:3 frame for perfect balance.
+                    const yOffset = -radius * 0.1;
 
                     const dir = new THREE.Vector3(2.4, 1.6, 2.8).normalize();
                     camera.position.copy(dir.multiplyScalar(cameraDist));
-                    camera.lookAt(0, 0, 0);
-                    if (controls) controls.target.set(0, 0, 0);
+                    camera.lookAt(0, yOffset, 0);
+                    if (controls) controls.target.set(0, yOffset, 0);
                 },
                 onResize: () => {
                     const newW = container.clientWidth;
