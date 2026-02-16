@@ -4348,8 +4348,15 @@
                         btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>';
                         btn.title = 'Fullscreen';
                     }
+                    if (viewer.onResize) viewer.onResize();
                 });
             }
+        });
+
+        window.addEventListener('resize', () => {
+            Object.values(window._glbViewers).forEach(viewer => {
+                if (viewer.onResize) viewer.onResize();
+            });
         });
         function formatDate(e) { if (!e) return ""; if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`; if (8 === (e = String(e).trim()).length && !isNaN(e)) { const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8), r = new Date(t, n - 1, o, 12, 0, 0); return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}` } const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/); if (t) { const e = parseInt(t[1]), n = parseInt(t[2]), o = parseInt(t[3]); return `${o} ${new Date(e, n - 1, o, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${e}` } if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e; const n = new Date(e); return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}` }
         function updateSEO() { const e = document.getElementById("json-ld-script"); e && e.remove(); const t = document.createElement("script"); t.id = "json-ld-script", t.type = "application/ld+json"; const n = { "@context": "https://schema.org", "@type": "ProfilePage", mainEntity: { "@type": "Person", name: "Sahib Virdee", jobTitle: "Mechanical Engineering Graduate", description: "Specializing in Design and Manufacturing.", url: "https://sahibvirdee.com/", sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"] }, hasPart: db.map(e => { if (!e.Title || !e.Content) return null; return { "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork", name: e.Title, description: e.Content.substring(0, 150) + "...", url: `https://sahibvirdee.com/#${e.Page}` } }).filter(e => e) }; t.textContent = JSON.stringify(n), document.head.appendChild(t) }
@@ -5247,25 +5254,24 @@
             const loader = window._sharedGLTFLoader;
 
             let model = null;
-            let autoRotateAngle = 0;
+            let autoRotateAngle = Math.PI; // Start at 180deg to face "Front" from CAD
 
             loader.load(glbPath, (gltf) => {
                 model = gltf.scene;
 
-                // ORIENTATION CORRECTION: SolidWorks/others often export with Z-up
-                // If filename contains "-z-up", correct it to Three.js Y-up
+                // ORIENTATION CORRECTION
                 if (glbPath.toLowerCase().includes('-z-up')) {
                     model.rotation.x = -Math.PI / 2;
-                    model.updateMatrixWorld(); // Ensure bounding box below is accurate
+                    model.updateMatrixWorld();
                 }
 
-                // Center and scale model
+                // 1. CENTER MODEL: Calculate true geometric center and move model there
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
                 const size = box.getSize(new THREE.Vector3());
+                model.position.sub(center); // Move mesh so its center is at (0,0,0)
 
-                // TEXTURE FILTERING: The #1 Fix for "Fuzzy at distance"
-                // Force max anisotropy on all textures to keep them sharp at oblique angles
+                // 2. TEXTURE FILTERING (Keep it sharp)
                 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
                 model.traverse((node) => {
                     if (node.isMesh) {
@@ -5275,16 +5281,10 @@
                     }
                 });
 
-                const maxDim = Math.max(size.x, size.y, size.z);
+                // 3. AUTO-FRAMING (Axis-Aware "Perfect Fit")
+                if (viewerInstance) viewerInstance.fitStage();
 
-                // UNIFIED SCALE: Absolutely identical scale logic for both modes
-                // If Card (2.4) is perfect, Article gets 2.4 too.
-                const scale = 2.4 / maxDim;
-                model.scale.set(scale, scale, scale);
-
-                model.position.sub(center.multiplyScalar(scale));
-
-                // Wrap model in a group for proper rotation pivot
+                // Wrap model in a group for rotation
                 const modelGroup = new THREE.Group();
                 modelGroup.add(model);
                 scene.add(modelGroup);
@@ -5320,17 +5320,42 @@
                 renderer,
                 controls,
                 canvas,
+                fitStage: () => {
+                    if (!model) return;
+                    const box = new THREE.Box3().setFromObject(model);
+                    const size = box.getSize(new THREE.Vector3());
+
+                    const vFOV = camera.fov * (Math.PI / 180);
+                    const hFOV = 2 * Math.atan(Math.tan(vFOV / 2) * camera.aspect);
+
+                    const distVertical = (size.y / 2) / Math.tan(vFOV / 2);
+                    const distHorizontal = (Math.max(size.x, size.z) / 2) / Math.tan(hFOV / 2);
+
+                    let cameraDist = Math.max(distVertical, distHorizontal);
+                    cameraDist *= 1.1; // 10% margin
+
+                    const dir = new THREE.Vector3(2.4, 1.6, 2.8).normalize();
+                    camera.position.copy(dir.multiplyScalar(cameraDist));
+                    camera.lookAt(0, 0, 0);
+                    if (controls) controls.target.set(0, 0, 0);
+                },
                 onResize: () => {
                     const newW = container.clientWidth;
                     const newH = container.clientHeight;
-                    if (newW === width && newH === height) return;
+                    // If height is 0 (container not yet in DOM or hidden), skip to avoid NaN
+                    if (newH === 0) return;
+
                     width = newW;
                     height = newH;
                     camera.aspect = width / height;
                     camera.updateProjectionMatrix();
-                    // Keep ratio clamped to 3.0 max to avoid silent GPU downscaling
+
+                    // FIXED: Critical resolution update for Fullscreen/Resize
+                    renderer.setSize(width, height, false);
                     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3.0));
-                    renderer.setClearColor(0x000000, 0); // Guarantee alpha transparency
+
+                    // RE-FRAME: Ensure model still fits in the new aspect ratio
+                    viewerInstance.fitStage();
                 },
                 update: (now) => {
                     if (!isVisible) return false;
