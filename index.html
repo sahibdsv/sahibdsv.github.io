@@ -5047,6 +5047,8 @@
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
 
         // Global Rendering Orchestrator
         window._glbViewers = window._glbViewers || {};
@@ -5149,21 +5151,37 @@
             // Limit pixel ratio to 3.0 to prevent internal browser throttling on ultra-high-density screens
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3.0));
             renderer.setClearColor(0x000000, 0); // Guarantee alpha transparency
+            renderer.shadowMap.enabled = true; // Enable Shadows for depth
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2; // Boost exposure for vivid colors
+            renderer.toneMappingExposure = 0.9; // Slightly reduced for richer colors
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-            // Lighting for vivid colors
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            // REALISTIC LIGHTING (PBR)
+            // Use RoomEnvironment to provide detailed reflections for metals/plastics
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            scene.environment = pmremGenerator.fromScene(new RoomEnvironment()).texture;
+            pmremGenerator.dispose(); // Clean up
+
+            // Studio Lighting Setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // Reduced for contrast
             scene.add(ambientLight);
 
-            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
-            directionalLight1.position.set(5, 5, 5);
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.2); // Key Light
+            directionalLight1.position.set(2, 5, 5);
+            directionalLight1.castShadow = true;
+            directionalLight1.shadow.mapSize.width = 1024;
+            directionalLight1.shadow.mapSize.height = 1024;
+            directionalLight1.shadow.normalBias = 0.05; // Fix shadow acne on curved surfaces
             scene.add(directionalLight1);
 
-            const directionalLight2 = new THREE.DirectionalLight(0x88ccff, 0.6);
+            // Rim Light (Cool Blue)
+            const directionalLight2 = new THREE.DirectionalLight(0xddeeff, 0.8);
             directionalLight2.position.set(-5, 3, -5);
             scene.add(directionalLight2);
+
+            // LOCAL INTERACTION STATE: Track interaction per-viewer to pause efficiently
+            let isInteracting = false;
 
             // Setup controls (only for interactive mode)
             let controls = null;
@@ -5177,29 +5195,27 @@
                 controls.autoRotate = false; // DISABLE ORBIT AUTO-ROTATE (We will do it manually)
                 controls.autoRotateSpeed = 0; // Prevent conflict
 
+
+
                 // Stop auto-rotation instantly on interaction
-                const stopAutoRotate = () => {
-                    if (controls) {
-                        controls.autoRotate = false;
-                        clearTimeout(autoRotateTimeout);
-                    }
-                };
-
-                canvas.addEventListener('mousedown', stopAutoRotate);
-                canvas.addEventListener('touchstart', stopAutoRotate);
-
-                // Resume auto-rotation 5 seconds after user stops interacting
                 const resumeAutoRotate = () => {
-                    clearTimeout(autoRotateTimeout);
+                    if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
                     autoRotateTimeout = setTimeout(() => {
-                        if (controls) {
-                            controls.autoRotate = true;
-                        }
-                    }, 5000);
+                        isInteracting = false;
+                        if (controls) controls.autoRotate = false; // Keep manual
+                    }, 5000); // 5s Pause
                 };
 
-                canvas.addEventListener('mouseup', resumeAutoRotate);
-                canvas.addEventListener('touchend', resumeAutoRotate);
+                // PRECISE INTERACTION TRACKING via OrbitControls events
+                controls.addEventListener('start', () => {
+                    isInteracting = true;
+                    if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
+                });
+
+                controls.addEventListener('end', () => {
+                    resumeAutoRotate();
+                });
+
             }
 
             // Load model
@@ -5310,7 +5326,10 @@
                             // Simple: Always rotate unless manual override logic (which we have below)
                             // But wait, orbit controls handles user interaction state.
                             // Let's rely on our manual flag:
-                            if (window._isGlbInteracting !== true) {
+                            // MANUAL ROTATION FOR ARTICLE MODE
+                            // Only rotate if user isn't interacting
+                            // Access 'isInteracting' from the closure scope we defined above
+                            if (!isInteracting) {
                                 autoRotateAngle += rotationStep;
                                 modelGroup.rotation.y = autoRotateAngle;
                             }
