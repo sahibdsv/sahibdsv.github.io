@@ -5263,6 +5263,7 @@
                 if (glbPath.toLowerCase().includes('-z-up')) {
                     model.rotation.x = -Math.PI / 2;
                     model.updateMatrixWorld();
+                    autoRotateAngle = 0; // Reset starting angle for Z-up models
                 }
 
                 // 1. CENTER MODEL: Calculate true geometric center and move model there
