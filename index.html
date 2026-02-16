@@ -5252,6 +5252,13 @@
             loader.load(glbPath, (gltf) => {
                 model = gltf.scene;
 
+                // ORIENTATION CORRECTION: SolidWorks/others often export with Z-up
+                // If filename contains "-z-up", correct it to Three.js Y-up
+                if (glbPath.toLowerCase().includes('-z-up')) {
+                    model.rotation.x = -Math.PI / 2;
+                    model.updateMatrixWorld(); // Ensure bounding box below is accurate
+                }
+
                 // Center and scale model
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
