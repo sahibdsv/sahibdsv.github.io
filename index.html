@@ -5154,7 +5154,7 @@
             renderer.shadowMap.enabled = true; // Enable Shadows for depth
             renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 0.9; // Slightly reduced for richer colors
+            renderer.toneMappingExposure = 0.6; // Significantly reduced to prevent white blowout
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
             // REALISTIC LIGHTING (PBR)
@@ -5164,10 +5164,10 @@
             pmremGenerator.dispose(); // Clean up
 
             // Studio Lighting Setup
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // Reduced for contrast
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Soft ambient
             scene.add(ambientLight);
 
-            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.2); // Key Light
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8); // Key Light (Soft)
             directionalLight1.position.set(2, 5, 5);
             directionalLight1.castShadow = true;
             directionalLight1.shadow.mapSize.width = 1024;
@@ -5176,7 +5176,7 @@
             scene.add(directionalLight1);
 
             // Rim Light (Cool Blue)
-            const directionalLight2 = new THREE.DirectionalLight(0xddeeff, 0.8);
+            const directionalLight2 = new THREE.DirectionalLight(0xddeeff, 0.5);
             directionalLight2.position.set(-5, 3, -5);
             scene.add(directionalLight2);
 
