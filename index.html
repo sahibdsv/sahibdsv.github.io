@@ -1359,7 +1359,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: grayscale(100%);
+            /* grayscale(100%) removed for consistency with GLB */
             transition: filter 0.6s var(--ease), opacity 0.4s var(--ease);
             will-change: filter, opacity;
             transform: translateZ(0);
@@ -1367,12 +1367,12 @@
             -webkit-font-smoothing: subpixel-antialiased;
         }
 
-        /* Anti-flash: hide and grayscale images in Light Mode until analyzed
+        /* Anti-flash: hide images in Light Mode until analyzed
            Using 0.01 opacity instead of 0 ensures skeletons remain visible if analysis hangs. */
         :root[data-theme="light"] .layout-grid img:not(.analyzed),
         :root[data-theme="light"] .layout-text .media-container img:not(.analyzed) {
             opacity: 0.01 !important;
-            filter: grayscale(100%) !important;
+            /* grayscale(100%) removed */
             transition: none !important;
         }
 
@@ -1382,25 +1382,23 @@
         }
 
         @media (hover: hover) {
-
-            .layout-grid:hover .row-media img,
-            .layout-grid:hover .row-media video {
-                filter: grayscale(0%);
-            }
+            /* Hover grayscale logic removed */
         }
 
         /* Smart Image Inversion for Dark Media in Light Mode */
         :root[data-theme="light"] .layout-grid.invert-media .row-media img,
         :root[data-theme="light"] .layout-text .media-container.invert-media img {
             /* Flip lightness (Black->White) but rotate hue back to preserve natural colors */
-            filter: grayscale(100%) invert(1) hue-rotate(180deg) brightness(1.1);
+            /* Grayscale removed to preserve color during inversion */
+            filter: invert(1) hue-rotate(180deg) brightness(1.1);
             transition: filter 0.6s var(--ease), opacity 0.4s var(--ease);
         }
 
         :root[data-theme="light"] .layout-grid.invert-media:hover .row-media img,
         :root[data-theme="light"] .layout-text .media-container.invert-media:hover img {
             /* Sticky Lightness: Keep the background White, but restore hues/saturation */
-            filter: grayscale(0%) invert(1) hue-rotate(180deg) brightness(1.1);
+            /* filter: grayscale(0%) removed as it's now the default */
+            filter: invert(1) hue-rotate(180deg) brightness(1.1);
         }
 
         /* Placeholder thumbnails for cards without images */
@@ -3549,7 +3547,13 @@
                 if (app) app.style.display = "none";
                 return;
             }
-            const t = e.toLowerCase(), n = db.filter(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t));
+            const t = e.toLowerCase();
+            if (t === "clear cache") {
+                localStorage.removeItem(CACHE_KEY);
+                location.reload();
+                return;
+            }
+            const n = db.filter(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t));
             resumeDb.some(e => e.Title && e.Title.toLowerCase().includes(t) || e.Content && e.Content.toLowerCase().includes(t) || e.Tags && e.Tags.toLowerCase().includes(t)) && !n.find(e => "Professional/Resume" === e.Page) && n.push(db.find(e => "Professional/Resume" === e.Page));
 
             if (resultsContainer) {
@@ -4437,7 +4441,13 @@
         function RenderResumeEntry(entry) {
             let role = entry.Title || "";
             let company = "";
-            if (role.includes("|")) {
+
+            // Natural Language Parsing for Title: "Role @ Company" or "Role at Company"
+            const companyMatch = role.match(/^(.*?)\s+(@|at)\s+(.*)$/i);
+            if (companyMatch) {
+                role = companyMatch[1].trim();
+                company = companyMatch[3].trim();
+            } else if (role.includes("|")) {
                 const parts = role.split("|");
                 role = parts[0].trim();
                 company = parts[1].trim();
@@ -4457,11 +4467,26 @@
                     if (tag.match(/[A-Za-z]{3,}\s+\d{4}/) || tag.toLowerCase().includes("present")) {
                         return { type: "date", html: safeHTML(tag) };
                     }
-                    // Detect markdown-style links [Label](URL)
-                    const linkMatch = tag.match(/^\[(.*?)\]\((.*?)\)$/);
-                    if (linkMatch) {
-                        const label = linkMatch[1];
-                        const url = linkMatch[2];
+                    // Detect location shorthand: @ Toronto (URL)
+                    const locMatch = tag.match(/^@\s*(.*)$/);
+                    if (locMatch) {
+                        const content = locMatch[1].trim();
+                        const linkMatch = content.match(/^\[(.*?)\]\((.*?)\)$/);
+                        if (linkMatch) {
+                            const label = linkMatch[1];
+                            const url = linkMatch[2];
+                            return {
+                                type: "loc",
+                                html: `<a href="${url}" target="_blank" style="text-decoration:none; display:flex; align-items:center;">${'<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(label)}</a>`
+                            };
+                        }
+                    }
+
+                    // Original MD Link check
+                    const linkMatchRaw = tag.match(/^\[(.*?)\]\((.*?)\)$/);
+                    if (linkMatchRaw) {
+                        const label = linkMatchRaw[1];
+                        const url = linkMatchRaw[2];
                         const isMap = /maps\.app\.goo\.gl|google\.com\/maps/i.test(url);
                         const icon = isMap ?
                             '<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' :
@@ -4561,42 +4586,40 @@
                 lines = lines.slice(0, -1); // Remove caption line from processing
             }
 
-            // Check if this is a gallery (comma-separated items)
-            if (lines.length === 1 && lines[0].includes(',')) {
-                const parts = lines[0].split(',').map(p => p.trim());
+            // Check if this is a gallery (comma-separated items or Album: prefix)
+            const firstLine = lines[0];
+            const albumMatch = firstLine.match(/^(?:Album|Gallery|Set):\s*(.+)$/i);
+            const contentLine = albumMatch ? albumMatch[1] : firstLine;
 
-                // Parse every item in the list
+            if (lines.length === 1 && (contentLine.includes(',') || albumMatch)) {
+                const parts = contentLine.split(',').map(p => p.trim());
                 const mediaItems = parts.map(part => detectMediaItem(part));
-
-                // If ALL items are valid media, treat as gallery
                 const allValid = mediaItems.every(item => item !== null);
 
-                if (allValid && mediaItems.length > 1) {
+                if ((allValid && mediaItems.length > 1) || albumMatch) {
                     return {
                         type: 'gallery',
-                        items: mediaItems, // Now contains mixed types (image, youtube, glb)
+                        items: mediaItems.filter(i => i !== null),
                         sharedCaption: sharedCaption
                     };
                 }
             }
 
-            // Check if it's a single media line
+            // Zero Syntax: Solo Media Line (Just a URL/Path)
             if (lines.length === 1) {
                 const media = detectMediaItem(lines[0]);
                 if (media) {
-                    // Attach shared caption if present and not already captioned
-                    if (sharedCaption && !media.caption) {
-                        media.caption = sharedCaption;
-                    }
+                    if (sharedCaption && !media.caption) media.caption = sharedCaption;
                     return media;
                 }
             }
 
-            // 4. CTA Button: [button]: Text | URL (Group consecutive)
+            // Zero Syntax: CTA Buttons (Text | URL)
             const buttonLines = [];
             let i = 0;
             while (i < lines.length) {
-                const buttonMatch = lines[i].match(/^\[button\]:\s*(.+?)\s*\|\s*(.+)$/i);
+                // Check for natural [Label | URL] or legacy [button]: syntax
+                const buttonMatch = lines[i].match(/^(?:\[button\]:\s*)?(.+?)\s*\|\s*(https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+)$/i);
                 if (buttonMatch) {
                     buttonLines.push({
                         text: buttonMatch[1].trim(),
@@ -4609,40 +4632,47 @@
             }
 
             if (buttonLines.length > 0) {
-                // If the block contains only buttons, return as buttons type
                 if (i === lines.length) {
-                    return {
-                        type: 'buttons',
-                        items: buttonLines
-                    };
+                    return { type: 'buttons', items: buttonLines };
                 }
-                // If it's mixed with other things, we fall through to text processing
-                // or we could split the block here, but parseContentBlocks already split it.
             }
 
-            // 5. Embedded Grid: [grid]: followed by [card]: lines
+            // Zero Syntax: Showcase Grid via List
+            // If the block is a markdown list and contains pipes, it's a grid
+            const listItemsWithPipes = [];
+            let isGridList = true;
+            for (const line of lines) {
+                const match = line.match(/^(\s*)-\s+(.*\|.*)$/);
+                if (match) {
+                    listItemsWithPipes.push(match[2].trim());
+                } else {
+                    isGridList = false;
+                    break;
+                }
+            }
+
+            if (isGridList && listItemsWithPipes.length > 0) {
+                const cards = listItemsWithPipes.map(item => window.parseCardData(item));
+                return { type: 'grid', cards: cards };
+            }
+
+            // Legacy Grids: [grid]: followed by [card]: lines
             if (lines[0].match(/^\[grid\]:/i)) {
                 const cards = [];
                 lines.slice(1).forEach(line => {
-                    const cardMatch = line.match(/^\[card\]:\s*(.+)$/i);
+                    const cardMatch = line.match(/^(?:\[card\]:\s*)?(.+?\|.+)$/i);
                     if (cardMatch) {
                         cards.push(window.parseCardData(cardMatch[1]));
                     }
                 });
-                return {
-                    type: 'grid',
-                    cards: cards
-                };
+                return { type: 'grid', cards: cards };
             }
 
-            // 6. Standalone Card: [card]: Title | URL | Desc | Media
+            // Legacy Standalone Card: [card]: Title | URL | Desc | Media
             if (lines.length === 1) {
                 const cardMatch = lines[0].match(/^\[card\]:\s*(.+)$/i);
                 if (cardMatch) {
-                    return {
-                        type: 'card',
-                        data: window.parseCardData(cardMatch[1])
-                    };
+                    return { type: 'card', data: window.parseCardData(cardMatch[1]) };
                 }
             }
 
@@ -4701,27 +4731,30 @@
 
         // Helper to detect type from a raw URL or specific tag syntax (without markdown wrapper)
         function detectBasicUrlType(text) {
-            // [GLB Model]: path syntax (Legacy/Explicit)
-            const glbColonMatch = text.match(/^\[GLB\s+Model\]:\s*(.+\.glb.*)$/i);
-            if (glbColonMatch) {
-                return { type: 'glb', url: glbColonMatch[1].trim() };
-            }
+            text = text.trim();
 
-            // GLB file extension
-            if (text.match(/\.glb$/i) || text.match(/assets\/models\/.*\.glb/i)) {
-                const url = text.startsWith('assets/') ? text : `assets/models/${text}`;
+            // Explicit/Legacy GLB syntax
+            const glbColonMatch = text.match(/^\[GLB\s+Model\]:\s*(.+\.glb.*)$/i);
+            if (glbColonMatch) return { type: 'glb', url: glbColonMatch[1].trim() };
+
+            // GLB file extension or assets/models path
+            if (text.match(/\.glb(\?.*)?$/i) || text.match(/assets\/models\/.*\.glb/i)) {
+                const url = (text.startsWith('assets/') || text.startsWith('http')) ? text : `assets/models/${text}`;
                 return { type: 'glb', url: url };
             }
 
             // YouTube
             const ytId = getYouTubeID(text);
-            if (ytId) {
-                return { type: 'youtube', id: ytId, url: text };
-            }
+            if (ytId) return { type: 'youtube', id: ytId, url: text };
 
-            // Video URL
+            // Native Video
             if (text.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
                 return { type: 'video', url: text, caption: null };
+            }
+
+            // Smart Image detection (detected via isImageURL)
+            if (isImageURL(text)) {
+                return { type: 'image', url: text, caption: null };
             }
 
             return null;
@@ -4985,10 +5018,10 @@
                     continue;
                 }
 
-                // Check if the line is JUST a button - if so, render as block (with full 35px margins)
-                const standaloneButtonMatch = trimmed.match(/^\[button\]:\s*(.+?)\s*\|\s*(\S+)$/i);
-                if (standaloneButtonMatch) {
-                    output.push(window.renderButtonHTML(standaloneButtonMatch[1].trim(), standaloneButtonMatch[2].trim(), false));
+                // Zero Syntax: Inline Button Support (Label | URL)
+                const inlineButtonMatch = trimmed.match(/^(.+?)\s*\|\s*(https?:\/\/\S+|#\S+)$/i);
+                if (inlineButtonMatch) {
+                    output.push(window.renderButtonHTML(inlineButtonMatch[1].trim(), inlineButtonMatch[2].trim(), false));
                     continue;
                 }
 
