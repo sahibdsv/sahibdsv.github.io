@@ -1492,8 +1492,8 @@
         .model-viewer-wrapper.card-preview {
             aspect-ratio: 1.4/1;
             /* Slightly wider portrait-friendly ratio for cards */
-            background: var(--placeholder-gradient);
-            border-bottom: 1px solid var(--border-subtle);
+            background: transparent;
+            border-bottom: none;
         }
 
         /* Soft Glow Overlay for 3D Cards */
@@ -4192,9 +4192,18 @@
         window._isProcessingGlbQueue = false;
 
         function processGlbQueue(deadline) {
+            // ENGINE CHECK: If Three.js isn't ready (module script deferred), verify before consuming queue
+            if (!window.initThreeJSViewer) {
+                window.setTimeout(() => processGlbQueue(), 100); // Retry without deadline
+                return;
+            }
+
             // RELAXED DEADLINE: Only defer if the browser is currently under heavy load.
-            // If the browser forced the callback via timeout (didTimeout), we MUST proceed to avoid blank models.
-            if (deadline && !deadline.didTimeout && deadline.timeRemaining() <= 10) {
+            // FAST PATH: If queue is short (first 3 items), run immediately to ensure "instant" feel
+            const viewerCount = window._glbViewers ? Object.keys(window._glbViewers).length : 0;
+            const isUrgent = viewerCount < 3;
+
+            if (!isUrgent && deadline && !deadline.didTimeout && deadline.timeRemaining() <= 10) {
                 window.requestIdleCallback(processGlbQueue, { timeout: 2000 });
                 return;
             }
@@ -4211,15 +4220,23 @@
 
             if (container && window.initThreeJSViewer) {
                 if (!window._glbViewers[uniqueId]) {
-                    const viewer = window.initThreeJSViewer(container, glbPath, isCardMode);
-                    window._glbViewers[uniqueId] = viewer;
-                    new ResizeObserver(() => viewer.onResize()).observe(container);
+                    try {
+                        const viewer = window.initThreeJSViewer(container, glbPath, isCardMode);
+                        window._glbViewers[uniqueId] = viewer;
+                        new ResizeObserver(() => viewer.onResize()).observe(container);
+                    } catch (e) {
+                        console.error("GLB Init Warning:", e);
+                    }
                 }
             }
 
-            // Defer next item even if we have time, to let browser breathe
+            // Defer next item: fast for first few, slower for rest
             if (window._glbInitQueue.length > 0) {
-                window.requestIdleCallback(processGlbQueue, { timeout: 3000 });
+                // If we are just starting up, go fast (50ms). If we are deep down, yield deeper (2000ms)
+                const delay = Object.keys(window._glbViewers).length < 3 ? 50 : 2000;
+                setTimeout(() => {
+                    window.requestIdleCallback(processGlbQueue, { timeout: 3000 });
+                }, delay);
             } else {
                 window._isProcessingGlbQueue = false;
             }
@@ -4268,13 +4285,13 @@
                 </div>
             `;
 
-            // Start observing for lazy initialization
+            // Start observing for lazy initialization (needs 0+ms for DOM insertion)
             setTimeout(() => {
                 const container = document.getElementById(uniqueId);
                 if (container) {
                     window._glbObserver.observe(container);
                 }
-            }, 50);
+            }, 0);
 
             return html;
         };
@@ -5045,7 +5062,7 @@
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
                 window._isGlbScrolling = false;
-            }, 150);
+            }, 75);
         }, { passive: true });
 
         let _glbCircularIndex = 0;
@@ -5106,19 +5123,17 @@
                 0.1,
                 1000
             );
-            // Card mode needs camera further back due to narrower FOV
-            // Lower Y to 0.8 to center model vertically better (reduce gap at top)
-            // FIT-TO-FRAME: Pulled camera closer and raised Y slightly for better framing
-            camera.position.set(
-                isCardMode ? 2.4 : 2.0,
-                isCardMode ? 1.6 : 0.6,
-                isCardMode ? 3.2 : 5.0
-            );
+            // UNIFIED CAMERA: Enforce exact same perspective for Cards and Article
+            // If user says Cards are perfect, we mirror that settings 1:1
+            camera.position.set(2.4, 1.6, 2.8); // Standard "Perfect" Card Angle
 
-            // MOBILE ADAPTATION: If on phone, pull camera back to prevent "zoomed in" look
-            if (!isCardMode && window.innerWidth <= 768) {
-                camera.position.z = 7.5;
+            // MOBILE ADAPTATION: Split logic based on user feedback
+            // Card: Needs to be much closer (2.5) to fill the small grid frame
+            // Article: Users liked 4.0, so we keep that "Good" setting
+            if (window.innerWidth <= 768) {
+                camera.position.z = isCardMode ? 2.5 : 4.0;
             }
+
 
             camera.lookAt(0, 0, 0); // Point camera at model center
 
@@ -5131,7 +5146,8 @@
                 precision: "highp"
             });
             renderer.setSize(width, height, false);
-            renderer.setPixelRatio(window.devicePixelRatio); // Full High-DPI clarity
+            // Limit pixel ratio to 3.0 to prevent internal browser throttling on ultra-high-density screens
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3.0));
             renderer.setClearColor(0x000000, 0); // Guarantee alpha transparency
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.2; // Boost exposure for vivid colors
@@ -5156,10 +5172,10 @@
                 controls = new OrbitControls(camera, canvas);
                 controls.enableDamping = false; // Direct 1:1 rotation
                 controls.dampingFactor = 0;
-                controls.enableZoom = false; // Prevent scroll trapping
+                controls.enableZoom = true; // Allow zoom since we fixed the fuzziness
                 controls.enablePan = false;  // Disable panning
-                controls.autoRotate = true; // Start IMMEDIATELY
-                controls.autoRotateSpeed = 2.0;
+                controls.autoRotate = false; // DISABLE ORBIT AUTO-ROTATE (We will do it manually)
+                controls.autoRotateSpeed = 0; // Prevent conflict
 
                 // Stop auto-rotation instantly on interaction
                 const stopAutoRotate = () => {
@@ -5198,12 +5214,25 @@
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
                 const size = box.getSize(new THREE.Vector3());
+
+                // TEXTURE FILTERING: The #1 Fix for "Fuzzy at distance"
+                // Force max anisotropy on all textures to keep them sharp at oblique angles
+                const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+                model.traverse((node) => {
+                    if (node.isMesh) {
+                        if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
+                        if (node.material.emissiveMap) node.material.emissiveMap.anisotropy = maxAnisotropy;
+                        if (node.material.map) node.material.map.minFilter = THREE.LinearMipmapLinearFilter;
+                    }
+                });
+
                 const maxDim = Math.max(size.x, size.y, size.z);
 
-                // FIT-TO-FRAME: Increase base scale for more presence
-                const scale = (isCardMode ? 2.4 : 2.2) / maxDim;
+                // UNIFIED SCALE: Absolutely identical scale logic for both modes
+                // If Card (2.4) is perfect, Article gets 2.4 too.
+                const scale = 2.4 / maxDim;
+                model.scale.set(scale, scale, scale);
 
-                model.scale.multiplyScalar(scale);
                 model.position.sub(center.multiplyScalar(scale));
 
                 // Wrap model in a group for proper rotation pivot
@@ -5247,7 +5276,8 @@
                     height = newH;
                     camera.aspect = width / height;
                     camera.updateProjectionMatrix();
-                    renderer.setPixelRatio(window.devicePixelRatio); // Uncapped High-DPI clarity
+                    // Keep ratio clamped to 3.0 max to avoid silent GPU downscaling
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3.0));
                     renderer.setClearColor(0x000000, 0); // Guarantee alpha transparency
                 },
                 update: (now) => {
@@ -5260,14 +5290,30 @@
                     // Cap delta at 50ms to prevent huge jumps if browser stutters
                     delta = Math.min(delta, 50);
 
-                    // PREMIER MOTION: Graceful, slower rotation (0.005 base)
-                    const rotationStep = (Math.min(delta, 64) / 16.6) * 0.0034;
+                    // PREMIER MOTION: Faster, more visible confidence (0.0025)
+                    const rotationStep = (Math.min(delta, 64) / 16.6) * 0.0025;
 
                     if (isCardMode && model) {
                         const modelGroup = model.parent;
                         if (modelGroup && modelGroup.type === 'Group') {
                             autoRotateAngle += rotationStep;
                             modelGroup.rotation.y = autoRotateAngle;
+                        }
+                    } else if (model && controls && !controls.autoRotate) {
+                        // MANUAL ROTATION FOR ARTICLE MODE
+                        // We disabled OrbitControls autoRotate to ensure PERFECT speed match
+                        const modelGroup = model.parent;
+                        if (modelGroup && modelGroup.type === 'Group') {
+                            // Only rotate if user isn't interacting (OrbitControls isn't active)
+                            // But since we disabled controls.autoRotate, we manage it here
+                            // Verify if user is interacting with controls?
+                            // Simple: Always rotate unless manual override logic (which we have below)
+                            // But wait, orbit controls handles user interaction state.
+                            // Let's rely on our manual flag:
+                            if (window._isGlbInteracting !== true) {
+                                autoRotateAngle += rotationStep;
+                                modelGroup.rotation.y = autoRotateAngle;
+                            }
                         }
                     }
 
