@@ -1238,7 +1238,7 @@
 
         .layout-grid .sk-img {
             width: 100%;
-            height: 160px;
+            aspect-ratio: 4/3;
             margin-bottom: 0;
             border-radius: var(--media-radius)
         }
@@ -1262,10 +1262,10 @@
         .layout-grid {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            /* Balanced: 4px was too tight, 12px too loose */
-            padding: 12px;
-            /* Tightened from var(--card-padding) which was likely 15px */
+            gap: 0;
+            /* Managed via individual element margins */
+            padding: 0;
+            /* Full-bleed media */
             border-radius: var(--card-radius);
             border: 1px solid var(--border-subtle);
             height: 100%;
@@ -1295,6 +1295,8 @@
         .layout-grid h3.fill-anim {
             font-size: 20px;
             margin: 0;
+            padding: 12px 14px 4px 14px;
+            /* Internal content padding */
             display: flex;
             align-items: center;
             gap: var(--space-xs);
@@ -1338,20 +1340,28 @@
         .meta-row {
             display: flex;
             gap: 8px;
-            /* Slightly tighter internal gap for the meta row */
             flex-wrap: wrap;
             align-items: center;
-            padding-top: 0;
+            padding: 0 14px 14px 14px;
+            /* Internal content padding */
+            margin-top: auto;
+            /* Push to bottom of card */
         }
 
         .row-media {
-            height: 160px;
+            aspect-ratio: 4/3;
+            /* Standardized landscape sizing */
             width: 100%;
             overflow: hidden;
-            border-radius: var(--media-radius);
-            background: var(--card-bg);
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
+            /* Flush with card top */
+            background: transparent;
+            /* No gap-color leakage for non-placeholders */
             margin-bottom: 0;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .row-media img,
@@ -1359,7 +1369,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* grayscale(100%) removed for consistency with GLB */
+            /* Fill the standardized 4:3 box */
             transition: filter 0.6s var(--ease), opacity 0.4s var(--ease);
             will-change: filter, opacity;
             transform: translateZ(0);
@@ -1367,39 +1377,11 @@
             -webkit-font-smoothing: subpixel-antialiased;
         }
 
-        /* Anti-flash: hide images in Light Mode until analyzed
-           Using 0.01 opacity instead of 0 ensures skeletons remain visible if analysis hangs. */
-        :root[data-theme="light"] .layout-grid img:not(.analyzed),
-        :root[data-theme="light"] .layout-text .media-container img:not(.analyzed) {
-            opacity: 0.01 !important;
-            /* grayscale(100%) removed */
-            transition: none !important;
-        }
-
-        :root[data-theme="light"] .layout-grid img.analyzed,
-        :root[data-theme="light"] .layout-text .media-container img.analyzed {
-            opacity: 1;
-        }
 
         @media (hover: hover) {
             /* Hover grayscale logic removed */
         }
 
-        /* Smart Image Inversion for Dark Media in Light Mode */
-        :root[data-theme="light"] .layout-grid.invert-media .row-media img,
-        :root[data-theme="light"] .layout-text .media-container.invert-media img {
-            /* Flip lightness (Black->White) but rotate hue back to preserve natural colors */
-            /* Grayscale removed to preserve color during inversion */
-            filter: invert(1) hue-rotate(180deg) brightness(1.1);
-            transition: filter 0.6s var(--ease), opacity 0.4s var(--ease);
-        }
-
-        :root[data-theme="light"] .layout-grid.invert-media:hover .row-media img,
-        :root[data-theme="light"] .layout-text .media-container.invert-media:hover img {
-            /* Sticky Lightness: Keep the background White, but restore hues/saturation */
-            /* filter: grayscale(0%) removed as it's now the default */
-            filter: invert(1) hue-rotate(180deg) brightness(1.1);
-        }
 
         /* Placeholder thumbnails for cards without images */
         .row-media.placeholder {
@@ -1479,12 +1461,23 @@
         /* Media Containers */
         /* Media Containers */
         .embed-wrapper,
-        .model-viewer-wrapper,
+        .model-viewer-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            /* Standardized 4:3 landscape ratio */
+            max-width: none;
+            margin: 0;
+            background: transparent;
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            display: block;
+        }
+
         .media-container {
             position: relative;
             width: 100%;
-            aspect-ratio: 16/9;
-            /* Maintain structure even before load */
+            /* Adaptive scaling for images */
             max-width: none;
             margin: 0;
             background: transparent;
@@ -1494,8 +1487,8 @@
         }
 
         .model-viewer-wrapper.card-preview {
-            aspect-ratio: 1.4/1;
-            /* Slightly wider portrait-friendly ratio for cards */
+            aspect-ratio: 4/3;
+            /* Synchronized with row-media */
             background: transparent;
             border-bottom: none;
         }
@@ -1548,12 +1541,12 @@
         }
 
         .embed-wrapper.video {
-            aspect-ratio: 16/9;
+            aspect-ratio: 4/3;
             padding-top: 0;
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
-            background: transparent;
+            background: #000;
             /* Ensure rounding persists */
             border-radius: var(--card-radius);
             overflow: hidden;
@@ -1626,8 +1619,8 @@
         .gallery-item .embed-wrapper.gallery-embed {
             flex: 1;
             width: 100%;
-            /* 16/9 is CRITICAL here so they have height when alone */
-            aspect-ratio: 16/9;
+            /* 4/3 is Standardized for consistency */
+            aspect-ratio: 4/3;
             height: auto;
             position: relative;
             display: block;
@@ -1682,18 +1675,17 @@
                 height: auto;
             }
 
-            /* On mobile, allow natural aspect ratio for readability */
             .media-gallery.uniform-height .gallery-item .unified-media-wrapper,
             .media-gallery.uniform-height .gallery-item .embed-wrapper,
             .media-gallery.uniform-height .gallery-item .model-viewer-wrapper {
                 height: auto;
-                aspect-ratio: 16/9;
+                aspect-ratio: 4/3;
             }
 
             .media-gallery.uniform-height .gallery-item img {
                 height: auto;
                 object-fit: cover;
-                aspect-ratio: 16/9;
+                aspect-ratio: 4/3;
             }
 
             .start-hidden {
@@ -1720,8 +1712,8 @@
                This ensures they don't collapse to 0 height when side-by-side */
             .media-gallery.uniform-height .gallery-item .embed-wrapper {
                 width: 100%;
-                /* Ensure it stays 16/9 so it has intrinsic height */
-                aspect-ratio: 16/9;
+                /* Standardize to 4/3 consistent with cards */
+                aspect-ratio: 4/3;
                 flex: 1;
                 display: flex;
                 flex-direction: column;
@@ -1780,21 +1772,7 @@
             height: 100%;
         }
 
-        .model-viewer-wrapper.card-preview {
-            height: 160px;
-            margin: 0 0 8px 0;
-            max-width: 100%;
-            border: none;
-            border-radius: var(--media-radius);
-            background: var(--card-bg-dark);
-        }
 
-        .model-viewer-wrapper canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-            outline: none;
-        }
 
         .model-viewer-wrapper.card-preview canvas {
             pointer-events: none !important;
@@ -3528,11 +3506,6 @@
 
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-
-            // Re-trigger analysis when switching to light mode to prevent white thumbnails
-            if (newTheme === 'light') {
-                autoDetectDarkMedia(document.body);
-            }
         }
         function handleSearch(e) {
             if (!document.getElementById("search-overlay").classList.contains("active")) return;
@@ -4009,62 +3982,8 @@
                 if (el.classList.contains("layout-quote")) renderQuoteCard(el);
                 el.removeAttribute('data-needs-init');
             });
-
-            // 5. Auto-detect dark media for inversion in Light Mode
-            requestAnimationFrame(() => autoDetectDarkMedia(container));
         }
 
-        async function autoDetectDarkMedia(container) {
-            if (document.documentElement.getAttribute('data-theme') !== 'light') return;
-
-            const images = container.querySelectorAll('.layout-grid img, .layout-text .media-container img');
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-            // Sample size: 50x50 is plenty for darkness detection and keeps it fast
-            canvas.width = 50;
-            canvas.height = 50;
-
-            images.forEach(img => {
-                const block = img.closest('.layout-grid, .media-container');
-                if (!block || block.classList.contains('invert-media')) return;
-
-                const processImage = () => {
-                    if (img.classList.contains('analyzed')) return;
-                    try {
-                        ctx.drawImage(img, 0, 0, 50, 50);
-                        const imageData = ctx.getImageData(0, 0, 50, 50).data;
-                        let darkPixels = 0;
-                        const totalPixels = 50 * 50;
-
-                        for (let i = 0; i < imageData.length; i += 4) {
-                            const luminance = (0.2126 * imageData[i] + 0.7152 * imageData[i + 1] + 0.0722 * imageData[i + 2]);
-                            if (luminance < 50) darkPixels++;
-                        }
-
-                        if ((darkPixels / totalPixels) > 0.6) {
-                            block.classList.add('invert-media');
-                        }
-                    } catch (e) {
-                        // Fail silently but ensure the image is shown
-                    } finally {
-                        img.classList.add('analyzed');
-                    }
-                };
-
-                if (img.complete) {
-                    processImage();
-                } else {
-                    img.addEventListener('load', processImage, { once: true });
-                    img.addEventListener('error', processImage, { once: true }); // Fallback for failed loads
-                }
-            });
-
-            // Ultimate Fallback: Force show everything after 2s if analysis stalled
-            setTimeout(() => {
-                images.forEach(img => img.classList.add('analyzed'));
-            }, 2000);
-        }
         function renderQuoteCard(container) {
             let quoteData;
             let isRandom = false;

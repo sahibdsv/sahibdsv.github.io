@@ -47,7 +47,7 @@ Your resume shouldn't look like a database. It should look like a story.
 ## �️ Special Instructions
 Sometimes you want to tell the site something secret.
 
-- **Drafts**: Add `Draft` to your tags. It stays invisible until you're ready.
+- **Drafts**: Add `Draft` to your tags. It stays invisible until you're e .
 - **Featured**: Add `featured` to pin an item to your home page.
 - **Search**: Press `/` and type what you're looking for. 
 - **Internal Commands**: Type `clear cache` in search to refresh everything instantly.
