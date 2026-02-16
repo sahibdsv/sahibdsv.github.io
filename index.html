@@ -4237,13 +4237,21 @@
                 }
             }
 
-            // Defer next item: fast for first few, slower for rest
+            // PARALLEL BATCHING: Process up to 3 items at once to maximize network throughput
+            // This ensures "5+ models" load rapidly instead of one-by-one
+            const ACTIVE_LIMIT = 3;
+            const currentActive = Object.keys(window._glbViewers).filter(k => !window._glbViewers[k].loaded).length;
+
             if (window._glbInitQueue.length > 0) {
-                // If we are just starting up, go fast (50ms). If we are deep down, yield deeper (2000ms)
-                const delay = Object.keys(window._glbViewers).length < 3 ? 50 : 2000;
-                setTimeout(() => {
-                    window.requestIdleCallback(processGlbQueue, { timeout: 3000 });
-                }, delay);
+                // If we have capacity, process immediately
+                if (currentActive < ACTIVE_LIMIT) {
+                    requestAnimationFrame(() => processGlbQueue(deadline));
+                } else {
+                    // Otherwise check back soon (100ms)
+                    setTimeout(() => {
+                        requestIdleCallback(processGlbQueue, { timeout: 1000 });
+                    }, 100);
+                }
             } else {
                 window._isProcessingGlbQueue = false;
             }
@@ -4281,7 +4289,8 @@
                 <div class="model-viewer-wrapper ${isCardMode ? 'card-preview' : ''}" 
                      id="${uniqueId}" 
                      data-glb-path="${glbPath}">
-                    <canvas></canvas>
+                    <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; border-radius: inherit;"></div>
+                    <canvas style="position: relative; z-index: 2;"></canvas>
                     ${!isCardMode ? `
                         <button class="fs-btn" onclick="toggleFullscreen('${uniqueId}')" title="Fullscreen">
                             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -5226,13 +5235,16 @@
 
             }
 
-            // Load model
-            const loader = new GLTFLoader();
-
-            // Draco Support
-            const dracoLoader = new DRACOLoader();
-            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/'); // Use gstatic for reliable CDN
-            loader.setDRACOLoader(dracoLoader);
+            // Load model using SHARED Singleton Loader
+            // This prevents re-initializing Draco WASM workers for every single card (Huge perf win)
+            if (!window._sharedGLTFLoader) {
+                const loader = new GLTFLoader();
+                const dracoLoader = new DRACOLoader();
+                dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+                loader.setDRACOLoader(dracoLoader);
+                window._sharedGLTFLoader = loader;
+            }
+            const loader = window._sharedGLTFLoader;
 
             let model = null;
             let autoRotateAngle = 0;
@@ -5272,7 +5284,10 @@
 
                 // Entrance Animation
                 requestAnimationFrame(() => {
+                    const overlay = container.querySelector('.loader-overlay');
+                    if (overlay) overlay.remove();
                     container.classList.add('loaded');
+                    if (viewerInstance) viewerInstance.loaded = true;
                 });
 
 
@@ -5365,7 +5380,8 @@
                     renderer.dispose();
                     scene.clear();
                 },
-                model: () => model
+                model: () => model,
+                loaded: false
             };
 
             // Register with the global orchestrator
