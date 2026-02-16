@@ -3769,9 +3769,15 @@
                     const extracted = extractMediaFromContent(entry.Title);
                     if (extracted) {
                         if (extracted.type === "img") {
-                            mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy" crossorigin="anonymous"></div>`;
+                            mediaHTML = `<div class="row-media">
+                                <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                                <img src="${extracted.url}" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
+                            </div>`;
                         } else if (extracted.type === "yt") {
-                            mediaHTML = `<div class="row-media"><div class="embed-wrapper video"><iframe src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
+                            mediaHTML = `<div class="row-media">
+                                <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                                <div class="embed-wrapper video"><iframe onload="this.closest('.row-media').querySelector('.loader-overlay')?.remove()" src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+                            </div>`;
                         }
                         media = "title-embed";
                     }
@@ -3781,19 +3787,34 @@
                 if (thumb === 'GLB_VIEWER') {
                     mediaHTML = `<div class="row-media">${window.renderGLBViewer(media, true)}</div>`;
                 } else if (thumb && thumb.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
-                    mediaHTML = `<div class="row-media"><video src="${thumb}" autoplay muted loop playsinline></video></div>`;
+                    mediaHTML = `<div class="row-media">
+                        <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                        <video src="${thumb}" autoplay muted loop playsinline onloadeddata="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()"></video>
+                    </div>`;
                 } else if (thumb) {
-                    mediaHTML = `<div class="row-media"><img src="${thumb}" loading="lazy" crossorigin="anonymous"></div>`;
+                    mediaHTML = `<div class="row-media">
+                        <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                        <img src="${thumb}" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
+                    </div>`;
                 }
             } else {
                 const extracted = extractMediaFromContent(content);
                 if (extracted) {
                     if (extracted.type === "img") {
-                        mediaHTML = `<div class="row-media"><img src="${extracted.url}" loading="lazy" crossorigin="anonymous"></div>`;
+                        mediaHTML = `<div class="row-media">
+                            <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                            <img src="${extracted.url}" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
+                        </div>`;
                     } else if (extracted.type === "video") {
-                        mediaHTML = `<div class="row-media"><video src="${extracted.url}" autoplay muted loop playsinline></video></div>`;
+                        mediaHTML = `<div class="row-media">
+                            <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                            <video src="${extracted.url}" autoplay muted loop playsinline onloadeddata="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()"></video>
+                        </div>`;
                     } else if (extracted.type === "yt") {
-                        mediaHTML = `<div class="row-media"><img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy" crossorigin="anonymous"></div>`;
+                        mediaHTML = `<div class="row-media">
+                            <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                            <img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
+                        </div>`;
                     }
                 }
             }
@@ -4805,7 +4826,8 @@
             // 1. Generate Media HTML
             if (item.type === 'image') {
                 const style = isGallery ? 'style="height:100%; width:100%; object-fit:cover;"' : '';
-                mediaHTML = `<img src="${item.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style}>`;
+                const loader = `<div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>`;
+                mediaHTML = `${loader}<img src="${item.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="this.previousElementSibling?.remove()" onerror="this.previousElementSibling?.remove()">`;
 
                 if (!isGallery) {
                     // Wrap single images in the standard container to get the Border Radius
@@ -4815,7 +4837,8 @@
             } else if (item.type === 'youtube') {
                 const vidID = item.id || getYouTubeID(item.url);
                 mediaHTML = `<div class="${embedClass}">
-                        <iframe src="https://www.youtube-nocookie.com/embed/${vidID}?modestbranding=1&rel=0" 
+                        <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                        <iframe onload="this.previousElementSibling?.remove()" src="https://www.youtube-nocookie.com/embed/${vidID}?modestbranding=1&rel=0" 
                             title="YouTube video player" 
                             frameborder="0" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
@@ -4825,7 +4848,10 @@
                     </div>`;
 
             } else if (item.type === 'video') {
-                mediaHTML = `<div class="media-container"><video src="${item.url}" autoplay muted loop playsinline style="width:100%; display:block; border-radius:var(--card-radius);"></video></div>`;
+                mediaHTML = `<div class="media-container">
+                        <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                        <video src="${item.url}" autoplay muted loop playsinline style="width:100%; display:block; border-radius:var(--card-radius);" onloadeddata="this.previousElementSibling?.remove()" onerror="this.previousElementSibling?.remove()"></video>
+                    </div>`;
 
             } else if (item.type === 'glb') {
                 if (window.renderGLBViewer) {
