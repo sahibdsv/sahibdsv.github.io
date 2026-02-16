@@ -5160,32 +5160,50 @@
             renderer.setClearColor(isLight ? 0xffffff : 0x000000, 0);
             renderer.shadowMap.enabled = true; // Enable Shadows for depth
             renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 0.6; // Significantly reduced to prevent white blowout
+            renderer.toneMapping = THREE.ACESFilmicToneMapping; // Reverted: ACES Filmic for punchy contrast and saturation
+            renderer.toneMappingExposure = 0.8; // Chroma-Studio: 0.8 for vibrant, high-fidelity results.
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-            // REALISTIC LIGHTING (PBR)
-            // Use RoomEnvironment to provide detailed reflections for metals/plastics
+            // VIBRANT STUDIO LIGHTING (Jewelry Store Overhaul)
+            // 1. Environment First: High intensity IBL ensures metallic surfaces have rich, natural depth.
             const pmremGenerator = new THREE.PMREMGenerator(renderer);
-            scene.environment = pmremGenerator.fromScene(new RoomEnvironment()).texture;
-            pmremGenerator.dispose(); // Clean up
+            const envTexture = pmremGenerator.fromScene(new RoomEnvironment()).texture;
+            scene.environment = envTexture;
+            // Chroma-Studio: High Environment Intensity provides the saturation/vibrancy without the "blown out" faces.
+            if (scene.hasOwnProperty('environmentIntensity')) {
+                scene.environmentIntensity = 2.0;
+            }
+            pmremGenerator.dispose();
 
-            // Studio Lighting Setup
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Soft ambient
-            scene.add(ambientLight);
+            // 2. Multi-Point Accent Lighting (Near-Zero Fill)
+            // Near-Zero intensities prevent any face from reflecting pure white, while keeping "shimmer."
 
-            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8); // Key Light (Soft)
-            directionalLight1.position.set(2, 5, 5);
-            directionalLight1.castShadow = true;
-            directionalLight1.shadow.mapSize.width = 1024;
-            directionalLight1.shadow.mapSize.height = 1024;
-            directionalLight1.shadow.normalBias = 0.05; // Fix shadow acne on curved surfaces
-            scene.add(directionalLight1);
+            // HEMISPHERE: Sky (White) / Ground (Very Subtle Warmth)
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 0.4);
+            scene.add(hemiLight);
 
-            // Rim Light (Cool Blue)
-            const directionalLight2 = new THREE.DirectionalLight(0xddeeff, 0.5);
-            directionalLight2.position.set(-5, 3, -5);
-            scene.add(directionalLight2);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 0.15);
+            keyLight.position.set(5, 10, 5);
+            keyLight.castShadow = true;
+            keyLight.shadow.normalBias = 0.05;
+            scene.add(keyLight);
+
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.1);
+            fillLight.position.set(-5, 2, 5);
+            scene.add(fillLight);
+
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.1);
+            rimLight.position.set(-2, 5, -5);
+            scene.add(rimLight);
+
+            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.1);
+            bottomLight.position.set(0, -5, 0);
+            scene.add(bottomLight);
+
+            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.1);
+            cameraLight.position.set(0, 0, 1);
+            camera.add(cameraLight);
+            scene.add(camera);
 
             // LOCAL INTERACTION STATE: Track interaction per-viewer to pause efficiently
             let isInteracting = false;
@@ -5201,6 +5219,10 @@
                 controls.enablePan = false;  // Disable panning
                 controls.autoRotate = false; // DISABLE ORBIT AUTO-ROTATE (We will do it manually)
                 controls.autoRotateSpeed = 0; // Prevent conflict
+
+                // UNRESTRICTED ROTATION: Remove all polar constraints for infinite vertical orbiting
+                controls.minPolarAngle = 0;
+                controls.maxPolarAngle = Math.PI;
 
 
 
@@ -5366,8 +5388,10 @@
                     // Cap delta at 50ms to prevent huge jumps if browser stutters
                     delta = Math.min(delta, 50);
 
-                    // PREMIER MOTION: Faster, more visible confidence (0.0025)
-                    const rotationStep = (Math.min(delta, 64) / 16.6) * 0.0025;
+                    // PROFESSIONAL MOTION: Slower, more subtle rotation for a premium feel
+                    // Cards are now very slow (0.0008) to minimize distraction in grids.
+                    const baseSpeed = isCardMode ? 0.0008 : 0.0015;
+                    const rotationStep = (Math.min(delta, 64) / 16.6) * baseSpeed;
 
                     if (isCardMode && model) {
                         const modelGroup = model.parent;
@@ -5377,18 +5401,8 @@
                         }
                     } else if (model && controls && !controls.autoRotate) {
                         // MANUAL ROTATION FOR ARTICLE MODE
-                        // We disabled OrbitControls autoRotate to ensure PERFECT speed match
                         const modelGroup = model.parent;
                         if (modelGroup && modelGroup.type === 'Group') {
-                            // Only rotate if user isn't interacting (OrbitControls isn't active)
-                            // But since we disabled controls.autoRotate, we manage it here
-                            // Verify if user is interacting with controls?
-                            // Simple: Always rotate unless manual override logic (which we have below)
-                            // But wait, orbit controls handles user interaction state.
-                            // Let's rely on our manual flag:
-                            // MANUAL ROTATION FOR ARTICLE MODE
-                            // Only rotate if user isn't interacting
-                            // Access 'isInteracting' from the closure scope we defined above
                             if (!isInteracting) {
                                 autoRotateAngle += rotationStep;
                                 modelGroup.rotation.y = autoRotateAngle;
@@ -5397,8 +5411,8 @@
                     }
 
                     if (controls) {
-                        // Match OrbitControls autoRotate speed to the slowed standard
-                        controls.autoRotateSpeed = 0.8 * (Math.min(delta, 64) / 16.6);
+                        // Match OrbitControls autoRotate speed to the slowed professional standard
+                        controls.autoRotateSpeed = 0.5 * (Math.min(delta, 64) / 16.6);
                         controls.update();
                     }
                     renderer.render(scene, camera);
