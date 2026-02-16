@@ -3652,16 +3652,24 @@
             }
 
             // ATOMIC RENDER: Always call renderRows first to clear the container
-            // If t is empty, renderRows will clear #app and return (correct behavior)
-            // If t has content, renderRows will clear #app and render content
             renderRows(t, null, false, false, !isTopLevel);
 
+            // Natural Hierarchy: Show immediate children (depth + 1) for automated navigation
+            const pathParts = e.split("/");
+            const currentDepth = pathParts.length;
+            const children = db.filter(item =>
+                item.Page &&
+                item.Page.startsWith(e + "/") &&
+                item.Page.split("/").length === currentDepth + 1
+            );
 
+            if (children.length > 0) {
+                // Map the children pages back to their primary DB entries for rendering
+                const childEntries = [...new Set(children.map(c => c.Page))]
+                    .map(page => db.find(entry => entry.Page === page))
+                    .filter(entry => entry);
 
-            if (isTopLevel) {
-                // Discovery logic: only show immediate children (depth 1) to keep hubs clean
-                const t = [...new Set(db.filter(t => t.Page && t.Page.startsWith(e + "/") && t.Page.split("/").length <= 2).map(e => e.Page))];
-                t.length > 0 && renderRows(t.map(e => db.find(t => t.Page === e)).filter(e => e), null, true, true)
+                renderRows(childEntries, null, true, true);
             }
         }
         function childrenPagesCheck(e) {
@@ -4557,49 +4565,49 @@
         function processBlock(lines) {
             if (lines.length === 0) return null;
 
-            // Check for shared caption syntax: [Caption]: text
+            // 1. Smart Caption Detection: [This is a caption]
+            // We check the last line for square brackets.
             let sharedCaption = null;
-            const lastLine = lines[lines.length - 1];
-            const captionMatch = lastLine.match(/^\[Caption\]:\s*(.+)$/i);
-            if (captionMatch) {
+            const lastLine = lines[lines.length - 1].trim();
+            // Match [Caption] - must start with [ and end with ]
+            const captionMatch = lastLine.match(/^\[(.*)\]$/s);
+            if (captionMatch && !lastLine.includes('(')) { // Avoid matching markdown links [text](url)
                 sharedCaption = captionMatch[1].trim();
-                lines = lines.slice(0, -1); // Remove caption line from processing
+                lines = lines.slice(0, -1); // Remove caption line from media processing
+                if (lines.length === 0) return { type: 'text', content: `[${sharedCaption}]` }; // Fallback for standalone bracketed text
             }
 
-            // Check if this is a gallery (comma-separated items or Album: prefix)
-            const firstLine = lines[0];
-            const albumMatch = firstLine.match(/^(?:Album|Gallery|Set):\s*(.+)$/i);
-            const contentLine = albumMatch ? albumMatch[1] : firstLine;
+            // 2. Fluid Media Detection (Comma-Separated)
+            // If any line in the block split by commas consists entirely of valid media, it's a media block
+            const firstLine = lines[0].trim();
 
-            if (lines.length === 1 && (contentLine.includes(',') || albumMatch)) {
-                const parts = contentLine.split(',').map(p => p.trim());
-                const mediaItems = parts.map(part => detectMediaItem(part));
-                const allValid = mediaItems.every(item => item !== null);
+            // Try splitting the block's lines by commas
+            const allText = lines.join(' ');
+            const parts = allText.split(',').map(p => p.trim()).filter(p => p);
+            const mediaItems = parts.map(part => detectMediaItem(part));
+            const allValidMedia = mediaItems.length > 0 && mediaItems.every(item => item !== null);
 
-                if ((allValid && mediaItems.length > 1) || albumMatch) {
+            if (allValidMedia) {
+                // If it's more than one item, it's a gallery
+                if (mediaItems.length > 1) {
                     return {
                         type: 'gallery',
-                        items: mediaItems.filter(i => i !== null),
+                        items: mediaItems,
                         sharedCaption: sharedCaption
                     };
+                } else {
+                    // Single media item
+                    const item = mediaItems[0];
+                    if (sharedCaption && !item.caption) item.caption = sharedCaption;
+                    return item;
                 }
             }
 
-            // Zero Syntax: Solo Media Line (Just a URL/Path)
-            if (lines.length === 1) {
-                const media = detectMediaItem(lines[0]);
-                if (media) {
-                    if (sharedCaption && !media.caption) media.caption = sharedCaption;
-                    return media;
-                }
-            }
-
-            // Zero Syntax: CTA Buttons (Text | URL)
+            // 3. Zero Syntax: CTA Buttons (Text | URL)
             const buttonLines = [];
             let i = 0;
             while (i < lines.length) {
-                // Check for natural [Label | URL] or legacy [button]: syntax
-                const buttonMatch = lines[i].match(/^(?:\[button\]:\s*)?(.+?)\s*\|\s*(https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+)$/i);
+                const buttonMatch = lines[i].match(/^(.+?)\s*\|\s*(https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+)$/i);
                 if (buttonMatch) {
                     buttonLines.push({
                         text: buttonMatch[1].trim(),
@@ -4611,55 +4619,14 @@
                 }
             }
 
-            if (buttonLines.length > 0) {
-                if (i === lines.length) {
-                    return { type: 'buttons', items: buttonLines };
-                }
-            }
-
-            // Zero Syntax: Showcase Grid via List
-            // If the block is a markdown list and contains pipes, it's a grid
-            const listItemsWithPipes = [];
-            let isGridList = true;
-            for (const line of lines) {
-                const match = line.match(/^(\s*)-\s+(.*\|.*)$/);
-                if (match) {
-                    listItemsWithPipes.push(match[2].trim());
-                } else {
-                    isGridList = false;
-                    break;
-                }
-            }
-
-            if (isGridList && listItemsWithPipes.length > 0) {
-                const cards = listItemsWithPipes.map(item => window.parseCardData(item));
-                return { type: 'grid', cards: cards };
-            }
-
-            // Legacy Grids: [grid]: followed by [card]: lines
-            if (lines[0].match(/^\[grid\]:/i)) {
-                const cards = [];
-                lines.slice(1).forEach(line => {
-                    const cardMatch = line.match(/^(?:\[card\]:\s*)?(.+?\|.+)$/i);
-                    if (cardMatch) {
-                        cards.push(window.parseCardData(cardMatch[1]));
-                    }
-                });
-                return { type: 'grid', cards: cards };
-            }
-
-            // Legacy Standalone Card: [card]: Title | URL | Desc | Media
-            if (lines.length === 1) {
-                const cardMatch = lines[0].match(/^\[card\]:\s*(.+)$/i);
-                if (cardMatch) {
-                    return { type: 'card', data: window.parseCardData(cardMatch[1]) };
-                }
+            if (buttonLines.length > 0 && i === lines.length) {
+                return { type: 'buttons', items: buttonLines };
             }
 
             // Otherwise it's text content
             return {
                 type: 'text',
-                content: lines.join('\n')
+                content: (sharedCaption ? [...lines, `[${sharedCaption}]`] : lines).join('\n')
             };
         }
 
@@ -4675,38 +4642,45 @@
             };
         }
 
-        // Detect media type from a string (single item)
+        // Detect media type and caption from a string
         function detectMediaItem(text) {
             text = text.trim();
+            if (!text) return null;
 
-            // 1. Markdown Image: ![caption](url)
-            // Use greedy match for caption to support nested brackets/links
-            const markdownImgMatch = text.match(/^!\[(.*)\]\(([^)]+)\)$/);
+            // 1. Support inline Square-Bracket Captions: "path/to/media.jpg [This is my caption]"
+            const inlineCaptionMatch = text.match(/^(.+?)\s*\[(.*)\]$/);
+            let caption = null;
+            let url = text;
+
+            if (inlineCaptionMatch) {
+                url = inlineCaptionMatch[1].trim();
+                caption = inlineCaptionMatch[2].trim();
+            }
+
+            // 2. Markdown Image Syntax (Self-Contained)
+            const markdownImgMatch = url.match(/^!\[(.*)\]\(([^)]+)\)$/);
             if (markdownImgMatch) {
-                // Check if URL is actually a special media type (GLB/YT hidden in markdown)
-                const url = markdownImgMatch[2].trim();
-                const caption = markdownImgMatch[1].trim() || null;
-
-                // Recursively check the URL to see if it's actually a GLB or YT link
-                // This allows ![My Model](assets/model.glb) to work as a captioned model
-                const subType = detectBasicUrlType(url);
-                if (subType) {
-                    return {
-                        ...subType,
-                        caption: caption // Override/Set caption from markdown
-                    };
-                }
-
-                // Default to Image if not special
+                const subUrl = markdownImgMatch[2].trim();
+                const subCaption = markdownImgMatch[1].trim();
+                const subType = detectBasicUrlType(subUrl);
                 return {
-                    type: 'image',
-                    url: url,
-                    caption: caption
+                    type: subType ? subType.type : 'image',
+                    url: subUrl,
+                    id: subType ? subType.id : null,
+                    caption: caption || subCaption || null
                 };
             }
 
-            // 2. Direct URL or Special Syntax
-            return detectBasicUrlType(text);
+            // 3. Direct URL or Special Syntax
+            const basicType = detectBasicUrlType(url);
+            if (basicType) {
+                return {
+                    ...basicType,
+                    caption: caption || basicType.caption || null
+                };
+            }
+
+            return null;
         }
 
         // Helper to detect type from a raw URL or specific tag syntax (without markdown wrapper)
@@ -4821,9 +4795,16 @@
 
             // 2. Generate Caption HTML
             if (item.caption) {
-                // If it's a single item, we add a small top margin to separate it from the rounded media
+                // Use the full markdown engine for "Universal Markdown" support in captions (lists, links, etc.)
+                // We strip the outer paragraph tag to maintain the caption block's expected flow/styling 
+                // but only if it's a simple paragraph (not a list/header).
+                let processed = processMarkdown(item.caption);
+                if (processed.startsWith('<p>') && processed.endsWith('</p>') && (processed.match(/<p>/g) || []).length === 1) {
+                    processed = processed.substring(3, processed.length - 4);
+                }
+
                 const captionStyle = isGallery ? '' : 'style="margin-top: 4px;"';
-                captionHTML = `<div class="image-caption" ${captionStyle}>${processInlineMarkdown(item.caption)}</div>`;
+                captionHTML = `<div class="image-caption" ${captionStyle}>${processed}</div>`;
             }
 
             // 3. Assembly
@@ -4906,10 +4887,20 @@
         function renderUnifiedGallery(items, sharedCaption) {
             const galleryHTML = items.map(item => renderUnifiedMediaItem(item, true)).join('');
 
+            let sharedCaptionHTML = '';
+            if (sharedCaption) {
+                let processed = processMarkdown(sharedCaption);
+                // Strip outer P for single-paragraph captions to avoid double-padding
+                if (processed.startsWith('<p>') && processed.endsWith('</p>') && (processed.match(/<p>/g) || []).length === 1) {
+                    processed = processed.substring(3, processed.length - 4);
+                }
+                sharedCaptionHTML = `<div class="image-caption shared-caption">${processed}</div>`;
+            }
+
             return `<div class="media-gallery uniform-height">
                 ${galleryHTML}
             </div>
-            ${sharedCaption ? `<div class="image-caption shared-caption">${processInlineMarkdown(sharedCaption)}</div>` : ''}`;
+            ${sharedCaptionHTML}`;
         }
 
         // Enhanced markdown processor with nested list support
@@ -5048,28 +5039,6 @@
             return result;
         }
 
-        // Render image gallery with uniform heights
-        function renderGallery(images, sharedCaption) {
-            // images is now an array of {url, caption} objects
-            const imageItems = images.map((img, idx) => {
-                const imgUrl = typeof img === 'string' ? img : img.url;
-                const imgCaption = typeof img === 'object' ? img.caption : null;
-                const altText = imgCaption || `Gallery image ${idx + 1}`;
-
-                return `
-                <div class="gallery-item">
-                    <img src="${imgUrl}" alt="${altText}" loading="lazy">
-                    ${imgCaption ? `<div class="image-caption">${processInlineMarkdown(imgCaption)}</div>` : ''}
-                </div>`;
-            }).join('');
-
-            // Shared caption - uses flex-basis: 100% to force it to a new line below images
-            const sharedCaptionHTML = sharedCaption
-                ? `<div class="image-caption shared-caption">${processInlineMarkdown(sharedCaption)}</div>`
-                : '';
-
-            return `<div class="media-gallery uniform-height">${imageItems}${sharedCaptionHTML}</div>`;
-        }
 
         // Process content with block system - convenience function
         window.processContentWithBlocks = function (content) {
