@@ -3386,7 +3386,7 @@
 
             const header = document.getElementById("main-header");
             if (header && !isSwipe) header.classList.remove("scrolled");
-            if (!isSwipe) window.scrollTo(0, 0);
+            if (!isSwipe) window.scrollTo({ top: 0, behavior: 'instant' });
             clearTextSelection();
 
             const cleanPath = path || "Home";
