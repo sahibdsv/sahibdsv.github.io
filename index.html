@@ -5013,8 +5013,8 @@
             // THEME-AWARE STABILITY: Sync clear color with current theme to eliminate contrast flicker (especially in light mode)
             const isLight = document.documentElement.getAttribute('data-theme') === 'light';
             renderer.setClearColor(isLight ? 0xffffff : 0x000000, 0);
-            renderer.toneMapping = THREE.ACESFilmicToneMapping; // Reverted: ACES Filmic for punchy contrast and saturation
-            renderer.toneMappingExposure = 1.0; // Reduced from 1.2 to 1.0 to restore color saturation (avoid washout)
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 0.85; // Lower exposure = richer saturation, more contrast between colors
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
             // 1. ENVIRONMENT MAP (Singleton): Solves "Black Metal" issue with zero per-card overhead
@@ -5025,33 +5025,31 @@
                 pmremGenerator.dispose();
             }
             scene.environment = window._sharedEnvMap;
-            scene.environmentIntensity = 1.0; // Moderate reflection strength
+            scene.environmentIntensity = 0.8; // Dialed back from 1.0 to prevent white clipping on bright surfaces
 
-            // 2. Multi-Point Accent Lighting (Near-Zero Fill)
-            // Near-Zero intensities prevent any face from reflecting pure white, while keeping "shimmer."
+            // 2. ACCENT LIGHTING ONLY (EnvMap is primary)
+            // These are intentionally near-zero to add subtle directionality without washing out
 
-            // HEMISPHERE: Sky (White) / Ground (Soft Grey) - High intensity ambient to replace EnvMap softness
-            // HEMISPHERE: Reduced ambient intensity (1.2 -> 0.6) as EnvMap now provides base light
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x222222, 0.3);
             scene.add(hemiLight);
 
-            const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 0.15);
             keyLight.position.set(5, 10, 5);
             scene.add(keyLight);
 
-            const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.08);
             fillLight.position.set(-5, 2, 5);
             scene.add(fillLight);
 
-            const rimLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.08);
             rimLight.position.set(-2, 5, -5);
             scene.add(rimLight);
 
-            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.3);
+            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.05);
             bottomLight.position.set(0, -5, 0);
             scene.add(bottomLight);
 
-            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.08);
             cameraLight.position.set(0, 0, 1);
             camera.add(cameraLight);
             scene.add(camera);
