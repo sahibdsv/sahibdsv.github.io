@@ -208,18 +208,6 @@
 
 
         /* Slide Animation for Deep Levels */
-        @keyframes slideInRight {
-            0% {
-                transform: translateX(30px);
-                opacity: 0;
-            }
-
-            100% {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
         /* 3D Model specific loader */
         .loader-overlay {
             background: var(--bg-trans);
@@ -231,35 +219,12 @@
             gap: 12px;
         }
 
-        .glb-loader-3d {
-            width: 40px;
-            height: 40px;
-            color: var(--text-dim);
-            animation: glb-spin 2s linear infinite;
-        }
-
         .glb-loader-text {
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--text-dim);
             font-weight: 600;
-        }
-
-        @keyframes glb-spin {
-            0% {
-                transform: perspective(100px) rotateX(0deg) rotateY(0deg);
-                opacity: 0.5;
-            }
-
-            50% {
-                opacity: 1;
-            }
-
-            100% {
-                transform: perspective(100px) rotateX(180deg) rotateY(360deg);
-                opacity: 0.5;
-            }
         }
 
         .slide-in-right {
@@ -2960,13 +2925,11 @@
                     }
 
                     if (interactive && interactive.tagName === 'A' && interactive.href && !interactive.closest(".clickable-block")) {
-                        if (window.umami) {
-                            umami.track('click', {
-                                url: interactive.href,
-                                text: interactive.innerText.trim() || interactive.getAttribute('title') || 'Link Click',
-                                type: 'link'
-                            });
-                        }
+                        if (window.umami) umami.track('click', {
+                            url: interactive.href,
+                            text: interactive.innerText.trim() || interactive.getAttribute('title') || 'Link Click',
+                            type: 'link'
+                        });
                     }
 
                     // 1. Search Dismissal Logic
@@ -4088,7 +4051,7 @@
                     window._glbObserver.unobserve(entry.target);
                 }
             });
-        }, { rootMargin: '100px' }); // Load closer to viewport to save resources
+        }, { rootMargin: '800px' }); // Aggressive pre-loading for Homepage performance
 
         // GLB Viewer Renderer
         window.renderGLBViewer = function (glbPath, isCardMode) {
@@ -4098,11 +4061,6 @@
                      id="${uniqueId}" 
                      data-glb-path="${glbPath}">
                     <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; border-radius: inherit;">
-                        <svg class="glb-loader-3d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
-                            <path d="M2 7l10 5 10-5"/>
-                            <path d="M12 22V12"/>
-                        </svg>
                         <div class="glb-loader-text">Loading 3D</div>
                     </div>
                     <canvas style="position: relative; z-index: 2;"></canvas>
@@ -4757,7 +4715,7 @@
             // Allow simple markdown inside button text (bold, italic, underline)
             const formattedText = text
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\*(.*?)\*\*/g, '<em>$1</em>')
                 .replace(/__(.*?)__/g, '<u>$1</u>');
 
             const btnHTML = `<a href="${url}" class="btn-cta" ${target}>${formattedText}</a>`;
@@ -5189,7 +5147,7 @@
             let hasRendered = false; // GATED: Only true when the first 3D frame has been painted
 
             const triggerEntrance = () => {
-                if (!isModelReady || !hasRendered || (viewerInstance && viewerInstance.loaded)) return;
+                if (!isModelReady || (viewerInstance && viewerInstance.loaded)) return;
                 container.classList.add('loaded');
                 if (viewerInstance) viewerInstance.loaded = true;
                 const overlay = container.querySelector('.loader-overlay');
