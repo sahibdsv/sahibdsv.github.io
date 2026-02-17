@@ -5007,7 +5007,9 @@
             });
             renderer.setSize(width, height, false);
             // Limit pixel ratio to 3.0 to prevent internal browser throttling on ultra-high-density screens
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3.0));
+            // DETECT MOBILE SAFELY
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || (window.innerWidth < 800 && window.matchMedia("(pointer: coarse)").matches);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 2.0 : 3.0));
             // THEME-AWARE STABILITY: Sync clear color with current theme to eliminate contrast flicker (especially in light mode)
             const isLight = document.documentElement.getAttribute('data-theme') === 'light';
             renderer.setClearColor(isLight ? 0xffffff : 0x000000, 0);
@@ -5015,45 +5017,73 @@
             renderer.toneMappingExposure = 1.0; // Neutral: ACES Filmic handles contrast/saturation naturally
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-            // 1. ENVIRONMENT MAP: Per-renderer (GPU textures are WebGL-context-specific)
-            // The RoomEnvironment scene is cached once, but each renderer must generate its own PMREM texture.
-            if (!window._sharedRoomEnvScene) {
-                window._sharedRoomEnvScene = new RoomEnvironment();
+            // 1. MOBILE SAFE MODE: Disable PMREM on mobile/webviews to prevent OOM/Context Crashes
+            // Instagram/Android WebViews have strict GPU limits. Generating 10+ PMREM textures crashes them.
+            if (!isMobile) {
+                // DESKTOP: Full Pro Rig with Environment Map
+                if (!window._sharedRoomEnvScene) {
+                    window._sharedRoomEnvScene = new RoomEnvironment();
+                }
+                const pmremGenerator = new THREE.PMREMGenerator(renderer);
+                pmremGenerator.compileEquirectangularShader();
+                const envMap = pmremGenerator.fromScene(window._sharedRoomEnvScene).texture;
+                pmremGenerator.dispose();
+                scene.environment = envMap;
+                scene.environmentIntensity = 1.0;
+
+                // DESKTOP ACCENTS (Subtle, relying on EnvMap)
+                const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.4);
+                scene.add(hemiLight);
+
+                const keyLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                keyLight.position.set(5, 10, 5);
+                scene.add(keyLight);
+
+                const fillLight = new THREE.DirectionalLight(0xffffff, 0.25);
+                fillLight.position.set(-5, 2, 5);
+                scene.add(fillLight);
+
+                const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
+                rimLight.position.set(-2, 5, -5);
+                scene.add(rimLight);
+
+                const bottomLight = new THREE.DirectionalLight(0xffffff, 0.1);
+                bottomLight.position.set(0, -5, 0);
+                scene.add(bottomLight);
+
+                const cameraLight = new THREE.DirectionalLight(0xffffff, 0.15);
+                cameraLight.position.set(0, 0, 1);
+                camera.add(cameraLight);
+                scene.add(camera);
+
+            } else {
+                // MOBILE / WEBVIEW: Analytic High-Vibrancy Rig (No Texture Memory)
+                // Tuned to look "expensive" using cheap lights
+
+                const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2); // Stronger ambient base
+                scene.add(hemiLight);
+
+                const keyLight = new THREE.DirectionalLight(0xffffff, 1.5); // Strong key
+                keyLight.position.set(5, 10, 5);
+                scene.add(keyLight);
+
+                const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                fillLight.position.set(-5, 2, 5);
+                scene.add(fillLight);
+
+                const rimLight = new THREE.DirectionalLight(0xffffff, 1.0); // Strong rim for pop
+                rimLight.position.set(-2, 5, -5);
+                scene.add(rimLight);
+
+                const bottomLight = new THREE.DirectionalLight(0xffffff, 0.4);
+                bottomLight.position.set(0, -5, 0);
+                scene.add(bottomLight);
+
+                const cameraLight = new THREE.DirectionalLight(0xffffff, 0.5); // Face fill
+                cameraLight.position.set(0, 0, 1);
+                camera.add(cameraLight);
+                scene.add(camera);
             }
-            const pmremGenerator = new THREE.PMREMGenerator(renderer);
-            pmremGenerator.compileEquirectangularShader();
-            const envMap = pmremGenerator.fromScene(window._sharedRoomEnvScene).texture;
-            pmremGenerator.dispose();
-            scene.environment = envMap;
-            scene.environmentIntensity = 1.0; // Full strength: this IS the lighting rig
-
-            // 2. DIRECTIONAL ACCENTS: Add definition, catch edges, fill shadows
-            // These supplement the environment map — think "product photography" fill lights.
-            // Total additive: ~1.1 (safe with ACES tone mapping which rolls off highlights gracefully)
-
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.4);
-            scene.add(hemiLight);
-
-            const keyLight = new THREE.DirectionalLight(0xffffff, 0.5);
-            keyLight.position.set(5, 10, 5);
-            scene.add(keyLight);
-
-            const fillLight = new THREE.DirectionalLight(0xffffff, 0.25);
-            fillLight.position.set(-5, 2, 5);
-            scene.add(fillLight);
-
-            const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
-            rimLight.position.set(-2, 5, -5);
-            scene.add(rimLight);
-
-            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.1);
-            bottomLight.position.set(0, -5, 0);
-            scene.add(bottomLight);
-
-            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.15);
-            cameraLight.position.set(0, 0, 1);
-            camera.add(cameraLight);
-            scene.add(camera);
 
             // LOCAL INTERACTION STATE: Track interaction per-viewer to pause efficiently
             let isInteracting = false;
