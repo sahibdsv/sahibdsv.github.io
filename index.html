@@ -220,6 +220,48 @@
             }
         }
 
+        /* 3D Model specific loader */
+        .loader-overlay {
+            background: var(--bg-trans);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .glb-loader-3d {
+            width: 40px;
+            height: 40px;
+            color: var(--text-dim);
+            animation: glb-spin 2s linear infinite;
+        }
+
+        .glb-loader-text {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        @keyframes glb-spin {
+            0% {
+                transform: perspective(100px) rotateX(0deg) rotateY(0deg);
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: perspective(100px) rotateX(180deg) rotateY(360deg);
+                opacity: 0.5;
+            }
+        }
+
         .slide-in-right {
             animation: slideInRight 0.4s var(--ease) forwards;
         }
@@ -4006,24 +4048,17 @@
                 }
             }
 
-            // PARALLEL BATCHING: Process up to 3 items at once to maximize network throughput
-            // This ensures "5+ models" load rapidly instead of one-by-one
-            const ACTIVE_LIMIT = 3;
+            // PARALLEL BATCHING: Process up to 6 items to maximize network throughput
+            const ACTIVE_LIMIT = 6;
             const currentActive = Object.keys(window._glbViewers).filter(k => !window._glbViewers[k].loaded).length;
 
             if (window._glbInitQueue.length > 0) {
-                // If we have capacity, process immediately
+                // HIGH PRIORITY: Always use requestAnimationFrame for the next one to keep the sequence fluid
                 if (currentActive < ACTIVE_LIMIT) {
-                    requestAnimationFrame(() => processGlbQueue(deadline));
+                    requestAnimationFrame(() => processGlbQueue());
                 } else {
-                    // Otherwise check back soon (100ms)
-                    setTimeout(() => {
-                        if (window.requestIdleCallback) {
-                            window.requestIdleCallback(processGlbQueue, { timeout: 1000 });
-                        } else {
-                            processGlbQueue();
-                        }
-                    }, 100);
+                    // Check back very soon if we're at limit
+                    setTimeout(() => processGlbQueue(), 50);
                 }
             } else {
                 window._isProcessingGlbQueue = false;
@@ -4062,7 +4097,14 @@
                 <div class="model-viewer-wrapper ${isCardMode ? 'card-preview' : ''}" 
                      id="${uniqueId}" 
                      data-glb-path="${glbPath}">
-                    <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; border-radius: inherit;"></div>
+                    <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; border-radius: inherit;">
+                        <svg class="glb-loader-3d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/>
+                            <path d="M2 7l10 5 10-5"/>
+                            <path d="M12 22V12"/>
+                        </svg>
+                        <div class="glb-loader-text">Loading 3D</div>
+                    </div>
                     <canvas style="position: relative; z-index: 2;"></canvas>
                     ${!isCardMode ? `
                         <button class="fs-btn" onclick="toggleFullscreen('${uniqueId}')" title="Fullscreen">
@@ -4903,13 +4945,14 @@
         import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-
+        import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
         // Global Rendering Orchestrator
         window._glbViewers = window._glbViewers || {};
         window._glbRegistry = [];
         window._glbLastFrameTime = 0;
         window._glbTimeBudget = 8; // ms per frame for rendering
+        window._glbCache = {}; // Global parsed GLTF asset cache (Scene, Animations)
 
         // SCROLL THROTTLING REMOVED per user request
         window._isGlbScrolling = false;
@@ -5139,7 +5182,6 @@
                 loader.setDRACOLoader(dracoLoader);
                 window._sharedGLTFLoader = loader;
             }
-            const loader = window._sharedGLTFLoader;
 
             let model = null;
             let autoRotateAngle = Math.PI; // Start at 180deg to face "Front" from CAD
@@ -5147,56 +5189,66 @@
             let hasRendered = false; // GATED: Only true when the first 3D frame has been painted
 
             const triggerEntrance = () => {
-                // FIDELITY GATE: Entrance only triggers when LOADED + RENDERED + VISIBLE
-                if (!isModelReady || !hasRendered || !isVisible || container.classList.contains('loaded')) return;
-
-                // IMMEDIATE ENTRANCE (Delays removed)
+                if (!isModelReady || !hasRendered || (viewerInstance && viewerInstance.loaded)) return;
                 container.classList.add('loaded');
                 if (viewerInstance) viewerInstance.loaded = true;
-
                 const overlay = container.querySelector('.loader-overlay');
                 if (overlay) overlay.remove();
             };
 
-            loader.load(glbPath, (gltf) => {
-                model = gltf.scene;
+            const setupModel = (gltf) => {
+                // SCENE CLONING: Essential to allow multiple viewers for the same model
+                model = SkeletonUtils.clone(gltf.scene);
 
                 // ORIENTATION CORRECTION
                 if (glbPath.toLowerCase().includes('-z-up')) {
                     model.rotation.x = -Math.PI / 2;
                     model.updateMatrixWorld();
-                    autoRotateAngle = 0; // Reset starting angle for Z-up models
+                    autoRotateAngle = 0;
                 }
 
-                // 1. CENTER MODEL: Calculate true geometric center and move model there
+                // 1. CENTER MODEL
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
-                const size = box.getSize(new THREE.Vector3());
-                model.position.sub(center); // Move mesh so its center is at (0,0,0)
+                model.position.sub(center);
 
-                // 2. TEXTURE FILTERING (Keep it sharp)
+                // 2. TEXTURE FILTERING
                 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
                 model.traverse((node) => {
                     if (node.isMesh) {
                         if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
-                        if (node.material.emissiveMap) node.material.emissiveMap.anisotropy = maxAnisotropy;
-                        if (node.material.map) node.material.map.minFilter = THREE.LinearMipmapLinearFilter;
+                        node.material.needsUpdate = true;
                     }
                 });
-
-                // 3. AUTO-FRAMING (Axis-Aware "Perfect Fit")
-                if (viewerInstance) viewerInstance.fitStage();
 
                 // Wrap model in a group for rotation
                 const modelGroup = new THREE.Group();
                 modelGroup.add(model);
                 scene.add(modelGroup);
 
-                // Gated Entrance Ready
+                if (viewerInstance) viewerInstance.fitStage();
                 isModelReady = true;
                 triggerEntrance();
-            });
+            };
 
+            // ASSET CACHE: Check if model is already loaded/parsing
+            if (window._glbCache[glbPath]) {
+                const cached = window._glbCache[glbPath];
+                if (cached.status === 'DONE') {
+                    setupModel(cached.data);
+                } else {
+                    cached.callbacks.push(setupModel);
+                }
+            } else {
+                window._glbCache[glbPath] = { status: 'LOADING', data: null, callbacks: [setupModel] };
+                window._sharedGLTFLoader.load(glbPath, (gltf) => {
+                    const cache = window._glbCache[glbPath];
+                    cache.status = 'DONE';
+                    cache.data = gltf;
+                    cache.callbacks.forEach(cb => cb(gltf));
+                    cache.callbacks = [];
+                });
+            }
             // Visibility tracking for rendering optimization and entrance gating
             let isVisible = false; // Initialize false to force a clean entry check
             const visibilityObserver = new IntersectionObserver((entries) => {
