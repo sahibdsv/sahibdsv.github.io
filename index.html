@@ -5245,6 +5245,19 @@
 
             let model = null;
             let autoRotateAngle = Math.PI; // Start at 180deg to face "Front" from CAD
+            let isModelReady = false; // GATED: Only true when GLB is fully processed
+
+            const triggerEntrance = () => {
+                // FIDELITY GATE: Entrance only triggers when LOADED + VISIBLE
+                if (!isModelReady || !isVisible || container.classList.contains('loaded')) return;
+
+                requestAnimationFrame(() => {
+                    const overlay = container.querySelector('.loader-overlay');
+                    if (overlay) overlay.remove();
+                    container.classList.add('loaded');
+                    if (viewerInstance) viewerInstance.loaded = true;
+                });
+            };
 
             loader.load(glbPath, (gltf) => {
                 model = gltf.scene;
@@ -5280,24 +5293,19 @@
                 modelGroup.add(model);
                 scene.add(modelGroup);
 
-                // Entrance Animation
-                requestAnimationFrame(() => {
-                    const overlay = container.querySelector('.loader-overlay');
-                    if (overlay) overlay.remove();
-                    container.classList.add('loaded');
-                    if (viewerInstance) viewerInstance.loaded = true;
-                });
-
-
+                // Gated Entrance Ready
+                isModelReady = true;
+                triggerEntrance();
             });
 
-            // Visibility tracking for rendering optimization
-            let isVisible = true;
+            // Visibility tracking for rendering optimization and entrance gating
+            let isVisible = false; // Initialize false to force a clean entry check
             const visibilityObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     isVisible = entry.isIntersecting;
+                    if (isVisible) triggerEntrance(); // Try to start fade-in on scroll entry
                 });
-            }, { threshold: 0.05 });
+            }, { threshold: 0.1 }); // Use 10% threshold for stable entrance
             visibilityObserver.observe(container);
 
             // Viewer logic moved into an update function for the orchestrator
