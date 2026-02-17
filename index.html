@@ -5067,9 +5067,13 @@
                 controls.enableDamping = false; // Direct 1:1 rotation
                 controls.dampingFactor = 0;
                 controls.enableZoom = false; // DISABLE ZOOM: Prevents scroll-wheel trapping
-                controls.enablePan = false;  // DISABLE PAN: Prevents touch-drag trapping (Inline Mode)
+                controls.enablePan = true;  // ENABLE PAN: Desktop Right-Click / Mobile Two-Finger
                 controls.screenSpacePanning = true;
                 controls.panSpeed = 1.0;
+
+                // MOBILE GESTURE OVERRIDE: 
+                // Force Two-Finger interactions to PAN only
+                controls.touches.TWO = THREE.TOUCH.PAN;
 
                 controls.autoRotate = false; // DISABLE ORBIT AUTO-ROTATE (We will do it manually)
                 controls.autoRotateSpeed = 0; // Prevent conflict
