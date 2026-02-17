@@ -210,21 +210,29 @@
         /* Slide Animation for Deep Levels */
         /* 3D Model specific loader */
         .loader-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: var(--bg-trans);
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 12px;
+            z-index: 100;
+            border-radius: inherit;
         }
 
         .glb-loader-text {
-            font-size: 10px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             color: var(--text-dim);
-            font-weight: 600;
+            font-weight: 700;
+            opacity: 0.8;
         }
 
         .slide-in-right {
@@ -345,7 +353,7 @@
         .article-body a:not(.chip):not(.btn-cta),
         .layout-text a:not(.chip):not(.btn-cta),
         .resume-contact a:not(.btn-cta),
-        .layout-hero p a:not(.chip):not(.btn-cta),
+        .layout-hero p .btn-cta-wrapper a:not(.chip):not(.btn-cta),
         .resume-entry a:not(.chip):not(.btn-cta),
         #footer-links a:not(.btn-cta),
         .author-link,
@@ -367,7 +375,7 @@
 
             .article-body a:not(.chip):hover,
             .layout-text a:not(.chip):hover,
-            .layout-hero p a:not(.chip):hover,
+            .layout-hero p .btn-cta-wrapper a:not(.chip):hover,
             .resume-entry a:not(.chip):hover,
             .resume-contact a:hover,
             #footer-links a:hover,
@@ -3392,6 +3400,10 @@
             const header = document.getElementById("main-header");
             if (header && !isSwipe) header.classList.remove("scrolled");
             if (!isSwipe) window.scrollTo({ top: 0, behavior: 'instant' });
+
+            // CLEANUP STALE 3D: Free WebGL contexts before rendering new ones
+            if (window.cleanupStale3DViewers) window.cleanupStale3DViewers();
+
             clearTextSelection();
 
             const cleanPath = path || "Home";
@@ -3995,20 +4007,25 @@
             }
             window._isProcessingGlbQueue = true;
 
-            const nextItem = window._glbInitQueue.shift();
-            const { uniqueId, glbPath, isCardMode } = nextItem;
-            const container = document.getElementById(uniqueId);
+            try {
+                const nextItem = window._glbInitQueue.shift();
+                const { uniqueId, glbPath, isCardMode } = nextItem;
+                const container = document.getElementById(uniqueId);
 
-            if (container && window.initThreeJSViewer) {
-                if (!window._glbViewers[uniqueId]) {
-                    try {
-                        const viewer = window.initThreeJSViewer(container, glbPath, isCardMode);
-                        window._glbViewers[uniqueId] = viewer;
-                        new ResizeObserver(() => viewer.onResize()).observe(container);
-                    } catch (e) {
-                        console.error("GLB Init Warning:", e);
+                if (container && window.initThreeJSViewer) {
+                    if (!window._glbViewers[uniqueId]) {
+                        try {
+                            const viewer = window.initThreeJSViewer(container, glbPath, isCardMode);
+                            window._glbViewers[uniqueId] = viewer;
+                            new ResizeObserver(() => viewer.onResize()).observe(container);
+                        } catch (e) {
+                            console.error("GLB Init Warning:", e);
+                        }
                     }
                 }
+            } catch (outerError) {
+                console.error("Critical GLB Queue Error:", outerError);
+                window._isProcessingGlbQueue = false; // Ensure flag is reset on error
             }
 
             // PARALLEL BATCHING: Process up to 6 items to maximize network throughput
@@ -4384,7 +4401,8 @@
             const blocks = [];
             let currentBlock = [];
 
-            for (const line of lines) {
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
                 if (line === '') {
                     // Empty line = block separator
                     if (currentBlock.length > 0) {
@@ -4906,11 +4924,31 @@
         import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
         // Global Rendering Orchestrator
-        window._glbViewers = window._glbViewers || {};
-        window._glbRegistry = [];
         window._glbLastFrameTime = 0;
         window._glbTimeBudget = 8; // ms per frame for rendering
         window._glbCache = {}; // Global parsed GLTF asset cache (Scene, Animations)
+
+        // WEBGL CONTEXT CLEANUP: Critical for mobile/webview stability.
+        // Prevents zombie contexts from accumulating when switching pages.
+        window._glbRegistry = []; // Global registry of active viewer instances
+        window._glbViewers = {}; // Map of viewer IDs to instances for direct access
+        window.cleanupStale3DViewers = function () {
+            if (!window._glbRegistry) return;
+            const previousCount = window._glbRegistry.length;
+            window._glbRegistry = window._glbRegistry.filter(viewer => {
+                if (viewer.canvas && !document.body.contains(viewer.canvas)) {
+                    if (viewer.cleanup) viewer.cleanup();
+                    return false;
+                }
+                return true;
+            });
+
+            // Sync GLB Viewers map to remove orphaned IDs
+            Object.keys(window._glbViewers).forEach(id => {
+                const container = document.getElementById(id);
+                if (!container) delete window._glbViewers[id];
+            });
+        };
 
         // SCROLL THROTTLING REMOVED per user request
         window._isGlbScrolling = false;
@@ -5147,7 +5185,10 @@
             let hasRendered = false; // GATED: Only true when the first 3D frame has been painted
 
             const triggerEntrance = () => {
-                if (!isModelReady || (viewerInstance && viewerInstance.loaded)) return;
+                // FIDELITY GATE: Entrance only triggers when geometry is ready AND the first frame is painted
+                // This ensures the loader vanishes only when the 3D model is actually on screen.
+                if (!isModelReady || !hasRendered || (viewerInstance && viewerInstance.loaded)) return;
+
                 container.classList.add('loaded');
                 if (viewerInstance) viewerInstance.loaded = true;
                 const overlay = container.querySelector('.loader-overlay');
