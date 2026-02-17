@@ -3401,9 +3401,6 @@
             if (header && !isSwipe) header.classList.remove("scrolled");
             if (!isSwipe) window.scrollTo({ top: 0, behavior: 'instant' });
 
-            // CLEANUP STALE 3D: Free WebGL contexts before rendering new ones
-            if (window.cleanupStale3DViewers) window.cleanupStale3DViewers();
-
             clearTextSelection();
 
             const cleanPath = path || "Home";
@@ -3438,6 +3435,10 @@
                         renderPage(cleanPath);
                     }
                 }
+
+                // CLEANUP STALE 3D: Must run AFTER renderPage replaces the DOM.
+                // Only now are old canvases genuinely orphaned from document.body.
+                if (window.cleanupStale3DViewers) window.cleanupStale3DViewers();
 
                 // Mark this path as rendered so subsequent identical swipes don't trigger re-renders
                 _lastRenderedPath = cleanPath;
@@ -4934,7 +4935,8 @@
         window._glbViewers = {}; // Map of viewer IDs to instances for direct access
         window.cleanupStale3DViewers = function () {
             if (!window._glbRegistry) return;
-            const previousCount = window._glbRegistry.length;
+
+            // 1. Dispose viewers whose canvases are no longer in the DOM
             window._glbRegistry = window._glbRegistry.filter(viewer => {
                 if (viewer.canvas && !document.body.contains(viewer.canvas)) {
                     if (viewer.cleanup) viewer.cleanup();
@@ -4943,11 +4945,16 @@
                 return true;
             });
 
-            // Sync GLB Viewers map to remove orphaned IDs
+            // 2. Sync GLB Viewers map — remove orphaned IDs
             Object.keys(window._glbViewers).forEach(id => {
-                const container = document.getElementById(id);
-                if (!container) delete window._glbViewers[id];
+                if (!document.getElementById(id)) delete window._glbViewers[id];
             });
+
+            // 3. Flush orphaned queue items (containers that no longer exist)
+            window._glbInitQueue = window._glbInitQueue.filter(item => document.getElementById(item.uniqueId));
+
+            // 4. Reset processing flag so new items can kick off the queue
+            window._isProcessingGlbQueue = false;
         };
 
         // SCROLL THROTTLING REMOVED per user request
