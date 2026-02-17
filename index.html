@@ -5012,10 +5012,10 @@
             const isLight = document.documentElement.getAttribute('data-theme') === 'light';
             renderer.setClearColor(isLight ? 0xffffff : 0x000000, 0);
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 0.85; // Lower exposure = richer saturation, more contrast between colors
+            renderer.toneMappingExposure = 1.0; // Neutral: ACES Filmic handles contrast/saturation naturally
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-            // 1. ENVIRONMENT MAP (Singleton): Solves "Black Metal" issue with zero per-card overhead
+            // 1. ENVIRONMENT MAP (Singleton): Primary light source — studio-quality reflections & ambient
             if (!window._sharedEnvMap) {
                 const pmremGenerator = new THREE.PMREMGenerator(renderer);
                 pmremGenerator.compileEquirectangularShader();
@@ -5023,31 +5023,32 @@
                 pmremGenerator.dispose();
             }
             scene.environment = window._sharedEnvMap;
-            scene.environmentIntensity = 0.8; // Dialed back from 1.0 to prevent white clipping on bright surfaces
+            scene.environmentIntensity = 1.0; // Full strength: this IS the lighting rig
 
-            // 2. ACCENT LIGHTING ONLY (EnvMap is primary)
-            // These are intentionally near-zero to add subtle directionality without washing out
+            // 2. DIRECTIONAL ACCENTS: Add definition, catch edges, fill shadows
+            // These supplement the environment map — think "product photography" fill lights.
+            // Total additive: ~1.1 (safe with ACES tone mapping which rolls off highlights gracefully)
 
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x222222, 0.3);
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.4);
             scene.add(hemiLight);
 
-            const keyLight = new THREE.DirectionalLight(0xffffff, 0.15);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 0.5);
             keyLight.position.set(5, 10, 5);
             scene.add(keyLight);
 
-            const fillLight = new THREE.DirectionalLight(0xffffff, 0.08);
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.25);
             fillLight.position.set(-5, 2, 5);
             scene.add(fillLight);
 
-            const rimLight = new THREE.DirectionalLight(0xffffff, 0.08);
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
             rimLight.position.set(-2, 5, -5);
             scene.add(rimLight);
 
-            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.05);
+            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.1);
             bottomLight.position.set(0, -5, 0);
             scene.add(bottomLight);
 
-            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.08);
+            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.15);
             cameraLight.position.set(0, 0, 1);
             camera.add(cameraLight);
             scene.add(camera);
