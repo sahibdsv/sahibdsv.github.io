@@ -4185,7 +4185,11 @@
             const isUrgent = viewerCount < 3;
 
             if (!isUrgent && deadline && !deadline.didTimeout && deadline.timeRemaining() <= 10) {
-                window.requestIdleCallback(processGlbQueue, { timeout: 2000 });
+                if (window.requestIdleCallback) {
+                    window.requestIdleCallback(processGlbQueue, { timeout: 2000 });
+                } else {
+                    setTimeout(processGlbQueue, 100);
+                }
                 return;
             }
 
@@ -4223,7 +4227,11 @@
                 } else {
                     // Otherwise check back soon (100ms)
                     setTimeout(() => {
-                        requestIdleCallback(processGlbQueue, { timeout: 1000 });
+                        if (window.requestIdleCallback) {
+                            window.requestIdleCallback(processGlbQueue, { timeout: 1000 });
+                        } else {
+                            processGlbQueue();
+                        }
                     }, 100);
                 }
             } else {
@@ -5305,7 +5313,7 @@
                     isVisible = entry.isIntersecting;
                     if (isVisible) triggerEntrance(); // Try to start fade-in on scroll entry
                 });
-            }, { threshold: 0.1 }); // Use 10% threshold for stable entrance
+            }, { threshold: 0.01 }); // Relaxed threshold for mobile/small screens
             visibilityObserver.observe(container);
 
             // Viewer logic moved into an update function for the orchestrator
