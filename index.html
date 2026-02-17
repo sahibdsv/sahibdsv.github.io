@@ -218,12 +218,11 @@
             background: var(--bg-trans);
             backdrop-filter: blur(12px);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            z-index: 100;
+            z-index: 200;
             border-radius: inherit;
+            pointer-events: none;
         }
 
         .glb-loader-text {
@@ -232,7 +231,6 @@
             letter-spacing: 3px;
             color: var(--text-dim);
             font-weight: 700;
-            opacity: 0.8;
         }
 
         .slide-in-right {
@@ -3981,24 +3979,10 @@
         window._glbInitQueue = [];
         window._isProcessingGlbQueue = false;
 
-        function processGlbQueue(deadline) {
+        function processGlbQueue() {
             // ENGINE CHECK: If Three.js isn't ready (module script deferred), verify before consuming queue
             if (!window.initThreeJSViewer) {
-                window.setTimeout(() => processGlbQueue(deadline), 100);
-                return;
-            }
-
-            // RELAXED DEADLINE: Only defer if the browser is currently under heavy load.
-            // FAST PATH: If queue is short (first 3 items), run immediately to ensure "instant" feel
-            const viewerCount = window._glbViewers ? Object.keys(window._glbViewers).length : 0;
-            const isUrgent = viewerCount < 3;
-
-            if (!isUrgent && deadline && !deadline.didTimeout && deadline.timeRemaining() <= 10) {
-                if (window.requestIdleCallback) {
-                    window.requestIdleCallback(processGlbQueue, { timeout: 2000 });
-                } else {
-                    setTimeout(processGlbQueue, 100);
-                }
+                window.setTimeout(processGlbQueue, 100);
                 return;
             }
 
@@ -4058,11 +4042,7 @@
                     window._glbInitQueue.push({ uniqueId, glbPath, isCardMode });
                     if (!window._isProcessingGlbQueue) {
                         window._isProcessingGlbQueue = true;
-                        if (window.requestIdleCallback) {
-                            window.requestIdleCallback(processGlbQueue);
-                        } else {
-                            setTimeout(processGlbQueue, 100);
-                        }
+                        setTimeout(processGlbQueue, 0); // Immediate — never use requestIdleCallback (too slow on mobile)
                     }
 
                     // Stop observing once queued
@@ -4078,10 +4058,10 @@
                 <div class="model-viewer-wrapper ${isCardMode ? 'card-preview' : ''}" 
                      id="${uniqueId}" 
                      data-glb-path="${glbPath}">
-                    <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1; border-radius: inherit;">
+                    <div class="loader-overlay">
                         <div class="glb-loader-text">Loading 3D</div>
                     </div>
-                    <canvas style="position: relative; z-index: 2;"></canvas>
+                    <canvas></canvas>
                     ${!isCardMode ? `
                         <button class="fs-btn" onclick="toggleFullscreen('${uniqueId}')" title="Fullscreen">
                             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
