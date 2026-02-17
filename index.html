@@ -5066,15 +5066,15 @@
                 controls = new OrbitControls(camera, canvas);
                 controls.enableDamping = false; // Direct 1:1 rotation
                 controls.dampingFactor = 0;
+                // INPUT TRAP PREVENTION:
+                // 1. No Scroll Zoom (Traps mouse wheel / pinch-zoom gestures while scrolling page)
+                // 2. No Pan on Touch (Traps fingers while trying to scroll page)
+                const isTouch = window.matchMedia("(pointer: coarse)").matches;
+
                 controls.enableZoom = false; // DISABLE ZOOM: Prevents scroll-wheel trapping
-                controls.enablePan = true;  // ENABLE PAN: Desktop Right-Click / Mobile Two-Finger
+                controls.enablePan = !isTouch;  // SMART PAN: Desktop Mouse OK, Mobile Touch DISABLED (Traps finger)
                 controls.screenSpacePanning = true;
                 controls.panSpeed = 1.0;
-
-                // MOBILE GESTURE OVERRIDE: 
-                // Force Two-Finger interactions to PAN only
-                controls.touches.TWO = THREE.TOUCH.PAN;
-
                 controls.autoRotate = false; // DISABLE ORBIT AUTO-ROTATE (We will do it manually)
                 controls.autoRotateSpeed = 0; // Prevent conflict
 
