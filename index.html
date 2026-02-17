@@ -1472,7 +1472,8 @@
             overflow: hidden;
         }
 
-        .embed-wrapper iframe {
+        .embed-wrapper iframe,
+        .embed-wrapper video {
             position: absolute;
             top: 0;
             left: 0;
@@ -1480,6 +1481,7 @@
             height: 100%;
             border: 0;
             display: block;
+            object-fit: cover;
         }
 
         /* Standardized Caption Style (Global) */
@@ -3939,7 +3941,7 @@
         // === MEDIA UTILITIES ===
         function getYouTubeID(url) {
             if (!url) return null;
-            const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            const match = url.match(/(?:(?:music\.)?youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
             return match ? match[1] : null;
         }
 
@@ -3949,16 +3951,27 @@
 
         function extractMediaFromContent(content) {
             if (!content) return null;
-            const glbMatch = content.match(/\[GLB\s+Model\]\(([^\)]+\.glb[^\)]*)\)/i) || content.match(/(?:assets\/models\/)?([a-zA-Z0-9_-]+\.glb)/i);
+
+            // 1. YouTube
+            const ytMatch = content.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+            if (ytMatch) return { type: 'yt', id: ytMatch[1] };
+
+            // 2. GLB
+            const glbMatch = content.match(/\S+\.glb/i);
             if (glbMatch) {
-                const path = glbMatch[1] || glbMatch[0];
+                const path = glbMatch[0];
                 const url = (path.startsWith('assets/') || path.startsWith('http')) ? path : `assets/models/${path}`;
                 return { type: 'glb', url: url };
             }
-            const imgMatch = content.match(/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|svg)/i);
+
+            // 3. Image
+            const imgMatch = content.match(/\S+\.(?:jpg|jpeg|png|gif|webp|svg)/i);
             if (imgMatch) return { type: 'img', url: imgMatch[0] };
-            const videoMatch = content.match(/https?:\/\/\S+\.(?:mp4|webm|mov|ogg)/i);
+
+            // 4. Video
+            const videoMatch = content.match(/\S+\.(?:mp4|webm|mov|ogg)/i);
             if (videoMatch) return { type: 'video', url: videoMatch[0] };
+
             return null;
         }
 
@@ -4494,6 +4507,12 @@
             let caption = null;
             let url = text;
 
+            // 0. Raw Iframe Support (Exported code from Tweets, Maps, etc.)
+            if (text.startsWith('<iframe')) {
+                const captionFromAttr = text.match(/title="([^"]+)"/i);
+                return { type: 'iframe', raw: text, caption: caption || (captionFromAttr ? captionFromAttr[1] : null) };
+            }
+
             if (inlineCaptionMatch) {
                 url = inlineCaptionMatch[1].trim();
                 caption = inlineCaptionMatch[2].trim();
@@ -4529,28 +4548,28 @@
         function detectBasicUrlType(text) {
             text = text.trim();
 
-            // Explicit/Legacy GLB syntax
-            const glbColonMatch = text.match(/^\[GLB\s+Model\]:\s*(.+\.glb.*)$/i);
-            if (glbColonMatch) return { type: 'glb', url: glbColonMatch[1].trim() };
+            // 1. YouTube (including Music)
+            const ytId = getYouTubeID(text);
+            if (ytId) return { type: 'youtube', id: ytId, url: text };
 
-            // GLB file extension or assets/models path
+            // 1.5 Universal Service Transformation (Figma, Spotify, Maps, Docs)
+            const embedUrl = transformToEmbedUrl(text);
+            if (embedUrl) return { type: 'iframe', url: embedUrl };
+
+            // 2. GLB / 3D Models
             if (text.match(/\.glb(\?.*)?$/i) || text.match(/assets\/models\/.*\.glb/i)) {
                 const url = (text.startsWith('assets/') || text.startsWith('http')) ? text : `assets/models/${text}`;
                 return { type: 'glb', url: url };
             }
 
-            // YouTube
-            const ytId = getYouTubeID(text);
-            if (ytId) return { type: 'youtube', id: ytId, url: text };
-
-            // Native Video
+            // 3. Native Video
             if (text.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
-                return { type: 'video', url: text, caption: null };
+                return { type: 'video', url: text };
             }
 
-            // Smart Image detection (detected via isImageURL)
+            // 4. Image
             if (isImageURL(text)) {
-                return { type: 'image', url: text, caption: null };
+                return { type: 'image', url: text };
             }
 
             return null;
@@ -4576,18 +4595,38 @@
             return false;
         }
 
-        // Extract YouTube video ID from URL
+        // Extract YouTube video ID from URL (Supports regular and music.youtube)
         function getYouTubeID(url) {
             if (!url) return null;
 
             // Standard youtube.com/watch?v=...
-            let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            let match = url.match(/(?:(?:music\.)?youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
             if (match) return match[1];
 
             // youtube.com/embed/...
-            match = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+            match = url.match(/(?:(?:music\.)?youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
             if (match) return match[1];
 
+            return null;
+        }
+
+        // The "Universal Transformer" - Maps links to their embed equivalents
+        function transformToEmbedUrl(url) {
+            if (url.includes('figma.com/file/')) {
+                return `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`;
+            }
+            if (url.includes('open.spotify.com/')) {
+                return url.replace('open.spotify.com/', 'open.spotify.com/embed/');
+            }
+            if (url.includes('google.com/maps')) {
+                const match = url.match(/q=([^&]+)/) || url.match(/place\/([^/]+)/);
+                if (match) return `https://maps.google.com/maps?q=${match[1]}&output=embed`;
+                if (url.includes('embed')) return url;
+            }
+            if (url.includes('docs.google.com/')) {
+                if (url.includes('/edit')) return url.replace('/edit', '/preview');
+                return url;
+            }
             return null;
         }
 
@@ -4624,9 +4663,9 @@
 
             } else if (item.type === 'video') {
                 const noLoop = item.url.toLowerCase().includes("-noloop");
-                mediaHTML = `<div class="media-container">
+                mediaHTML = `<div class="${embedClass}">
                         <div class="sk-img loader-overlay"></div>
-                        <video src="${item.url}" autoplay muted ${noLoop ? "" : "loop"} playsinline style="width:100%; display:block; border-radius:var(--card-radius);" onloadeddata="this.previousElementSibling?.remove()" onerror="this.previousElementSibling?.remove()"></video>
+                        <video src="${item.url}" autoplay muted ${noLoop ? "" : "loop"} playsinline onloadeddata="this.previousElementSibling?.remove()" onerror="this.previousElementSibling?.remove()"></video>
                     </div>`;
 
             } else if (item.type === 'glb') {
@@ -4634,6 +4673,13 @@
                     // renderGLBViewer returns a div with class "model-viewer-wrapper" which has border-radius
                     mediaHTML = window.renderGLBViewer(item.url, false);
                 }
+            } else if (item.type === 'iframe') {
+                const src = item.raw || `<iframe src="${item.url}" title="${item.caption || 'Embedded Content'}" frameborder="0" allowfullscreen onload="this.previousElementSibling?.remove()"></iframe>`;
+                mediaHTML = `<div class="${embedClass}">
+                        <div class="sk-img loader-overlay"></div>
+                        ${item.raw ? item.raw.replace('<iframe', '<iframe onload="this.previousElementSibling?.remove()"') : src}
+                    </div>`;
+
             }
 
             // 2. Generate Caption HTML
@@ -4682,6 +4728,7 @@
 
                 case 'image':
                 case 'youtube':
+                case 'video':
                 case 'glb':
                     return renderUnifiedMediaItem(block, false);
 
