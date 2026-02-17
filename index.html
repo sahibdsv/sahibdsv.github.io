@@ -5248,16 +5248,25 @@
             let model = null;
             let autoRotateAngle = Math.PI; // Start at 180deg to face "Front" from CAD
             let isModelReady = false; // GATED: Only true when GLB is fully processed
+            let hasRendered = false; // GATED: Only true when the first 3D frame has been painted
 
             const triggerEntrance = () => {
-                // FIDELITY GATE: Entrance only triggers when LOADED + VISIBLE
-                if (!isModelReady || !isVisible || container.classList.contains('loaded')) return;
+                // FIDELITY GATE: Entrance only triggers when LOADED + RENDERED + VISIBLE
+                if (!isModelReady || !hasRendered || !isVisible || container.classList.contains('loaded')) return;
 
+                // DOUBLE-SYNC: Ensure the hidden state (opacity:0) is definitely painted before the transition starts
                 requestAnimationFrame(() => {
-                    const overlay = container.querySelector('.loader-overlay');
-                    if (overlay) overlay.remove();
-                    container.classList.add('loaded');
-                    if (viewerInstance) viewerInstance.loaded = true;
+                    requestAnimationFrame(() => {
+                        container.classList.add('loaded');
+                        if (viewerInstance) viewerInstance.loaded = true;
+
+                        // DELAYED CLEANUP: Wait for the 1.2s fade to finish before removing skeleton
+                        // This prevents the "empty background flash" on slower mobile devices.
+                        setTimeout(() => {
+                            const overlay = container.querySelector('.loader-overlay');
+                            if (overlay) overlay.remove();
+                        }, 1500);
+                    });
                 });
             };
 
@@ -5411,6 +5420,13 @@
                         controls.update();
                     }
                     renderer.render(scene, camera);
+
+                    // Mark as rendered so the entrance gate can open
+                    if (!hasRendered) {
+                        hasRendered = true;
+                        triggerEntrance();
+                    }
+
                     return true;
                 },
                 isVisible: () => isVisible,
