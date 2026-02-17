@@ -4098,7 +4098,6 @@
                     if (viewer && viewer.controls) {
                         viewer.controls.enableZoom = true;
                         viewer.controls.enablePan = true;
-                        viewer.controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.PAN };
                         viewer.controls.minDistance = 0.2;
                         viewer.controls.maxDistance = 100; // Let her rip
                         viewer.controls.zoomSpeed = 0.6;
@@ -4123,7 +4122,6 @@
                         if (viewer.controls) {
                             viewer.controls.enableZoom = false;
                             viewer.controls.enablePan = false;
-                            viewer.controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
                         }
                         const btn = viewer.canvas.parentElement?.querySelector('.fs-btn');
                         if (btn) {
