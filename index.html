@@ -4097,6 +4097,8 @@
                     btn.title = 'Exit Fullscreen';
                     if (viewer && viewer.controls) {
                         viewer.controls.enableZoom = true;
+                        viewer.controls.enablePan = true;
+                        viewer.controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.PAN };
                         viewer.controls.minDistance = 0.2;
                         viewer.controls.maxDistance = 100; // Let her rip
                         viewer.controls.zoomSpeed = 0.6;
@@ -4118,7 +4120,11 @@
                 // STABILIZATION: Delay resize on exit to allow browser layout to settle (especially on mobile)
                 setTimeout(() => {
                     Object.values(window._glbViewers).forEach(viewer => {
-                        if (viewer.controls) viewer.controls.enableZoom = false;
+                        if (viewer.controls) {
+                            viewer.controls.enableZoom = false;
+                            viewer.controls.enablePan = false;
+                            viewer.controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
+                        }
                         const btn = viewer.canvas.parentElement?.querySelector('.fs-btn');
                         if (btn) {
                             btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>';
@@ -5060,14 +5066,10 @@
                 controls = new OrbitControls(camera, canvas);
                 controls.enableDamping = false; // Direct 1:1 rotation
                 controls.dampingFactor = 0;
-                controls.enableZoom = false; // DISABLE ZOOM: Prevents scroll-wheel trapping
-                controls.enablePan = true;  // ENABLE PAN: Desktop Right-Click / Mobile Two-Finger
+                controls.enableZoom = false; // DISABLED BY DEFAULT: Enabled in Fullscreen only
+                controls.enablePan = false;  // DISABLED BY DEFAULT: Enabled in Fullscreen only
                 controls.screenSpacePanning = true;
                 controls.panSpeed = 1.0;
-
-                // MOBILE GESTURE OVERRIDE: 
-                // Force Two-Finger interactions to PAN only
-                controls.touches.TWO = THREE.TOUCH.PAN;
 
                 controls.autoRotate = false; // DISABLE ORBIT AUTO-ROTATE (We will do it manually)
                 controls.autoRotateSpeed = 0; // Prevent conflict
