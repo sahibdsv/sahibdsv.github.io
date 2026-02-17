@@ -5170,14 +5170,18 @@
             let autoRotateAngle = Math.PI; // Start at 180deg to face "Front" from CAD
             let isModelReady = false; // GATED: Only true when GLB is fully processed
             let hasRendered = false; // GATED: Only true when the first 3D frame has been painted
+            // HOISTED: Must be declared before cache check because cached models
+            // call setupModel synchronously, which references viewerInstance.
+            let viewerInstance = null;
 
             const triggerEntrance = () => {
                 // FIDELITY GATE: Entrance only triggers when geometry is ready AND the first frame is painted
-                // This ensures the loader vanishes only when the 3D model is actually on screen.
-                if (!isModelReady || !hasRendered || (viewerInstance && viewerInstance.loaded)) return;
+                // Guard: viewerInstance might not exist yet if model was cached (synchronous setupModel)
+                if (!isModelReady || !hasRendered || !viewerInstance) return;
+                if (viewerInstance.loaded) return;
 
                 container.classList.add('loaded');
-                if (viewerInstance) viewerInstance.loaded = true;
+                viewerInstance.loaded = true;
                 const overlay = container.querySelector('.loader-overlay');
                 if (overlay) overlay.remove();
             };
@@ -5248,8 +5252,7 @@
             // Viewer logic moved into an update function for the orchestrator
             let lastFrameTime = 0;
 
-
-            const viewerInstance = {
+            viewerInstance = {
                 scene,
                 camera,
                 renderer,
@@ -5360,6 +5363,13 @@
                     visibilityObserver.disconnect();
                     window._glbRegistry = window._glbRegistry.filter(v => v !== viewerInstance);
                     renderer.dispose();
+                    // CRITICAL: Explicitly release WebGL context to free the GPU slot immediately.
+                    // renderer.dispose() alone does NOT free the context on mobile browsers.
+                    try {
+                        const gl = renderer.getContext();
+                        const ext = gl.getExtension('WEBGL_lose_context');
+                        if (ext) ext.loseContext();
+                    } catch (e) { /* Context may already be lost */ }
                     scene.clear();
                 },
                 model: () => model,
@@ -5369,6 +5379,10 @@
 
             // Register with the global orchestrator
             window._glbRegistry.push(viewerInstance);
+
+            // FINAL ENTRANCE CHECK: If model was cached (setupModel ran before viewerInstance existed),
+            // we need to retry now that everything is wired up.
+            triggerEntrance();
 
             return viewerInstance;
         }
