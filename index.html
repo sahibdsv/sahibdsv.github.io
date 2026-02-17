@@ -5011,11 +5011,22 @@
             renderer.toneMappingExposure = 1.0; // Reduced from 1.2 to 1.0 to restore color saturation (avoid washout)
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
+            // 1. ENVIRONMENT MAP (Singleton): Solves "Black Metal" issue with zero per-card overhead
+            if (!window._sharedEnvMap) {
+                const pmremGenerator = new THREE.PMREMGenerator(renderer);
+                pmremGenerator.compileEquirectangularShader();
+                window._sharedEnvMap = pmremGenerator.fromScene(new RoomEnvironment()).texture;
+                pmremGenerator.dispose();
+            }
+            scene.environment = window._sharedEnvMap;
+            scene.environmentIntensity = 1.0; // Moderate reflection strength
+
             // 2. Multi-Point Accent Lighting (Near-Zero Fill)
             // Near-Zero intensities prevent any face from reflecting pure white, while keeping "shimmer."
 
             // HEMISPHERE: Sky (White) / Ground (Soft Grey) - High intensity ambient to replace EnvMap softness
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+            // HEMISPHERE: Reduced ambient intensity (1.2 -> 0.6) as EnvMap now provides base light
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
             scene.add(hemiLight);
 
             const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -5049,8 +5060,15 @@
                 controls = new OrbitControls(camera, canvas);
                 controls.enableDamping = false; // Direct 1:1 rotation
                 controls.dampingFactor = 0;
-                controls.enableZoom = true; // Allow zoom since we fixed the fuzziness
-                controls.enablePan = false;  // Disable panning
+                // INPUT TRAP PREVENTION:
+                // 1. No Scroll Zoom (Traps mouse wheel / pinch-zoom gestures while scrolling page)
+                // 2. No Pan on Touch (Traps fingers while trying to scroll page)
+                const isTouch = window.matchMedia("(pointer: coarse)").matches;
+
+                controls.enableZoom = false; // DISABLE ZOOM: Prevents scroll-wheel trapping
+                controls.enablePan = !isTouch;  // SMART PAN: Desktop Mouse OK, Mobile Touch DISABLED (Traps finger)
+                controls.screenSpacePanning = true;
+                controls.panSpeed = 1.0;
                 controls.autoRotate = false; // DISABLE ORBIT AUTO-ROTATE (We will do it manually)
                 controls.autoRotateSpeed = 0; // Prevent conflict
 
@@ -5160,8 +5178,7 @@
 
             // Viewer logic moved into an update function for the orchestrator
             let lastFrameTime = 0;
-            const fpsLimit = isCardMode ? 30 : 60;
-            const frameInterval = 1000 / fpsLimit;
+
 
             const viewerInstance = {
                 scene,
@@ -5276,7 +5293,6 @@
                     renderer.dispose();
                     scene.clear();
                 },
-                model: () => model,
                 model: () => model,
                 loaded: false,
                 hasRenderedState: false
