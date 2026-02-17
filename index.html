@@ -5015,14 +5015,16 @@
             renderer.toneMappingExposure = 1.0; // Neutral: ACES Filmic handles contrast/saturation naturally
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-            // 1. ENVIRONMENT MAP (Singleton): Primary light source — studio-quality reflections & ambient
-            if (!window._sharedEnvMap) {
-                const pmremGenerator = new THREE.PMREMGenerator(renderer);
-                pmremGenerator.compileEquirectangularShader();
-                window._sharedEnvMap = pmremGenerator.fromScene(new RoomEnvironment()).texture;
-                pmremGenerator.dispose();
+            // 1. ENVIRONMENT MAP: Per-renderer (GPU textures are WebGL-context-specific)
+            // The RoomEnvironment scene is cached once, but each renderer must generate its own PMREM texture.
+            if (!window._sharedRoomEnvScene) {
+                window._sharedRoomEnvScene = new RoomEnvironment();
             }
-            scene.environment = window._sharedEnvMap;
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            pmremGenerator.compileEquirectangularShader();
+            const envMap = pmremGenerator.fromScene(window._sharedRoomEnvScene).texture;
+            pmremGenerator.dispose();
+            scene.environment = envMap;
             scene.environmentIntensity = 1.0; // Full strength: this IS the lighting rig
 
             // 2. DIRECTIONAL ACCENTS: Add definition, catch edges, fill shadows
