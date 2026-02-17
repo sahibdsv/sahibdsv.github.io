@@ -5043,6 +5043,16 @@
             renderer.toneMappingExposure = 1.0; // Neutral: ACES Filmic handles contrast/saturation naturally
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
+            // CONTEXT LOSS HANDLER: Detect and recover from WebGL context loss
+            canvas.addEventListener('webglcontextlost', (e) => {
+                e.preventDefault();
+                console.warn('WebGL context lost for:', glbPath);
+                // Force entrance to prevent permanent "Loading 3D"
+                container.classList.add('loaded');
+                const overlay = container.querySelector('.loader-overlay');
+                if (overlay) overlay.remove();
+            });
+
             // 1. MOBILE SAFE MODE: Disable PMREM on mobile/webviews to prevent OOM/Context Crashes
             // Instagram/Android WebViews have strict GPU limits. Generating 10+ PMREM textures crashes them.
             if (!isMobile) {
@@ -5222,10 +5232,13 @@
             };
 
             // ASSET CACHE: Check if model is already loaded/parsing
+            // CRITICAL: Use setTimeout(0) for cached models to defer setupModel
+            // until AFTER viewerInstance is assigned. Without this, fitStage()
+            // and triggerEntrance() can't access viewerInstance.
             if (window._glbCache[glbPath]) {
                 const cached = window._glbCache[glbPath];
                 if (cached.status === 'DONE') {
-                    setupModel(cached.data);
+                    setTimeout(() => setupModel(cached.data), 0);
                 } else {
                     cached.callbacks.push(setupModel);
                 }
@@ -5380,9 +5393,16 @@
             // Register with the global orchestrator
             window._glbRegistry.push(viewerInstance);
 
-            // FINAL ENTRANCE CHECK: If model was cached (setupModel ran before viewerInstance existed),
-            // we need to retry now that everything is wired up.
-            triggerEntrance();
+            // SAFETY NET: Force entrance after 5s if normal gates never open.
+            // This prevents permanent "Loading 3D" from context loss or other edge cases.
+            setTimeout(() => {
+                if (!viewerInstance.loaded) {
+                    container.classList.add('loaded');
+                    viewerInstance.loaded = true;
+                    const overlay = container.querySelector('.loader-overlay');
+                    if (overlay) overlay.remove();
+                }
+            }, 5000);
 
             return viewerInstance;
         }
