@@ -50,15 +50,7 @@
             transition: none !important;
         }
 
-        @keyframes dice-spin {
-            0% {
-                transform: rotate(0deg)
-            }
 
-            to {
-                transform: rotate(360deg)
-            }
-        }
 
         /* Shimmer removed for "Static Minimalist" look */
 
@@ -254,7 +246,8 @@
             color: var(--text-main);
             font-family: "Jost", sans-serif;
             line-height: 1.5;
-            padding-top: 65px;
+            padding-top: 0;
+            /* Sticky header handles flow */
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -438,8 +431,9 @@
         }
 
         #main-header {
-            position: fixed;
-            top: 0;
+            position: sticky;
+            /* Excel-Style Frozen Row: Scroll up to hide Brand (offset), Stick at Nav with Padding Preserved */
+            top: calc(-1 * (var(--brand-row-h) + var(--header-gap)));
             left: 0;
             width: 100%;
             background: var(--bg-trans);
@@ -453,8 +447,7 @@
             gap: var(--header-gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
-            transition: padding 0.4s var(--ease), gap 0.4s var(--ease), background-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
-            will-change: padding, gap;
+            /* Animation logic removed for simple sticky behavior */
         }
 
         #brand-name,
@@ -602,29 +595,7 @@
             flex-shrink: 0
         }
 
-        #main-header.scrolled #brand-name {
-            height: 0;
-            opacity: 0;
-            margin-bottom: 0;
-            transform: translateY(-20px);
-            pointer-events: none
-        }
 
-        #main-header.scrolled {
-            gap: 0;
-        }
-
-        #main-header.scrolled #nav-stack {
-            padding: 0;
-        }
-
-        #main-header.scrolled.deep-nav .nav-row:not(:nth-last-child(-n+2)) {
-            height: 0;
-            opacity: 0;
-            margin: 0;
-            pointer-events: none;
-            overflow: hidden
-        }
 
         #search-controls,
         #search-overlay {
@@ -654,13 +625,7 @@
             gap: 12px;
         }
 
-        #main-header.scrolled #left-controls,
-        #main-header.scrolled #search-controls {
-            opacity: 0;
-            height: 0;
-            transform: translateY(-20px);
-            pointer-events: none
-        }
+
 
         .icon-btn {
             width: 28px;
@@ -780,14 +745,12 @@
             height: 50px;
             transform-origin: center;
             transform: translate3d(-50%, -40px, 0) scale(.9);
-            transform: translate3d(-50%, -40px, 0) scale(.9);
-            /* Solid background to prevent text clash, no blur */
             /* Solid background to prevent text clash, no blur */
             background: var(--search-bg);
             z-index: 9999;
             border-radius: 999px;
             /* Symmetric Shadow per user request */
-            box-shadow: var(--shadow-heavy, 0 25px 100px 40px rgba(0, 0, 0, 0.95));
+            box-shadow: var(--shadow-heavy, 0 0 100px 40px rgba(0, 0, 0, 0.95));
             border: 1px solid var(--border-strong);
             /* Matched to CTA buttons per user request */
             transition: transform var(--anim-layout) cubic-bezier(.16, 1, .3, 1), opacity var(--anim-layout) ease;
@@ -874,13 +837,11 @@
             .nav-row.level-n {
                 justify-content: flex-start
             }
-        }
 
-
-
-        .nav-row.level-n::after,
-        .nav-row.level-n::before {
-            display: block
+            .nav-row.level-n::after,
+            .nav-row.level-n::before {
+                display: block
+            }
         }
 
         /* Larger, more touchable navigation text */
@@ -894,9 +855,7 @@
             line-height: 1.2;
         }
 
-        .grid-container {
-            grid-template-columns: 1fr
-        }
+
 
         footer {
             flex-direction: column;
@@ -906,22 +865,8 @@
 
 
 
-        .content-container {
-            padding: 10px 15px 0
-        }
-
-        .article-title {
-            font-size: 18px;
-            line-height: 1.1;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-            hyphens: auto
-        }
-
-        /* Removed 48px hit-target override to prevent overlap */
-
         .layout-quote {
-            min-height: 280px;
+            min-height: 180px;
             padding: 40px 15px
         }
 
@@ -931,15 +876,6 @@
             .nav-row.level-1 {
                 justify-content: flex-start;
             }
-        }
-
-        /* Desktop Header Spacing - Increase row heights for better balance on large screens */
-        @media (min-width: 769px) {
-            /* Desktop uses :root defaults defined at top of file.
-               Overrides here only if strictly necessary, but we moved defaults to global :root.
-               Keeping this block if specific desktop-only overrides are needed later,
-               but for now the global :root covers desktop defaults.
-            */
         }
 
         /* --- CONTENT LAYOUT --- */
@@ -952,7 +888,6 @@
             min-height: 80vh;
             position: relative;
             box-sizing: border-box;
-            transition: .4s
         }
 
         @media (max-width:768px) {
@@ -969,8 +904,7 @@
             position: relative
         }
 
-        /* Glide-Mode Suppression: Ensures rigid, instant content swaps during swipe */
-        /* REMOVED: Global suppression logic deleted as part of simplification */
+
 
         .skeleton-visible {
             opacity: 1;
@@ -1177,56 +1111,35 @@
             display: block
         }
 
+        .loader-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            border-radius: inherit;
+        }
+
         .sk-line {
             background: var(--card-bg-hover);
             border-radius: var(--radius-sm);
             display: block
         }
 
-        .layout-quote .sk-box.quote {
-            height: 100px;
-            width: 100%;
-            margin: 0 auto 10px;
-            opacity: 1;
-            border-radius: var(--card-radius)
-        }
-
-        .sk-line.title {
-            height: 48px;
-            width: 50%;
-            margin: 0 auto 20px
-        }
-
-        .sk-line.meta {
-            height: 20px;
-            width: 100px;
-            margin: 0 auto 30px;
-            border-radius: var(--radius-md)
-        }
-
-        .sk-line.text {
-            height: 20px;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto 12px
-        }
-
-        .sk-line.text.short {
-            width: 60%
-        }
-
         .sk-box.quote {
             height: 100px;
             width: 100%;
             margin: 0 auto 10px;
-            opacity: 1
+            border-radius: var(--card-radius);
+            opacity: 1;
         }
 
         .layout-grid .sk-img {
             width: 100%;
-            aspect-ratio: 4/3;
+            height: 100%;
             margin-bottom: 0;
-            border-radius: var(--media-radius)
+            border-radius: inherit;
         }
 
         .layout-grid .sk-line.title {
@@ -1242,7 +1155,7 @@
         }
 
 
-        /* --- RESTORED COMPONENTS --- */
+        /* --- PROJECT CARDS --- */
 
         /* Restore Layout Grid (Cards) */
         .layout-grid {
@@ -1266,7 +1179,6 @@
             background: var(--card-bg);
             /* Enhance depth in Light Mode */
             box-shadow: var(--shadow-subtle, none);
-            /* Ensure baseline background */
         }
 
 
@@ -1290,9 +1202,7 @@
             --text-hover: var(--text-bright);
             font-weight: 600;
             line-height: 1.1;
-            /* Root Fix: Reduced from 1.2 to minimize font-internal asymmetry */
             transform: translateY(-1px);
-            /* Root Fix: Visual center compensation for Jost font metrics */
         }
 
         /* Category-Specific Color Overrides for Card Titles */
@@ -1378,9 +1288,7 @@
         }
 
 
-        @media (hover: hover) {
-            /* Hover grayscale logic removed */
-        }
+
 
 
         /* Placeholder thumbnails for cards without images */
@@ -1459,7 +1367,6 @@
 
 
         /* Media Containers */
-        /* Media Containers */
         .embed-wrapper,
         .model-viewer-wrapper {
             position: relative;
@@ -1522,7 +1429,7 @@
             display: block;
             opacity: 0;
             transform: scale(0.95);
-            transition: opacity 1.2s var(--ease), transform 1.2s var(--ease);
+            transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
         }
 
         .model-viewer-wrapper.loaded canvas {
@@ -1765,10 +1672,10 @@
             box-sizing: border-box;
         }
 
-        /* Remove background when inside a gallery (avoid double-background) */
+        /* Remove background and rounding when inside a gallery */
         .gallery-item .model-viewer-wrapper {
-            background: transparent;
-            border-radius: 0;
+            background: transparent !important;
+            border-radius: 0 !important;
             height: 100%;
         }
 
@@ -2163,27 +2070,14 @@
             margin-bottom: 20px;
         }
 
-        .article-body ul,
-        .article-body ol {
-            margin: 15px 0;
-            padding-left: 25px;
+        .article-body p {
             margin-bottom: 20px;
-            padding-left: 20px;
         }
 
         .article-body li {
             margin-bottom: 10px;
         }
 
-        .article-body a {
-            color: var(--accent-light);
-            text-decoration: none;
-            font-weight: 500;
-            position: relative;
-            transition: color 0.2s ease;
-        }
-
-        /* Legacy link blocks removed for Universally Unified standard */
 
 
         /* Blockquote styling */
@@ -2210,7 +2104,7 @@
         }
 
         .article-body code {
-            background: rgba(var(--bright-rgb), var(--op-overlay));
+            background: rgba(var(--bright-rgb), var(--op-subtle));
             padding: 2px 6px;
             border-radius: 4px;
             font-family: 'Fira Code', monospace;
@@ -2606,8 +2500,6 @@
             }
 
 
-            /* REMOVED: Single-page overflow constraint - let it flow naturally */
-
             /* Prevent page breaks */
             .resume-section,
             .resume-entry {
@@ -2615,15 +2507,8 @@
             }
         }
 
-        @keyframes shimmer {
-            0% {
-                background-position: 200% 0;
-            }
 
-            100% {
-                background-position: -200% 0;
-            }
-        }
+
 
         /* START: Touch Device Fixes */
         @media (hover: none) {
@@ -2880,13 +2765,6 @@
                     document.documentElement.setAttribute('data-theme', e.matches ? 'light' : 'dark');
                 }
             });
-
-            // Re-enable transitions after initial paint
-            requestAnimationFrame(() => {
-                document.body.classList.remove('no-transition');
-                const header = document.getElementById('main-header');
-                if (header) header.classList.remove('no-transition');
-            });
         };
 
         loadFromCache().then(cachedData => {
@@ -3021,18 +2899,33 @@
                 .replace(/'/g, '&#039;');
         }
         function initApp() {
-            initPaddingObserver();
-            handleRouting(),
-                window.addEventListener("hashchange", handleRouting),
-                window.addEventListener("scroll", () => { const e = document.getElementById("main-header"); e.classList.toggle("scrolled", window.scrollY > 10) }),
-                window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }),
+            handleRouting();
+            window.addEventListener("hashchange", handleRouting);
+            window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }),
                 window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { centerNavRow(row, true) }) }, 150) } })()),
 
-                // Global Click Handler - Manages Search & Navigation
+                // Global Click Handler - Manages Search, Navigation, Haptics & Analytics
                 document.addEventListener("click", e => {
                     const overlay = document.getElementById("search-overlay");
                     const controls = document.getElementById("search-controls");
                     const results = document.getElementById("search-results");
+
+                    // 0. Haptic & Analytics (Consolidated)
+                    const interactive = e.target.closest("#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid > div, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip");
+                    if (interactive && navigator.vibrate) {
+                        const isMajor = interactive.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link");
+                        haptic(isMajor ? 'pulse' : 'tap');
+                    }
+
+                    if (interactive && interactive.tagName === 'A' && interactive.href && !interactive.closest(".clickable-block")) {
+                        if (window.umami) {
+                            umami.track('click', {
+                                url: interactive.href,
+                                text: interactive.innerText.trim() || interactive.getAttribute('title') || 'Link Click',
+                                type: 'link'
+                            });
+                        }
+                    }
 
                     // 1. Search Dismissal Logic
                     // Close if clicking outside overlay, controls, results OR empty space in results
@@ -3067,19 +2960,6 @@
                     }
                 }),
 
-                // Universal Click Tracker
-                document.addEventListener("click", e => {
-                    const a = e.target.closest("a");
-                    if (!a || !a.href || a.closest(".clickable-block")) return;
-
-                    if (window.umami) {
-                        umami.track('click', {
-                            url: a.href,
-                            text: a.innerText.trim() || a.getAttribute('title') || 'Link Click',
-                            type: 'link'
-                        });
-                    }
-                }, { passive: true }),
 
                 // App-specific handlers (Chip & Refresh)
                 document.getElementById("app").addEventListener("click", e => {
@@ -3233,11 +3113,8 @@
                 row.classList.toggle("hidden", !isActive);
             });
 
-            // Focus Brand Name if at home
             const brand = document.getElementById("brand-name");
             if (brand) brand.classList.toggle("active", !currentPath || currentPath === "Home");
-
-            updatePadding();
         }
 
         let _lastHaptic = 0;
@@ -3275,9 +3152,6 @@
                 if (activeLink) {
                     const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
                     row.scrollTo({ left: targetScroll, behavior: "smooth" });
-                } else if (centerDefault) {
-                    const midpoint = (row.scrollWidth - row.clientWidth) / 2;
-                    row.scrollTo({ left: midpoint, behavior: "smooth" });
                 } else {
                     const midpoint = (row.scrollWidth - row.clientWidth) / 2;
                     row.scrollTo({ left: midpoint, behavior: "smooth" });
@@ -3401,51 +3275,10 @@
             row._resetHaptic = () => { lastCenteredHref = null; };
         }
 
-        /* Global click haptic — tiered intensity based on interaction importance */
-        document.addEventListener("click", e => {
-            if (!navigator.vibrate) return;
-            // Catch anything interactive: links, buttons, cards, chips, OR anything with an onclick/role=button
-            const t = e.target.closest("#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid > div, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip");
-            if (t) {
-                const isMajor = t.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link");
-                haptic(isMajor ? 'pulse' : 'tap');
-            }
-        }, { passive: true });
 
-        let resizeTimer;
-        let lastScrollPos = 0;
-
-        function updatePadding() {
-            const header = document.getElementById("main-header");
-            if (header) document.body.style.paddingTop = header.offsetHeight + "px";
-        }
-
-        function initPaddingObserver() {
-            const header = document.getElementById("main-header");
-            if (!header) return;
-
-            // FRAME-SYNC: Use ResizeObserver to eliminate trailing lag
-            const observer = new ResizeObserver(() => {
-                window.requestAnimationFrame(updatePadding);
-            });
-            observer.observe(header);
-            updatePadding(); // Initial sync
-        }
         let resizeTimeout;
         let ticking = false;
-        window.addEventListener("scroll", () => {
-            if (!ticking) {
-                window.requestAnimationFrame(() => {
-                    const t = window.scrollY;
-                    const e = document.getElementById("main-header");
-                    if (e) {
-                        e.classList.toggle("scrolled", t > 10);
-                    }
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        });
+        /* Scroll Listener Removed - Sticky Header handles this natively */
         window.addEventListener('resize', () => {
             if (resizeTimeout) cancelAnimationFrame(resizeTimeout);
             resizeTimeout = requestAnimationFrame(() => {
@@ -3464,8 +3297,6 @@
             if (window.getSelection) {
                 const sel = window.getSelection();
                 if (sel && sel.removeAllRanges) sel.removeAllRanges();
-            } else if (document.selection && document.selection.empty) {
-                try { document.selection.empty(); } catch (e) { }
             }
         }
 
@@ -3753,7 +3584,6 @@
             let media = entry.Thumbnail;
             let content = entry.Content || "";
             let mediaHTML = "";
-            let titleHTML = safeHTML(entry.Title);
             let isTitleLink = false;
 
             const titleUrlMatch = entry.Title ? entry.Title.match(/^https?:\/\/\S+$/) : null;
@@ -3764,12 +3594,12 @@
                     if (extracted) {
                         if (extracted.type === "img") {
                             mediaHTML = `<div class="row-media">
-                                <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                                <div class="sk-img loader-overlay"></div>
                                 <img src="${extracted.url}" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
                             </div>`;
                         } else if (extracted.type === "yt") {
                             mediaHTML = `<div class="row-media">
-                                <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                                <div class="sk-img loader-overlay"></div>
                                 <div class="embed-wrapper video"><iframe onload="this.closest('.row-media').querySelector('.loader-overlay')?.remove()" src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
                             </div>`;
                         }
@@ -3783,12 +3613,12 @@
                 } else if (thumb && thumb.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
                     const noLoop = thumb.toLowerCase().includes("-noloop");
                     mediaHTML = `<div class="row-media">
-                        <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                        <div class="sk-img loader-overlay"></div>
                         <video src="${thumb}" autoplay muted ${noLoop ? "" : "loop"} playsinline onloadeddata="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()"></video>
                     </div>`;
                 } else if (thumb) {
                     mediaHTML = `<div class="row-media">
-                        <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                        <div class="sk-img loader-overlay"></div>
                         <img src="${thumb}" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
                     </div>`;
                 }
@@ -3797,17 +3627,17 @@
                 if (extracted) {
                     if (extracted.type === "img") {
                         mediaHTML = `<div class="row-media">
-                            <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                            <div class="sk-img loader-overlay"></div>
                             <img src="${extracted.url}" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
                         </div>`;
                     } else if (extracted.type === "video") {
                         mediaHTML = `<div class="row-media">
-                            <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                            <div class="sk-img loader-overlay"></div>
                             <video src="${extracted.url}" autoplay muted loop playsinline onloadeddata="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()"></video>
                         </div>`;
                     } else if (extracted.type === "yt") {
                         mediaHTML = `<div class="row-media">
-                            <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                            <div class="sk-img loader-overlay"></div>
                             <img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
                         </div>`;
                     }
@@ -3862,13 +3692,11 @@
             // 1. Sorting logic
             if (isRecentActivity) {
                 data.sort((a, b) => new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0));
-                if (title === "Recent Activity") {
-                    data.sort((a, b) => {
-                        const aFeatured = a.Tags && a.Tags.toLowerCase().includes("featured") ? 1 : 0;
-                        const bFeatured = b.Tags && b.Tags.toLowerCase().includes("featured") ? 1 : 0;
-                        return bFeatured - aFeatured;
-                    });
-                }
+                data.sort((a, b) => {
+                    const aFeatured = a.Tags && a.Tags.toLowerCase().includes("featured") ? 1 : 0;
+                    const bFeatured = b.Tags && b.Tags.toLowerCase().includes("featured") ? 1 : 0;
+                    return bFeatured - aFeatured;
+                });
             }
 
             let htmlBuffer = "";
@@ -4092,71 +3920,40 @@
                 }
             });
         }
+        // === MEDIA UTILITIES ===
         function getYouTubeID(url) {
-            const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-            const match = url.match(regex);
+            if (!url) return null;
+            const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
             return match ? match[1] : null;
         }
 
         function getYouTubeThumbnail(videoId) {
-            return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : "";
         }
 
         function extractMediaFromContent(content) {
             if (!content) return null;
-
-            // Check for markdown-style GLB link: [GLB Model](path)
-            const glbLinkMatch = content.match(/\[GLB\s+Model\]\(([^\)]+\.glb[^\)]*)\)/i);
-            if (glbLinkMatch) {
-                const glbPath = glbLinkMatch[1].trim();
-                return { type: 'glb', url: glbPath, filename: glbPath.split('/').pop() };
-            }
-
-            // Check for GLB files (direct mentions)
-            const glbMatch = content.match(/(?:assets\/models\/)?([a-zA-Z0-9_-]+\.glb)/i);
+            const glbMatch = content.match(/\[GLB\s+Model\]\(([^\)]+\.glb[^\)]*)\)/i) || content.match(/(?:assets\/models\/)?([a-zA-Z0-9_-]+\.glb)/i);
             if (glbMatch) {
-                const glbPath = glbMatch[0].startsWith('assets/') ? glbMatch[0] : `assets/models/${glbMatch[0]}`;
-                return { type: 'glb', url: glbPath, filename: glbMatch[1] };
+                const path = glbMatch[1] || glbMatch[0];
+                const url = (path.startsWith('assets/') || path.startsWith('http')) ? path : `assets/models/${path}`;
+                return { type: 'glb', url: url };
             }
-
-            // Check for images
-            const imgMatch = content.match(/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp)/i);
-            if (imgMatch) {
-                return { type: 'img', url: imgMatch[0] };
-            }
-
-            // Check for Video
+            const imgMatch = content.match(/https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|svg)/i);
+            if (imgMatch) return { type: 'img', url: imgMatch[0] };
             const videoMatch = content.match(/https?:\/\/\S+\.(?:mp4|webm|mov|ogg)/i);
-            if (videoMatch) {
-                return { type: 'video', url: videoMatch[0] };
-            }
-
+            if (videoMatch) return { type: 'video', url: videoMatch[0] };
             return null;
         }
 
         function getThumbnail(media) {
             if (!media) return null;
-
-            // GLB support
-            if (media.match(/\.glb(?:\?.*)?$/i)) {
-                return 'GLB_VIEWER';
-            }
-
-            // YouTube handling
-            if (media.includes("youtube.com") || media.includes("youtu.be")) {
-                let videoId = getYouTubeID(media);
-                return videoId ? getYouTubeThumbnail(videoId) : media;
-            }
-
-            // Video handling
-            if (media.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
-                return media;
-            }
-
+            if (media.match(/\.glb(?:\?.*)?$/i)) return 'GLB_VIEWER';
+            const ytId = getYouTubeID(media);
+            if (ytId) return getYouTubeThumbnail(ytId);
             return media;
         }
 
-        // Expose to window for card rendering
         window.getYouTubeID = getYouTubeID;
         window.getYouTubeThumbnail = getYouTubeThumbnail;
         window.extractMediaFromContent = extractMediaFromContent;
@@ -4169,7 +3966,7 @@
         function processGlbQueue(deadline) {
             // ENGINE CHECK: If Three.js isn't ready (module script deferred), verify before consuming queue
             if (!window.initThreeJSViewer) {
-                window.setTimeout(() => processGlbQueue(), 100); // Retry without deadline
+                window.setTimeout(() => processGlbQueue(deadline), 100);
                 return;
             }
 
@@ -4333,18 +4130,81 @@
             }
         });
 
-        window.addEventListener('resize', () => {
-            Object.values(window._glbViewers).forEach(viewer => {
-                if (viewer.onResize) viewer.onResize();
-            });
-        });
-        function formatDate(e) { if (!e) return ""; if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`; if (8 === (e = String(e).trim()).length && !isNaN(e)) { const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8), r = new Date(t, n - 1, o, 12, 0, 0); return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}` } const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/); if (t) { const e = parseInt(t[1]), n = parseInt(t[2]), o = parseInt(t[3]); return `${o} ${new Date(e, n - 1, o, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${e}` } if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e; const n = new Date(e); return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}` }
-        function updateSEO() { const e = document.getElementById("json-ld-script"); e && e.remove(); const t = document.createElement("script"); t.id = "json-ld-script", t.type = "application/ld+json"; const n = { "@context": "https://schema.org", "@type": "ProfilePage", mainEntity: { "@type": "Person", name: "Sahib Virdee", jobTitle: "Mechanical Engineering Graduate", description: "Specializing in Design and Manufacturing.", url: "https://sahibvirdee.com/", sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"] }, hasPart: db.map(e => { if (!e.Title || !e.Content) return null; return { "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork", name: e.Title, description: e.Content.substring(0, 150) + "...", url: `https://sahibvirdee.com/#${e.Page}` } }).filter(e => e) }; t.textContent = JSON.stringify(n), document.head.appendChild(t) }
+        function formatDate(e) {
+            if (!e) return "";
+            if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`;
+            e = String(e).trim();
+            if (8 === e.length && !isNaN(e)) {
+                const t = e.substring(0, 4), n = e.substring(4, 6), o = e.substring(6, 8);
+                const r = new Date(t, n - 1, o, 12, 0, 0);
+                return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${t}`;
+            }
+            const t = e.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (t) {
+                const y = parseInt(t[1]), m = parseInt(t[2]), d = parseInt(t[3]);
+                return `${d} ${new Date(y, m - 1, d, 12, 0, 0).toLocaleString("default", { month: "short" }).toUpperCase()} ${y}`;
+            }
+            if (e.toLowerCase().includes("present") || isNaN(Date.parse(e))) return e;
+            const n = new Date(e);
+            return isNaN(n.getTime()) ? e : `${n.getDate()} ${n.toLocaleString("default", { month: "short" }).toUpperCase()} ${n.getFullYear()}`;
+        }
+
+        function updateSEO() {
+            const e = document.getElementById("json-ld-script");
+            if (e) e.remove();
+            const t = document.createElement("script");
+            t.id = "json-ld-script", t.type = "application/ld+json";
+            const n = {
+                "@context": "https://schema.org",
+                "@type": "ProfilePage",
+                mainEntity: {
+                    "@type": "Person",
+                    name: "Sahib Virdee",
+                    jobTitle: "Mechanical Engineering Graduate",
+                    description: "Specializing in Design and Manufacturing.",
+                    url: "https://sahibvirdee.com/",
+                    sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"]
+                },
+                hasPart: db.map(e => {
+                    if (!e.Title || !e.Content) return null;
+                    return {
+                        "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork",
+                        name: e.Title,
+                        description: e.Content.substring(0, 150) + "...",
+                        url: `https://sahibvirdee.com/#${e.Page}`
+                    };
+                }).filter(e => e)
+            };
+            t.textContent = JSON.stringify(n);
+            document.head.appendChild(t);
+        }
+
+        function generateResumeJSONLD() {
+            const e = document.getElementById("json-ld-resume");
+            if (e) e.remove();
+            const t = resumeDb;
+            const n = t.filter(e => e.SectionType && e.SectionType.toLowerCase().startsWith("#header"));
+            if (0 === n.length) return;
+            const o = n[0], r = o.Title.split("|")[0].trim(), i = o.Title.split("|")[1] ? o.Title.split("|")[1].trim() : "Engineer",
+                s = {
+                    "@context": "https://schema.org",
+                    "@type": "Person",
+                    name: r,
+                    jobTitle: i,
+                    url: "https://sahibvirdee.com/resume",
+                    description: `Resume of ${r}, ${i}.`,
+                    knowsAbout: t.filter(e => e.SectionType && e.SectionType.toLowerCase().includes("skill")).map(e => e.Content).join(", ")
+                };
+            const a = document.createElement("script");
+            a.id = "json-ld-resume", a.type = "application/ld+json";
+            a.textContent = JSON.stringify(s);
+            document.head.appendChild(a);
+        }
+
         function formatSectionTitle(type) {
             if (!type) return null;
             const normalized = type.toLowerCase().replace(/^#/, '');
             if (normalized === 'header') return null;
-            // Replace - with space, and Title Case
             return normalized.split(/[-_ ]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         }
 
@@ -4507,16 +4367,7 @@
                 </div>`;
         }
 
-        function generateResumeJSONLD() {
-            const e = document.getElementById("json-ld-resume"); e && e.remove();
-            const t = resumeDb, n = t.filter(e => e.SectionType && e.SectionType.toLowerCase().startsWith("#header"));
-            if (0 === n.length) return;
-            const o = n[0], r = o.Title.split("|")[0].trim(), i = o.Title.split("|")[1] ? o.Title.split("|")[1].trim() : "Engineer",
-                s = { "@context": "https://schema.org", "@type": "Person", name: r, jobTitle: i, url: "https://sahibvirdee.com/resume", description: `Resume of ${r}, ${i}.`, knowsAbout: t.filter(e => e.SectionType && e.SectionType.toLowerCase().includes("skill")).map(e => e.Content).join(", ") },
-                a = document.createElement("script"); a.id = "json-ld-resume", a.type = "application/ld+json", a.textContent = JSON.stringify(s), document.head.appendChild(a)
-        }
 
-        document.addEventListener("DOMContentLoaded", () => { window.addEventListener("load", init) });
 
         // === FLEXIBLE CONTENT BLOCK SYSTEM ===
 
@@ -4747,7 +4598,7 @@
             // 1. Generate Media HTML
             if (item.type === 'image') {
                 const style = isGallery ? 'style="height:100%; width:100%; object-fit:cover;"' : '';
-                const loader = `<div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>`;
+                const loader = `<div class="sk-img loader-overlay"></div>`;
                 mediaHTML = `${loader}<img src="${item.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="this.previousElementSibling?.remove()" onerror="this.previousElementSibling?.remove()">`;
 
                 if (!isGallery) {
@@ -4758,7 +4609,7 @@
             } else if (item.type === 'youtube') {
                 const vidID = item.id || getYouTubeID(item.url);
                 mediaHTML = `<div class="${embedClass}">
-                        <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                        <div class="sk-img loader-overlay"></div>
                         <iframe onload="this.previousElementSibling?.remove()" src="https://www.youtube-nocookie.com/embed/${vidID}?modestbranding=1&rel=0" 
                             title="YouTube video player" 
                             frameborder="0" 
@@ -4771,7 +4622,7 @@
             } else if (item.type === 'video') {
                 const noLoop = item.url.toLowerCase().includes("-noloop");
                 mediaHTML = `<div class="media-container">
-                        <div class="sk-img loader-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:1;"></div>
+                        <div class="sk-img loader-overlay"></div>
                         <video src="${item.url}" autoplay muted ${noLoop ? "" : "loop"} playsinline style="width:100%; display:block; border-radius:var(--card-radius);" onloadeddata="this.previousElementSibling?.remove()" onerror="this.previousElementSibling?.remove()"></video>
                     </div>`;
 
@@ -5056,16 +4907,8 @@
         window._glbLastFrameTime = 0;
         window._glbTimeBudget = 8; // ms per frame for rendering
 
-        // SCROLL THROTTLING: Pause 3D during active scroll for 60fps navigation
+        // SCROLL THROTTLING REMOVED per user request
         window._isGlbScrolling = false;
-        let scrollTimeout;
-        window.addEventListener('scroll', () => {
-            window._isGlbScrolling = true;
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                window._isGlbScrolling = false;
-            }, 75);
-        }, { passive: true });
 
         let _glbCircularIndex = 0;
         function globalAnimate(now) {
@@ -5073,8 +4916,8 @@
 
             if (window._glbRegistry.length === 0) return;
 
-            // Priority 1: User Navigation (Prioritize scroll smoothness above all)
-            if (window._isGlbScrolling) return;
+            // Priority 1: User Navigation - Throttling Removed
+            // if (window._isGlbScrolling) return;
 
             // ADAPTIVE BUDGET: If frame took too long last time, tighten budget
             const frameTime = now - window._glbLastFrameTime;
@@ -5086,21 +4929,40 @@
             const startTime = performance.now();
             const total = window._glbRegistry.length;
 
-            // PRIORITY: Render visible models first to eliminate on-screen jitter
-            const visibleViewers = [];
-            const hiddenViewers = [];
+            // SEGMENTATION: 
+            // 1. Unrendered & Visible (Must render NOW to trigger entrance)
+            // 2. Rendered & Visible (Standard updates)
+            // 3. Hidden (Background/paused)
+
+            const unrenderedVisible = [];
+            const renderedVisible = [];
+            const hidden = [];
 
             for (let i = 0; i < total; i++) {
                 const viewer = window._glbRegistry[i];
-                if (viewer.isVisible()) visibleViewers.push(viewer);
-                else hiddenViewers.push(viewer);
+                if (viewer.isVisible()) {
+                    if (!viewer.hasRenderedState) unrenderedVisible.push(viewer);
+                    else renderedVisible.push(viewer);
+                } else {
+                    hidden.push(viewer);
+                }
             }
 
-            const prioritized = [...visibleViewers, ...hiddenViewers];
+            // PHASE 1: Force-Render new entrances (Ignore Budget)
+            // This eliminates the "waiting for slot" delay on load
+            for (let i = 0; i < unrenderedVisible.length; i++) {
+                unrenderedVisible[i].update(now);
+            }
 
+            // PHASE 2: Standard Budgeted Rendering
+            // Only consume remaining budget for already-visible items
+            const remainingBudget = Math.max(0, budget - (performance.now() - startTime));
+            const budgetStartTime = performance.now();
+
+            const prioritized = [...renderedVisible, ...hidden];
             for (let i = 0; i < prioritized.length; i++) {
                 const viewer = prioritized[i];
-                if (performance.now() - startTime > budget) break;
+                if (performance.now() - budgetStartTime > remainingBudget) break;
                 viewer.update(now);
             }
         }
@@ -5145,49 +5007,34 @@
             // THEME-AWARE STABILITY: Sync clear color with current theme to eliminate contrast flicker (especially in light mode)
             const isLight = document.documentElement.getAttribute('data-theme') === 'light';
             renderer.setClearColor(isLight ? 0xffffff : 0x000000, 0);
-            renderer.shadowMap.enabled = true; // Enable Shadows for depth
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
             renderer.toneMapping = THREE.ACESFilmicToneMapping; // Reverted: ACES Filmic for punchy contrast and saturation
-            renderer.toneMappingExposure = 0.8; // Chroma-Studio: 0.8 for vibrant, high-fidelity results.
+            renderer.toneMappingExposure = 1.0; // Reduced from 1.2 to 1.0 to restore color saturation (avoid washout)
             renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-            // VIBRANT STUDIO LIGHTING (Jewelry Store Overhaul)
-            // 1. Environment First: High intensity IBL ensures metallic surfaces have rich, natural depth.
-            const pmremGenerator = new THREE.PMREMGenerator(renderer);
-            const envTexture = pmremGenerator.fromScene(new RoomEnvironment()).texture;
-            scene.environment = envTexture;
-            // Chroma-Studio: High Environment Intensity provides the saturation/vibrancy without the "blown out" faces.
-            if (scene.hasOwnProperty('environmentIntensity')) {
-                scene.environmentIntensity = 2.0;
-            }
-            pmremGenerator.dispose();
 
             // 2. Multi-Point Accent Lighting (Near-Zero Fill)
             // Near-Zero intensities prevent any face from reflecting pure white, while keeping "shimmer."
 
-            // HEMISPHERE: Sky (White) / Ground (Very Subtle Warmth)
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 0.4);
+            // HEMISPHERE: Sky (White) / Ground (Soft Grey) - High intensity ambient to replace EnvMap softness
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
             scene.add(hemiLight);
 
-            const keyLight = new THREE.DirectionalLight(0xffffff, 0.15);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
             keyLight.position.set(5, 10, 5);
-            keyLight.castShadow = true;
-            keyLight.shadow.normalBias = 0.05;
             scene.add(keyLight);
 
-            const fillLight = new THREE.DirectionalLight(0xffffff, 0.1);
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
             fillLight.position.set(-5, 2, 5);
             scene.add(fillLight);
 
-            const rimLight = new THREE.DirectionalLight(0xffffff, 0.1);
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.6);
             rimLight.position.set(-2, 5, -5);
             scene.add(rimLight);
 
-            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.1);
+            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.3);
             bottomLight.position.set(0, -5, 0);
             scene.add(bottomLight);
 
-            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.1);
+            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.6);
             cameraLight.position.set(0, 0, 1);
             camera.add(cameraLight);
             scene.add(camera);
@@ -5254,20 +5101,12 @@
                 // FIDELITY GATE: Entrance only triggers when LOADED + RENDERED + VISIBLE
                 if (!isModelReady || !hasRendered || !isVisible || container.classList.contains('loaded')) return;
 
-                // DOUBLE-SYNC: Ensure the hidden state (opacity:0) is definitely painted before the transition starts
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        container.classList.add('loaded');
-                        if (viewerInstance) viewerInstance.loaded = true;
+                // IMMEDIATE ENTRANCE (Delays removed)
+                container.classList.add('loaded');
+                if (viewerInstance) viewerInstance.loaded = true;
 
-                        // DELAYED CLEANUP: Wait for the 1.2s fade to finish before removing skeleton
-                        // This prevents the "empty background flash" on slower mobile devices.
-                        setTimeout(() => {
-                            const overlay = container.querySelector('.loader-overlay');
-                            if (overlay) overlay.remove();
-                        }, 1500);
-                    });
-                });
+                const overlay = container.querySelector('.loader-overlay');
+                if (overlay) overlay.remove();
             };
 
             loader.load(glbPath, (gltf) => {
@@ -5424,6 +5263,7 @@
                     // Mark as rendered so the entrance gate can open
                     if (!hasRendered) {
                         hasRendered = true;
+                        viewerInstance.hasRenderedState = true;
                         triggerEntrance();
                     }
 
@@ -5437,7 +5277,9 @@
                     scene.clear();
                 },
                 model: () => model,
-                loaded: false
+                model: () => model,
+                loaded: false,
+                hasRenderedState: false
             };
 
             // Register with the global orchestrator
@@ -5449,4 +5291,4 @@
     </script>
 </body>
 
-<!-- </html>\k, -->
+</html>
