@@ -351,7 +351,7 @@
         .article-body a:not(.chip):not(.btn-cta),
         .layout-text a:not(.chip):not(.btn-cta),
         .resume-contact a:not(.btn-cta),
-        .layout-hero p .btn-cta-wrapper a:not(.chip):not(.btn-cta),
+        .layout-hero a:not(.chip):not(.btn-cta),
         .resume-entry a:not(.chip):not(.btn-cta),
         #footer-links a:not(.btn-cta),
         .author-link,
@@ -373,7 +373,7 @@
 
             .article-body a:not(.chip):hover,
             .layout-text a:not(.chip):hover,
-            .layout-hero p .btn-cta-wrapper a:not(.chip):hover,
+            .layout-hero a:not(.chip):hover,
             .resume-entry a:not(.chip):hover,
             .resume-contact a:hover,
             #footer-links a:hover,
@@ -941,8 +941,8 @@
             grid-column: 1 / -1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            /* Extreme tightening for Hero */
+            gap: 12px;
+            /* Increased from 4px to allow visible paragraph breaks */
             align-items: center;
             padding-top: 40px;
             /* Match .layout-quote top spacing */
@@ -957,8 +957,8 @@
             grid-column: 1 / -1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            /* Extreme tightening for Text */
+            gap: 12px;
+            /* Increased from 4px to allow visible paragraph breaks */
         }
 
         /* --- FOOTER STYLES --- */
@@ -4866,6 +4866,9 @@
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
+
+            // Allow <br> tags to pass through
+            result = result.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
 
             // Universal button support (inline/paragraph)
             result = result.replace(/\[button\]:\s*(.+?)\s*\|\s*(\S+)/gi, (match, btnText, btnUrl) => {
