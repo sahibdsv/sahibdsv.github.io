@@ -202,7 +202,7 @@
 
         /* Theme transition for all relevant properties */
         body {
-            transition: background-color var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease), padding-top .4s var(--ease);
+            transition: background-color var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease);
         }
 
         #main-header,
@@ -254,8 +254,7 @@
             color: var(--text-main);
             font-family: "Jost", sans-serif;
             line-height: 1.5;
-            padding-top: 80px;
-            transition: padding-top .4s var(--ease);
+            padding-top: 65px;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -2884,12 +2883,9 @@
 
             // Re-enable transitions after initial paint
             requestAnimationFrame(() => {
-                setTimeout(() => {
-                    document.body.classList.remove('no-transition');
-                    const header = document.getElementById('main-header');
-                    if (header) header.classList.remove('no-transition');
-                    updatePadding();
-                }, 50);
+                document.body.classList.remove('no-transition');
+                const header = document.getElementById('main-header');
+                if (header) header.classList.remove('no-transition');
             });
         };
 
@@ -2952,11 +2948,8 @@
             trackPage(window.location.hash || "#Home");
 
             requestAnimationFrame(() => {
-                setTimeout(() => {
-                    document.body.classList.remove('no-transition');
-                    document.getElementById('main-header').classList.remove('no-transition');
-                    updatePadding();
-                }, 50);
+                document.body.classList.remove('no-transition');
+                document.getElementById('main-header').classList.remove('no-transition');
             });
         }
 
@@ -3028,6 +3021,7 @@
                 .replace(/'/g, '&#039;');
         }
         function initApp() {
+            initPaddingObserver();
             handleRouting(),
                 window.addEventListener("hashchange", handleRouting),
                 window.addEventListener("scroll", () => { const e = document.getElementById("main-header"); e.classList.toggle("scrolled", window.scrollY > 10) }),
@@ -3422,20 +3416,20 @@
         let lastScrollPos = 0;
 
         function updatePadding() {
-            const navStack = document.getElementById("nav-stack");
-            if (!navStack) return;
-            const rows = Array.from(navStack.querySelectorAll(".nav-row:not(.hidden)"));
-            let height = 37; // Base brand row padding-top
+            const header = document.getElementById("main-header");
+            if (header) document.body.style.paddingTop = header.offsetHeight + "px";
+        }
 
-            rows.forEach(row => {
-                if (row.classList.contains("level-1")) {
-                    height += 27; // Brand row height contribution
-                } else {
-                    height += 25; // Sub-nav row height contribution
-                }
+        function initPaddingObserver() {
+            const header = document.getElementById("main-header");
+            if (!header) return;
+
+            // FRAME-SYNC: Use ResizeObserver to eliminate trailing lag
+            const observer = new ResizeObserver(() => {
+                window.requestAnimationFrame(updatePadding);
             });
-
-            document.body.style.paddingTop = (height + 10) + "px";
+            observer.observe(header);
+            updatePadding(); // Initial sync
         }
         let resizeTimeout;
         let ticking = false;
