@@ -3235,10 +3235,6 @@
                 } else {
                     if (row._resetHaptic) row._resetHaptic(); // Reset haptics only on full re-render
 
-                    // PERFORMANCE FIX: Reset scroll position before content swap to avoid inheriting 
-                    // stale scroll metrics from a larger previous category (e.g. from Personal to Projects)
-                    row.scrollLeft = 0;
-
                     row.innerHTML = items.map(item => {
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
                         const activeClass = item === activeName ? "active" : "";
@@ -3254,7 +3250,7 @@
                 }
 
                 // Only center if we didn't just scroll it ourselves (picker mode)
-                centerNavRow(row, isNew && !activeName);
+                centerNavRow(row, level > 1);
                 if (level > 1) setupHapticScroll(row);
             }
 
@@ -3290,7 +3286,7 @@
 
         let _pickerScrollingRow = null;
 
-        function centerNavRow(row, centerDefault) {
+        function centerNavRow(row, isSubNav) {
             if (row === _pickerScrollingRow) return;
             if (window.innerWidth > 768) return;
             if (!row) return;
@@ -3302,7 +3298,7 @@
                 if (activeLink) {
                     const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
                     row.scrollTo({ left: targetScroll, behavior: "smooth" });
-                } else if (level > 1) { // Only sub-nav (Level 2+) needs auto-midpoint centering
+                } else if (isSubNav) {
                     const midpoint = (row.scrollWidth - row.clientWidth) / 2;
                     row.scrollTo({ left: midpoint, behavior: "smooth" });
                 }
