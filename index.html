@@ -1412,7 +1412,8 @@
             width: 100%;
             border-radius: var(--card-radius);
             overflow: hidden;
-            background: transparent;
+            background: var(--card-bg-dark);
+            /* Solid background to prevent flashes */
         }
 
         .model-viewer-wrapper.card-preview {
@@ -1451,6 +1452,9 @@
             opacity: 0;
             transform: scale(0.95);
             transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+            /* Prevent browser default canvas color */
+            background: transparent !important;
+            will-change: opacity, transform;
         }
 
         .model-viewer-wrapper.loaded canvas {
@@ -3367,7 +3371,7 @@
 
             // SYNC GLB: Update clear colors for all active viewers to prevent flicker during theme changes
             if (window._glbViewers) {
-                const clearColor = newTheme === 'light' ? 0xffffff : 0x000000;
+                const clearColor = newTheme === 'light' ? 0xf5f5f7 : 0x000000;
                 Object.values(window._glbViewers).forEach(viewer => {
                     if (viewer.renderer) viewer.renderer.setClearColor(clearColor, 0);
                 });
@@ -5059,22 +5063,6 @@
         }
         requestAnimationFrame(globalAnimate);
 
-        // Initialize Three.js viewer - expose to window for card previews
-        window.renderGLBViewer = function (glbPath, isCardMode) {
-            const containerId = 'glb-' + Math.random().toString(36).substr(2, 9);
-            const containerClass = isCardMode ? 'model-viewer-wrapper card-mode' : 'model-viewer-wrapper';
-
-            // Defer initialization to after DOM paint
-            setTimeout(() => {
-                const container = document.getElementById(containerId);
-                if (container) window.initThreeJSViewer(container, glbPath, isCardMode);
-            }, 0);
-
-            return `<div id="${containerId}" class="${containerClass}">
-                <div class="sk-img loader-overlay"></div>
-                <canvas></canvas>
-            </div>`;
-        };
 
         window.initThreeJSViewer = function initThreeJSViewer(container, glbPath, isCardMode) {
             const canvas = container.querySelector('canvas');
@@ -5113,9 +5101,12 @@
             // DETECT MOBILE SAFELY
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || (window.innerWidth < 800 && window.matchMedia("(pointer: coarse)").matches);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 2.0 : 3.0));
-            // THEME-AWARE STABILITY: Sync clear color with current theme to eliminate contrast flicker (especially in light mode)
+            // THEME-AWARE STABILITY: Sync clear color with current theme to eliminate contrast flicker
+            // We use the exact background color of the site to make any brief flashes invisible
             const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-            renderer.setClearColor(isLight ? 0xffffff : 0x000000, 0);
+            const clearColor = isLight ? 0xf5f5f7 : 0x000000;
+            renderer.setClearColor(clearColor, 0);
+            canvas.style.backgroundColor = 'transparent';
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.0; // Neutral: ACES Filmic handles contrast/saturation naturally
             renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -5458,7 +5449,10 @@
                     try {
                         const gl = renderer.getContext();
                         const ext = gl.getExtension('WEBGL_lose_context');
-                        if (ext) ext.loseContext();
+                        if (ext) {
+                            // Defer losing context slightly to avoid flicker if page is still transitioning
+                            setTimeout(() => ext.loseContext(), 50);
+                        }
                     } catch (e) { /* Context may already be lost */ }
                     scene.clear();
                 },
