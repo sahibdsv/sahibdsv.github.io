@@ -1406,9 +1406,17 @@
             display: block;
         }
 
-        .model-viewer-wrapper.card-preview {
+        .model-viewer-wrapper {
+            position: relative;
             aspect-ratio: 4/3;
-            /* Synchronized with row-media */
+            width: 100%;
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            background: transparent;
+        }
+
+        .model-viewer-wrapper.card-preview {
+            /* Inherits position/aspect from above */
             background: transparent;
             border-bottom: none;
         }
@@ -1461,6 +1469,7 @@
         }
 
         .embed-wrapper.video {
+            position: relative;
             aspect-ratio: 4/3;
             padding-top: 0;
             max-width: 700px;
@@ -4710,6 +4719,7 @@
                 // We return them STACKED. 
                 // The mediaHTML (div) handles its own border-radius.
                 // The captionHTML (div) sits underneath it.
+                return `${mediaHTML}${captionHTML}`;
             }
         }
         // Render a block as HTML
@@ -5050,6 +5060,22 @@
         requestAnimationFrame(globalAnimate);
 
         // Initialize Three.js viewer - expose to window for card previews
+        window.renderGLBViewer = function (glbPath, isCardMode) {
+            const containerId = 'glb-' + Math.random().toString(36).substr(2, 9);
+            const containerClass = isCardMode ? 'model-viewer-wrapper card-mode' : 'model-viewer-wrapper';
+
+            // Defer initialization to after DOM paint
+            setTimeout(() => {
+                const container = document.getElementById(containerId);
+                if (container) window.initThreeJSViewer(container, glbPath, isCardMode);
+            }, 0);
+
+            return `<div id="${containerId}" class="${containerClass}">
+                <div class="sk-img loader-overlay"></div>
+                <canvas></canvas>
+            </div>`;
+        };
+
         window.initThreeJSViewer = function initThreeJSViewer(container, glbPath, isCardMode) {
             const canvas = container.querySelector('canvas');
 
