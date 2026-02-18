@@ -5510,8 +5510,8 @@
                     delta = Math.min(delta, 50);
 
                     // PROFESSIONAL MOTION: Slower, more subtle rotation for a premium feel
-                    // Cards are now very slow (0.0008) to minimize distraction in grids.
-                    const baseSpeed = isCardMode ? 0.0008 : 0.0015;
+                    // Cards are now slow (0.0010) to minimize distraction in grids.
+                    const baseSpeed = isCardMode ? 0.0010 : 0.0015;
                     const rotationStep = (Math.min(delta, 64) / 16.6) * baseSpeed;
 
                     if (isCardMode && model) {
