@@ -5180,7 +5180,9 @@
             const prioritized = [...renderedVisible, ...hidden];
             for (let i = 0; i < prioritized.length; i++) {
                 const viewer = prioritized[i];
-                if (performance.now() - budgetStartTime > remainingBudget) break;
+                // PRIORITY: If a viewer is in Fullscreen mode, it BYPASSES the budget to ensure smoothness
+                const isFullscreen = !!document.fullscreenElement && viewer.canvas.parentElement === document.fullscreenElement;
+                if (!isFullscreen && (performance.now() - budgetStartTime > remainingBudget)) break;
                 viewer.update(now);
             }
         }
@@ -5220,10 +5222,10 @@
                 precision: "highp"
             });
             renderer.setSize(width, height, false);
-            // Limit pixel ratio to 3.0 to prevent internal browser throttling on ultra-high-density screens
-            // DETECT MOBILE SAFELY
+            // Limit pixel ratio to 2.0 (Industry Gold Standard)
+            // 3.0+ offers diminishing returns but doubles/triples GPU load, causing stuttering in fullscreen.
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || (window.innerWidth < 800 && window.matchMedia("(pointer: coarse)").matches);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 2.0 : 3.0));
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.0));
             // THEME-AWARE STABILITY: Sync clear color with Card Background to maintain component feel
             const isLight = document.documentElement.getAttribute('data-theme') === 'light';
             // Light: #f0f0f0 (0xf0f0f0), Dark: #131313 (0x131313)
@@ -5291,8 +5293,8 @@
             let autoRotateTimeout = null;
             if (!isCardMode) {
                 controls = new OrbitControls(camera, canvas);
-                controls.enableDamping = false; // Direct 1:1 rotation
-                controls.dampingFactor = 0;
+                controls.enableDamping = true; // PREMIUM FEEL: weighting prevents jittery/choppy motion
+                controls.dampingFactor = 0.08; // Swiping feels "heavy" and mechanical
                 controls.enableZoom = false; // DISABLED BY DEFAULT: Enabled in Fullscreen only
                 controls.enablePan = false;  // DISABLED BY DEFAULT: Enabled in Fullscreen only
                 controls.screenSpacePanning = true;
@@ -5478,9 +5480,10 @@
                     camera.aspect = width / height;
                     camera.updateProjectionMatrix();
 
-                    // FIXED: Critical resolution update for Fullscreen/Resize
+                    // STABILITY: Cap resolution at 2.0 for fullscreen. 
+                    // 3.0x rendering on a 4K screen at fullscreen is ~50 million pixels per frame.
                     renderer.setSize(width, height, false);
-                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3.0));
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.0));
 
                     // RE-FRAME: Ensure model still fits in the new aspect ratio
                     viewerInstance.fitStage();
