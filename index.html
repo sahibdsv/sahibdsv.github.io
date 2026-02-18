@@ -5165,23 +5165,26 @@
             }
 
             // PHASE 1: Force-Render new entrances (Ignore Budget)
-            // This eliminates the "waiting for slot" delay on load
             for (let i = 0; i < unrenderedVisible.length; i++) {
                 unrenderedVisible[i].update(now);
             }
 
             // PHASE 2: Standard Budgeted Rendering
-            // Only consume remaining budget for already-visible items
             const remainingBudget = Math.max(0, budget - (performance.now() - startTime));
             const budgetStartTime = performance.now();
 
-            const prioritized = [...renderedVisible, ...hidden];
-            for (let i = 0; i < prioritized.length; i++) {
-                const viewer = prioritized[i];
-                // PRIORITY: If a viewer is in Fullscreen mode, it BYPASSES the budget to ensure smoothness
-                const isFullscreen = !!document.fullscreenElement && viewer.canvas.parentElement === document.fullscreenElement;
-                if (!isFullscreen && (performance.now() - budgetStartTime > remainingBudget)) break;
-                viewer.update(now);
+            // EXCLUSIVE MODE: If we have a fullscreen model, ONLY render that one.
+            // This stops all background cards from "stealing" GPU draw calls.
+            if (fsViewerId) {
+                const fsViewer = renderedVisible.find(v => v.canvas.parentElement?.id === fsViewerId);
+                if (fsViewer) fsViewer.update(now);
+            } else {
+                // HOME/ARTICLE MODE: Render with budget
+                for (let i = 0; i < renderedVisible.length; i++) {
+                    const viewer = renderedVisible[i];
+                    if (performance.now() - budgetStartTime > remainingBudget) break;
+                    viewer.update(now);
+                }
             }
         }
         requestAnimationFrame(globalAnimate);
@@ -5302,9 +5305,9 @@
             let autoRotateTimeout = null;
             if (!isCardMode) {
                 controls = new OrbitControls(camera, canvas);
-                controls.enableDamping = true; // PREMIUM FEEL: weighting prevents jittery/choppy motion
-                controls.dampingFactor = 0.12; // Tightened for more responsive, high-precision control
-                controls.enableZoom = false; // DISABLED BY DEFAULT: Enabled in Fullscreen only
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.15; // Tightened for high-precision "latched" feeling
+                controls.enableZoom = false;
                 controls.enablePan = false;  // DISABLED BY DEFAULT: Enabled in Fullscreen only
                 controls.screenSpacePanning = true;
                 controls.panSpeed = 1.0;
