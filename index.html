@@ -1846,7 +1846,18 @@
             }
         }
 
-        /* Re-enable pointer events when in fullscreen */
+        /* Re-enable pointer events when in fullscreen and remove card-like framing */
+        .model-viewer-wrapper:fullscreen,
+        .model-viewer-wrapper:-webkit-full-screen,
+        .model-viewer-wrapper.fullscreen {
+            border-radius: 0 !important;
+            aspect-ratio: auto !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: #000 !important;
+            /* Pure black for maximal immersion in fullscreen */
+        }
+
         .model-viewer-wrapper.fullscreen canvas {
             pointer-events: auto !important;
         }
@@ -1882,19 +1893,18 @@
             fill: currentColor;
         }
 
-        /* FULLSCREEN OVERRIDES: Move to Top-Left and Scale Up for Mobile Landscape */
+        /* FULLSCREEN STYLE OVERRIDES (All Screens) */
         .model-viewer-wrapper:fullscreen .fs-btn,
         .model-viewer-wrapper:-webkit-full-screen .fs-btn,
         .model-viewer-wrapper.fullscreen .fs-btn {
             top: 24px;
-            left: 24px;
-            right: auto;
+            right: 24px;
+            left: auto;
             width: 54px;
             height: 54px;
             background: rgba(var(--bg-rgb), 0.85);
             border-color: rgba(var(--bright-rgb), 0.5);
             box-shadow: none;
-            /* Shadow removed per user request */
         }
 
         .model-viewer-wrapper:fullscreen .fs-btn svg,
@@ -1902,6 +1912,17 @@
         .model-viewer-wrapper.fullscreen .fs-btn svg {
             width: 28px;
             height: 28px;
+        }
+
+        /* POSITION SHIFT ONLY FOR MOBILE (Thumb Accessibility in Landscape) */
+        @media (max-width: 800px) {
+
+            .model-viewer-wrapper:fullscreen .fs-btn,
+            .model-viewer-wrapper:-webkit-full-screen .fs-btn,
+            .model-viewer-wrapper.fullscreen .fs-btn {
+                left: 24px;
+                right: auto;
+            }
         }
 
         .model-viewer-wrapper .fs-btn:hover {
