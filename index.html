@@ -1939,8 +1939,9 @@
         .model-viewer-wrapper:fullscreen .fs-btn,
         .model-viewer-wrapper:-webkit-full-screen .fs-btn,
         .model-viewer-wrapper.fullscreen .fs-btn {
-            top: 24px;
+            bottom: 24px;
             right: 24px;
+            top: auto;
             left: auto;
             width: 54px;
             height: 54px;
@@ -1954,18 +1955,6 @@
         .model-viewer-wrapper.fullscreen .fs-btn svg {
             width: 28px;
             height: 28px;
-        }
-
-        /* POSITION SHIFT ONLY FOR MOBILE (Thumb Accessibility in Landscape) */
-        /* Increased to 1024px to cover large phones (Pro Max/Ultra) and Mini Tablets in landscape */
-        @media (max-width: 1024px) {
-
-            .model-viewer-wrapper:fullscreen .fs-btn,
-            .model-viewer-wrapper:-webkit-full-screen .fs-btn,
-            .model-viewer-wrapper.fullscreen .fs-btn {
-                left: 24px;
-                right: auto;
-            }
         }
 
         .model-viewer-wrapper .fs-btn:hover {
@@ -5233,7 +5222,7 @@
             renderer.setClearColor(clearColor, 1); // 1.0 Alpha for solid card look
             canvas.style.backgroundColor = 'transparent';
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.0; // Neutral: ACES Filmic handles contrast/saturation naturally
+            renderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials and preserves highlight detail
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
             // CONTEXT LOSS HANDLER: Detect and recover from WebGL context loss
@@ -5257,29 +5246,36 @@
             scene.environment = envMap;
             scene.environmentIntensity = 1.0;
 
-            // PRECISE LIGHTING RIG: Balanced for both high-end desktops and mobile webviews
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.8); // Boosted for vibrancy
+            // JEWELRY STORE LIGHTING RIG: High-contrast specialized rig
+            // 1. Deep Base: Lower ground-ambient to create volume and prevent "washing out"
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x111111, 0.35);
             scene.add(hemiLight);
 
-            const keyLight = new THREE.DirectionalLight(0xffffff, 1.0); // Restored intensity
+            // 2. Key Glow: Soft warm-biased light for realistic brass/metal depth
+            const keyLight = new THREE.DirectionalLight(0xfff5ea, 0.6);
             keyLight.position.set(5, 10, 5);
             scene.add(keyLight);
 
-            const fillLight = new THREE.DirectionalLight(0xffffff, 0.7); // Restored intensity
+            // 3. Fill Detail: Cool-biased light to create professional color contrast
+            const fillLight = new THREE.DirectionalLight(0xeaefff, 0.4);
             fillLight.position.set(-5, 2, 5);
             scene.add(fillLight);
 
-            const rimLight = new THREE.DirectionalLight(0xffffff, 0.8); // Restored intensity for metal pop
+            // 4. Razor Rim: Sharp, intense light to define the silhouette against black/dark backgrounds
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.9);
             rimLight.position.set(-2, 5, -5);
             scene.add(rimLight);
 
-            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.3);
+            // 5. Hero Accent: Subtle front-vibrancy light to reveal fine textures
+            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.25);
+            cameraLight.position.set(0, 0, 1);
+            camera.add(cameraLight);
+
+            // 6. Floor Bounce: Prevents the underside from becoming pitch black
+            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.15);
             bottomLight.position.set(0, -5, 0);
             scene.add(bottomLight);
 
-            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.3);
-            cameraLight.position.set(0, 0, 1);
-            camera.add(cameraLight);
             scene.add(camera);
 
             // LOCAL INTERACTION STATE: Track interaction per-viewer to pause efficiently
