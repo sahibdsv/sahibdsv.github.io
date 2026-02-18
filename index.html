@@ -1854,35 +1854,59 @@
         /* Circular Fullscreen Button */
         .model-viewer-wrapper .fs-btn {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 36px;
-            height: 36px;
+            top: 16px;
+            right: 16px;
+            width: 42px;
+            height: 42px;
             padding: 0;
-            background: rgba(var(--bg-rgb), 0.6);
+            background: rgba(var(--bg-rgb), 0.7);
             color: var(--text-bright);
             border: 1px solid var(--border-strong);
             border-radius: 50%;
             cursor: pointer;
-            z-index: 10;
+            z-index: 100;
+            /* Ensure it's above everything */
             transition: all var(--anim-instant);
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .model-viewer-wrapper .fs-btn svg {
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
             fill: currentColor;
+        }
+
+        /* FULLSCREEN OVERRIDES: Move to Top-Left and Scale Up for Mobile Landscape */
+        .model-viewer-wrapper:fullscreen .fs-btn,
+        .model-viewer-wrapper:-webkit-full-screen .fs-btn,
+        .model-viewer-wrapper.fullscreen .fs-btn {
+            top: 24px;
+            left: 24px;
+            right: auto;
+            width: 54px;
+            height: 54px;
+            background: rgba(var(--bg-rgb), 0.85);
+            border-color: rgba(var(--bright-rgb), 0.5);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .model-viewer-wrapper:fullscreen .fs-btn svg,
+        .model-viewer-wrapper:-webkit-full-screen .fs-btn svg,
+        .model-viewer-wrapper.fullscreen .fs-btn svg {
+            width: 28px;
+            height: 28px;
         }
 
         .model-viewer-wrapper .fs-btn:hover {
             background: rgba(var(--bg-rgb), var(--op-high));
             border-color: rgba(var(--bright-rgb), 0.4);
-            transform: scale(1.1);
+            transform: scale(1.05);
+            /* Stable hover for large targets */
         }
 
         .model-viewer-wrapper.card-preview .fs-btn {
@@ -4133,6 +4157,7 @@
 
             if (!document.fullscreenElement) {
                 wrapper.requestFullscreen().then(() => {
+                    wrapper.classList.add('fullscreen');
                     btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>';
                     btn.title = 'Exit Fullscreen';
                     if (viewer && viewer.controls) {
@@ -4155,6 +4180,9 @@
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) {
                 if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+
+                // Remove fullscreen class from all wrappers on exit
+                document.querySelectorAll('.model-viewer-wrapper.fullscreen').forEach(el => el.classList.remove('fullscreen'));
 
                 // STABILIZATION: Delay resize on exit to allow browser layout to settle (especially on mobile)
                 setTimeout(() => {
