@@ -2857,11 +2857,21 @@
             const literalPath = path.startsWith("#") ? path : "#" + path;
             if (literalPath === _currentPath) return;
 
+            // PERFORMANCE: Use shorter dwell for navigation, but 0s for initial landing
+            const isInitial = !_currentPath;
+            const delay = isInitial ? 0 : 600;
+
             if (_dwellTimer) clearTimeout(_dwellTimer);
             _dwellTimer = setTimeout(() => {
                 _currentPath = literalPath;
-                if (window.umami) umami.track(props => ({ ...props, url: _currentPath, title: document.title }));
-            }, 1500);
+                if (window.umami) {
+                    umami.track(props => ({
+                        ...props,
+                        url: _currentPath,
+                        title: document.title || 'Sahib Virdee'
+                    }));
+                }
+            }, delay);
         }
 
         const CACHE_KEY = 'sahib_v1_cache';
