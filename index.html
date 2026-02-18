@@ -223,6 +223,12 @@
             z-index: 200;
             border-radius: inherit;
             pointer-events: none;
+            transition: opacity 0.5s var(--ease);
+            /* Smooth fade out for the skeleton */
+        }
+
+        .loader-overlay.finished {
+            opacity: 0;
         }
 
         .glb-loader-text {
@@ -1465,6 +1471,38 @@
             transform: scale(1);
         }
 
+        /* Unified Media Entrance Animation (Cards & Articles) */
+        .row-media img,
+        .row-media video,
+        .media-container img,
+        .embed-wrapper img,
+        .embed-wrapper video,
+        .embed-wrapper iframe {
+            opacity: 0;
+            transform: scale(0.97);
+            transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+            will-change: opacity, transform;
+        }
+
+        .row-media img.loaded,
+        .row-media video.loaded,
+        .media-container img.loaded,
+        .embed-wrapper img.loaded,
+        .embed-wrapper video.loaded,
+        .embed-wrapper iframe.loaded {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Specific Fix: iframes shouldn't scale on entrance to prevent blur */
+        .embed-wrapper iframe {
+            transform: none;
+        }
+
+        .embed-wrapper iframe.loaded {
+            opacity: 1;
+        }
+
         .glb-loader-text {
             position: absolute;
             top: 50%;
@@ -1919,7 +1957,8 @@
         }
 
         /* POSITION SHIFT ONLY FOR MOBILE (Thumb Accessibility in Landscape) */
-        @media (max-width: 800px) {
+        /* Increased to 1024px to cover large phones (Pro Max/Ultra) and Mini Tablets in landscape */
+        @media (max-width: 1024px) {
 
             .model-viewer-wrapper:fullscreen .fs-btn,
             .model-viewer-wrapper:-webkit-full-screen .fs-btn,
@@ -2733,6 +2772,19 @@
         if (history.scrollRestoration) {
             history.scrollRestoration = 'manual';
         }
+
+        // Shared Media Entrance Handler
+        window.mediaLoaded = function (el) {
+            el.classList.add('loaded');
+            // Find the loader skeleton - either immediate sibling or as a child of the parent
+            const sk = el.previousElementSibling || el.parentElement?.querySelector('.loader-overlay');
+            if (sk && sk.classList.contains('loader-overlay')) {
+                sk.classList.add('finished');
+                setTimeout(() => {
+                    try { if (sk.parentNode) sk.remove(); } catch (e) { }
+                }, 800);
+            }
+        };
 
         // === CORE APPLICATION (app.js inlined) ===
         let _activeRenderPath = null;
@@ -3693,12 +3745,12 @@
                         if (extracted.type === "img") {
                             mediaHTML = `<div class="row-media">
                                 <div class="sk-img loader-overlay"></div>
-                                <img src="${extracted.url}" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
+                                <img src="${extracted.url}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">
                             </div>`;
                         } else if (extracted.type === "yt") {
                             mediaHTML = `<div class="row-media">
                                 <div class="sk-img loader-overlay"></div>
-                                <div class="embed-wrapper video"><iframe onload="this.closest('.row-media').querySelector('.loader-overlay')?.remove()" src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+                                <div class="embed-wrapper video"><iframe onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${extracted.id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
                             </div>`;
                         }
                         media = "title-embed";
@@ -3712,12 +3764,12 @@
                     const noLoop = thumb.toLowerCase().includes("-noloop");
                     mediaHTML = `<div class="row-media">
                         <div class="sk-img loader-overlay"></div>
-                        <video src="${thumb}" autoplay muted ${noLoop ? "" : "loop"} playsinline onloadeddata="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()"></video>
+                        <video src="${thumb}" autoplay muted ${noLoop ? "" : "loop"} playsinline onloadeddata="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></video>
                     </div>`;
                 } else if (thumb) {
                     mediaHTML = `<div class="row-media">
                         <div class="sk-img loader-overlay"></div>
-                        <img src="${thumb}" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
+                        <img src="${thumb}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">
                     </div>`;
                 }
             } else {
@@ -3726,17 +3778,17 @@
                     if (extracted.type === "img") {
                         mediaHTML = `<div class="row-media">
                             <div class="sk-img loader-overlay"></div>
-                            <img src="${extracted.url}" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
+                            <img src="${extracted.url}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">
                         </div>`;
                     } else if (extracted.type === "video") {
                         mediaHTML = `<div class="row-media">
                             <div class="sk-img loader-overlay"></div>
-                            <video src="${extracted.url}" autoplay muted loop playsinline onloadeddata="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()"></video>
+                            <video src="${extracted.url}" autoplay muted loop playsinline onloadeddata="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></video>
                         </div>`;
                     } else if (extracted.type === "yt") {
                         mediaHTML = `<div class="row-media">
                             <div class="sk-img loader-overlay"></div>
-                            <img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy" crossorigin="anonymous" onload="this.previousElementSibling.remove()" onerror="this.previousElementSibling.remove()">
+                            <img src="https://img.youtube.com/vi/${extracted.id}/mqdefault.jpg" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">
                         </div>`;
                     }
                 }
@@ -4732,7 +4784,7 @@
             if (item.type === 'image') {
                 const style = isGallery ? 'style="height:100%; width:100%; object-fit:cover;"' : '';
                 const loader = `<div class="sk-img loader-overlay"></div>`;
-                mediaHTML = `${loader}<img src="${item.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="this.previousElementSibling?.remove()" onerror="this.previousElementSibling?.remove()">`;
+                mediaHTML = `${loader}<img src="${item.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">`;
 
                 if (!isGallery) {
                     // Wrap single images in the standard container to get the Border Radius
@@ -4743,7 +4795,7 @@
                 const vidID = item.id || getYouTubeID(item.url);
                 mediaHTML = `<div class="${embedClass}">
                         <div class="sk-img loader-overlay"></div>
-                        <iframe onload="this.previousElementSibling?.remove()" src="https://www.youtube-nocookie.com/embed/${vidID}?modestbranding=1&rel=0" 
+                        <iframe onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${vidID}?modestbranding=1&rel=0" 
                             title="YouTube video player" 
                             frameborder="0" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
@@ -4758,7 +4810,7 @@
                 const autoPlay = urlLower.includes("-autoplay");
                 mediaHTML = `<div class="${embedClass}">
                         <div class="sk-img loader-overlay"></div>
-                        <video src="${item.url}" ${autoPlay ? "autoplay muted" : ""} ${noLoop ? "" : "loop"} controls playsinline onloadeddata="this.previousElementSibling?.remove()" onerror="this.previousElementSibling?.remove()"></video>
+                        <video src="${item.url}" ${autoPlay ? "autoplay muted" : ""} ${noLoop ? "" : "loop"} controls playsinline onloadeddata="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></video>
                     </div>`;
 
             } else if (item.type === 'glb') {
@@ -5192,73 +5244,44 @@
                 if (overlay) overlay.remove();
             });
 
-            // 1. MOBILE SAFE MODE: Disable PMREM on mobile/webviews to prevent OOM/Context Crashes
-            // Instagram/Android WebViews have strict GPU limits. Generating 10+ PMREM textures crashes them.
-            if (!isMobile) {
-                // DESKTOP: Full Pro Rig with Environment Map
-                if (!window._sharedRoomEnvScene) {
-                    window._sharedRoomEnvScene = new RoomEnvironment();
-                }
+            // UNIFIED LIGHTING: Use shared Environment Map for both Desktop and Mobile to fix "Black Metals"
+            // Cache the PMREM texture globally to satisfy Instagram/Android WebView memory limits
+            if (!window._sharedRoomEnvScene) {
+                window._sharedRoomEnvScene = new RoomEnvironment();
+            }
+            if (!window._sharedEnvMap) {
                 const pmremGenerator = new THREE.PMREMGenerator(renderer);
                 pmremGenerator.compileEquirectangularShader();
-                const envMap = pmremGenerator.fromScene(window._sharedRoomEnvScene).texture;
+                window._sharedEnvMap = pmremGenerator.fromScene(window._sharedRoomEnvScene).texture;
                 pmremGenerator.dispose();
-                scene.environment = envMap;
-                scene.environmentIntensity = 1.0;
-
-                // DESKTOP ACCENTS: Increased fill and rim intensity to prevent black metals
-                const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.6); // Bumped from 0.4
-                scene.add(hemiLight);
-
-                const keyLight = new THREE.DirectionalLight(0xffffff, 0.65); // Bumped from 0.5
-                keyLight.position.set(5, 10, 5);
-                scene.add(keyLight);
-
-                const fillLight = new THREE.DirectionalLight(0xffffff, 0.5); // Bumped from 0.25
-                fillLight.position.set(-5, 2, 5);
-                scene.add(fillLight);
-
-                const rimLight = new THREE.DirectionalLight(0xffffff, 0.45); // Bumped from 0.2
-                rimLight.position.set(-2, 5, -5);
-                scene.add(rimLight);
-
-                const bottomLight = new THREE.DirectionalLight(0xffffff, 0.2); // Bumped from 0.1
-                bottomLight.position.set(0, -5, 0);
-                scene.add(bottomLight);
-
-                const cameraLight = new THREE.DirectionalLight(0xffffff, 0.15);
-                cameraLight.position.set(0, 0, 1);
-                camera.add(cameraLight);
-                scene.add(camera);
-
-            } else {
-                // MOBILE / WEBVIEW: Analytic High-Vibrancy Rig (No Texture Memory)
-                // Tuned to look "expensive" using cheap lights
-
-                const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2); // Stronger ambient base
-                scene.add(hemiLight);
-
-                const keyLight = new THREE.DirectionalLight(0xffffff, 1.5); // Strong key
-                keyLight.position.set(5, 10, 5);
-                scene.add(keyLight);
-
-                const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                fillLight.position.set(-5, 2, 5);
-                scene.add(fillLight);
-
-                const rimLight = new THREE.DirectionalLight(0xffffff, 1.0); // Strong rim for pop
-                rimLight.position.set(-2, 5, -5);
-                scene.add(rimLight);
-
-                const bottomLight = new THREE.DirectionalLight(0xffffff, 0.4);
-                bottomLight.position.set(0, -5, 0);
-                scene.add(bottomLight);
-
-                const cameraLight = new THREE.DirectionalLight(0xffffff, 0.5); // Face fill
-                cameraLight.position.set(0, 0, 1);
-                camera.add(cameraLight);
-                scene.add(camera);
             }
+            scene.environment = window._sharedEnvMap;
+            scene.environmentIntensity = 1.0;
+
+            // PRECISE LIGHTING RIG: Balanced for both high-end desktops and mobile webviews
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.6);
+            scene.add(hemiLight);
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 0.65);
+            keyLight.position.set(5, 10, 5);
+            scene.add(keyLight);
+
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            fillLight.position.set(-5, 2, 5);
+            scene.add(fillLight);
+
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.45);
+            rimLight.position.set(-2, 5, -5);
+            scene.add(rimLight);
+
+            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.2);
+            bottomLight.position.set(0, -5, 0);
+            scene.add(bottomLight);
+
+            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.2);
+            cameraLight.position.set(0, 0, 1);
+            camera.add(cameraLight);
+            scene.add(camera);
 
             // LOCAL INTERACTION STATE: Track interaction per-viewer to pause efficiently
             let isInteracting = false;
