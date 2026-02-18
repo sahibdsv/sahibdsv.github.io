@@ -3200,7 +3200,7 @@
                     row = document.createElement("nav");
                     row.id = rowId;
                     row.className = "nav-row level-" + (level > 1 ? "n" : "1") + " slide-in-right";
-                    if (!activeName) row.scrollLeft = 50;
+                    if (!activeName) row.scrollLeft = 0; // Standardize initial landing
                     navStack.appendChild(row);
                     setupHapticScroll(row);
                 }
@@ -3224,6 +3224,11 @@
                     });
                 } else {
                     if (row._resetHaptic) row._resetHaptic(); // Reset haptics only on full re-render
+
+                    // PERFORMANCE FIX: Reset scroll position before content swap to avoid inheriting 
+                    // stale scroll metrics from a larger previous category (e.g. from Personal to Projects)
+                    row.scrollLeft = 0;
+
                     row.innerHTML = items.map(item => {
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
                         const activeClass = item === activeName ? "active" : "";
@@ -3287,7 +3292,7 @@
                 if (activeLink) {
                     const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
                     row.scrollTo({ left: targetScroll, behavior: "smooth" });
-                } else {
+                } else if (level > 1) { // Only sub-nav (Level 2+) needs auto-midpoint centering
                     const midpoint = (row.scrollWidth - row.clientWidth) / 2;
                     row.scrollTo({ left: midpoint, behavior: "smooth" });
                 }
@@ -3394,9 +3399,14 @@
                     if (lastCenteredHref) {
                         const newPath = lastCenteredHref.substring(1);
                         if (newPath) {
-                            history.replaceState(null, "", "#" + newPath);
-                            // Final sync to ensure landing content is 100% correct
-                            navigateTo(newPath, true);
+                            // CRITICAL: We must release the "picker lock" BEFORE calling navigateTo/renderNavigation.
+                            // If we don't, centerNavRow returns early and the row never "snaps" to the center.
+                            const landingPath = newPath;
+                            userTouching = false;
+                            _pickerScrollingRow = null;
+
+                            history.replaceState(null, "", "#" + landingPath);
+                            navigateTo(landingPath, true);
                         }
                     }
 
