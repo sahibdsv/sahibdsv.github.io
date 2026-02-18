@@ -5246,41 +5246,38 @@
                 if (overlay) overlay.remove();
             });
 
-            // UNIFIED LIGHTING: Use shared Environment Map for both Desktop and Mobile to fix "Black Metals"
-            // Cache the PMREM texture globally to satisfy Instagram/Android WebView memory limits
-            if (!window._sharedRoomEnvScene) {
-                window._sharedRoomEnvScene = new RoomEnvironment();
-            }
-            if (!window._sharedEnvMap) {
-                const pmremGenerator = new THREE.PMREMGenerator(renderer);
-                pmremGenerator.compileEquirectangularShader();
-                window._sharedEnvMap = pmremGenerator.fromScene(window._sharedRoomEnvScene).texture;
-                pmremGenerator.dispose();
-            }
-            scene.environment = window._sharedEnvMap;
+            // UNIFIED LIGHTING: Fix for "Black Metals" and "Dullness on Navigation"
+            // We must generate a fresh environment map for EACH renderer because WebGL contexts cannot share textures.
+            if (!window._sharedRoomEnvScene) window._sharedRoomEnvScene = new RoomEnvironment();
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            pmremGenerator.compileEquirectangularShader();
+            const envMap = pmremGenerator.fromScene(window._sharedRoomEnvScene).texture;
+            pmremGenerator.dispose();
+
+            scene.environment = envMap;
             scene.environmentIntensity = 1.0;
 
             // PRECISE LIGHTING RIG: Balanced for both high-end desktops and mobile webviews
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.6);
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.8); // Boosted for vibrancy
             scene.add(hemiLight);
 
-            const keyLight = new THREE.DirectionalLight(0xffffff, 0.65);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.0); // Restored intensity
             keyLight.position.set(5, 10, 5);
             scene.add(keyLight);
 
-            const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.7); // Restored intensity
             fillLight.position.set(-5, 2, 5);
             scene.add(fillLight);
 
-            const rimLight = new THREE.DirectionalLight(0xffffff, 0.45);
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.8); // Restored intensity for metal pop
             rimLight.position.set(-2, 5, -5);
             scene.add(rimLight);
 
-            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.2);
+            const bottomLight = new THREE.DirectionalLight(0xffffff, 0.3);
             bottomLight.position.set(0, -5, 0);
             scene.add(bottomLight);
 
-            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.2);
+            const cameraLight = new THREE.DirectionalLight(0xffffff, 0.3);
             cameraLight.position.set(0, 0, 1);
             camera.add(cameraLight);
             scene.add(camera);
@@ -5540,6 +5537,10 @@
                 cleanup: () => {
                     visibilityObserver.disconnect();
                     window._glbRegistry = window._glbRegistry.filter(v => v !== viewerInstance);
+
+                    // Cleanup environment texture to prevent leaks
+                    if (scene.environment) scene.environment.dispose();
+
                     renderer.dispose();
                     // CRITICAL: Explicitly release WebGL context to free the GPU slot immediately.
                     // renderer.dispose() alone does NOT free the context on mobile browsers.
