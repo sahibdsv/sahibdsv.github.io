@@ -1119,8 +1119,8 @@
         /* --- SKELETON LOADING STYLES --- */
         .sk-box,
         .sk-img {
-            background: var(--bg);
-            /* Match site background for perfect blending */
+            background: var(--card-bg-dark);
+            /* Card backgrounds restored for component boundary */
             border-radius: var(--card-radius);
             display: block
         }
@@ -1413,8 +1413,8 @@
             width: 100%;
             border-radius: var(--card-radius);
             overflow: hidden;
-            background: var(--bg);
-            /* Use site background to blend perfectly */
+            background: var(--card-bg-dark);
+            /* Card backgrounds restored for contrast */
         }
 
         .model-viewer-wrapper.card-preview {
@@ -1456,8 +1456,8 @@
             /* Prevent browser default canvas color */
             background: transparent !important;
             will-change: opacity, transform;
-            /* Ensure the canvas doesn't stand out if it somehow paints before Three.js is ready */
-            background-color: var(--bg) !important;
+            /* Ensure the canvas matches the wrapper's card-like background */
+            background-color: var(--card-bg-dark) !important;
         }
 
         .model-viewer-wrapper.loaded canvas {
@@ -1872,7 +1872,8 @@
             justify-content: center;
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: none;
+            /* Shadow removed per user request */
         }
 
         .model-viewer-wrapper .fs-btn svg {
@@ -1892,7 +1893,8 @@
             height: 54px;
             background: rgba(var(--bg-rgb), 0.85);
             border-color: rgba(var(--bright-rgb), 0.5);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            box-shadow: none;
+            /* Shadow removed per user request */
         }
 
         .model-viewer-wrapper:fullscreen .fs-btn svg,
@@ -1905,8 +1907,7 @@
         .model-viewer-wrapper .fs-btn:hover {
             background: rgba(var(--bg-rgb), var(--op-high));
             border-color: rgba(var(--bright-rgb), 0.4);
-            transform: scale(1.05);
-            /* Stable hover for large targets */
+            /* Transform scale removed for fixed-position feel */
         }
 
         .model-viewer-wrapper.card-preview .fs-btn {
@@ -5180,23 +5181,23 @@
                 scene.environment = envMap;
                 scene.environmentIntensity = 1.0;
 
-                // DESKTOP ACCENTS (Subtle, relying on EnvMap)
-                const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.4);
+                // DESKTOP ACCENTS: Increased fill and rim intensity to prevent black metals
+                const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333333, 0.6); // Bumped from 0.4
                 scene.add(hemiLight);
 
-                const keyLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                const keyLight = new THREE.DirectionalLight(0xffffff, 0.65); // Bumped from 0.5
                 keyLight.position.set(5, 10, 5);
                 scene.add(keyLight);
 
-                const fillLight = new THREE.DirectionalLight(0xffffff, 0.25);
+                const fillLight = new THREE.DirectionalLight(0xffffff, 0.5); // Bumped from 0.25
                 fillLight.position.set(-5, 2, 5);
                 scene.add(fillLight);
 
-                const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
+                const rimLight = new THREE.DirectionalLight(0xffffff, 0.45); // Bumped from 0.2
                 rimLight.position.set(-2, 5, -5);
                 scene.add(rimLight);
 
-                const bottomLight = new THREE.DirectionalLight(0xffffff, 0.1);
+                const bottomLight = new THREE.DirectionalLight(0xffffff, 0.2); // Bumped from 0.1
                 bottomLight.position.set(0, -5, 0);
                 scene.add(bottomLight);
 
