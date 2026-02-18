@@ -1460,13 +1460,6 @@
             margin: 0 auto;
         }
 
-        /* Compact Sizing for Audio/Activity Embeds */
-        .embed-wrapper.compact {
-            aspect-ratio: auto;
-            height: 152px;
-            /* Standard Spotify/Strava height */
-        }
-
         .embed-wrapper.video {
             aspect-ratio: 4/3;
             padding-top: 0;
@@ -4551,12 +4544,6 @@
             let caption = null;
             let url = text;
 
-            // 0. Raw Iframe Support (Exported code from Tweets, Maps, etc.)
-            if (text.startsWith('<iframe')) {
-                const captionFromAttr = text.match(/title="([^"]+)"/i);
-                return { type: 'iframe', raw: text, caption: caption || (captionFromAttr ? captionFromAttr[1] : null) };
-            }
-
             if (inlineCaptionMatch) {
                 url = inlineCaptionMatch[1].trim();
                 caption = inlineCaptionMatch[2].trim();
@@ -4595,15 +4582,6 @@
             // 1. YouTube (including Music)
             const ytId = getYouTubeID(text);
             if (ytId) return { type: 'youtube', id: ytId, url: text };
-
-            // 1.5 Universal Service Transformation (Figma, Spotify, Maps, Docs, Lichess, MatLab)
-            const embedUrl = transformToEmbedUrl(text);
-            if (embedUrl) return { type: 'iframe', url: embedUrl };
-
-            // 1.6 Interactive Component (.html)
-            if (text.match(/\.html(\?.*)?$/i)) {
-                return { type: 'iframe', url: text };
-            }
 
             // 2. GLB / 3D Models
             if (text.match(/\.glb(\?.*)?$/i) || text.match(/assets\/models\/.*\.glb/i)) {
@@ -4659,33 +4637,6 @@
             return null;
         }
 
-        // The "Universal Transformer" - Maps links to their embed equivalents
-        function transformToEmbedUrl(url) {
-            if (url.includes('figma.com/file/')) {
-                return `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`;
-            }
-            if (url.includes('open.spotify.com/')) {
-                return url.replace('open.spotify.com/', 'open.spotify.com/embed/');
-            }
-            if (url.includes('google.com/maps')) {
-                const match = url.match(/q=([^&]+)/) || url.match(/place\/([^/]+)/);
-                if (match) return `https://maps.google.com/maps?q=${match[1]}&output=embed`;
-                if (url.includes('embed')) return url;
-            }
-            if (url.includes('docs.google.com/')) {
-                if (url.includes('/edit')) return url.replace('/edit', '/preview');
-                return url;
-            }
-            if (url.includes('lichess.org/')) {
-                const match = url.match(/lichess\.org\/([a-zA-Z0-9]{8,12})/);
-                if (match) return `https://lichess.org/embed/${match[1]}?theme=auto&bg=auto`;
-            }
-            if (url.includes('strava.com/activities/')) {
-                return url.replace('strava.com/activities/', 'strava.com/activities/') + '/embed';
-            }
-            return null;
-        }
-
         // Unified Media Renderer (Single Source of Truth)
         function renderUnifiedMediaItem(item, isGallery = false) {
             let mediaHTML = '';
@@ -4731,18 +4682,6 @@
                     // renderGLBViewer returns a div with class "model-viewer-wrapper" which has border-radius
                     mediaHTML = window.renderGLBViewer(item.url, false);
                 }
-            } else if (item.type === 'iframe') {
-                const src = item.raw || `<iframe src="${item.url}" title="${item.caption || 'Embedded Content'}" frameborder="0" allowfullscreen onload="this.previousElementSibling?.remove()"></iframe>`;
-
-                // Detect compact services for special sizing
-                const isCompact = (item.url && (item.url.includes('spotify.com') || item.url.includes('strava.com')));
-                const finalClass = isCompact ? `${embedClass} compact` : embedClass;
-
-                mediaHTML = `<div class="${finalClass}">
-                        <div class="sk-img loader-overlay"></div>
-                        ${item.raw ? item.raw.replace('<iframe', '<iframe onload="this.previousElementSibling?.remove()"') : src}
-                    </div>`;
-
             }
 
             // 2. Generate Caption HTML
@@ -4771,7 +4710,6 @@
                 // We return them STACKED. 
                 // The mediaHTML (div) handles its own border-radius.
                 // The captionHTML (div) sits underneath it.
-                return `${mediaHTML}${captionHTML}`;
             }
         }
         // Render a block as HTML
