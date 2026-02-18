@@ -1460,6 +1460,13 @@
             margin: 0 auto;
         }
 
+        /* Compact Sizing for Audio/Activity Embeds */
+        .embed-wrapper.compact {
+            aspect-ratio: auto;
+            height: 152px;
+            /* Standard Spotify/Strava height */
+        }
+
         .embed-wrapper.video {
             aspect-ratio: 4/3;
             padding-top: 0;
@@ -4589,9 +4596,14 @@
             const ytId = getYouTubeID(text);
             if (ytId) return { type: 'youtube', id: ytId, url: text };
 
-            // 1.5 Universal Service Transformation (Figma, Spotify, Maps, Docs)
+            // 1.5 Universal Service Transformation (Figma, Spotify, Maps, Docs, Lichess, MatLab)
             const embedUrl = transformToEmbedUrl(text);
             if (embedUrl) return { type: 'iframe', url: embedUrl };
+
+            // 1.6 Interactive Component (.html)
+            if (text.match(/\.html(\?.*)?$/i)) {
+                return { type: 'iframe', url: text };
+            }
 
             // 2. GLB / 3D Models
             if (text.match(/\.glb(\?.*)?$/i) || text.match(/assets\/models\/.*\.glb/i)) {
@@ -4664,6 +4676,13 @@
                 if (url.includes('/edit')) return url.replace('/edit', '/preview');
                 return url;
             }
+            if (url.includes('lichess.org/')) {
+                const match = url.match(/lichess\.org\/([a-zA-Z0-9]{8,12})/);
+                if (match) return `https://lichess.org/embed/${match[1]}?theme=auto&bg=auto`;
+            }
+            if (url.includes('strava.com/activities/')) {
+                return url.replace('strava.com/activities/', 'strava.com/activities/') + '/embed';
+            }
             return null;
         }
 
@@ -4714,7 +4733,12 @@
                 }
             } else if (item.type === 'iframe') {
                 const src = item.raw || `<iframe src="${item.url}" title="${item.caption || 'Embedded Content'}" frameborder="0" allowfullscreen onload="this.previousElementSibling?.remove()"></iframe>`;
-                mediaHTML = `<div class="${embedClass}">
+
+                // Detect compact services for special sizing
+                const isCompact = (item.url && (item.url.includes('spotify.com') || item.url.includes('strava.com')));
+                const finalClass = isCompact ? `${embedClass} compact` : embedClass;
+
+                mediaHTML = `<div class="${finalClass}">
                         <div class="sk-img loader-overlay"></div>
                         ${item.raw ? item.raw.replace('<iframe', '<iframe onload="this.previousElementSibling?.remove()"') : src}
                     </div>`;
