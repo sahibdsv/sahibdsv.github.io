@@ -3053,8 +3053,62 @@
         function initApp() {
             handleRouting();
             window.addEventListener("hashchange", handleRouting);
-            window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }),
-                window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { centerNavRow(row, true) }) }, 150) } })()),
+            window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { centerNavRow(row, true) }) }, 150) } })()),
+
+                // === VIEWPORT GESTURE PROXY (Mobile View-Pager Feel) ===
+                (function () {
+                    let startX = 0, startY = 0, initialScroll = 0, targetRow = null, isProxying = false;
+
+                    window.addEventListener('touchstart', (e) => {
+                        if (window.innerWidth > 768 || e.touches.length > 1) return;
+
+                        // IGNORE: If the touch starts inside a 3D model viewer or other interactive media, do not proxy.
+                        if (e.target.closest('.model-viewer-wrapper') || e.target.closest('video')) {
+                            targetRow = null;
+                            return;
+                        }
+
+                        const rows = Array.from(document.querySelectorAll('.nav-row:not(.hidden)'));
+                        if (rows.length < 2) return; // Need at least level-1 and level-n
+
+                        targetRow = rows[rows.length - 1]; // Control the deepest visible row
+                        startX = e.touches[0].clientX;
+                        startY = e.touches[0].clientY;
+                        initialScroll = targetRow.scrollLeft;
+                        isProxying = false;
+                    }, { passive: true });
+
+                    window.addEventListener('touchmove', (e) => {
+                        if (!targetRow || e.touches.length > 1) return;
+
+                        const x = e.touches[0].clientX;
+                        const y = e.touches[0].clientY;
+                        const dx = startX - x;
+                        const dy = startY - y;
+
+                        if (!isProxying) {
+                            // Threshold: If movement is more horizontal than vertical, engage proxy
+                            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+                                isProxying = true;
+                                // Wake up the row's haptic/picker logic
+                                targetRow.dispatchEvent(new CustomEvent('touchstart', { bubbles: true }));
+                            }
+                        }
+
+                        if (isProxying) {
+                            if (e.cancelable) e.preventDefault();
+                            // Forward the delta to the row (Multiplied for "flick" sensitivity)
+                            targetRow.scrollLeft = initialScroll + dx;
+                        }
+                    }, { passive: false });
+
+                    window.addEventListener('touchend', () => {
+                        if (isProxying && targetRow) {
+                            targetRow.dispatchEvent(new CustomEvent('touchend', { bubbles: true }));
+                        }
+                        targetRow = null; isProxying = false;
+                    }, { passive: true });
+                })(),
 
                 // Global Click Handler - Manages Search, Navigation, Haptics & Analytics
                 document.addEventListener("click", e => {
