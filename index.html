@@ -914,6 +914,27 @@
             box-sizing: border-box;
         }
 
+        #app {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            padding-bottom: 50px;
+            min-height: calc(100vh - 120px);
+            transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.35s ease-out;
+            will-change: transform, opacity;
+        }
+
+        #app.transitioning {
+            opacity: 0;
+            transform: translateX(10px);
+            pointer-events: none;
+        }
+
+        #app.sliding-left {
+            transform: translateX(-10px);
+        }
+
         @media (max-width:768px) {
             .content-container {
                 padding: 10px 10px 0
@@ -3057,7 +3078,8 @@
 
                 // === VIEWPORT GESTURE PROXY (Mobile View-Pager Feel) ===
                 (function () {
-                    let startX = 0, startY = 0, initialScroll = 0, targetRow = null, isProxying = false;
+                    let startX = 0, initialScroll = 0, targetRow = null, isProxying = false;
+                    let lastX = 0, lastTime = 0, velocity = 0;
 
                     window.addEventListener('touchstart', (e) => {
                         if (window.innerWidth > 768 || e.touches.length > 1) return;
@@ -3072,23 +3094,29 @@
                         if (rows.length < 2) return; // Need at least level-1 and level-n
 
                         targetRow = rows[rows.length - 1]; // Control the deepest visible row
-                        startX = e.touches[0].clientX;
-                        startY = e.touches[0].clientY;
+                        startX = lastX = e.touches[0].clientX;
+                        lastTime = Date.now();
                         initialScroll = targetRow.scrollLeft;
-                        isProxying = false;
+                        isProxying = false; velocity = 0;
                     }, { passive: true });
 
                     window.addEventListener('touchmove', (e) => {
                         if (!targetRow || e.touches.length > 1) return;
 
                         const x = e.touches[0].clientX;
-                        const y = e.touches[0].clientY;
+                        const now = Date.now();
                         const dx = startX - x;
-                        const dy = startY - y;
+
+                        // Calculate velocity (px/ms)
+                        const dt = now - lastTime;
+                        if (dt > 0) {
+                            velocity = (lastX - x) / dt;
+                            lastX = x; lastTime = now;
+                        }
 
                         if (!isProxying) {
                             // Threshold: If movement is more horizontal than vertical, engage proxy
-                            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+                            if (Math.abs(dx) > 10) { // Removed Math.abs(dy) check as we're only proxying horizontal
                                 isProxying = true;
                                 // Wake up the row's haptic/picker logic
                                 targetRow.dispatchEvent(new CustomEvent('touchstart', { bubbles: true }));
@@ -3097,6 +3125,14 @@
 
                         if (isProxying) {
                             if (e.cancelable) e.preventDefault();
+
+                            // DYNAMIC SYNC: If the row was reset by navigateTo, update our baseline to prevent jumps
+                            if (targetRow._needsReset) {
+                                initialScroll = 0;
+                                startX = x; // Reset delta baseline
+                                targetRow._needsReset = false; // Consume flag to prevent renderNavigation from fighting us
+                            }
+
                             // Forward the delta to the row (Multiplied for "flick" sensitivity)
                             targetRow.scrollLeft = initialScroll + dx;
                         }
@@ -3104,6 +3140,11 @@
 
                     window.addEventListener('touchend', () => {
                         if (isProxying && targetRow) {
+                            // Momentum Kick: If velocity is high, scroll further
+                            if (Math.abs(velocity) > 0.3) {
+                                const kick = velocity * 150; // Multiply for distance
+                                targetRow.scrollBy({ left: kick, behavior: 'smooth' });
+                            }
                             targetRow.dispatchEvent(new CustomEvent('touchend', { bubbles: true }));
                         }
                         targetRow = null; isProxying = false;
@@ -3615,28 +3656,38 @@
             if (app) app.style.display = "none";
         }
 
+        let _transitionTimeout = null;
         function navigateTo(path, isSwipe = false) {
             if (isSearchActive && !isSwipe) return;
 
             const header = document.getElementById("main-header");
+            const app = document.getElementById("app");
             if (header && !isSwipe) header.classList.remove("scrolled");
             if (!isSwipe) window.scrollTo({ top: 0, behavior: 'instant' });
 
             clearTextSelection();
 
             const cleanPath = path || "Home";
+
+            // TRANSITION LOGIC
+            // If we are already rendering this path, don't restart the animation
+            if (cleanPath === _lastRenderedPath) return;
+
+            // Trigger Transition Effect for a premium feel
+            if (app) {
+                app.classList.add("transitioning");
+                // Determine direction for slide
+                const currentIdx = _lastRenderedPath ? _lastRenderedPath.length : 0;
+                const newIdx = cleanPath.length;
+                if (newIdx < currentIdx) app.classList.add("sliding-left");
+            }
+
             _activeRenderPath = cleanPath;
-
-            // Trigger Direct Analytics (Debounced)
             trackPage(cleanPath);
-
-            // 1. Immediately update navigation metadata (Header Fill + Active States)
             renderNavigation(cleanPath === "Home" ? null : cleanPath);
 
             // 2. Optimization: If we're swiping and the content is already there, SKIP rendering.
-            if (isSwipe && cleanPath === _lastRenderedPath) {
-                return;
-            }
+            // This check is now handled by `if (cleanPath === _lastRenderedPath) return;` at the top.
 
             // 3. Debounced heavy rendering pipeline
             if (_renderRAF) cancelAnimationFrame(_renderRAF);
@@ -3664,6 +3715,16 @@
                 // Mark this path as rendered so subsequent identical swipes don't trigger re-renders
                 _lastRenderedPath = cleanPath;
                 _renderRAF = null;
+
+                // End Transition
+                if (app) {
+                    // Short delay to allow the new content to be painted before fading in
+                    if (_transitionTimeout) clearTimeout(_transitionTimeout);
+                    _transitionTimeout = setTimeout(() => {
+                        app.classList.remove("transitioning", "sliding-left");
+                        if (isSwipe) haptic('tick'); // Gentle confirmation
+                    }, 50);
+                }
             });
         }
 
