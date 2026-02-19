@@ -603,7 +603,8 @@
             width: 50%;
             /* Perfect centering regardless of screen width */
             flex-shrink: 0;
-            pointer-events: none;
+            cursor: pointer;
+            /* Hint at interactivity */
         }
 
         /* Adjust for internal gap of the row */
@@ -3363,7 +3364,12 @@
             }, { passive: true });
 
             row.addEventListener("scroll", () => {
-                if (!userTouching) return;
+                // AUTHORITATIVE: If it's a picker row and it's moving, we track it.
+                // This captures touches on padding, spacers, or "veered off" gestures.
+                if (!userTouching) {
+                    userTouching = true;
+                    _pickerScrollingRow = row;
+                }
 
                 const currentScroll = row.scrollLeft;
                 const maxScroll = row.scrollWidth - row.clientWidth;
