@@ -3421,9 +3421,6 @@
 
                 clearTimeout(settleTimer);
                 settleTimer = setTimeout(() => {
-                    userTouching = false;
-                    _pickerScrollingRow = null;
-
                     if (lastCenteredHref) {
                         const landingPath = lastCenteredHref.substring(1);
                         if (landingPath) {
@@ -3434,6 +3431,8 @@
                         }
                     }
 
+                    // CRITICAL: Only release the picker lock if the finger is actually LIFTED.
+                    // This prevents 'veering off' causing the row to lose its active picker state.
                     if (!fingerDown) {
                         userTouching = false;
                         _pickerScrollingRow = null;
