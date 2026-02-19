@@ -192,6 +192,11 @@
             --op-low: 0.1;
         }
 
+        html,
+        body {
+            overscroll-behavior: none;
+        }
+
         /* Theme transition for all relevant properties */
         body {
             transition: background-color var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease);
@@ -533,6 +538,7 @@
             justify-content: center;
             gap: 20px;
             overflow-x: auto;
+            overscroll-behavior-x: none;
             white-space: nowrap;
             scrollbar-width: none;
             transition: height var(--anim-layout) var(--ease), opacity var(--anim-layout) var(--ease), margin var(--anim-layout) var(--ease);
