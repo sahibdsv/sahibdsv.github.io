@@ -584,7 +584,9 @@
         }
 
         .nav-row.level-n .sub-link {
-            scroll-snap-align: center
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+            /* Forces user to hit every item */
         }
 
         .nav-row.level-n .nav-link {
@@ -600,10 +602,19 @@
         .nav-row.level-n::before {
             content: "";
             display: block;
-            /* Always give room for centering */
-            width: calc(50% - 40px);
-            min-width: 20px;
-            flex-shrink: 0
+            width: 50%;
+            /* Perfect centering regardless of screen width */
+            flex-shrink: 0;
+            pointer-events: none;
+        }
+
+        /* Adjust for internal gap of the row */
+        .nav-row.level-n::before {
+            margin-right: -10px;
+        }
+
+        .nav-row.level-n::after {
+            margin-left: -10px;
         }
 
         .nav-row,
@@ -3416,13 +3427,18 @@
                     if (lastCenteredHref) {
                         const landingPath = lastCenteredHref.substring(1);
                         if (landingPath) {
+                            // Final URL sync and history state
                             history.replaceState(null, "", "#" + landingPath);
-                            if (landingPath !== _lastRenderedPath) {
-                                navigateTo(landingPath, true);
-                            }
+                            // Force one final check to ensure we didn't land on a stale state
+                            navigateTo(landingPath, true);
                         }
                     }
-                }, 50); // Slightly more relaxed stay for momentum to end 
+
+                    if (!fingerDown) {
+                        userTouching = false;
+                        _pickerScrollingRow = null;
+                    }
+                }, 30); // Ultra-fast settle for mechanical feel
             }, { passive: true });
             // Reset helper to clear haptic state when row content changes
             row._resetHaptic = () => { lastCenteredHref = null; };
