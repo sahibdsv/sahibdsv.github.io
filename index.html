@@ -3232,9 +3232,8 @@
                 } else {
                     if (row._resetHaptic) row._resetHaptic(); // Reset haptics only on full re-render
 
-                    // RESET scroll position immediately when category changes to prevent "index memory"
-                    row.style.scrollSnapType = 'none';
-                    row.scrollLeft = 0;
+                    // Mark for instant centering instead of forcing 0 (leftmost)
+                    row._needsReset = true;
 
                     row.innerHTML = items.map(item => {
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
@@ -3300,15 +3299,20 @@
             /* DOUBLE rAF: Ensures the browser has completed layout/paint for new innerHTML before we read widths */
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
+                    const isReset = row._needsReset;
+                    row._needsReset = false;
+
                     if (row.scrollWidth <= row.clientWidth + 5) return;
 
                     const activeLink = row.querySelector(".active");
+                    const behavior = isReset ? "auto" : "smooth";
+
                     if (activeLink) {
                         const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
-                        row.scrollTo({ left: targetScroll, behavior: "smooth" });
+                        row.scrollTo({ left: targetScroll, behavior: behavior });
                     } else if (isSubNav) {
                         const midpoint = (row.scrollWidth - row.clientWidth) / 2;
-                        row.scrollTo({ left: midpoint, behavior: "smooth" });
+                        row.scrollTo({ left: midpoint, behavior: behavior });
                     }
                 });
             });
