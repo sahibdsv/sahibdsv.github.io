@@ -3297,6 +3297,10 @@
                     // Mark for instant center-reset when category content changes
                     row._needsReset = true;
 
+                    // SYNCHRONOUS RESET: Kill snapping and position immediately to prevent 'index memory' paint
+                    row.style.scrollSnapType = 'none';
+                    row.scrollLeft = 0;
+
                     row.innerHTML = items.map(item => {
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
                         const activeClass = item === activeName ? "active" : "";
@@ -3355,27 +3359,30 @@
         function centerNavRow(row, isSubNav) {
             if (row === _pickerScrollingRow) return;
             if (window.innerWidth > 768) return;
-            if (!row) return;
+            if (!row || !row.children.length) return;
 
-            /* DOUBLE rAF: Ensures the browser has completed layout/paint for new innerHTML before we read widths */
+            /* SINGLE rAF: Precise measurement after DOM update */
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    const isReset = row._needsReset;
-                    row._needsReset = false;
+                const isReset = row._needsReset;
+                row._needsReset = false;
 
-                    if (row.scrollWidth <= row.clientWidth + 5) return;
+                const activeLink = row.querySelector(".active");
+                const behavior = isReset ? "auto" : "smooth";
 
-                    const activeLink = row.querySelector(".active");
-                    const behavior = isReset ? "auto" : "smooth";
+                if (activeLink) {
+                    const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
+                    row.scrollTo({ left: targetScroll, behavior: behavior });
+                } else if (isSubNav) {
+                    const midpoint = (row.scrollWidth - row.clientWidth) / 2;
+                    row.scrollTo({ left: midpoint, behavior: behavior });
+                }
 
-                    if (activeLink) {
-                        const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
-                        row.scrollTo({ left: targetScroll, behavior: behavior });
-                    } else if (isSubNav) {
-                        const midpoint = (row.scrollWidth - row.clientWidth) / 2;
-                        row.scrollTo({ left: midpoint, behavior: behavior });
-                    }
-                });
+                // RE-ENABLE SNAPPING: Only once centering is finished to avoid 'snap fighting'
+                if (isReset || row.style.scrollSnapType === 'none') {
+                    requestAnimationFrame(() => {
+                        row.style.scrollSnapType = 'x mandatory';
+                    });
+                }
             });
         }
 
