@@ -92,11 +92,11 @@
 
             /* --- LAYOUT & SPACING --- */
             --brand-row-h: 30px;
-            --main-row-h: 20px;
-            --sub-row-h: 22px;
+            --main-row-h: 36px;
+            --sub-row-h: 32px;
             --gap: 5px;
-            --header-pad-top: 5px;
-            --header-pad-bottom: 5px;
+            --header-pad-top: 10px;
+            --header-pad-bottom: 10px;
             --header-gap: 5px;
             --brand-font-size: 28px;
             --brand-letter-spacing: 1.5px;
@@ -577,10 +577,8 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            line-height: 1.2;
+            line-height: normal;
             scroll-snap-type: x mandatory;
-            mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%)
         }
 
         .nav-row.level-n .sub-link {
@@ -821,11 +819,13 @@
             /* Improved touch targets and visual balance on mobile */
             :root {
                 --brand-row-h: 34px;
-                --main-row-h: 22px;
-                --sub-row-h: 20px;
-                --gap: 1px;
-                --header-pad-top: 3.5px;
-                --header-pad-bottom: 3px;
+                --main-row-h: 44px;
+                /* Hit target standard */
+                --sub-row-h: 44px;
+                /* Hit target standard */
+                --gap: 2px;
+                --header-pad-top: 8px;
+                --header-pad-bottom: 8px;
                 --header-gap: 0px;
                 --nav-font-size: 16px;
             }
@@ -3386,6 +3386,7 @@
                     requestAnimationFrame(() => {
                         const links = row.querySelectorAll(".sub-link");
                         if (!links.length) { hTicking = false; return; }
+
                         const center = currentScroll + row.clientWidth / 2;
                         let closest = null, minDist = Infinity;
                         links.forEach(link => {
@@ -3393,18 +3394,23 @@
                             const dist = Math.abs(mid - center);
                             if (dist < minDist) { minDist = dist; closest = link; }
                         });
+
                         const href = closest ? closest.getAttribute("href") : null;
-                        if (closest && href !== lastCenteredHref) {
+                        if (closest && href && href !== lastCenteredHref) {
                             lastCenteredHref = href;
                             haptic('tick');
 
-                            // 1. Instant Visual Feedback (Cheap)
+                            // 1. Instant Visual Feedback
                             links.forEach(l => l.classList.remove("active"));
                             closest.classList.add("active");
 
-                            // 2. Instant Live Render (Glide-Mode)
+                            // 2. Optimized Navigation: Capture and Defer
                             const newPath = href.substring(1);
-                            if (newPath) navigateTo(newPath, true);
+                            if (newPath) {
+                                // Direct render only if we land or for very subtle updates
+                                // Use a quiet render to avoid blocking the scroll momentum
+                                navigateTo(newPath, true);
+                            }
                         }
                         hTicking = false;
                     });
@@ -3412,17 +3418,11 @@
 
                 clearTimeout(settleTimer);
                 settleTimer = setTimeout(() => {
-                    // Update History & Final Logic only once the scroll lands or slows down
-                    // This prevents "IPC Flooding" and browser throttling errors.
                     if (lastCenteredHref) {
-                        const newPath = lastCenteredHref.substring(1);
-                        if (newPath) {
-                            // CRITICAL: We must release the "picker lock" BEFORE calling navigateTo/renderNavigation.
-                            // If we don't, centerNavRow returns early and the row never "snaps" to the center.
-                            const landingPath = newPath;
+                        const landingPath = lastCenteredHref.substring(1);
+                        if (landingPath && landingPath !== _lastRenderedPath) {
                             userTouching = false;
                             _pickerScrollingRow = null;
-
                             history.replaceState(null, "", "#" + landingPath);
                             navigateTo(landingPath, true);
                         }
@@ -3432,7 +3432,7 @@
                         userTouching = false;
                         _pickerScrollingRow = null;
                     }
-                }, 100); // 100ms settle threshold for "landing"
+                }, 40); // Shorter settle for "snappy" response
             }, { passive: true });
             // Reset helper to clear haptic state when row content changes
             row._resetHaptic = () => { lastCenteredHref = null; };
