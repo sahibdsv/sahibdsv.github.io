@@ -192,16 +192,6 @@
             --op-low: 0.1;
         }
 
-        html,
-        body {
-            overscroll-behavior: none;
-        }
-
-        /* Theme transition for all relevant properties */
-        body {
-            transition: background-color var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease);
-        }
-
         #main-header,
         .layout-grid,
         .layout-quote,
@@ -538,7 +528,7 @@
             justify-content: center;
             gap: 20px;
             overflow-x: auto;
-            overscroll-behavior-x: none;
+            overscroll-behavior: none;
             white-space: nowrap;
             scrollbar-width: none;
             transition: height var(--anim-layout) var(--ease), opacity var(--anim-layout) var(--ease), margin var(--anim-layout) var(--ease);
@@ -588,7 +578,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             line-height: 1.2;
-            scroll-snap-type: x proximity;
+            scroll-snap-type: x mandatory;
             mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0, #000 50px, #000 calc(100% - 50px), transparent 100%)
         }
@@ -612,7 +602,8 @@
             display: none;
             width: calc(50% - 30px);
             min-width: 20px;
-            flex-shrink: 0
+            flex-shrink: 0;
+            pointer-events: none;
         }
 
         .nav-row,
@@ -3241,11 +3232,20 @@
                 } else {
                     if (row._resetHaptic) row._resetHaptic(); // Reset haptics only on full re-render
 
+                    // RESET scroll position immediately when category changes to prevent "index memory"
+                    row.style.scrollSnapType = 'none';
+                    row.scrollLeft = 0;
+
                     row.innerHTML = items.map(item => {
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
                         const activeClass = item === activeName ? "active" : "";
                         return `<a href="#${(parentPath ? parentPath + "/" : "") + item}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
                     }).join("");
+
+                    // Re-enable snapping after content is set
+                    requestAnimationFrame(() => {
+                        row.style.scrollSnapType = 'x mandatory';
+                    });
                 }
 
                 // Restore slide-in animation if re-appearing
@@ -3296,18 +3296,21 @@
             if (row === _pickerScrollingRow) return;
             if (window.innerWidth > 768) return;
             if (!row) return;
-            if (row.scrollWidth <= row.clientWidth + 5) return;
 
-            /* Force layout read before scroll using rAF to ensure smooth animation plays */
+            /* DOUBLE rAF: Ensures the browser has completed layout/paint for new innerHTML before we read widths */
             requestAnimationFrame(() => {
-                const activeLink = row.querySelector(".active");
-                if (activeLink) {
-                    const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
-                    row.scrollTo({ left: targetScroll, behavior: "smooth" });
-                } else if (isSubNav) {
-                    const midpoint = (row.scrollWidth - row.clientWidth) / 2;
-                    row.scrollTo({ left: midpoint, behavior: "smooth" });
-                }
+                requestAnimationFrame(() => {
+                    if (row.scrollWidth <= row.clientWidth + 5) return;
+
+                    const activeLink = row.querySelector(".active");
+                    if (activeLink) {
+                        const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
+                        row.scrollTo({ left: targetScroll, behavior: "smooth" });
+                    } else if (isSubNav) {
+                        const midpoint = (row.scrollWidth - row.clientWidth) / 2;
+                        row.scrollTo({ left: midpoint, behavior: "smooth" });
+                    }
+                });
             });
         }
 
@@ -3372,8 +3375,7 @@
                     hitEnd = false;
                 }
 
-                if (!didScroll && Math.abs(currentScroll - startScrollLeft) < 5) return;
-                didScroll = true;
+                if (!didScroll) didScroll = true;
 
                 if (!hTicking) {
                     hTicking = true;
