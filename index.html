@@ -92,11 +92,11 @@
 
             /* --- LAYOUT & SPACING --- */
             --brand-row-h: 30px;
-            --main-row-h: 36px;
-            --sub-row-h: 32px;
+            --main-row-h: 20px;
+            --sub-row-h: 22px;
             --gap: 5px;
-            --header-pad-top: 10px;
-            --header-pad-bottom: 10px;
+            --header-pad-top: 5px;
+            --header-pad-bottom: 5px;
             --header-gap: 5px;
             --brand-font-size: 28px;
             --brand-letter-spacing: 1.5px;
@@ -528,14 +528,12 @@
             justify-content: center;
             gap: 20px;
             overflow-x: auto;
-            overscroll-behavior: none;
+            overscroll-behavior-x: none;
             white-space: nowrap;
             scrollbar-width: none;
             transition: height var(--anim-layout) var(--ease), opacity var(--anim-layout) var(--ease), margin var(--anim-layout) var(--ease);
             opacity: 1;
             will-change: opacity;
-            user-select: none;
-            touch-action: pan-x;
         }
 
         .nav-row.level-1 {
@@ -581,6 +579,8 @@
             letter-spacing: 1px;
             line-height: normal;
             scroll-snap-type: x mandatory;
+            mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%)
         }
 
         .nav-row.level-n .sub-link {
@@ -599,11 +599,11 @@
         .nav-row.level-n::after,
         .nav-row.level-n::before {
             content: "";
-            display: none;
-            width: calc(50% - 30px);
+            display: block;
+            /* Always give room for centering */
+            width: calc(50% - 40px);
             min-width: 20px;
-            flex-shrink: 0;
-            pointer-events: none;
+            flex-shrink: 0
         }
 
         .nav-row,
@@ -821,14 +821,11 @@
             /* Improved touch targets and visual balance on mobile */
             :root {
                 --brand-row-h: 34px;
-                --main-row-h: 44px;
-                /* Hit target standard */
-                --sub-row-h: 44px;
-                /* Hit target standard */
-                --gap: 8px;
-                /* Prevents touch bleed between rows */
-                --header-pad-top: 8px;
-                --header-pad-bottom: 8px;
+                --main-row-h: 22px;
+                --sub-row-h: 20px;
+                --gap: 1px;
+                --header-pad-top: 3.5px;
+                --header-pad-bottom: 3px;
                 --header-gap: 0px;
                 --nav-font-size: 16px;
             }
@@ -840,8 +837,6 @@
                 font-size: var(--brand-font-size);
                 letter-spacing: var(--brand-letter-spacing);
                 line-height: 1;
-                margin-bottom: -2px;
-                /* Pull nav closer to match 13px visual gap */
             }
 
             /* Search icon - use flexbox and match brand row height for perfect alignment */
@@ -3235,7 +3230,7 @@
                 } else {
                     if (row._resetHaptic) row._resetHaptic(); // Reset haptics only on full re-render
 
-                    // Mark for instant centering instead of forcing 0 (leftmost)
+                    // Mark for instant center-reset when category content changes
                     row._needsReset = true;
 
                     row.innerHTML = items.map(item => {
@@ -3243,12 +3238,11 @@
                         const activeClass = item === activeName ? "active" : "";
                         return `<a href="#${(parentPath ? parentPath + "/" : "") + item}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
                     }).join("");
-
-                    // Re-enable snapping after content is set
-                    requestAnimationFrame(() => {
-                        row.style.scrollSnapType = 'x mandatory';
-                    });
                 }
+                // Re-enable snapping after content is set
+                requestAnimationFrame(() => {
+                    row.style.scrollSnapType = 'x mandatory';
+                });
 
                 // Restore slide-in animation if re-appearing
                 if (!isNew && row.classList.contains("hidden")) {
@@ -3403,17 +3397,12 @@
                             lastCenteredHref = href;
                             haptic('tick');
 
-                            // 1. Instant Visual Feedback
+                            // Instant highlight and navigation trigger
                             links.forEach(l => l.classList.remove("active"));
                             closest.classList.add("active");
 
-                            // 2. Optimized Navigation: Capture and Defer
                             const newPath = href.substring(1);
-                            if (newPath) {
-                                // Direct render only if we land or for very subtle updates
-                                // Use a quiet render to avoid blocking the scroll momentum
-                                navigateTo(newPath, true);
-                            }
+                            if (newPath) navigateTo(newPath, true);
                         }
                         hTicking = false;
                     });
@@ -3421,21 +3410,19 @@
 
                 clearTimeout(settleTimer);
                 settleTimer = setTimeout(() => {
+                    userTouching = false;
+                    _pickerScrollingRow = null;
+
                     if (lastCenteredHref) {
                         const landingPath = lastCenteredHref.substring(1);
-                        if (landingPath && landingPath !== _lastRenderedPath) {
-                            userTouching = false;
-                            _pickerScrollingRow = null;
+                        if (landingPath) {
                             history.replaceState(null, "", "#" + landingPath);
-                            navigateTo(landingPath, true);
+                            if (landingPath !== _lastRenderedPath) {
+                                navigateTo(landingPath, true);
+                            }
                         }
                     }
-
-                    if (!fingerDown) {
-                        userTouching = false;
-                        _pickerScrollingRow = null;
-                    }
-                }, 40); // Shorter settle for "snappy" response
+                }, 50); // Slightly more relaxed stay for momentum to end 
             }, { passive: true });
             // Reset helper to clear haptic state when row content changes
             row._resetHaptic = () => { lastCenteredHref = null; };
