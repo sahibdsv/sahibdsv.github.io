@@ -534,6 +534,8 @@
             transition: height var(--anim-layout) var(--ease), opacity var(--anim-layout) var(--ease), margin var(--anim-layout) var(--ease);
             opacity: 1;
             will-change: opacity;
+            user-select: none;
+            touch-action: pan-x;
         }
 
         .nav-row.level-1 {
@@ -823,7 +825,8 @@
                 /* Hit target standard */
                 --sub-row-h: 44px;
                 /* Hit target standard */
-                --gap: 2px;
+                --gap: 8px;
+                /* Prevents touch bleed between rows */
                 --header-pad-top: 8px;
                 --header-pad-bottom: 8px;
                 --header-gap: 0px;
