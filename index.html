@@ -3247,7 +3247,8 @@
                     row.innerHTML = items.map(item => {
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
                         const activeClass = item === activeName ? "active" : "";
-                        return `<a href="#${(parentPath ? parentPath + "/" : "") + item}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
+                        const fullPath = (parentPath ? parentPath + "/" : "") + item;
+                        return `<a href="#${path2url(fullPath)}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
                     }).join("");
                 }
                 // Re-enable snapping after content is set
@@ -3562,6 +3563,9 @@
             if (app) app.style.display = "none";
         }
 
+        function path2url(p) { return p ? p.replace(/ /g, '_') : p; }
+        function url2path(u) { return u ? u.replace(/_/g, ' ') : u; }
+
         function navigateTo(path, isSwipe = false) {
             if (isSearchActive && !isSwipe) return;
 
@@ -3571,7 +3575,7 @@
 
             clearTextSelection();
 
-            const cleanPath = path || "Home";
+            const cleanPath = url2path(path || "Home");
             _activeRenderPath = cleanPath;
 
             // Trigger Direct Analytics (Debounced)
@@ -3701,7 +3705,7 @@
                     const entry = db.find(e => e.Page === page);
                     const title = entry ? entry.Title : page.split("/").pop();
                     const depth = page.split("/").length;
-                    html += `<a href="#${page}" class="index-link fill-anim ${depth > 1 ? `depth-${depth}` : ""}">\n${title} \n</a>`;
+                    html += `<a href="#${path2url(page)}" class="index-link fill-anim ${depth > 1 ? `depth-${depth}` : ""}">\n${title} \n</a>`;
                 });
                 html += "</div>";
                 listContainer.innerHTML += html;
@@ -3843,7 +3847,7 @@
 
             const linkUrl = entry.LinkURL || "";
             const tagsList = entry.Tags ? entry.Tags.split(",").map(t => t.trim()) : [];
-            let finalLink = linkUrl || (entry.Page !== "markdown-card" ? `#${entry.Page}` : "");
+            let finalLink = linkUrl || (entry.Page !== "markdown-card" ? `#${path2url(entry.Page)}` : "");
             const linkTarget = (finalLink || "").startsWith("#") ? "" : "_blank";
 
             let metaRowHTML = "";
