@@ -4433,9 +4433,9 @@
                 antialias: true,
                 alpha: false,
                 powerPreference: "high-performance",
-                // Change 'highp' to 'mediump' if it's still lagging on your machine.
-                // 'mediump' is significantly faster for complex CAD assemblies in fullscreen.
-                precision: "mediump"
+                // Mobile GPUs strictly enforce mediump, which severely breaks PBR reflections (banding/voids). 
+                // Always use highp for accurate environment mapping.
+                precision: "highp"
             });
 
             // Add this to help with the fill-rate:
