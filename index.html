@@ -3490,9 +3490,11 @@
                     btn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>';
                     btn.title = 'Exit Fullscreen';
                     if (viewer && viewer.controls) {
+                        viewer.controls.enabled = true; // restore interaction
                         viewer.controls.enableZoom = true;
                         viewer.controls.enablePan = true;
                         viewer.controls.enableRotate = true; // explicitly enable
+                        viewer.canvas.style.setProperty('touch-action', 'none', 'important'); // Restore OrbitControls expectation
                         viewer.controls.minDistance = 0.2;
                         viewer.controls.maxDistance = 100; // Let her rip
                         viewer.controls.zoomSpeed = 0.6;
@@ -3521,8 +3523,10 @@
                         if (viewer.controls) {
                             viewer.controls.enableZoom = false;
                             if (isTrueMobile) {
+                                viewer.controls.enabled = false; // disable event hijacking
                                 viewer.controls.enablePan = false;
                                 viewer.controls.enableRotate = false;
+                                viewer.canvas.style.setProperty('touch-action', 'auto', 'important'); // Allow pull-to-refresh
                             } else {
                                 viewer.controls.enablePan = true;
                                 viewer.controls.enableRotate = true;
@@ -4530,6 +4534,8 @@
                 } else {
                     controls.enableRotate = false;
                     controls.enablePan = false;
+                    controls.enabled = false; // Prevents generic event.preventDefault() hooks
+                    canvas.style.setProperty('touch-action', 'auto', 'important'); // Fixes pull-to-refresh
                 }
 
                 controls.autoRotate = false;
