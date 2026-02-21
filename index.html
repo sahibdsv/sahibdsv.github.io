@@ -2836,13 +2836,24 @@
             if (e.touches.length !== 1 || window.innerWidth > 768) return;
             const tgt = e.target;
             // Ignore touches on elements that need their own horizontal scrolling or interaction
-            if (tgt.closest('canvas') || tgt.closest('.nav-row') || tgt.closest('pre') || tgt.closest('.scrollable-x')) return;
+            if (tgt.closest('.model-viewer-wrapper.fullscreen') || tgt.closest('.nav-row') || tgt.closest('pre') || tgt.closest('.scrollable-x') || tgt.closest('.iframe-wrapper')) return;
 
-            // Find deepest visible subnav row
-            const rows = Array.from(document.querySelectorAll('.nav-row.level-n:not(.hidden)'));
+            // Find all visible subnav rows THAT ACTUALLY HAVE SCROLLABLE OVERFLOW
+            const rows = Array.from(document.querySelectorAll('.nav-row.level-n:not(.hidden)')).filter(r => r.scrollWidth > r.clientWidth + 5);
             if (!rows.length) return;
 
-            const activeRow = rows[rows.length - 1];
+            // Intelligent Depth Selection: 
+            // If a deeply nested row (Level 3+) is visible but no item is selected (.active),
+            // the user is technically still navigating the parent row. 
+            // Default to the first subnav, then override it to the deepest one that actually has a selection.
+            let activeRow = rows[0];
+            for (let i = rows.length - 1; i >= 0; i--) {
+                if (rows[i].querySelector('.active')) {
+                    activeRow = rows[i];
+                    break;
+                }
+            }
+
             _gSwipe = {
                 sx: e.touches[0].clientX,
                 sy: e.touches[0].clientY,
