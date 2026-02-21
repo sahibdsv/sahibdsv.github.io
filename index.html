@@ -2843,16 +2843,18 @@
             if (!rows.length) return;
 
             // Intelligent Depth Selection: 
-            // If a deeply nested row (Level 3+) is visible but no item is selected (.active),
-            // the user is technically still navigating the parent row. 
-            // Default to the first subnav, then override it to the deepest one that actually has a selection.
-            let activeRow = rows[0];
+            // We find the deepest subnav row that ACTUALLY has an active selection.
+            let activeRow = null;
             for (let i = rows.length - 1; i >= 0; i--) {
                 if (rows[i].querySelector('.active')) {
                     activeRow = rows[i];
                     break;
                 }
             }
+
+            // If no subnav row has an active selection, we are on a Main Category Page (e.g., Professional).
+            // Disable global swiping entirely here to prevent accidental dives into subcategories.
+            if (!activeRow) return;
 
             _gSwipe = {
                 sx: e.touches[0].clientX,
