@@ -1219,11 +1219,16 @@
             border-radius: var(--card-radius);
             overflow: hidden;
             display: block;
+            /* Force hardware acceleration and clipping for difficult embeds like Strava */
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            transform: translateZ(0);
         }
 
         .strava-embed-placeholder iframe {
             border-radius: var(--card-radius) !important;
             border: none !important;
+            width: 100% !important;
+            height: 100% !important;
         }
 
         .media-container {
@@ -2097,7 +2102,7 @@
             max-width: 100%;
             height: auto;
             border-radius: var(--card-radius);
-            margin: 20px auto;
+            margin: 0 auto;
             display: block;
         }
 
@@ -4102,7 +4107,7 @@
             }
 
             // 4. Strava Activities (Links, IDs, Snippets)
-            const stravaIdMatch = text.match(/(?:strava\.com\/activities\/|strava\.app\.link\/|strava:\/\/activity\/|^strava:|^\[strava\]:|data-embed-id=")\s*(\d{10,12})/i);
+            const stravaIdMatch = text.match(/(?:strava\.com\/activities\/|strava\.app\.link\/|strava:\/\/activity\/|data-embed-id=")\s*(\d{10,12})/i);
             if (stravaIdMatch) {
                 return { type: 'strava', id: stravaIdMatch[1], url: text };
             }
