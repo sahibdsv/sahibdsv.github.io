@@ -2613,10 +2613,16 @@
                     row = document.createElement("nav");
                     row.id = rowId;
                     row.className = "nav-row level-" + (level > 1 ? "n" : "1") + " slide-in-right";
-                    if (!activeName) row.scrollLeft = 0; // Standardize initial landing
                     navStack.appendChild(row);
                     setupHapticScroll(row);
                 }
+
+                // Prevent programmatic DOM mutations from firing phantom sub-link selections
+                row._autoScroll = true;
+                if (row._autoTimeout) clearTimeout(row._autoTimeout);
+                row._autoTimeout = setTimeout(() => { row._autoScroll = false; }, 800);
+
+                if (!activeName) row.scrollLeft = 0; // Standardize initial landing
 
                 let html = "";
                 const prefix = parentPath ? parentPath + "/" : "";
