@@ -2714,6 +2714,10 @@
                     const activeLink = row.querySelector(".active");
                     const behavior = isReset ? "auto" : "smooth";
 
+                    row._autoScroll = true;
+                    if (row._autoTimeout) clearTimeout(row._autoTimeout);
+                    row._autoTimeout = setTimeout(() => { row._autoScroll = false; }, behavior === "smooth" ? 800 : 50);
+
                     if (activeLink) {
                         const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
                         row.scrollTo({ left: targetScroll, behavior: behavior });
@@ -2730,21 +2734,24 @@
         function setupHapticScroll(row) {
             if (_hapticRows.has(row) || !navigator.vibrate) return;
             _hapticRows.add(row);
-            let s = { hitStart: false, hitEnd: false, didScroll: false, fingerDown: false, userTouching: false, hTicking: false, lastCenteredHref: null, startScrollLeft: 0, settleTimer: null };
+            let s = { hitStart: false, hitEnd: false, fingerDown: false, hTicking: false, lastCenteredHref: null, settleTimer: null };
 
             row.addEventListener("touchstart", () => {
+                row._autoScroll = false;
+                if (row._autoTimeout) clearTimeout(row._autoTimeout);
                 row.scrollTo({ left: row.scrollLeft, behavior: 'auto' });
-                Object.assign(s, { startScrollLeft: row.scrollLeft, fingerDown: true, userTouching: true, didScroll: false, hitStart: false, hitEnd: false });
+                Object.assign(s, { fingerDown: true, hitStart: false, hitEnd: false });
                 _pickerScrollingRow = row;
             }, { passive: true });
 
             row.addEventListener("touchend", () => {
                 s.fingerDown = false;
-                if (!s.didScroll) { s.userTouching = false; _pickerScrollingRow = null; }
             }, { passive: true });
 
             row.addEventListener("scroll", () => {
-                if (!s.userTouching && s.fingerDown) { s.userTouching = true; _pickerScrollingRow = row; }
+                if (row._autoScroll) return;
+
+                _pickerScrollingRow = row;
                 const currentScroll = row.scrollLeft;
                 const maxScroll = row.scrollWidth - row.clientWidth;
 
@@ -2752,12 +2759,9 @@
                 else if (currentScroll >= maxScroll - 1) { if (!s.hitEnd) { haptic('bump'); s.hitEnd = true; } }
                 else Object.assign(s, { hitStart: false, hitEnd: false });
 
-                s.didScroll = true;
-
                 if (!s.hTicking) {
                     s.hTicking = true;
                     requestAnimationFrame(() => {
-                        if (!s.userTouching) return (s.hTicking = false);
                         const links = row.querySelectorAll(".sub-link");
                         if (!links.length) return (s.hTicking = false);
 
@@ -2782,13 +2786,12 @@
 
                 clearTimeout(s.settleTimer);
                 s.settleTimer = setTimeout(() => {
-                    if (!s.userTouching) return;
                     if (s.lastCenteredHref?.substring(1)) {
                         history.replaceState(null, "", "#" + s.lastCenteredHref.substring(1));
                         navigateTo(s.lastCenteredHref.substring(1), true);
                     }
-                    if (!s.fingerDown) { s.userTouching = false; _pickerScrollingRow = null; }
-                }, 30);
+                    if (!s.fingerDown) { _pickerScrollingRow = null; }
+                }, 50);
             }, { passive: true });
             row._resetHaptic = () => { s.lastCenteredHref = null; };
         }
