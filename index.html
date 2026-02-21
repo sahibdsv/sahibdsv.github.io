@@ -4065,7 +4065,13 @@
                 return { type: 'video', url: text };
             }
 
-            // 4. Image
+            // 4. Strava Activities
+            const stravaMatch = text.match(/(?:strava\.com\/activities\/|strava\.app\.link\/|strava:\/\/activity\/|^strava:|^\[strava\]:)\s*(\d+)/i);
+            if (stravaMatch) {
+                return { type: 'strava', id: stravaMatch[1], url: text };
+            }
+
+            // 5. Image
             if (isImageURL(text)) {
                 return { type: 'image', url: text };
             }
@@ -4135,6 +4141,18 @@
             } else if (item.type === 'glb' && renderGLBViewer) {
                 // renderGLBViewer returns a div with class "model-viewer-wrapper" which has border-radius
                 mediaHTML = renderGLBViewer(item.url, false);
+            } else if (item.type === 'strava') {
+                const stravaId = item.id;
+                mediaHTML = `<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard" data-from-embed="false" style="width: 100%; border-radius: var(--card-radius); overflow: hidden; background: var(--card-bg-dark);"></div>`;
+
+                // Ensure Strava script is loaded
+                if (!window._stravaScriptLoaded) {
+                    const script = document.createElement('script');
+                    script.src = "https://strava-embeds.com/embed.js";
+                    script.async = true;
+                    document.head.appendChild(script);
+                    window._stravaScriptLoaded = true;
+                }
             }
             if (item.caption) {
                 // Use the full markdown engine for "Universal Markdown" support in captions (lists, links, etc.)
