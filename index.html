@@ -1241,10 +1241,6 @@
             border-radius: var(--card-radius);
             overflow: hidden;
             display: block;
-            /* Force hardware acceleration and clipping */
-            -webkit-mask-image: -webkit-radial-gradient(white, black);
-            mask-image: radial-gradient(white, black);
-            transform: translateZ(0);
         }
 
         .model-viewer-wrapper {
@@ -1342,13 +1338,14 @@
         }
 
         .media-container img {
-            width: 100% !important;
+            width: auto;
+            max-width: 100%;
             height: auto;
             display: block;
             max-height: 800px;
             object-fit: contain;
             margin: 0 auto;
-            border-radius: inherit;
+            border-radius: var(--card-radius);
         }
 
         .embed-wrapper.video {
