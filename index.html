@@ -2750,6 +2750,8 @@
                 }
             };
             const releaseInput = () => { s.fingerDown = false; };
+            row._markHapticInput = markInput;
+            row._releaseHapticInput = releaseInput;
 
             row.addEventListener("touchstart", (e) => {
                 markInput(e);
@@ -2827,6 +2829,66 @@
             }, { passive: true });
             row._resetHaptic = () => { s.lastCenteredHref = null; };
         }
+
+        /* EXPERIMENTAL: Global Horizontal Swipe to Subnav */
+        let _gSwipe = { sx: 0, sy: 0, sScroll: 0, row: null, active: false, tracking: false };
+
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1 || window.innerWidth > 768) return;
+            const tgt = e.target;
+            // Ignore touches on elements that need their own horizontal scrolling or interaction
+            if (tgt.closest('canvas') || tgt.closest('.nav-row') || tgt.closest('pre') || tgt.closest('.scrollable-x')) return;
+
+            // Find deepest visible subnav row
+            const rows = Array.from(document.querySelectorAll('.nav-row.level-n:not(.hidden)'));
+            if (!rows.length) return;
+
+            const activeRow = rows[rows.length - 1];
+            _gSwipe = {
+                sx: e.touches[0].clientX,
+                sy: e.touches[0].clientY,
+                row: activeRow,
+                sScroll: activeRow.scrollLeft,
+                active: false,
+                tracking: true
+            };
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!_gSwipe.tracking || !_gSwipe.row) return;
+
+            const dx = _gSwipe.sx - e.touches[0].clientX;
+            const dy = _gSwipe.sy - e.touches[0].clientY;
+
+            if (!_gSwipe.active) {
+                // Determine swipe intent: mostly horizontal and significant enough to distinguish from accidental drift
+                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+                    _gSwipe.active = true;
+                    _gSwipe.row.style.scrollBehavior = 'auto'; // Prevent smooth scroll fighting
+                } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) {
+                    _gSwipe.tracking = false; // Vertical scroll wins, cancel swipe tracking
+                    return;
+                }
+            }
+
+            if (_gSwipe.active) {
+                // Proxy the scroll intent directly into the row and trigger its internal input validation
+                if (_gSwipe.row._markHapticInput) _gSwipe.row._markHapticInput();
+                // 1.2x multiplier makes global swiping feel responsive and less tedious
+                _gSwipe.row.scrollLeft = Math.max(0, _gSwipe.sScroll + (dx * 1.2));
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => {
+            if (_gSwipe.active && _gSwipe.row) {
+                if (_gSwipe.row._markHapticInput) _gSwipe.row._markHapticInput(); // Final alignment ping
+                if (_gSwipe.row._releaseHapticInput) _gSwipe.row._releaseHapticInput(); // Release the settle timer lock
+                _gSwipe.row.style.scrollBehavior = '';
+            }
+            _gSwipe.tracking = false;
+            _gSwipe.active = false;
+            _gSwipe.row = null;
+        }, { passive: true });
 
 
         let resizeTimeout;
