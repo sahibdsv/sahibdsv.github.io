@@ -702,9 +702,7 @@
         }
 
         body.search-active #app {
-            opacity: 1;
-            filter: none;
-            pointer-events: auto;
+            display: none !important;
         }
 
         @media (max-width:768px) {
@@ -3030,7 +3028,7 @@
         const _scrollMemory = new Map();
 
         function navigateTo(path, isSwipe = false) {
-            if (isSearchActive && !isSwipe) return;
+            if (isSearchActive && !isSwipe) closeSearch();
 
             // SCROLL RESTORATION: Save current position before leaving
             if (_activeRenderPath) {
@@ -3334,12 +3332,12 @@
                     return;
                 }
 
-                const isSubPage = entry.Page.includes('/');
+                const entryIsSubPage = entry.Page.includes('/');
                 const isTopLevel = topLevelPages.includes(entry.Page.toLowerCase());
 
                 if (isHeroOnly) {
                     htmlBuffer += SECTION_RENDERERS.article(entry, index);
-                } else if (!isSubPage && isTopLevel) {
+                } else if (!entryIsSubPage && isTopLevel && !isSubPage) {
                     htmlBuffer += SECTION_RENDERERS.hero(entry, index);
                 } else {
                     gridBuffer += renderCardHTML(entry, getCategoryClass(entry.Page));
