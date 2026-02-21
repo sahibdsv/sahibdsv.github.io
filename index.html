@@ -3262,7 +3262,7 @@
             article: (entry, index) => {
                 let metaHTML = "";
                 if (index === 0) {
-                    metaHTML = `<div class="article-meta-row"><a href="Personal/About" class="author-link">Sahib Virdee</a>`;
+                    metaHTML = `<div class="article-meta-row"><a href="#Personal/About" class="author-link">Sahib Virdee</a>`;
                     if (entry.LinkURL) metaHTML += `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`;
                     metaHTML += `<div class="article-tags">`;
                     if (entry.Timestamp) {
