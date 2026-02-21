@@ -2655,8 +2655,12 @@
                     row.style.scrollSnapType = 'x mandatory';
                 });
 
+                // Make row visible BEFORE measuring widths so we can synchronously scroll before paint
+                const wasHidden = row.classList.contains("hidden");
+                row.classList.remove("hidden");
+
                 // Restore slide-in animation if re-appearing
-                if (!isNew && row.classList.contains("hidden")) {
+                if (!isNew && wasHidden) {
                     row.classList.remove("slide-in-right");
                     void row.offsetWidth; // Trigger reflow
                     row.classList.add("slide-in-right");
@@ -2704,26 +2708,21 @@
             if (window.innerWidth > 768) return;
             if (!row) return;
 
-            /* DOUBLE rAF: Ensures the browser has completed layout/paint for new innerHTML before we read widths */
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    const isReset = row._needsReset;
-                    row._needsReset = false;
+            const isReset = row._needsReset;
+            row._needsReset = false;
 
-                    if (row.scrollWidth <= row.clientWidth + 5) return;
+            if (row.scrollWidth <= row.clientWidth + 5) return;
 
-                    const activeLink = row.querySelector(".active");
-                    const behavior = isReset ? "auto" : "smooth";
+            const activeLink = row.querySelector(".active");
+            const behavior = isReset ? "auto" : "smooth";
 
-                    if (activeLink) {
-                        const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
-                        row.scrollTo({ left: targetScroll, behavior: behavior });
-                    } else if (isSubNav) {
-                        const midpoint = (row.scrollWidth - row.clientWidth) / 2;
-                        row.scrollTo({ left: midpoint, behavior: behavior });
-                    }
-                });
-            });
+            if (activeLink) {
+                const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
+                row.scrollTo({ left: targetScroll, behavior: behavior });
+            } else if (isSubNav) {
+                const midpoint = (row.scrollWidth - row.clientWidth) / 2;
+                row.scrollTo({ left: midpoint, behavior: behavior });
+            }
         }
 
         /* Haptic System — Touch-gated, instant-navigate scroll picker */
