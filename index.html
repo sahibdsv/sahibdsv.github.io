@@ -3160,20 +3160,38 @@
             // ATOMIC RENDER: Always call renderRows first to clear the container
             renderRows(t, null, false, false, !isTopLevel);
 
-            // Natural Hierarchy: Show immediate children (depth + 1) for automated navigation
+            // Natural Hierarchy: Show immediate children for automated navigation
             const pathParts = e.split("/");
             const currentDepth = pathParts.length;
-            const children = db.filter(item =>
-                item.Page &&
-                item.Page.startsWith(e + "/") &&
-                item.Page.split("/").length === currentDepth + 1
-            );
 
-            if (children.length > 0) {
-                // Map the children pages back to their primary DB entries for rendering
-                const childEntries = [...new Set(children.map(c => c.Page))]
-                    .map(page => db.find(entry => entry.Page === page))
-                    .filter(entry => entry);
+            // Find all unique immediate child sub-paths (even implicit ones)
+            const childPaths = [...new Set(
+                db.filter(item => item.Page && item.Page.startsWith(e + "/") && item.Page !== e)
+                    .map(item => item.Page.split("/").slice(0, currentDepth + 1).join("/"))
+            )].sort();
+
+            if (childPaths.length > 0) {
+                // Map the children pages back to their primary DB entries, or synthesize a collection card
+                const childEntries = childPaths.map(childPath => {
+                    const exactMatch = db.find(entry => entry.Page === childPath);
+                    if (exactMatch) return exactMatch;
+
+                    // Synthesize a virtual DB entry for the implicitly defined category
+                    const folderName = childPath.split("/").pop().replace(/_/g, ' ');
+
+                    // Attempt to borrow a cover image from the first descendant in the DB
+                    const descendant = db.find(entry => entry.Page && entry.Page.startsWith(childPath + "/") && entry.CoverImage);
+
+                    return {
+                        Page: childPath,
+                        Title: folderName,
+                        Subtitle: "Collection",
+                        Description: `Explore the ${folderName} collection.`,
+                        CoverImage: descendant ? descendant.CoverImage : "",
+                        Tags: "",
+                        Timestamp: descendant ? descendant.Timestamp : ""
+                    };
+                });
 
                 renderRows(childEntries, null, true, true);
             }
