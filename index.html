@@ -1201,7 +1201,10 @@
 
         .unified-media-wrapper {
             width: 100%;
-            display: block;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .embed-wrapper,
@@ -2094,7 +2097,7 @@
             max-width: 100%;
             height: auto;
             border-radius: var(--card-radius);
-            margin: 20px 0;
+            margin: 20px auto;
             display: block;
         }
 
@@ -4182,13 +4185,16 @@
                 const stravaUrl = item.url.startsWith('http') ? item.url : `https://www.strava.com/activities/${stravaId}`;
 
                 if (stravaId) {
-                    mediaHTML = `<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard" data-from-embed="false" style="width: 100%; min-height: 450px; border-radius: var(--card-radius); overflow: hidden; background: var(--card-bg-dark); display: flex; align-items: center; justify-content: center;">
-                        <a href="${stravaUrl}" target="_blank" style="color: var(--accent-projects); font-weight: 500; font-family: Jost, sans-serif;">View Activity on Strava</a>
+                    mediaHTML = `<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard" data-from-embed="false" style="width: 100%; min-height: 180px; border-radius: var(--card-radius); overflow: hidden; background: var(--card-bg-dark); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; border: 1px solid var(--border-subtle); box-sizing: border-box;">
+                        <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: var(--accent-projects); margin-bottom: 12px; opacity: 0.8;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
+                        <a href="${stravaUrl}" target="_blank" style="color: var(--text-bright); text-decoration: none; font-weight: 600; font-family: Jost, sans-serif; font-size: 16px; letter-spacing: 0.5px;">VIEW ON STRAVA</a>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">Interactive Map Loading...</div>
                     </div>`;
                 } else {
                     // Fallback for links where we couldn't parse the ID (like short redirects)
-                    mediaHTML = `<div style="width: 100%; padding: 20px; border-radius: var(--card-radius); background: var(--card-bg-dark); text-align: center;">
-                        <a href="${item.url}" target="_blank" style="color: var(--accent-projects); font-weight: 500; font-family: Jost, sans-serif;">Check out my activity on Strava</a>
+                    mediaHTML = `<div style="width: 100%; padding: 40px 20px; border-radius: var(--card-radius); background: var(--card-bg-dark); text-align: center; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box;">
+                        <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: var(--text-muted); margin-bottom: 12px; opacity: 0.5;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
+                        <a href="${item.url}" target="_blank" style="color: var(--text-bright); text-decoration: none; font-weight: 600; font-family: Jost, sans-serif; font-size: 16px; letter-spacing: 0.5px;">CHECK OUT STRAVA ACTIVITY</a>
                     </div>`;
                 }
 
