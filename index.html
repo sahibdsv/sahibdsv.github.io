@@ -1036,6 +1036,7 @@
             -webkit-user-select: none;
             background: var(--card-bg);
             box-shadow: var(--shadow-subtle, none);
+            overflow: hidden;
         }
 
         @media (hover: hover) {
@@ -1204,7 +1205,8 @@
         }
 
         .embed-wrapper,
-        .model-viewer-wrapper {
+        .model-viewer-wrapper,
+        .strava-embed-placeholder {
             position: relative;
             width: 100%;
             aspect-ratio: 4/3;
@@ -1214,6 +1216,11 @@
             border-radius: var(--card-radius);
             overflow: hidden;
             display: block;
+        }
+
+        .strava-embed-placeholder iframe {
+            border-radius: var(--card-radius) !important;
+            border: none !important;
         }
 
         .media-container {
