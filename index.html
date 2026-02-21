@@ -3492,6 +3492,7 @@
                     if (viewer && viewer.controls) {
                         viewer.controls.enableZoom = true;
                         viewer.controls.enablePan = true;
+                        viewer.controls.enableRotate = true; // explicitly enable
                         viewer.controls.minDistance = 0.2;
                         viewer.controls.maxDistance = 100; // Let her rip
                         viewer.controls.zoomSpeed = 0.6;
@@ -3515,10 +3516,17 @@
 
                 // STABILIZATION: Delay resize on exit to allow browser layout to settle (especially on mobile)
                 setTimeout(() => {
+                    const isTrueMobile = window.matchMedia("(pointer: coarse) and (hover: none)").matches;
                     Object.values(_glbViewers).forEach(viewer => {
                         if (viewer.controls) {
                             viewer.controls.enableZoom = false;
-                            viewer.controls.enablePan = true;
+                            if (isTrueMobile) {
+                                viewer.controls.enablePan = false;
+                                viewer.controls.enableRotate = false;
+                            } else {
+                                viewer.controls.enablePan = true;
+                                viewer.controls.enableRotate = true;
+                            }
                         }
                         const btn = viewer.canvas.parentElement?.querySelector('.fs-btn');
                         if (btn) {
@@ -4471,11 +4479,7 @@
 
             // UNIFIED LIGHTING: Fix for "Black Metals" and "Dullness on Navigation"
             // We must generate a fresh environment map for EACH renderer because WebGL contexts cannot share textures.
-            if (!window._sharedRoomEnvScene) {
-                window._sharedRoomEnvScene = new RoomEnvironment();
-                // FIX: Illuminate the physical RoomEnvironment meshes so zenith/nadir reflections are not pure black voids
-                window._sharedRoomEnvScene.add(new THREE.HemisphereLight(0xffffff, 0xffffff, 2.0));
-            }
+            if (!window._sharedRoomEnvScene) window._sharedRoomEnvScene = new RoomEnvironment();
             const pmremGenerator = new THREE.PMREMGenerator(renderer);
             pmremGenerator.compileEquirectangularShader();
             const envMap = pmremGenerator.fromScene(window._sharedRoomEnvScene).texture;
@@ -4488,7 +4492,7 @@
             scene.add(hemiLight);
 
             // JEWELRY STORE LIGHTING RIG: High-contrast specialized rig
-            [[0xfff5ea, 0.6, [5, 10, 5], scene], [0xeaefff, 0.4, [-5, 2, 5], scene], [0xffffff, 0.9, [-2, 5, -5], scene], [0xffffff, 0.25, [0, 0, 1], camera], [0xffffff, 0.5, [0, -5, 0], scene]].forEach(([c, i, p, parent]) => {
+            [[0xfff5ea, 0.6, [5, 10, 5], scene], [0xeaefff, 0.4, [-5, 2, 5], scene], [0xffffff, 0.9, [-2, 5, -5], scene], [0xffffff, 0.25, [0, 0, 1], camera], [0xffffff, 0.15, [0, -5, 0], scene]].forEach(([c, i, p, parent]) => {
                 const l = new THREE.DirectionalLight(c, i);
                 l.position.set(...p);
                 parent.add(l);
@@ -4512,6 +4516,7 @@
                 const isTrueMobile = window.matchMedia("(pointer: coarse) and (hover: none)").matches;
 
                 if (!isTrueMobile) {
+                    controls.enableRotate = true;
                     controls.enablePan = true;
                     controls.screenSpacePanning = true;
                     // Explicitly tell Three.js to use the Right Mouse Button (2) for panning
@@ -4523,12 +4528,8 @@
                     // Kill the browser menu on the canvas so it doesn't block the pan
                     canvas.addEventListener('contextmenu', e => e.preventDefault(), false);
                 } else {
+                    controls.enableRotate = false;
                     controls.enablePan = false;
-                    // Disable 2-finger panning entirely on true mobile to avoid scroll conflict
-                    controls.touches = {
-                        ONE: THREE.TOUCH.ROTATE,
-                        TWO: THREE.TOUCH.DOLLY // Explicitly remap to just zoom, no pan
-                    };
                 }
 
                 controls.autoRotate = false;
