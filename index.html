@@ -3070,7 +3070,7 @@
             if (resultsContainer) {
                 resultsContainer.innerHTML = '';
                 // safeHTML output is sanitized DOM text, safe for innerHTML
-                renderRows(n, `Search results for "${safeHTML(e)}"`, !1, !0, !1, !0, resultsContainer);
+                renderRows(n, `Search results for "${safeHTML(e)}"`, false, true, false, true, resultsContainer);
                 resultsContainer.style.display = "block";
             }
             if (app) app.style.display = "none";
@@ -3142,7 +3142,7 @@
 
             renderRows(
                 db.filter(row => (row.Timestamp || "").startsWith(filter) || row.Tags && row.Tags.includes(filter)),
-                `Posts from ${safeHTML(label)}`, false, true, true
+                `Posts from ${safeHTML(label)}`, false, true, false, true
             );
         }
         function renderPage(e) {
@@ -3158,7 +3158,7 @@
             }
 
             // ATOMIC RENDER: Always call renderRows first to clear the container
-            renderRows(t, null, false, false);
+            renderRows(t, null, false, false, !isTopLevel);
 
             // Natural Hierarchy: Show immediate children (depth + 1) for automated navigation
             const pathParts = e.split("/");
@@ -3215,7 +3215,6 @@
         }
         function renderHome() {
             const e = db.filter(e => "Home" === e.Page);
-            // Render the core Home page content (This will clear #app because isHome=false)
             renderRows(e, null, false);
 
             const t = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page);
@@ -3228,7 +3227,7 @@
             });
             const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0, 6);
             // Append Recent Activity (isHome=true)
-            o.length > 0 && renderRows(o, "Recent Activity", true, true, false, true)
+            o.length > 0 && renderRows(o, "Recent Activity", true, true, false, true);
         }
         function processSingleLine(e) {
             if (!e) return "";
@@ -3300,7 +3299,7 @@
             const mediaHTML = mediaSources.reduce((html, fn) => html || fn(), "");
 
             const tagsList = entry.Tags ? entry.Tags.split(",").map(t => t.trim()) : [];
-            const finalLink = entry.LinkURL || (entry.Page !== "markdown-card" ? `#${path2url(entry.Page)}` : "");
+            const finalLink = entry.LinkURL ? entry.LinkURL : (entry.Page !== "markdown-card" ? `#${path2url(entry.Page)}` : "");
 
             let metaRowHTML = "";
             if (entry.Timestamp || tagsList.length > 0) {
@@ -3335,7 +3334,7 @@
             }
         };
 
-        function renderRows(data, title, isHome, isSubPage, isRecentActivity = false, targetElement = null) {
+        function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecentActivity = false, targetElement = null) {
             const container = targetElement || document.getElementById("app");
             if (!container) return;
             if (isRecentActivity) {
@@ -3348,8 +3347,10 @@
             }
             let htmlBuffer = title ? `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:var(--text-dim); --text-hover:var(--text-bright);">${title}</h2></div>` : "";
             if (data.length === 0) {
-                if (title && !isHome) htmlBuffer += `<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>`;
-                return void (container.innerHTML = title && !isHome ? htmlBuffer : "");
+                if (isHome) return;
+                if (title) htmlBuffer += `<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>`;
+                container.innerHTML = htmlBuffer;
+                return;
             }
 
             let gridBuffer = "";
@@ -3362,15 +3363,21 @@
                 if ((entry.Title || "").toLowerCase().match(/\{?random quote\}?/)) sType = "quote";
                 else if (sType !== "quote" && !entry.SectionType && topLevelPages.includes(entry.Page.toLowerCase()) && !entry.Page.includes("/")) sType = "hero";
 
-                if (!isSubPage && SECTION_RENDERERS[sType]) {
-                    htmlBuffer += SECTION_RENDERERS[sType](entry);
+                if (!isSubPage && isHeroOnly && !['quote', 'hero'].includes(sType)) {
+                    htmlBuffer += SECTION_RENDERERS.article(entry, index);
+                } else if (!isSubPage && SECTION_RENDERERS[sType]) {
+                    htmlBuffer += SECTION_RENDERERS[sType](entry, index);
                 } else {
                     gridBuffer += renderCardHTML(entry, getCategoryClass(entry.Page));
                 }
             });
 
             if (gridBuffer) htmlBuffer += `<div class="grid-container section">${gridBuffer}</div>`;
-            isHome ? container.innerHTML += htmlBuffer : container.innerHTML = htmlBuffer;
+            if (isHome) {
+                container.innerHTML += htmlBuffer;
+            } else {
+                container.innerHTML = htmlBuffer;
+            }
 
             // 4. Post-render logic: Initialize dynamic components
             container.querySelectorAll('[data-needs-init="true"]').forEach(el => {
