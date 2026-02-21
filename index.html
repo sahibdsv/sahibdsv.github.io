@@ -2617,11 +2617,6 @@
                     setupHapticScroll(row);
                 }
 
-                // Prevent programmatic DOM mutations from firing phantom sub-link selections
-                row._autoScroll = true;
-                if (row._autoTimeout) clearTimeout(row._autoTimeout);
-                row._autoTimeout = setTimeout(() => { row._autoScroll = false; }, 800);
-
                 if (!activeName) row.scrollLeft = 0; // Standardize initial landing
 
                 let html = "";
@@ -2720,10 +2715,6 @@
                     const activeLink = row.querySelector(".active");
                     const behavior = isReset ? "auto" : "smooth";
 
-                    row._autoScroll = true;
-                    if (row._autoTimeout) clearTimeout(row._autoTimeout);
-                    row._autoTimeout = setTimeout(() => { row._autoScroll = false; }, behavior === "smooth" ? 800 : 50);
-
                     if (activeLink) {
                         const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
                         row.scrollTo({ left: targetScroll, behavior: behavior });
@@ -2740,23 +2731,55 @@
         function setupHapticScroll(row) {
             if (_hapticRows.has(row) || !navigator.vibrate) return;
             _hapticRows.add(row);
-            let s = { hitStart: false, hitEnd: false, fingerDown: false, hTicking: false, lastCenteredHref: null, settleTimer: null };
+            let s = {
+                hitStart: false, hitEnd: false,
+                hTicking: false, lastCenteredHref: null,
+                settleTimer: null, lastInputTime: 0, lastScrollTime: 0, fingerDown: false
+            };
 
-            row.addEventListener("touchstart", () => {
-                row._autoScroll = false;
-                if (row._autoTimeout) clearTimeout(row._autoTimeout);
+            let _isValidUserScroll = false;
+            let _wheelTimeout = null;
+
+            const markInput = (e) => {
+                s.lastInputTime = Date.now();
+                _isValidUserScroll = true;
+                s.fingerDown = true;
+                if (e && e.type === "wheel") {
+                    clearTimeout(_wheelTimeout);
+                    _wheelTimeout = setTimeout(releaseInput, 150);
+                }
+            };
+            const releaseInput = () => { s.fingerDown = false; };
+
+            row.addEventListener("touchstart", (e) => {
+                markInput(e);
                 row.scrollTo({ left: row.scrollLeft, behavior: 'auto' });
-                Object.assign(s, { fingerDown: true, hitStart: false, hitEnd: false });
-                _pickerScrollingRow = row;
+                Object.assign(s, { hitStart: false, hitEnd: false });
             }, { passive: true });
-
-            row.addEventListener("touchend", () => {
-                s.fingerDown = false;
-            }, { passive: true });
+            row.addEventListener("touchmove", markInput, { passive: true });
+            row.addEventListener("touchend", releaseInput, { passive: true });
+            row.addEventListener("wheel", markInput, { passive: true });
+            row.addEventListener("keydown", markInput, { passive: true });
+            row.addEventListener("mousedown", markInput, { passive: true });
+            row.addEventListener("mouseup", releaseInput, { passive: true });
+            row.addEventListener("mouseleave", releaseInput, { passive: true });
 
             row.addEventListener("scroll", () => {
-                if (row._autoScroll) return;
+                const now = Date.now();
 
+                // If it's been >150ms since the user physically interacted with the row
+                // AND >150ms since the last scroll event in a valid momentum sequence,
+                // then this is considered a "Phantom Scroll" (DOM shift, layout, programmatic smooth scroll)
+                if (now - s.lastInputTime > 150 && now - s.lastScrollTime > 150) {
+                    _isValidUserScroll = false;
+                }
+
+                if (!_isValidUserScroll) {
+                    _pickerScrollingRow = null;
+                    return;
+                }
+
+                s.lastScrollTime = now;
                 _pickerScrollingRow = row;
                 const currentScroll = row.scrollLeft;
                 const maxScroll = row.scrollWidth - row.clientWidth;
@@ -2796,8 +2819,11 @@
                         history.replaceState(null, "", "#" + s.lastCenteredHref.substring(1));
                         navigateTo(s.lastCenteredHref.substring(1), true);
                     }
-                    if (!s.fingerDown) { _pickerScrollingRow = null; }
-                }, 50);
+                    if (!s.fingerDown) {
+                        _pickerScrollingRow = null;
+                        _isValidUserScroll = false;
+                    }
+                }, 60);
             }, { passive: true });
             row._resetHaptic = () => { s.lastCenteredHref = null; };
         }
