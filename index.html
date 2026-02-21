@@ -761,10 +761,7 @@
             text-align: center
         }
 
-        .layout-quote {
-            min-height: 180px;
-            padding: 40px 15px
-        }
+
 
         @media (max-width: 360px) {
             .nav-row.level-1 {
@@ -892,12 +889,12 @@
         }
 
         .layout-quote {
-            margin: 0 auto 10px;
+            margin: 0 auto 15px;
             -webkit-tap-highlight-color: transparent;
-            padding: 40px 60px;
+            padding: 40px clamp(15px, 6%, 60px);
             height: auto;
             width: 100%;
-            max-width: 900px;
+            max-width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
