@@ -62,8 +62,8 @@
             --code-bg: #1e1e1e;
             --text-bright: rgb(var(--bright-rgb));
             --text-main: #d4d4d4;
-            --text-dim: #999999;
-            --text-muted: #666666;
+            --text-dim: #a3a3a3;
+            --text-muted: #8c8c8c;
             --text-inv: #000000;
             --code-fg: #e6cd69;
             --border-subtle: rgba(var(--bright-rgb), 0.08);
@@ -72,9 +72,9 @@
             --search-bg: #111111;
             --search-glow: rgba(255, 255, 255, 0.1);
             --search-border: rgba(255, 255, 255, 0.3);
-            --accent-personal: #00ff6a;
+            --accent-personal: #00e676;
             --accent-prof: #00e5ff;
-            --accent-projects: #ffaa00;
+            --accent-projects: #ffb300;
             --shadow-subtle: 0 0 15px rgba(0, 0, 0, 0.1);
             --shadow-medium: 0 0 30px rgba(0, 0, 0, 0.2);
             --shadow-heavy: 0 0 80px 20px rgba(0, 0, 0, 0.95);
@@ -112,33 +112,35 @@
             --op-low: 0.1;
             --surface-subtle: rgba(var(--bright-rgb), var(--op-subtle));
             --surface-strong: rgba(var(--bright-rgb), 0.2);
+            --border: var(--border-subtle);
+            --border-hover: var(--border-strong);
         }
 
         :root[data-theme="light"] {
-            --bg-dark: #e0e0e0;
-            --bg-trans: rgba(250, 250, 250, 0.9);
+            --bg-dark: #d1d1d6;
+            --bg-trans: rgba(238, 238, 242, 0.9);
             --bright-rgb: 0, 0, 0;
-            --bg-rgb: 250, 250, 250;
-            --bg: #fafafa;
-            --card-bg: #ffffff;
-            --card-bg-hover: #f2f2f2;
-            --card-bg-dark: #f0f0f0;
-            --code-bg: #f5f5f5;
+            --bg-rgb: 238, 238, 242;
+            --bg: #eeeef2;
+            --card-bg: #f7f7f9;
+            --card-bg-hover: #e8e8ed;
+            --card-bg-dark: #e2e2e6;
+            --code-bg: #eaeaef;
             --text-bright: #000000;
             --text-main: #1a1a1a;
-            --text-dim: #777777;
-            --text-muted: #aaaaaa;
+            --text-dim: #555555;
+            --text-muted: #757575;
             --text-inv: #ffffff;
             --code-fg: #bf8d00;
-            --border-subtle: rgba(0, 0, 0, 0.1);
-            --border-strong: rgba(0, 0, 0, 0.2);
-            --border-header: #efefef;
-            --search-bg: #ffffff;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-strong: rgba(0, 0, 0, 0.18);
+            --border-header: #e2e2e6;
+            --search-bg: #f7f7f9;
             --search-glow: rgba(0, 0, 0, 0.06);
             --search-border: rgba(0, 0, 0, 0.15);
-            --accent-personal: #00cc55;
-            --accent-prof: #0088cc;
-            --accent-projects: #ff9900;
+            --accent-personal: #00aa55;
+            --accent-prof: #0090c0;
+            --accent-projects: #e67e00;
             --shadow-subtle: 0 2px 12px rgba(0, 0, 0, 0.04);
             --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.06);
             --shadow-heavy: 0 0 60px rgba(0, 0, 0, 0.12);
@@ -181,14 +183,6 @@
 
         .loader-overlay.finished {
             opacity: 0;
-        }
-
-        .glb-loader-text {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            color: var(--text-dim);
-            font-weight: 700;
         }
 
         .slide-in-right {
@@ -298,43 +292,6 @@
             transition: color 0.2s ease;
         }
 
-        .article-body a:not(.chip):not(.btn-cta),
-        .layout-text a:not(.chip):not(.btn-cta),
-        .resume-contact a:not(.btn-cta),
-        .layout-hero a:not(.chip):not(.btn-cta),
-        .resume-entry a:not(.chip):not(.btn-cta),
-        #footer-links a:not(.btn-cta),
-        .author-link,
-        .layout-quote .author a:not(.btn-cta) {
-            color: var(--text-main);
-            text-decoration: underline;
-            text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
-            text-decoration-thickness: 1px;
-            text-underline-offset: 3px;
-            display: inline-block;
-            vertical-align: top;
-            font-weight: inherit;
-            transform: translateZ(0);
-            transition: none;
-        }
-
-        @media (hover: hover) {
-
-            .article-body a:not(.chip):hover,
-            .layout-text a:not(.chip):hover,
-            .layout-hero a:not(.chip):hover,
-            .resume-entry a:not(.chip):hover,
-            .resume-contact a:hover,
-            #footer-links a:hover,
-            .author-link:hover,
-            .layout-quote .author a:hover {
-                text-decoration-color: rgba(var(--bright-rgb), var(--op-high));
-                text-decoration-thickness: 2px;
-                color: var(--text-main) !important;
-                font-weight: inherit !important;
-            }
-        }
-
         .chip,
         .chip.date {
             display: inline-flex;
@@ -344,7 +301,7 @@
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.4px;
-            color: var(--text-dim);
+            color: var(--text-main);
             border: 1px solid var(--border-subtle);
             border-radius: 50px;
             background: var(--surface-subtle);
@@ -354,18 +311,31 @@
             transform: translateZ(0);
             line-height: 1;
             box-sizing: border-box;
+            max-width: 120px;
+            flex-shrink: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             transition: all var(--anim-quick);
         }
 
-        @media (hover: hover) {
+        a:not(.chip):not(.btn-cta):not(.fill-anim) {
+            color: var(--text-main);
+            text-decoration: underline;
+            text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
+            text-decoration-thickness: 1px;
+            text-underline-offset: 3px;
+            display: inline-block;
+            vertical-align: top;
+            font-weight: inherit;
+            transform: translateZ(0);
+            transition: text-decoration-color var(--anim-quick) var(--ease), text-decoration-thickness var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease);
+        }
 
-            .chip:hover,
-            .chip.date:hover {
-                color: var(--text-bright);
-                border-color: rgba(var(--bright-rgb), var(--op-high));
-                box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), var(--op-high));
-                background: var(--surface-subtle);
-                text-decoration: none !important;
+        @media (hover: hover) {
+            a:not(.chip):not(.btn-cta):not(.fill-anim):hover {
+                text-decoration-color: rgba(var(--bright-rgb));
+                text-decoration-thickness: 2px;
             }
         }
 
@@ -378,7 +348,7 @@
 
         h1.fill-anim,
         h2.fill-anim {
-            --text-base: var(--text-dim);
+            --text-base: var(--text-muted);
             --text-hover: var(--text-bright)
         }
 
@@ -401,12 +371,13 @@
         }
 
         #brand-name,
-        .nav-row.level-1 .nav-link {
+        .nav-row.level-1 .nav-link,
+        .nav-row.level-n .nav-link {
             font-weight: 700;
             text-transform: uppercase;
             user-select: text;
             -webkit-tap-highlight-color: transparent;
-            --text-base: var(--text-dim);
+            --text-base: var(--text-muted);
         }
 
         #brand-name {
@@ -526,7 +497,7 @@
         }
 
         .nav-row.level-n .nav-link {
-            --text-base: var(--text-dim);
+            --text-base: var(--text-muted);
             --text-hover: var(--text-bright)
         }
 
@@ -626,15 +597,15 @@
         }
 
         .icon-search-mask {
-            -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5l5 5"/></svg>') no-repeat center;
-            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5l5 5"/></svg>') no-repeat center;
+            -webkit-mask: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Ccircle cx="10" cy="10" r="6"/%3E%3Cpath d="M14.5 14.5l5 5"/%3E%3C/svg%3E') no-repeat center;
+            mask: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Ccircle cx="10" cy="10" r="6"/%3E%3Cpath d="M14.5 14.5l5 5"/%3E%3C/svg%3E') no-repeat center;
             -webkit-mask-size: 26px;
             mask-size: 26px;
         }
 
         .icon-theme-mask {
-            -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><path d="M12 4.5v15a7.5 7.5 0 0 0 0-15z" fill="black"/></svg>') no-repeat center;
-            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><path d="M12 4.5v15a7.5 7.5 0 0 0 0-15z" fill="black"/></svg>') no-repeat center;
+            -webkit-mask: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Ccircle cx="12" cy="12" r="7.5"/%3E%3Cpath d="M12 4.5v15a7.5 7.5 0 0 0 0-15z" fill="black"/%3E%3C/svg%3E') no-repeat center;
+            mask: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"%3E%3Ccircle cx="12" cy="12" r="7.5"/%3E%3Cpath d="M12 4.5v15a7.5 7.5 0 0 0 0-15z" fill="black"/%3E%3C/svg%3E') no-repeat center;
             -webkit-mask-size: 22px;
             mask-size: 22px;
             background: var(--text-muted) !important;
@@ -895,7 +866,7 @@
         }
 
         #footer-links a {
-            --text-base: var(--text-dim);
+            --text-base: var(--text-muted);
             --text-hover: var(--text-bright);
         }
 
@@ -1017,16 +988,6 @@
             display: block
         }
 
-        .loader-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            border-radius: inherit;
-        }
-
         .sk-line {
             background: var(--card-bg-hover);
             border-radius: var(--radius-sm);
@@ -1094,11 +1055,12 @@
             display: flex;
             align-items: center;
             gap: var(--space-xs);
-            --text-base: var(--text-dim);
+            --text-base: var(--text-muted);
             --text-hover: var(--cat-accent, var(--text-bright));
             font-weight: 600;
-            line-height: 1.1;
+            line-height: 1.3;
             transform: translateY(-1px);
+            padding-bottom: 2px;
         }
 
         .layout-grid:hover .row-media.placeholder span {
@@ -1166,9 +1128,18 @@
             -webkit-font-smoothing: subpixel-antialiased;
         }
 
+        /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */
         .row-media.placeholder {
-            background: var(--placeholder-gradient);
-            border-bottom: 1px solid var(--border-subtle);
+            /* Changed to match the main card background color */
+            background-color: var(--card-bg);
+            /* Keeps the subtle engineering grid */
+            background-image:
+                linear-gradient(rgba(var(--bright-rgb), 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(var(--bright-rgb), 0.04) 1px, transparent 1px);
+            background-size: 24px 24px;
+            background-position: center center;
+            /* Border removed so it blends seamlessly with the content below */
+            border-bottom: none;
             padding: 12px;
             text-align: center;
             display: flex;
@@ -1177,48 +1148,45 @@
             position: relative;
             z-index: 1;
             overflow: hidden;
+            /* Matches the main card transition speed */
+            transition: background-color var(--anim-layout) var(--ease);
         }
 
+        /* Ensures no cheap glow effects exist */
         .row-media.placeholder::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--placeholder-hover);
-            opacity: 0;
-            transition: opacity 0.5s var(--ease);
-            z-index: -1;
-            pointer-events: none;
+            display: none;
         }
 
-        @media (hover: hover) {
-            .layout-grid:hover .row-media.placeholder::after {
-                opacity: 1;
-            }
-        }
-
+        /* 2. Chunky Jost Typography (No scaling animation) */
         .row-media.placeholder span {
+            font-family: "Jost", sans-serif;
             font-size: 18px;
             font-weight: 700;
             text-transform: uppercase;
             color: var(--text-muted);
             letter-spacing: 1.5px;
             line-height: 1.2;
-            transition: color 0.5s var(--ease), opacity 0.5s var(--ease);
+            transition: color 0.4s var(--ease), opacity 0.4s var(--ease);
             max-width: 90%;
             display: block;
             z-index: 2;
             opacity: 0.6;
         }
 
+        /* 3. Unified Hover States */
         @media (hover: hover) {
+
+            /* Now changes to the exact same hover color as the rest of the card */
+            .layout-grid:hover .row-media.placeholder {
+                background-color: var(--card-bg-hover);
+            }
+
             .layout-grid:hover .row-media.placeholder span {
-                opacity: 0.9;
+                opacity: 1;
                 color: var(--text-main);
             }
 
+            /* Crisp Accent Colors on Hover */
             .layout-grid.cat-projects:hover .row-media.placeholder span {
                 color: var(--accent-projects);
             }
@@ -1262,11 +1230,11 @@
             width: 100%;
             border-radius: var(--card-radius);
             overflow: hidden;
-            background: var(--card-bg-dark);
+            background: var(--bg);
         }
 
         .model-viewer-wrapper.card-preview {
-            background: transparent;
+            background: var(--card-bg);
             border-bottom: none;
         }
 
@@ -1284,7 +1252,7 @@
             pointer-events: none;
         }
 
-        .model-viewer-wrapper.card-preview canvas {
+        #app .model-viewer-wrapper.card-preview canvas {
             position: relative;
             z-index: 2;
         }
@@ -1296,8 +1264,11 @@
             opacity: 0;
             transform: scale(0.95);
             transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
-            background: transparent !important;
-            background-color: var(--card-bg-dark) !important;
+            background: transparent;
+        }
+
+        #app .model-viewer-wrapper .loader-overlay {
+            background: inherit;
         }
 
         .model-viewer-wrapper.loaded canvas {
@@ -1620,13 +1591,20 @@
             transition: color var(--anim-quick), border-color var(--anim-quick), background var(--anim-quick);
         }
 
-        .btn-cta:hover {
-            color: var(--text-bright);
-            border-color: rgba(var(--bright-rgb), var(--op-high));
-            box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), var(--op-high));
-            background: var(--surface-subtle);
-            transform: none;
-            text-decoration: none !important;
+        @media (hover: hover) {
+
+            .btn-cta:hover,
+            .chip:hover {
+                color: var(--text-bright);
+                border-color: rgba(var(--bright-rgb), 1);
+                box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 1);
+            }
+
+            .btn-cta:hover {
+                background: var(--surface-subtle);
+                transform: none;
+                text-decoration: none !important;
+            }
         }
 
         .markdown-grid {
@@ -1642,19 +1620,23 @@
             height: 100%;
         }
 
+        /* 1. Mobile & Interaction Logic */
         @media (max-width: 768px) {
+
+            /* Disable internal canvas rotation on mobile to allow scrolling, 
+               but keep pointer-events active so the fullscreen button works! */
             .model-viewer-wrapper:not(.card-preview) canvas {
-                pointer-events: none;
+                pointer-events: auto;
             }
 
             .model-viewer-wrapper:not(.card-preview) {
-                height: 300px;
+                height: 350px;
+                /* Slightly taller for better 3D visibility */
             }
         }
 
         @media (min-width: 769px) {
             .model-viewer-wrapper:not(.card-preview) canvas {
-                pointer-events: auto !important;
                 cursor: grab;
             }
 
@@ -1663,6 +1645,56 @@
             }
         }
 
+        /* 1. Base Button Style (Normal State) */
+        .model-viewer-wrapper .fs-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            background: rgba(var(--bg-rgb), 0.7);
+            color: var(--text-bright);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--card-radius);
+            /* Matches your site's corners, not a circle */
+            cursor: pointer;
+            z-index: 100;
+            display: grid;
+            place-items: center;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            /* Only transition colors/shadows to prevent jumping */
+            transition: border-color var(--anim-quick) var(--ease),
+                box-shadow var(--anim-quick) var(--ease),
+                background var(--anim-quick) var(--ease);
+        }
+
+        /* 2. Hover State (Normal & Fullscreen) */
+        .model-viewer-wrapper .fs-btn:hover,
+        .model-viewer-wrapper:fullscreen .fs-btn:hover {
+            border-color: rgba(var(--bright-rgb), 1);
+            box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 1);
+            /* Site-wide glow */
+            background: rgba(var(--bg-rgb), 1);
+            color: var(--text-bright);
+        }
+
+        /* 3. Icon Sizing */
+        .model-viewer-wrapper .fs-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            display: block;
+        }
+
+        /* 4. Fullscreen Layout Overrides */
+        .model-viewer-wrapper:fullscreen .fs-btn {
+            top: 20px;
+            right: 20px;
+        }
+
+        /* 5. Fullscreen Container Behavior */
         .model-viewer-wrapper.fullscreen {
             border-radius: 0 !important;
             aspect-ratio: auto !important;
@@ -1688,7 +1720,7 @@
             border-radius: 50%;
             cursor: pointer;
             z-index: 100;
-            transition: background var(--anim-instant), border-color var(--anim-instant);
+            transition: all var(--anim-quick) var(--ease);
             display: grid;
             place-items: center;
             overflow: hidden;
@@ -1723,8 +1755,10 @@
         }
 
         .model-viewer-wrapper .fs-btn:hover {
+            color: var(--text-bright);
+            border-color: rgba(var(--bright-rgb), 1);
+            box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 1);
             background: rgba(var(--bg-rgb), var(--op-high));
-            border-color: rgba(var(--bright-rgb), 0.4);
         }
 
         .model-viewer-wrapper.card-preview .fs-btn {
@@ -1735,6 +1769,42 @@
             max-width: 1000px;
             margin: 0 auto;
             padding: 0;
+        }
+
+        .resume-sub-row .btn-cta {
+            margin: 0;
+            align-self: center;
+        }
+
+        .resume-sub-row {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .resume-sub-row .btn-cta {
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: transparent;
+            border-color: rgba(var(--bright-rgb), 0.3);
+            box-shadow: none;
+        }
+
+        .resume-sub-row .resume-sub {
+            white-space: nowrap;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .resume-header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
         }
 
         .resume-grid {
@@ -1796,21 +1866,6 @@
             font-weight: 400;
         }
 
-        .resume-header {
-            text-align: center;
-            margin-bottom: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .resume-header h1 {
-            font-size: 36px;
-            margin-bottom: 8px;
-            font-weight: 700;
-            line-height: 1;
-        }
-
         .resume-sub {
             display: inline-block;
             font-size: 16px;
@@ -1829,11 +1884,6 @@
             line-height: 1.4;
         }
 
-        .resume-entry a {
-            text-decoration: underline;
-            text-underline-offset: 3px;
-        }
-
         .resume-role {
             font-size: 16px;
             font-weight: 600;
@@ -1850,7 +1900,7 @@
         .resume-loc-slot {
             font-size: 14px;
             font-weight: 500;
-            color: var(--text-dim);
+            color: var(--text-muted);
             text-align: right;
         }
 
@@ -1946,10 +1996,6 @@
         .article-body h3 {
             font-size: 1.4rem;
             color: var(--text-main);
-        }
-
-        .article-body p {
-            margin-bottom: 20px;
         }
 
         .article-body p {
@@ -2063,7 +2109,7 @@
             content: '';
             width: 4px;
             height: 8px;
-            border: solid var(--text-inv);
+            border: 0 solid var(--text-inv);
             border-width: 0 2px 2px 0;
             transform: rotate(45deg);
             margin-top: -2px;
@@ -2102,162 +2148,6 @@
             opacity: 1;
         }
 
-        @media screen {
-            #resume-view a:not(.btn-pill):not(.chip) {
-                transition: color 0.2s ease;
-            }
-        }
-
-        @page {
-            margin: 0.3in 0.4in;
-            size: letter portrait;
-        }
-
-        @media print {
-
-            #main-header,
-            footer,
-            .search-container,
-            #search-overlay,
-            .back-link,
-            #search-trigger-wrapper,
-            .btn-pill,
-            .icon-btn,
-            .loader-overlay,
-            .fs-btn {
-                display: none !important;
-            }
-
-            #app #resume-view,
-            #app #resume-view *,
-            #app #resume-view *::before,
-            #app #resume-view *::after {
-                color: black !important;
-                background: white !important;
-                box-shadow: none !important;
-                text-shadow: none !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                -webkit-text-fill-color: black;
-            }
-
-            body {
-                background: white;
-                padding-top: 0 !important;
-            }
-
-            #resume-view a,
-            #resume-view a:hover,
-            #resume-view .fill-anim {
-                text-decoration: none;
-                color: black;
-                border: none;
-                background: none;
-                -webkit-text-fill-color: black;
-            }
-
-            #resume-view {
-                padding: 0;
-                margin: 0;
-                width: 100%;
-                max-width: 100%;
-            }
-
-            #resume-view .resume-container {
-                gap: 12px;
-                padding: 0;
-                width: 100%;
-            }
-
-            #resume-view .resume-grid {
-                display: grid;
-                grid-template-columns: 0.75fr 2.25fr;
-                gap: 30px;
-            }
-
-            #resume-view .resume-header {
-                margin-bottom: 6px;
-                text-align: center;
-            }
-
-            #resume-view .resume-header h1 {
-                font-size: 32px;
-                margin-bottom: 2px;
-                font-weight: 700;
-            }
-
-            #resume-view .resume-sub {
-                font-size: 16px;
-                margin-bottom: 4px;
-                color: var(--text-dim);
-            }
-
-            #resume-view .resume-contact {
-                font-size: 14px;
-                gap: 10px;
-                margin-top: 4px;
-            }
-
-            #resume-view .resume-section {
-                margin-bottom: 20px;
-            }
-
-            #resume-view .resume-section h2 {
-                font-size: 17px;
-                margin-bottom: 4px;
-                padding-bottom: 2px;
-                border-bottom: 1px solid var(--border-subtle);
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            #resume-view .resume-entry {
-                margin-bottom: 12px;
-            }
-
-            #resume-view .resume-entry h3 {
-                font-size: 15px;
-                margin-bottom: 1px;
-                font-weight: 600;
-            }
-
-            #resume-view .resume-entry p,
-            #resume-view .resume-entry li,
-            #resume-view .resume-skill-row {
-                font-size: 14px;
-                line-height: 1.4;
-                margin-bottom: 2px;
-            }
-
-            #resume-view .resume-entry ul {
-                margin-top: 2px;
-                padding-left: 18px;
-            }
-
-            #resume-view .resume-role {
-                font-weight: 600;
-                font-size: 15px;
-            }
-
-            #resume-view .resume-company {
-                color: var(--text-main);
-                font-size: 14px;
-                font-weight: 400;
-            }
-
-            #resume-view .resume-date-slot,
-            #resume-view .resume-loc-slot {
-                font-size: 13px;
-                color: var(--text-dim);
-                text-align: right;
-            }
-
-            #resume-view .resume-section,
-            #resume-view .resume-entry {
-                page-break-inside: avoid;
-            }
-        }
-
         @media (hover: none) {
             .fill-anim:not(.active):not(:active) {
                 background-position: 0 0;
@@ -2278,11 +2168,6 @@
             display: none !important;
         }
     </style>
-
-
-
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="74d145bb-4d10-4b7b-ab9f-7d1eb7a4db49"
-        data-auto-track="false"></script>
 
     <!-- Three.js for 3D model rendering -->
     <script type="importmap">
@@ -2412,15 +2297,6 @@
                     });
                     return obj;
                 })
-                .map(entry => {
-                    // Handle Page#SectionType syntax
-                    if (!entry.SectionType && entry.Page && entry.Page.includes('#')) {
-                        const [page, sectionType] = entry.Page.split('#');
-                        entry.Page = page;
-                        entry.SectionType = sectionType;
-                    }
-                    return entry;
-                });
         }
 
         // Global State
@@ -2430,31 +2306,6 @@
         let quoteBag = []; // New state for shuffle logic
         let isSearchActive = false;
         let _lastRenderedPath = null;
-
-        // === NO-BS UMAMI ANALYTICS ===
-        let _dwellTimer = null;
-        let _currentPath = null;
-
-        function trackPage(path) {
-            const literalPath = path.startsWith("#") ? path : "#" + path;
-            if (literalPath === _currentPath) return;
-
-            // PERFORMANCE: Use shorter dwell for navigation, but 0s for initial landing
-            const isInitial = !_currentPath;
-            const delay = isInitial ? 0 : 600;
-
-            if (_dwellTimer) clearTimeout(_dwellTimer);
-            _dwellTimer = setTimeout(() => {
-                _currentPath = literalPath;
-                if (window.umami) {
-                    umami.track(props => ({
-                        ...props,
-                        url: _currentPath,
-                        title: document.title || 'Sahib Virdee'
-                    }));
-                }
-            }, delay);
-        }
 
         const CACHE_KEY = 'sahib_v1_cache';
         const CONFIG = {
@@ -2504,7 +2355,13 @@
             if (cachedData) {
                 db = cachedData.main;
                 quotesDb = cachedData.quotes;
-                resumeDb = cachedData.resume || [];
+                resumeDb = (cachedData.resume || []).map(entry => {
+                    if (entry.Page && entry.Page.includes('#')) {
+                        const [page, sectionType] = entry.Page.split('#');
+                        return { ...entry, Page: page, SectionType: sectionType };
+                    }
+                    return entry;
+                });
 
                 if (!showDrafts) {
                     db = stripDrafts(db);
@@ -2547,21 +2404,9 @@
                 history.replaceState(null, null, window.location.pathname + window.location.hash);
             }
 
-
-            // Track print events for resume
-            window.addEventListener('beforeprint', () => {
-                const currentPageStr = window.location.hash.substring(1);
-                if (currentPageStr.includes('Resume')) {
-                    if (window.umami) umami.track('resume-print', { url: window.location.hash });
-                }
-            });
-
             initApp();
             updateSEO();
             renderFooter();
-
-            // Initial track for entry page
-            trackPage(window.location.hash || "#Home");
 
             requestAnimationFrame(() => {
                 document.body.classList.remove('no-transition');
@@ -2593,12 +2438,17 @@
 
                 const filtered = mainData.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
                 if (!filtered.find(e => e.Page === 'Professional/Resume')) {
-                    filtered.push({ Title: 'Resume', Page: 'Professional/Resume', SectionType: 'Virtual', Timestamp: '' });
                 }
 
                 db = filtered;
                 quotesDb = quotesDbLocal;
-                resumeDb = resumeDbLocal;
+                resumeDb = (resumeDbLocal || []).map(entry => {
+                    if (entry.Page && entry.Page.includes('#')) {
+                        const [page, sectionType] = entry.Page.split('#');
+                        return { ...entry, Page: page, SectionType: sectionType };
+                    }
+                    return entry;
+                });
                 window.db = db;
 
                 // Cache the data
@@ -2634,25 +2484,17 @@
             window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }),
                 window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { centerNavRow(row, true) }) }, 150) } })()),
 
-                // Global Click Handler - Manages Search, Navigation, Haptics & Analytics
+                // Global Click Handler - Manages Search, Navigation, Haptics
                 document.addEventListener("click", e => {
                     const overlay = document.getElementById("search-overlay");
                     const controls = document.getElementById("search-controls");
                     const results = document.getElementById("search-results");
 
-                    // 0. Haptic & Analytics (Consolidated)
+                    // 0. Haptics
                     const interactive = e.target.closest("#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid > div, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip");
                     if (interactive && navigator.vibrate) {
                         const isMajor = interactive.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link");
                         haptic(isMajor ? 'pulse' : 'tap');
-                    }
-
-                    if (interactive && interactive.tagName === 'A' && interactive.href && !interactive.closest(".clickable-block")) {
-                        if (window.umami) umami.track('click', {
-                            url: interactive.href,
-                            text: interactive.innerText.trim() || interactive.getAttribute('title') || 'Link Click',
-                            type: 'link'
-                        });
                     }
 
                     // 1. Search Dismissal Logic
@@ -2668,24 +2510,6 @@
                             closeSearch();
                         }
                     }
-
-                    // 2. Clickable Block Navigation (Delegated)
-                    // generalized to work on document level for both #app and #search-results
-                    const block = e.target.closest(".clickable-block");
-                    if (block && !e.target.classList.contains("chip")) {
-                        const link = block.getAttribute("data-link");
-                        const target = block.getAttribute("data-target");
-
-                        if (link) {
-                            if ("_blank" === target) {
-                                if (window.umami) umami.track('click', { url: link, text: block.innerText.trim() || 'Block Click', type: 'block' });
-                                window.open(link, "_blank");
-                            } else {
-                                window.location.href = link;
-                                if (isSearchActive) closeSearch();
-                            }
-                        }
-                    }
                 }),
 
 
@@ -2696,7 +2520,6 @@
                         haptic('tap');
                         const container = refreshBtn.closest(".layout-quote");
                         if (container) {
-                            if (window.umami) umami.track('refresh', { type: 'quote', context: container.getAttribute('data-title') || 'Random' });
                             if (!container.classList.contains("loading")) {
                                 const rect = container.clientHeight;
                                 container.style.height = rect + "px";
@@ -2714,16 +2537,13 @@
 
                     const chip = e.target.closest(".chip");
                     if (chip) {
-                        // Allow <a> chips to bubble for analytics
                         if (chip.tagName !== 'A') e.stopPropagation();
 
                         if (isSearchActive) closeSearch();
                         const t = chip.getAttribute("data-tag"), n = chip.getAttribute("data-date");
                         if (n) {
-                            if (window.umami) umami.track('click', { type: 'tag', value: n, label: chip.innerText.trim() });
                             window.location.hash = "Filter:" + n;
                         } else if (t) {
-                            if (window.umami) umami.track('click', { type: 'tag', value: t, label: chip.innerText.trim() });
                             window.location.hash = "Filter:" + t;
                         }
                         return;
@@ -3036,12 +2856,21 @@
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
 
-            // SYNC GLB: Update clear colors to match Card Background to maintain component boundary
+            // SYNC GLB: Update clear colors contextually based on Card vs Article mode
             if (window._glbViewers) {
-                // Light: #f0f0f0, Dark: #131313 (Matches --card-bg-dark)
-                const clearColor = newTheme === 'light' ? 0xf0f0f0 : 0x131313;
                 Object.values(window._glbViewers).forEach(viewer => {
-                    if (viewer.renderer) viewer.renderer.setClearColor(clearColor, 1); // Keep Opaque
+                    if (viewer.renderer) {
+                        const isCard = viewer.isCardMode;
+                        let clearColor;
+
+                        if (newTheme === 'light') {
+                            clearColor = isCard ? 0xf7f7f9 : 0xeeeef2;
+                        } else {
+                            clearColor = isCard ? 0x111111 : 0x050505;
+                        }
+
+                        viewer.renderer.setClearColor(clearColor, 1);
+                    }
                 });
             }
         }
@@ -3094,9 +2923,6 @@
 
             const cleanPath = url2path(path || "Home");
             _activeRenderPath = cleanPath;
-
-            // Trigger Direct Analytics (Debounced)
-            trackPage(cleanPath);
 
             // 1. Immediately update navigation metadata (Header Fill + Active States)
             renderNavigation(cleanPath === "Home" ? null : cleanPath);
@@ -3303,39 +3129,45 @@
             const mediaHTML = mediaSources.reduce((html, fn) => html || fn(), "");
 
             const tagsList = entry.Tags ? entry.Tags.split(",").map(t => t.trim()) : [];
-            const finalLink = entry.LinkURL ? entry.LinkURL : (entry.Page !== "markdown-card" ? `#${path2url(entry.Page)}` : "");
 
             let metaRowHTML = "";
             if (entry.Timestamp || tagsList.length > 0) {
                 metaRowHTML = `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
             }
 
-            return `<div class="layout-grid clickable-block ${contextCategory || getCategoryClass(entry.Page)} ${!entry.Thumbnail ? "has-placeholder" : ""}" data-link="${finalLink}" data-target="${(finalLink || "").startsWith("#") ? "" : "_blank"}">${mediaHTML}<div class="card-info">${(entry.Title && !isTitleLink) ? `<h3 class="fill-anim">${processSingleLine(entry.Title)}</h3>` : ""}${metaRowHTML}</div></div>`;
+            return `<div class="layout-grid ${contextCategory || getCategoryClass(entry.Page)} ${!entry.Thumbnail ? "has-placeholder" : ""}" onclick="location.hash='${entry.Page}'">${mediaHTML}<div class="card-info">${(entry.Title && !isTitleLink) ? `<h3 class="fill-anim">${processSingleLine(entry.Title)}</h3>` : ""}${metaRowHTML}</div></div>`;
         };
 
         const SECTION_RENDERERS = {
             quote: (entry) => `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true"></div>`,
             hero: (entry) => {
-                const link = entry.LinkURL || "", clickableClass = link ? "clickable-block hero-link" : "", target = link.startsWith("#") ? "" : "_blank";
                 let metaHTML = "";
                 if (entry.Timestamp) {
                     const dateStr = formatDate(entry.Timestamp), monthKey = entry.Timestamp.substring(0, 7);
                     metaHTML += `<span class="chip date" data-val="${dateStr}" onclick="event.stopPropagation(); window.location.hash='Filter:${monthKey}'">${dateStr}</span>`;
                 }
                 if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
-                return `<div class="section layout-hero ${clickableClass}" data-link="${link}" data-target="${target}">\n${formatTitle(entry.Title, "h1")}${metaHTML ? `<div class="hero-meta">${metaHTML}</div>` : ""}${processContentWithBlocks(entry.Content || "")}\n</div>`;
+                return `<div class="section layout-hero">\n${formatTitle(entry.Title, "h1")}${metaHTML ? `<div class="hero-meta">${metaHTML}</div>` : ""}${processContentWithBlocks(entry.Content || "")}\n</div>`;
             },
             text: (entry) => `<div class="section layout-text">\n${entry.Title ? formatTitle(entry.Title, "h2") : ""}${processContentWithBlocks(entry.Content || "")}\n</div>`,
             article: (entry, index) => {
                 let metaHTML = "";
                 if (index === 0) {
-                    metaHTML = `<div class="article-meta-row"><a href="#Personal/About" class="author-link">Sahib Virdee</a>${entry.LinkURL ? `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : ""}<div class="article-tags">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}`;
+                    metaHTML = `<div class="article-meta-row"><a href="Personal/About" class="author-link">Sahib Virdee</a>`;
+                    if (entry.LinkURL) metaHTML += `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`;
+                    metaHTML += `<div class="article-tags">`;
+                    if (entry.Timestamp) {
+                        const dateStr = formatDate(entry.Timestamp), monthKey = entry.Timestamp.substring(0, 7);
+                        metaHTML += `<span class="chip date" data-val="${dateStr}" onclick="event.stopPropagation(); window.location.hash='Filter:${monthKey}'">${dateStr}</span>`;
+                    }
                     if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
                     const readTime = Math.ceil((entry.Content || "").trim().split(/\s+/).length / 200);
-                    metaHTML += `${readTime > 0 ? `<span class="chip" style="opacity:0.6; cursor:default;">${readTime} min read</span>` : ""}</div></div>`;
+                    if (readTime > 0) metaHTML += `<span class="chip" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
+                    metaHTML += `</div></div>`;
                 }
                 return `<div class="section layout-text">${entry.Title ? formatTitle(entry.Title, index === 0 ? "h1" : "h2") : ""}${metaHTML}<div class="article-body">${processContentWithBlocks(entry.Content || "")}</div></div>`;
             }
+
         };
 
         function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecentActivity = false, targetElement = null) {
@@ -3363,14 +3195,19 @@
 
             data.forEach((entry, index) => {
                 if (!entry.Page || entry.Page === "Footer") return;
-                let sType = (entry.SectionType || "card").toLowerCase();
-                if ((entry.Title || "").toLowerCase().match(/\{?random quote\}?/)) sType = "quote";
-                else if (sType !== "quote" && !entry.SectionType && topLevelPages.includes(entry.Page.toLowerCase()) && !entry.Page.includes("/")) sType = "hero";
 
-                if (!isSubPage && isHeroOnly && !['quote', 'hero'].includes(sType)) {
+                if ((entry.Title || "").toLowerCase().match(/\{?random quote\}?/)) {
+                    htmlBuffer += SECTION_RENDERERS.quote(entry, index);
+                    return;
+                }
+
+                const isSubPage = entry.Page.includes('/');
+                const isTopLevel = topLevelPages.includes(entry.Page.toLowerCase());
+
+                if (isHeroOnly) {
                     htmlBuffer += SECTION_RENDERERS.article(entry, index);
-                } else if (!isSubPage && SECTION_RENDERERS[sType]) {
-                    htmlBuffer += SECTION_RENDERERS[sType](entry, index);
+                } else if (!isSubPage && isTopLevel) {
+                    htmlBuffer += SECTION_RENDERERS.hero(entry, index);
                 } else {
                     gridBuffer += renderCardHTML(entry, getCategoryClass(entry.Page));
                 }
@@ -3450,7 +3287,6 @@
                 const title = (entry.Title || "").replace(/{year}/g, new Date().getFullYear());
                 const m = title.match(/\[([^\]]+)\]\(([^)]+)\)/);
                 if (m) return `<a href="${m[2]}" target="_blank">${m[1]}</a>`;
-                if (entry.LinkURL) return `<a href="${entry.LinkURL}" target="_blank">${title}</a>`;
                 return title ? `<span>${title}</span>` : "";
             }).join("");
         }
@@ -3505,7 +3341,7 @@
 
         function processGlbQueue() {
             // ENGINE CHECK: If Three.js isn't ready (module script deferred), verify before consuming queue
-            if (!initThreeJSViewer) {
+            if (!window.initThreeJSViewer) {
                 setTimeout(processGlbQueue, 100);
                 return;
             }
@@ -3521,10 +3357,10 @@
                 const { uniqueId, glbPath, isCardMode } = nextItem;
                 const container = document.getElementById(uniqueId);
 
-                if (container && initThreeJSViewer) {
+                if (container && window.initThreeJSViewer) {
                     if (!_glbViewers[uniqueId]) {
                         try {
-                            const viewer = initThreeJSViewer(container, glbPath, isCardMode);
+                            const viewer = window.initThreeJSViewer(container, glbPath, isCardMode);
                             _glbViewers[uniqueId] = viewer;
                             new ResizeObserver(() => viewer.onResize()).observe(container);
                         } catch (e) {
@@ -3647,7 +3483,7 @@
                     Object.values(_glbViewers).forEach(viewer => {
                         if (viewer.controls) {
                             viewer.controls.enableZoom = false;
-                            viewer.controls.enablePan = false;
+                            viewer.controls.enablePan = true;
                         }
                         const btn = viewer.canvas.parentElement?.querySelector('.fs-btn');
                         if (btn) {
@@ -3709,9 +3545,8 @@
             const e = document.getElementById("json-ld-resume");
             if (e) e.remove();
             const t = resumeDb;
-            const n = t.filter(e => e.SectionType && e.SectionType.toLowerCase().startsWith("#header"));
-            if (0 === n.length) return;
-            const o = n[0], r = o.Title.split("|")[0].trim(), i = o.Title.split("|")[1] ? o.Title.split("|")[1].trim() : "Engineer",
+            if (0 === t.length) return;
+            const o = t[0], r = o.Title.split("|")[0].trim(), i = o.Title.split("|")[1] ? o.Title.split("|")[1].trim() : "Engineer",
                 s = {
                     "@context": "https://schema.org",
                     "@type": "Person",
@@ -3719,7 +3554,6 @@
                     jobTitle: i,
                     url: "https://sahibvirdee.com/resume",
                     description: `Resume of ${r}, ${i}.`,
-                    knowsAbout: t.filter(e => e.SectionType && e.SectionType.toLowerCase().includes("skill")).map(e => e.Content).join(", ")
                 };
             const a = document.createElement("script");
             a.id = "json-ld-resume", a.type = "application/ld+json";
@@ -3730,59 +3564,65 @@
         const formatSectionTitle = type => (!type || type.toLowerCase().replace(/^#/, '').replace(/_/g, '-') === 'header') ? null
             : type.replace(/^#/, '').replace(/_/g, '-').split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
 
+        function renderButton(text, url) {
+            return `<div class="btn-cta-wrapper"><a href="${url}" target="_blank" rel="noopener" class="btn-cta">${text}</a></div>`;
+        }
+
+
         function renderResume() {
             renderNavigation("Professional/Resume");
             const app = document.getElementById("app");
             const data = resumeDb;
-            const getSection = (e) => (e.SectionType || "").toLowerCase().replace(/^#/, '');
 
             let buffer = '<div id="resume-view" class="resume-container">';
-            generateResumeJSONLD();
 
             // 1. Render Header
-            const headerData = data.find(e => getSection(e) === 'header');
+            const headerData = data.find(e => e.SectionType === 'header');
             if (headerData) {
                 const parts = (headerData.Title || "").split("|");
                 const name = parts[0].trim();
                 const sub = parts[1] ? parts[1].trim() : "";
+                const pdfLink = headerData.Tags || '';
+
                 const contacts = (headerData.Content || "").split("|")
-                    .map(e => `<span style="white-space:nowrap; vertical-align:top;">${processInlineMarkdown(e.trim())}</span>`)
-                    .join('<span class="contact-sep">|</span>');
+                    .map(e => `<span style="white-space:nowrap; vertical-align:middle;">${processInlineMarkdown(e.trim())}</span>`)
+                    .join('');
+
                 buffer += `
                 <div class="resume-header section" style="position:relative;">
                     <h1 class="header-fade-anim" style="margin-top:0;">${name}</h1>
-                    <div class="resume-sub header-fade-anim" style="animation-delay:0.1s">${sub}</div>
-                    <div class="resume-contact">
-                        ${contacts}
+                    
+                    <div class="resume-sub-row header-fade-anim" style="animation-delay:0.1s; margin-bottom: 6px;">
+                        <div class="resume-sub" style="margin-bottom: 0;">${sub}</div>
+                    </div>
+                    
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; column-gap: 24px; row-gap: 16px;">
+                        
+                        <div class="resume-contact" style="align-items: center; column-gap: 24px; row-gap: 6px; margin: 0;">
+                            ${contacts}
+                        </div>
+                        
+                        ${pdfLink ? `<a href="${pdfLink}" target="_blank" rel="noopener" class="btn-cta" style="font-size: 13px; padding: 4px 12px; margin: 0;">Download PDF</a>` : ''}
                     </div>
                 </div>`;
             }
 
             // 2. Group Sections
             const leftSections = ['education', 'skills', 'awards', 'languages', 'certifications', 'interests'];
-            const sectionTypes = [...new Set(data.map(e => e.SectionType))].filter(t => t && getSection({ SectionType: t }) !== 'header');
 
             let leftColBuffer = "";
             let rightColBuffer = "";
 
+            const getSection = e => (e.SectionType || "").toLowerCase().replace(/^#/, '').replace(/_/g, '-');
+            const sectionTypes = [...new Set(data.map(e => e.SectionType).filter(t => t && getSection({ SectionType: t }) !== 'header'))];
             sectionTypes.forEach(type => {
                 const sections = data.filter(e => e.SectionType === type);
                 if (sections.length === 0) return;
-
                 const normalized = getSection({ SectionType: type });
                 const formattedTitle = formatSectionTitle(type);
-
-                const sectionHTML = `
-                <div class="resume-section">
-                    ${formattedTitle ? formatTitle(formattedTitle, "h3") : ""}
-                    ${sections.map(s => RenderResumeEntry(s)).join("")}
-                </div>`;
-
-                if (leftSections.some(ls => normalized.startsWith(ls))) {
-                    leftColBuffer += sectionHTML;
-                } else {
-                    rightColBuffer += sectionHTML;
-                }
+                const sectionHTML = `<div class="resume-section">${formattedTitle ? formatTitle(formattedTitle, "h3") : ""}${sections.map(s => RenderResumeEntry(s)).join("")}</div>`;
+                if (leftSections.some(ls => normalized.startsWith(ls))) leftColBuffer += sectionHTML;
+                else rightColBuffer += sectionHTML;
             });
 
             buffer += `
@@ -3810,8 +3650,6 @@
                 role = parts[0].trim();
                 company = parts[1].trim();
             }
-
-            const linkHTML = entry.LinkURL ? `<a href="${entry.LinkURL}" target="_blank" class="resume-link"><svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:middle;opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>` : "";
 
             const processedContent = processContentWithBlocks(entry.Content || "");
 
@@ -3858,7 +3696,7 @@
                 <div class="resume-entry" id="res-${entry.ID || Math.random().toString(36).substring(2, 11)}">
                     <div class="resume-entry-header">
                         <div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">
-                            <div class="resume-role">${role} ${linkHTML}</div>
+                            <div class="resume-role">${role}</div>
                             <div class="resume-date-slot">${dateHTML}</div>
                         </div>
                         <div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">
@@ -4547,14 +4385,18 @@
 
             camera.lookAt(0, 0, 0); // Point camera at model center
 
-            // Setup renderer with premium defaults
             const renderer = new THREE.WebGLRenderer({
                 canvas,
                 antialias: true,
-                alpha: false, // HIGH-STABILITY: Disabling alpha prevents WebGL compositing flickers/flashes
+                alpha: false,
                 powerPreference: "high-performance",
-                precision: "highp"
+                // Change 'highp' to 'mediump' if it's still lagging on your machine.
+                // 'mediump' is significantly faster for complex CAD assemblies in fullscreen.
+                precision: "mediump"
             });
+
+            // Add this to help with the fill-rate:
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Drop to 1.5 for even more speed
             renderer.setSize(width, height, false);
             // Limit pixel ratio to 2.0 (Industry Gold Standard)
             // 3.0+ offers diminishing returns but doubles/triples GPU load, causing stuttering in fullscreen.
@@ -4567,11 +4409,16 @@
             if (width * dpr > maxWidth) dpr = maxWidth / width;
 
             renderer.setPixelRatio(dpr);
-            // THEME-AWARE STABILITY: Sync clear color with Card Background to maintain component feel
+            // THEME-AWARE STABILITY: Contextual viewport colors
             const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-            // Light: #f0f0f0 (0xf0f0f0), Dark: #131313 (0x131313)
-            const clearColor = isLight ? 0xf0f0f0 : 0x131313;
-            renderer.setClearColor(clearColor, 1); // 1.0 Alpha for solid card look
+            let clearColor;
+
+            if (isCardMode) {
+                clearColor = isLight ? 0xf7f7f9 : 0x111111;
+            } else {
+                clearColor = isLight ? 0xeeeef2 : 0x050505;
+            }
+            renderer.setClearColor(clearColor, 1);
             canvas.style.backgroundColor = 'transparent';
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials and preserves highlight detail
@@ -4596,8 +4443,8 @@
             pmremGenerator.dispose();
 
             scene.environment = envMap;
-            scene.environmentIntensity = 1.0;
-
+            scene.environmentIntensity = 1.5; // Bump this up (was 1.0)
+            scene.backgroundBlurriness = 0.5; // Softens the background feel
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x111111, 0.35);
             scene.add(hemiLight);
 
@@ -4612,47 +4459,46 @@
 
             // LOCAL INTERACTION STATE: Track interaction per-viewer to pause efficiently
             let isInteracting = false;
-
             // Setup controls (only for interactive mode)
             let controls = null;
             let autoRotateTimeout = null;
             if (!isCardMode) {
                 controls = new OrbitControls(camera, canvas);
                 controls.enableDamping = true;
-                controls.dampingFactor = 0.15; // Tightened for high-precision "latched" feeling
+                controls.dampingFactor = 0.15;
                 controls.enableZoom = false;
-                controls.enablePan = false;  // DISABLED BY DEFAULT: Enabled in Fullscreen only
+
+                // ENABLE PANNING IN ALL CONTEXTS
+                controls.enablePan = true;
                 controls.screenSpacePanning = true;
-                controls.panSpeed = 1.0;
+                // Explicitly tell Three.js to use the Right Mouse Button (2) for panning
+                controls.mouseButtons = {
+                    LEFT: THREE.MOUSE.ROTATE,
+                    MIDDLE: THREE.MOUSE.DOLLY,
+                    RIGHT: THREE.MOUSE.PAN
+                };
+                // Kill the browser menu on the canvas so it doesn't block the pan
+                canvas.addEventListener('contextmenu', e => e.preventDefault(), false);
 
-                controls.autoRotate = false; // DISABLE ORBIT AUTO-ROTATE (We will do it manually)
-                controls.autoRotateSpeed = 0; // Prevent conflict
-
-                // UNRESTRICTED ROTATION: Remove all polar constraints for infinite vertical orbiting
+                controls.autoRotate = false;
+                controls.autoRotateSpeed = 0;
                 controls.minPolarAngle = 0;
                 controls.maxPolarAngle = Math.PI;
 
-
-
-                // Stop auto-rotation instantly on interaction
                 const resumeAutoRotate = () => {
                     if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
                     autoRotateTimeout = setTimeout(() => {
                         isInteracting = false;
-                        if (controls) controls.autoRotate = false; // Keep manual
-                    }, 5000); // 5s Pause
+                        if (controls) controls.autoRotate = false;
+                    }, 5000);
                 };
 
-                // PRECISE INTERACTION TRACKING via OrbitControls events
                 controls.addEventListener('start', () => {
                     isInteracting = true;
                     if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
                 });
 
-                controls.addEventListener('end', () => {
-                    resumeAutoRotate();
-                });
-
+                controls.addEventListener('end', () => resumeAutoRotate());
             }
 
             // Load model using SHARED Singleton Loader
@@ -4800,7 +4646,6 @@
                 onResize: () => {
                     const newW = container.clientWidth;
                     const newH = container.clientHeight;
-                    // If height is 0 (container not yet in DOM or hidden), skip to avoid NaN
                     if (newH === 0) return;
 
                     width = newW;
@@ -4808,15 +4653,15 @@
                     camera.aspect = width / height;
                     camera.updateProjectionMatrix();
 
-                    // RESOLUTION CEILING FOR FULLSCREEN (Crucial for 4K Performance)
-                    let dpr = Math.min(window.devicePixelRatio, 2.0);
-                    if (width * dpr > 2560) dpr = 2560 / width;
+                    // PERFORMANCE LOCK:
+                    // If the window is large (Desktop/Fullscreen), we cap at 1.5.
+                    // This is the "Butter Zone" for performance vs quality.
+                    const dpr = width > 1200 ? 1.0 : Math.min(window.devicePixelRatio, 2.0);
 
-                    renderer.setSize(width, height, false);
                     renderer.setPixelRatio(dpr);
+                    renderer.setSize(width, height, false);
 
-                    // RE-FRAME: Ensure model still fits in the new aspect ratio
-                    viewerInstance.fitStage();
+                    if (viewerInstance.fitStage) viewerInstance.fitStage();
                 },
                 update: (now) => {
                     if (!isVisible) return false;
