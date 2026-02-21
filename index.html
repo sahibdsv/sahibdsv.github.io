@@ -2743,12 +2743,13 @@
                 s.lastInputTime = Date.now();
                 _isValidUserScroll = true;
                 s.fingerDown = true;
+                window._isNavSwiping = true;
                 if (e && e.type === "wheel") {
                     clearTimeout(_wheelTimeout);
                     _wheelTimeout = setTimeout(releaseInput, 150);
                 }
             };
-            const releaseInput = () => { s.fingerDown = false; };
+            const releaseInput = () => { s.fingerDown = false; window._isNavSwiping = false; };
             row._markHapticInput = markInput;
             row._releaseHapticInput = releaseInput;
 
@@ -2876,6 +2877,25 @@
                 // Determine swipe intent: mostly horizontal and significant enough to distinguish from accidental drift
                 if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
                     _gSwipe.active = true;
+
+                    // OVERSCROLL BUBBLING: 
+                    // If the user's swipe is bound to a sub-subheading, but that heading is already 
+                    // at its max boundary in the direction of the swipe, bubble targeting up to the parent row.
+                    const maxS = _gSwipe.row.scrollWidth - _gSwipe.row.clientWidth;
+                    if ((dx > 0 && Math.ceil(_gSwipe.row.scrollLeft) >= maxS - 1) || (dx < 0 && _gSwipe.row.scrollLeft <= 1)) {
+                        const levelMatch = _gSwipe.row.id.match(/nav-row-(\d+)/);
+                        if (levelMatch) {
+                            const parentLevel = parseInt(levelMatch[1]) - 1;
+                            if (parentLevel > 0) {
+                                const pRow = document.getElementById('nav-row-' + parentLevel);
+                                if (pRow && pRow.scrollWidth > pRow.clientWidth + 5) {
+                                    _gSwipe.row = pRow;
+                                    _gSwipe.sScroll = pRow.scrollLeft;
+                                }
+                            }
+                        }
+                    }
+
                     _gSwipe.row.style.scrollBehavior = 'auto'; // Prevent smooth scroll fighting
                 } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) {
                     _gSwipe.tracking = false; // Vertical scroll wins, cancel swipe tracking
@@ -3452,6 +3472,14 @@
             // ENGINE CHECK: If Three.js isn't ready (module script deferred), verify before consuming queue
             if (!window.initThreeJSViewer) {
                 setTimeout(processGlbQueue, 100);
+                return;
+            }
+
+            // GESTURE PROTECTION: Loading a CAD model spikes the CPU, which causes Safari/Chrome to instantly 
+            // fire a "touchcancel" event to un-hang the thread. This aggressively breaks continuous scrolling.
+            // We defer all 3D instantiation until the user physically lifts their finger.
+            if (window._isNavSwiping || (typeof _gSwipe !== 'undefined' && _gSwipe.tracking)) {
+                setTimeout(processGlbQueue, 50);
                 return;
             }
 
