@@ -1221,6 +1221,7 @@
             display: block;
             /* Force hardware acceleration and clipping for difficult embeds like Strava */
             -webkit-mask-image: -webkit-radial-gradient(white, black);
+            mask-image: radial-gradient(white, black);
             transform: translateZ(0);
         }
 
@@ -1240,6 +1241,10 @@
             border-radius: var(--card-radius);
             overflow: hidden;
             display: block;
+            /* Force hardware acceleration and clipping */
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            mask-image: radial-gradient(white, black);
+            transform: translateZ(0);
         }
 
         .model-viewer-wrapper {
@@ -1343,6 +1348,7 @@
             max-height: 800px;
             object-fit: contain;
             margin: 0 auto;
+            border-radius: inherit;
         }
 
         .embed-wrapper.video {
@@ -1400,6 +1406,8 @@
             flex-direction: column;
             width: 100%;
             position: relative;
+            transform: translateZ(0);
+            /* Force clipping on desktop */
         }
 
         .gallery-item img,
@@ -1409,11 +1417,11 @@
         .gallery-item .media-container,
         .gallery-item .embed-wrapper,
         .gallery-item .model-viewer-wrapper {
-            width: 100% !important;
+            width: 100%;
             display: block;
-            margin: 0 !important;
-            border-radius: 0 !important;
-            background: transparent !important;
+            margin: 0;
+            border-radius: inherit;
+            background: transparent;
             overflow: hidden;
         }
 
