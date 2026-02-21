@@ -3025,18 +3025,12 @@
         const path2url = p => p?.replace(/ /g, '_') ?? '';
         const url2path = u => u?.replace(/_/g, ' ') ?? '';
 
-        const _scrollMemory = new Map();
-
         function navigateTo(path, isSwipe = false) {
             if (isSearchActive && !isSwipe) closeSearch();
 
-            // SCROLL RESTORATION: Save current position before leaving
-            if (_activeRenderPath) {
-                _scrollMemory.set(_activeRenderPath, window.scrollY);
-            }
-
             const header = document.getElementById("main-header");
             if (header && !isSwipe) header.classList.remove("scrolled");
+            if (!isSwipe) window.scrollTo({ top: 0, behavior: 'instant' });
 
             clearTextSelection();
 
@@ -3063,19 +3057,6 @@
 
                 // Clean up any stale 3D viewers from the old page
                 if (window.cleanupStale3DViewers) window.cleanupStale3DViewers();
-
-                // SCROLL RESTORATION: Restore target scroll if it exists
-                if (!isSwipe) {
-                    if (_scrollMemory.has(cleanPath)) {
-                        const targetScroll = _scrollMemory.get(cleanPath);
-                        // Double rAF ensures the DOM has populated and height metrics are accurate 
-                        requestAnimationFrame(() => requestAnimationFrame(() => {
-                            window.scrollTo({ top: targetScroll, behavior: 'instant' });
-                        }));
-                    } else {
-                        window.scrollTo({ top: 0, behavior: 'instant' });
-                    }
-                }
 
                 // Mark this path as rendered so subsequent identical swipes don't trigger re-renders
                 _lastRenderedPath = cleanPath;
