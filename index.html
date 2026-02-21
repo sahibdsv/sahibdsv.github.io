@@ -1198,6 +1198,11 @@
             }
         }
 
+        .unified-media-wrapper {
+            width: 100%;
+            display: block;
+        }
+
         .embed-wrapper,
         .model-viewer-wrapper {
             position: relative;
@@ -2009,6 +2014,12 @@
 
         .article-body p {
             margin-bottom: 20px;
+        }
+
+        /* Unified block spacing for media elements in articles */
+        .article-body .unified-media-wrapper,
+        .layout-hero .unified-media-wrapper {
+            margin-bottom: 28px;
         }
 
         .article-body li {
@@ -4135,11 +4146,8 @@
                     ${captionHTML}
                 </div>`;
             } else {
-                // Single Item:
-                // We return them STACKED. 
-                // The mediaHTML (div) handles its own border-radius.
-                // The captionHTML (div) sits underneath it.
-                return `${mediaHTML}${captionHTML}`;
+                // Single Item: Wrap in a container to maintain spacing relationship with caption
+                return `<div class="unified-media-wrapper">${mediaHTML}${captionHTML}</div>`;
             }
         }
         // Render a block as HTML
