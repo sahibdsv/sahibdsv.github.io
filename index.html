@@ -2826,7 +2826,13 @@
                     }
                 }, 60);
             }, { passive: true });
-            row._resetHaptic = () => { s.lastCenteredHref = null; };
+            row._resetHaptic = () => {
+                s.lastCenteredHref = null;
+                _isValidUserScroll = false;
+                s.fingerDown = false;
+                s.lastInputTime = 0;
+                s.lastScrollTime = 0;
+            };
         }
 
         /* EXPERIMENTAL: Global Horizontal Swipe to Subnav */
