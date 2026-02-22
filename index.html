@@ -4215,7 +4215,7 @@
 
                 mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="if(!this.dataset.playing){this.dataset.playing='1';this.innerHTML = this.dataset.iframe;}">
                         <div class="sk-img loader-overlay" style="z-index: 0;"></div>
-                        <img class="media-enter" src="${thumbUrl}" alt="Video thumbnail" style="width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; top:0; left:0; z-index: 1;" onerror="if(!this.dataset.fallback) { this.dataset.fallback='1'; this.src='${fallbackThumb}'; } else if(this.dataset.fallback==='1') { this.dataset.fallback='2'; this.src='${fallbackThumb2}'; } else { this.previousElementSibling?.remove(); }" onload="mediaLoaded(this)">
+                        <img class="media-enter" src="${fallbackThumb}" alt="Video thumbnail" style="width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; top:0; left:0; z-index: 1;" onload="mediaLoaded(this)">
                         ${playIconHTML}
                     </div>`;
             } else if (item.type === 'video') {
