@@ -3970,7 +3970,7 @@
                         const nextParts = nextLine.split(',').map(p => p.trim()).filter(p => p);
                         const nextMedia = nextParts.map(p => detectMediaItem(p));
                         const isNextPureMedia = nextMedia.length > 0 && nextMedia.every(m => m !== null);
-                        const isNextCaption = nextLine.match(/^\[(.*)\]$/s) && !nextLine.includes('(');
+                        const isNextCaption = nextLine.match(/^\[(.*)\]$/s);
 
                         if (isNextPureMedia || isNextCaption) {
                             mediaLines.push(nextRaw.trimEnd());
@@ -4000,7 +4000,7 @@
             const lastLine = lines[lines.length - 1].trim();
             // Match [Caption] - must start with [ and end with ]
             const captionMatch = lastLine.match(/^\[(.*)\]$/s);
-            if (captionMatch && !lastLine.includes('(')) { // Avoid matching markdown links [text](url)
+            if (captionMatch) {
                 sharedCaption = captionMatch[1].trim();
                 lines = lines.slice(0, -1); // Remove caption line from media processing
                 if (lines.length === 0) return { type: 'text', content: `[${sharedCaption}]` }; // Fallback for standalone bracketed text
