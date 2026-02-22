@@ -1350,7 +1350,6 @@
 
         .embed-wrapper.video {
             position: relative;
-            aspect-ratio: 16/9;
             padding-top: 0;
             max-width: 100%;
             margin-left: auto;
@@ -1360,8 +1359,7 @@
             overflow: hidden;
         }
 
-        .embed-wrapper iframe,
-        .embed-wrapper video {
+        .embed-wrapper iframe {
             position: absolute;
             top: 0;
             left: 0;
@@ -1370,6 +1368,15 @@
             border: 0;
             display: block;
             object-fit: cover;
+        }
+
+        .embed-wrapper video {
+            position: relative;
+            width: 100% !important;
+            height: auto;
+            border: 0;
+            display: block;
+            border-radius: inherit;
         }
 
         .image-caption {
@@ -4213,9 +4220,9 @@
                 // Properly escape double quotes so we can store it in a data attribute
                 const encodedIframe = iframeHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-                mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="if(!this.dataset.playing){this.dataset.playing='1';this.innerHTML = this.dataset.iframe;}">
+                mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="if(!this.dataset.playing){this.dataset.playing='1'; this.style.aspectRatio = (this.offsetWidth / this.offsetHeight); this.innerHTML = this.dataset.iframe;}">
                         <div class="sk-img loader-overlay" style="z-index: 0;"></div>
-                        <img class="media-enter" src="${fallbackThumb}" alt="Video thumbnail" style="width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; top:0; left:0; z-index: 1;" onload="mediaLoaded(this)">
+                        <img class="media-enter" src="${fallbackThumb}" alt="Video thumbnail" style="width: 100%; height: auto; display: block; position: relative; z-index: 1;" onload="mediaLoaded(this)">
                         ${playIconHTML}
                     </div>`;
             } else if (item.type === 'video') {
