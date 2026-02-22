@@ -4194,11 +4194,29 @@
                 mediaHTML = `<div class="sk-img loader-overlay"></div><img class="media-enter" src="${item.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">`;
                 if (!isGallery) mediaHTML = `<div class="media-container">${mediaHTML}</div>`;
             } else if (item.type === 'youtube') {
-                mediaHTML = `<div class="${embedClass}">
-                        <div class="sk-img loader-overlay"></div>
-                        <iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${item.id || getYouTubeID(item.url)}?modestbranding=1&rel=0" 
-                            title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-                        </iframe>
+                const ytId = item.id || getYouTubeID(item.url);
+                const thumbUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+                const fallbackThumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                const fallbackThumb2 = `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`;
+                
+                const playIconHTML = `
+                    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: transparent; cursor: pointer; z-index: 2;" 
+                         onmouseover="this.querySelector('.yt-glass-btn').style.background='var(--card-bg-hover)'; this.querySelector('.yt-glass-btn').style.borderColor='var(--text-bright)';" 
+                         onmouseout="this.querySelector('.yt-glass-btn').style.background='var(--bg-trans)'; this.querySelector('.yt-glass-btn').style.borderColor='var(--border-header)';">
+                        <div class="yt-glass-btn" style="width: 72px; height: 72px; border-radius: 50%; background: var(--bg-trans); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-header); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                            <svg viewBox="0 0 24 24" fill="var(--text-bright)" style="width: 34px; height: 34px;"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>`;
+                
+                const iframeHTML = `<iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${ytId}?modestbranding=1&rel=0&autoplay=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width: 100%; height: 100%; position: absolute; top:0; left:0; border-radius: inherit;"></iframe>`;
+                
+                // Properly escape double quotes so we can store it in a data attribute
+                const encodedIframe = iframeHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                
+                mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="if(!this.dataset.playing){this.dataset.playing='1';this.innerHTML = this.dataset.iframe;}">
+                        <div class="sk-img loader-overlay" style="z-index: 0;"></div>
+                        <img class="media-enter" src="${thumbUrl}" alt="Video thumbnail" style="width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; top:0; left:0; z-index: 1;" onerror="if(this.src.includes('maxresdefault')) { this.src='${fallbackThumb}'; } else if (this.src.includes('hqdefault')) { this.src='${fallbackThumb2}'; } else { this.previousElementSibling?.remove(); }" onload="mediaLoaded(this)">
+                        ${playIconHTML}
                     </div>`;
             } else if (item.type === 'video') {
                 mediaHTML = `<div class="${embedClass}">
