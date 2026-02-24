@@ -1207,7 +1207,7 @@
             justify-content: center;
         }
 
-        .embed-wrapper,
+        .embed-wrapper:not(.video),
         .model-viewer-wrapper,
         .strava-embed-placeholder {
             position: relative;
@@ -1222,6 +1222,21 @@
             /* Force hardware acceleration and clipping for difficult embeds like Strava */
             -webkit-mask-image: -webkit-radial-gradient(white, black);
             mask-image: radial-gradient(white, black);
+            transform: translateZ(0);
+        }
+
+        .embed-wrapper.video {
+            position: relative;
+            width: 100%;
+            aspect-ratio: auto;
+            /* Let content (img/video) define the height to avoid huge gaps */
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            background: #000;
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            display: block;
             transform: translateZ(0);
         }
 
@@ -1364,7 +1379,7 @@
             top: 0;
             left: 0;
             width: 100% !important;
-            height: 100%;
+            height: 100% !important;
             border: 0;
             display: block;
             object-fit: cover;
@@ -1432,7 +1447,7 @@
         .gallery-item .embed-wrapper.gallery-embed {
             flex: 1;
             width: 100%;
-            aspect-ratio: 4/3;
+            aspect-ratio: auto;
             height: auto;
             position: relative;
             display: block;
@@ -1442,7 +1457,9 @@
             height: 100%;
         }
 
-        .gallery-item img {
+        .gallery-item img,
+        .gallery-item video,
+        .gallery-item iframe {
             object-fit: cover;
             height: 100%;
         }
@@ -1498,14 +1515,14 @@
             .media-gallery.uniform-height .gallery-item .unified-media-wrapper,
             .media-gallery.uniform-height .gallery-item .embed-wrapper,
             .media-gallery.uniform-height .gallery-item .model-viewer-wrapper {
-                height: auto;
-                aspect-ratio: 4/3;
+                height: 100%;
+                aspect-ratio: auto;
             }
 
             .media-gallery.uniform-height .gallery-item img {
-                height: auto;
+                height: 100%;
                 object-fit: cover;
-                aspect-ratio: 4/3;
+                aspect-ratio: auto;
             }
 
             .start-hidden {
@@ -1528,7 +1545,7 @@
 
             .gallery-item .embed-wrapper {
                 width: 100%;
-                aspect-ratio: 4/3;
+                aspect-ratio: auto;
                 flex: 1;
                 display: flex;
                 flex-direction: column;
@@ -4220,9 +4237,11 @@
                 // Properly escape double quotes so we can store it in a data attribute
                 const encodedIframe = iframeHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
+                const thumbStyle = isGallery ? 'style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;"' : 'style="width: 100%; height: auto; display: block; position: relative; z-index: 1;"';
+
                 mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="if(!this.dataset.playing){this.dataset.playing='1'; this.style.aspectRatio = (this.offsetWidth / this.offsetHeight); this.innerHTML = this.dataset.iframe;}">
                         <div class="sk-img loader-overlay" style="z-index: 0;"></div>
-                        <img class="media-enter" src="${fallbackThumb}" alt="Video thumbnail" style="width: 100%; height: auto; display: block; position: relative; z-index: 1;" onload="mediaLoaded(this)">
+                        <img class="media-enter" src="${thumbUrl}" alt="Video thumbnail" ${thumbStyle} onload="mediaLoaded(this)" onerror="this.src='${fallbackThumb}'">
                         ${playIconHTML}
                     </div>`;
             } else if (item.type === 'video') {
