@@ -4190,19 +4190,14 @@
             return false;
         }
 
-        // Extract YouTube video ID from URL (Supports regular and music.youtube)
+        // Extract YouTube video ID from URL (Supports regular, music, shorts, and youtu.be)
         function getYouTubeID(url) {
             if (!url) return null;
 
-            // Standard youtube.com/watch?v=...
-            let match = url.match(/(?:(?:music\.)?youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-            if (match) return match[1];
-
-            // youtube.com/embed/...
-            match = url.match(/(?:(?:music\.)?youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-            if (match) return match[1];
-
-            return null;
+            // Comprehensive YouTube ID extraction regex
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
         }
 
         // Unified Media Renderer (Single Source of Truth)
@@ -4239,9 +4234,13 @@
 
                 const thumbStyle = isGallery ? 'style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;"' : 'style="width: 100%; height: auto; display: block; position: relative; z-index: 1;"';
 
+                // CHAINED FALLBACK: MaxRes -> HQ -> MQ -> Generic
+                // This prevents 404s from showing broken images and handles videos without high-res thumbs.
                 mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="if(!this.dataset.playing){this.dataset.playing='1'; this.style.aspectRatio = (this.offsetWidth / this.offsetHeight); this.innerHTML = this.dataset.iframe;}">
                         <div class="sk-img loader-overlay" style="z-index: 0;"></div>
-                        <img class="media-enter" src="${thumbUrl}" alt="Video thumbnail" ${thumbStyle} onload="mediaLoaded(this)" onerror="this.src='${fallbackThumb}'">
+                        <img class="media-enter" src="${thumbUrl}" alt="Video thumbnail" ${thumbStyle} 
+                             onload="mediaLoaded(this)" 
+                             onerror="if(!this.dataset.fallback){this.dataset.fallback='1'; this.src='${fallbackThumb}';} else if(this.dataset.fallback=='1'){this.dataset.fallback='2'; this.src='${fallbackThumb2}';}">
                         ${playIconHTML}
                     </div>`;
             } else if (item.type === 'video') {
