@@ -4220,8 +4220,8 @@
 
                 const playIconHTML = `
                     <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: transparent; cursor: pointer; z-index: 2;" 
-                         onmouseover="this.querySelector('.yt-glass-btn').style.background='var(--card-bg-hover)'; this.querySelector('.yt-glass-btn').style.borderColor='var(--text-bright)';" 
-                         onmouseout="this.querySelector('.yt-glass-btn').style.background='var(--bg-trans)'; this.querySelector('.yt-glass-btn').style.borderColor='var(--border-header)';">
+                         onmouseover="const btn=this.querySelector('.yt-glass-btn'); btn.style.background='var(--card-bg-hover)'; btn.style.borderColor='var(--text-bright)'; btn.style.boxShadow='0 4px 12px rgba(0,0,0,0.2), inset 0 0 0 1px var(--text-bright)';" 
+                         onmouseout="const btn=this.querySelector('.yt-glass-btn'); btn.style.background='var(--bg-trans)'; btn.style.borderColor='var(--border-header)'; btn.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';">
                         <div class="yt-glass-btn" style="width: 72px; height: 72px; border-radius: 50%; background: var(--bg-trans); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-header); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                             <svg viewBox="0 0 24 24" fill="var(--text-bright)" style="width: 34px; height: 34px;"><path d="M8 5v14l11-7z"/></svg>
                         </div>
