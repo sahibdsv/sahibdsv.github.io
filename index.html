@@ -3326,13 +3326,14 @@
 
                 if (type === 'video') {
                     const isAutoplay = src.toLowerCase().includes("-autoplay");
+                    const hasControls = !isAutoplay && !src.toLowerCase().includes("-nocontrols");
                     return `<div class="row-media">
                         <div class="sk-img loader-overlay"></div>
                         <video class="media-enter lazy-video" 
                                data-src="${src}" 
                                ${isAutoplay ? 'data-autoplay="true" muted' : ''} 
                                ${src.toLowerCase().includes("-noloop") ? "" : "loop"} 
-                               controls playsinline 
+                               ${hasControls ? 'controls' : ''} playsinline 
                                onloadeddata="mediaLoaded(this)" 
                                onerror="this.previousElementSibling?.remove()"></video>
                     </div>`;
@@ -4284,13 +4285,16 @@
                     </div>`;
             } else if (item.type === 'video') {
                 const isAutoplay = item.url.toLowerCase().includes("-autoplay");
+                const isGalleryItem = isGallery;
+                const showControls = !isAutoplay && !isGalleryItem;
+
                 mediaHTML = `<div class="${embedClass}">
                         <div class="sk-img loader-overlay"></div>
                         <video class="media-enter lazy-video" 
                                data-src="${item.url}" 
                                ${isAutoplay ? 'data-autoplay="true" muted' : ''} 
                                ${item.url.toLowerCase().includes("-noloop") ? "" : "loop"} 
-                               controls playsinline 
+                               ${showControls ? 'controls' : ''} playsinline 
                                onloadeddata="mediaLoaded(this)" 
                                onerror="this.previousElementSibling?.remove()"></video>
                     </div>`;
