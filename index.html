@@ -3324,9 +3324,21 @@
                 if (type === 'glb') return `<div class="row-media">${renderGLBViewer(src, true)}</div>`;
                 if (type === 'yt-embed') return `<div class="row-media"><div class="sk-img loader-overlay"></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
 
-                const tag = type === 'video' ? `<video class="media-enter" src="${src}" autoplay muted ${src.toLowerCase().includes("-noloop") ? "" : "loop"} playsinline onloadeddata="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></video>`
-                    : `<img class="media-enter" src="${src}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">`;
-                return `<div class="row-media"><div class="sk-img loader-overlay"></div>${tag}</div>`;
+                if (type === 'video') {
+                    const isAutoplay = src.toLowerCase().includes("-autoplay");
+                    return `<div class="row-media">
+                        <div class="sk-img loader-overlay"></div>
+                        <video class="media-enter lazy-video" 
+                               data-src="${src}" 
+                               ${isAutoplay ? 'data-autoplay="true" muted' : ''} 
+                               ${src.toLowerCase().includes("-noloop") ? "" : "loop"} 
+                               controls playsinline 
+                               onloadeddata="mediaLoaded(this)" 
+                               onerror="this.previousElementSibling?.remove()"></video>
+                    </div>`;
+                }
+
+                return `<div class="row-media"><div class="sk-img loader-overlay"></div><img class="media-enter" src="${src}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></div>`;
             };
 
             const mediaSources = [
@@ -3437,6 +3449,9 @@
                 if (el.classList.contains("layout-quote")) renderQuoteCard(el);
                 el.removeAttribute('data-needs-init');
             });
+
+            // Observe lazy videos
+            observeVideos(container);
         }
 
         function renderQuoteCard(container) {
@@ -3551,6 +3566,30 @@
         _glbInitQueue = [];
         _isProcessingGlbQueue = false;
 
+        // Video Lazy Loading Observer
+        _videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                if (entry.isIntersecting) {
+                    if (!video.src && video.dataset.src) {
+                        video.src = video.dataset.src;
+                    }
+                    if (video.dataset.autoplay === "true") {
+                        video.play().catch(e => { });
+                    }
+                } else {
+                    if (!video.paused) {
+                        video.pause();
+                    }
+                }
+            });
+        }, { rootMargin: '200px' });
+
+        // Observe newly added videos
+        function observeVideos(container) {
+            container.querySelectorAll('.lazy-video').forEach(v => _videoObserver.observe(v));
+        }
+
         function processGlbQueue() {
             // ENGINE CHECK: If Three.js isn't ready (module script deferred), verify before consuming queue
             if (!window.initThreeJSViewer) {
@@ -3585,8 +3624,8 @@
                 _isProcessingGlbQueue = false; // Ensure flag is reset on error
             }
 
-            // PARALLEL BATCHING: Process up to 6 items to maximize network throughput
-            const ACTIVE_LIMIT = 6;
+            // PARALLEL BATCHING: Process up to 3 items to reduce CPU burst during entry
+            const ACTIVE_LIMIT = 3;
             const currentActive = Object.keys(_glbViewers).filter(k => !_glbViewers[k].loaded).length;
 
             if (_glbInitQueue.length > 0) {
@@ -3621,7 +3660,7 @@
                     _glbObserver.unobserve(entry.target);
                 }
             });
-        }, { rootMargin: '800px' }); // Aggressive pre-loading for Homepage performance
+        }, { rootMargin: '400px' }); // Conservative pre-loading for Homepage performance
 
         // GLB Viewer Renderer
         function renderGLBViewer(glbPath, isCardMode) {
@@ -4244,9 +4283,16 @@
                         ${playIconHTML}
                     </div>`;
             } else if (item.type === 'video') {
+                const isAutoplay = item.url.toLowerCase().includes("-autoplay");
                 mediaHTML = `<div class="${embedClass}">
                         <div class="sk-img loader-overlay"></div>
-                        <video class="media-enter" src="${item.url}" ${item.url.toLowerCase().includes("-autoplay") ? "autoplay muted" : ""} ${item.url.toLowerCase().includes("-noloop") ? "" : "loop"} controls playsinline onloadeddata="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></video>
+                        <video class="media-enter lazy-video" 
+                               data-src="${item.url}" 
+                               ${isAutoplay ? 'data-autoplay="true" muted' : ''} 
+                               ${item.url.toLowerCase().includes("-noloop") ? "" : "loop"} 
+                               controls playsinline 
+                               onloadeddata="mediaLoaded(this)" 
+                               onerror="this.previousElementSibling?.remove()"></video>
                     </div>`;
             } else if (item.type === 'glb' && renderGLBViewer) {
                 // renderGLBViewer returns a div with class "model-viewer-wrapper" which has border-radius
