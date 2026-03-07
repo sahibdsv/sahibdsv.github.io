@@ -36,10 +36,10 @@ function parseCSV(csvText) {
     const rows = [];
     const lines = csvText.split(/\r?\n/);
 
-    // Simplistic but enough for the "Page" column at index 0
     for (let line of lines) {
         if (!line.trim()) continue;
-        const columns = line.split(',');
+        // Simple comma split but handle some basic quote wrapping
+        const columns = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
         rows.push(columns.map(c => c.replace(/^"|"$/g, '').trim()));
     }
 
@@ -48,13 +48,23 @@ function parseCSV(csvText) {
     const header = rows[0];
     const pageIdx = header.indexOf('Page');
     if (pageIdx === -1) {
-        console.error('Could not find Page column. Headers found:', header);
+        console.error('Could not find Page column.');
         return [];
     }
 
     const pages = rows.slice(1)
         .map(r => r[pageIdx])
-        .filter(p => p && p !== 'Footer' && p !== 'Home' && !p.startsWith('{') && !p.endsWith('}'));
+        // Filter out things that aren't real pages (tags, random URLs, placeholders)
+        .filter(p => p &&
+            p !== 'Footer' &&
+            p !== 'Home' &&
+            !p.startsWith('{') &&
+            !p.endsWith('}') &&
+            !p.startsWith('http') &&
+            !p.startsWith('assets/') &&
+            !p.startsWith('#') &&
+            p.includes('/') // Real pages usually have folders or paths
+        );
 
     return [...new Set(pages)];
 }
@@ -64,7 +74,7 @@ async function run() {
     const csvData = await fetchCSV(CONFIG.csvUrl);
     const pages = parseCSV(csvData);
 
-    console.log(`Discovered ${pages.length} pages from sheet.`);
+    console.log(`Discovered ${pages.length} valid pages from sheet.`);
 
     const allPaths = ['', 'Professional/Resume', 'Personal/About', ...pages];
     const processedPaths = allPaths.map(p => p.replace(/ /g, '_'));
