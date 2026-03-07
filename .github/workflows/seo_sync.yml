@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'sitemap.xml'
+      - 'robots.txt'
   workflow_dispatch: # Allow manual trigger
 
 permissions:
@@ -14,11 +17,12 @@ permissions:
 jobs:
   sync_seo:
     runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history to allow for cleaner rebasing
+          fetch-depth: 1 
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -31,8 +35,8 @@ jobs:
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-            commit_message: "chore: auto-sync SEO metadata and sitemap"
+            commit_message: "chore: auto-sync SEO"
             file_pattern: "index.html sitemap.xml robots.txt"
-            push_options: '--force' # Optional: use with caution
+            push_options: '--force'
             branch: main
-            skip_fetch: false
+            skip_fetch: true
