@@ -3135,6 +3135,9 @@
                 // Clean up any stale 3D viewers from the old page
                 if (window.cleanupStale3DViewers) window.cleanupStale3DViewers();
 
+                // 4. Update SEO based on the newly rendered page
+                updateSEO(cleanPath);
+
                 // Mark this path as rendered so subsequent identical swipes don't trigger re-renders
                 _lastRenderedPath = cleanPath;
                 _renderRAF = null;
@@ -3770,34 +3773,91 @@
             return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${r.getFullYear()}`;
         }
 
-        function updateSEO() {
-            const e = document.getElementById("json-ld-script");
-            if (e) e.remove();
-            const t = document.createElement("script");
-            t.id = "json-ld-script", t.type = "application/ld+json";
-            const n = {
-                "@context": "https://schema.org",
-                "@type": "ProfilePage",
-                mainEntity: {
-                    "@type": "Person",
-                    name: "Sahib Virdee",
-                    jobTitle: "Mechanical Engineering Graduate",
-                    description: "Specializing in Design and Manufacturing.",
-                    url: "https://sahibvirdee.com/",
-                    sameAs: ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"]
-                },
-                hasPart: db.map(e => {
-                    if (!e.Title || !e.Content) return null;
-                    return {
-                        "@type": e.Page.toLowerCase().includes("project") ? "SoftwareSourceCode" : "CreativeWork",
-                        name: e.Title,
-                        description: e.Content.substring(0, 150) + "...",
-                        url: `https://sahibvirdee.com/#${e.Page}`
-                    };
-                }).filter(e => e)
+        function updateSEO(path = "") {
+            const cleanPath = url2path(path || window.location.hash.substring(1) || "Home");
+
+            // 1. Data Retrieval
+            const pageData = db.filter(e => e.Page === cleanPath);
+            const entry = pageData[0] || {};
+
+            // 2. Title & Description Logic
+            const baseTitle = "Sahib Virdee";
+            const pageTitle = entry.Title || (cleanPath === "Home" ? "Mechanical Design Engineer Portfolio" : cleanPath);
+            const fullTitle = cleanPath === "Home" ? `${baseTitle} | ${pageTitle}` : `${pageTitle} | ${baseTitle}`;
+
+            // Strip markdown and HTML for meta-description
+            const description = entry.Description || (entry.Content ? entry.Content.substring(0, 160).replace(/[#*`]/g, '').replace(/<[^>]*>/g, '').trim() : "Portfolio of Sahib Virdee, a Mechanical Engineering graduate specializing in detailed CAD design, manufacturing processes, and technical documentation.");
+
+            // 3. Update DOM Title
+            document.title = fullTitle;
+
+            // 4. Update Meta Tags
+            const setMeta = (query, content) => {
+                const el = document.querySelector(query);
+                if (el) el.setAttribute('content', content);
             };
-            t.textContent = JSON.stringify(n);
-            document.head.appendChild(t);
+
+            setMeta('meta[name="description"]', description);
+            setMeta('meta[property="og:title"]', fullTitle);
+            setMeta('meta[property="og:description"]', description);
+            setMeta('meta[property="og:url"]', `https://sahibvirdee.com/#${path2url(cleanPath)}`);
+            setMeta('meta[name="twitter:title"]', fullTitle);
+            setMeta('meta[name="twitter:description"]', description);
+
+            // Thumbnail vs CoverImage vs Default
+            let image = entry.Thumbnail || entry.CoverImage || "https://sahibvirdee.com/assets/images/social.jpg";
+            if (image && !image.includes('.glb')) {
+                if (!image.startsWith('http')) {
+                    image = `https://sahibvirdee.com/${image.startsWith('/') ? image.substring(1) : image}`;
+                }
+                setMeta('meta[property="og:image"]', image);
+                setMeta('meta[name="twitter:image"]', image);
+            }
+
+            // 5. Update Canonical URL
+            let canonical = document.querySelector('link[rel="canonical"]');
+            if (canonical) canonical.setAttribute('href', `https://sahibvirdee.com/#${path2url(cleanPath)}`);
+
+            // 6. Update JSON-LD (Dynamic Graph)
+            const oldLD = document.getElementById("json-ld-script");
+            if (oldLD) oldLD.remove();
+
+            const jsonLD = {
+                "@context": "https://schema.org",
+                "@type": cleanPath === "Home" ? "WebSite" : "WebPage",
+                "name": fullTitle,
+                "description": description,
+                "url": `https://sahibvirdee.com/#${path2url(cleanPath)}`,
+                "author": {
+                    "@type": "Person",
+                    "name": "Sahib Virdee"
+                }
+            };
+
+            if (cleanPath === "Home") {
+                jsonLD["mainEntity"] = {
+                    "@type": "Person",
+                    "name": "Sahib Virdee",
+                    "jobTitle": "Mechanical Design Engineer",
+                    "description": "Specializing in detailed CAD design, manufacturing processes, and technical documentation.",
+                    "url": "https://sahibvirdee.com/",
+                    "sameAs": ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"]
+                };
+            }
+
+            const script = document.createElement("script");
+            script.id = "json-ld-script";
+            script.type = "application/ld+json";
+            script.textContent = JSON.stringify(jsonLD);
+            document.head.appendChild(script);
+
+            // 7. Context-Specific JSON-LD (Resume)
+            if (cleanPath === "Professional/Resume") {
+                generateResumeJSONLD();
+            } else {
+                const resumeLD = document.getElementById("json-ld-resume");
+                if (resumeLD) resumeLD.remove();
+            }
         }
 
         let _lastResumeLD = null;
@@ -5126,6 +5186,44 @@
         }
 
     </script>
+    <!-- SEO_LINK_START -->
+<div id="seo-links" style="display:none;" aria-hidden="true">
+  <a href="#Professional/Resume">Professional/Resume</a>
+  <a href="#Personal/About">Personal/About</a>
+  <a href="#see_something_that_can_be_improved?_I'd___need___to_know._hmu_[@sahibdsv](https://x.com/sahibdsv)">see something that can be improved? I'd   need   to know. hmu [@sahibdsv](https://x.com/sahibdsv)</a>
+  <a href="#Professional/SARIT">Professional/SARIT</a>
+  <a href="#SARIT_Mobility_|_https://saritmobility.com">SARIT Mobility | https://saritmobility.com</a>
+  <a href="##_About_SARIT"># About SARIT</a>
+  <a href="#SARIT_International_Inc.">SARIT International Inc.</a>
+  <a href="#assets/images/SARIT-3-Wheeler.png">assets/images/SARIT-3-Wheeler.png</a>
+  <a href="#https://music.youtube.com/watch?v=ZWUwPK8TOPg&si=nO45hojKQY4Tb3qx">https://music.youtube.com/watch?v=ZWUwPK8TOPg&si=nO45hojKQY4Tb3qx</a>
+  <a href="#assets/videos/SARIT-thumb-noloop.mp4">assets/videos/SARIT-thumb-noloop.mp4</a>
+  <a href="#Professional/Honda">Professional/Honda</a>
+  <a href="#Professional/Coursework">Professional/Coursework</a>
+  <a href="#Projects/Robotics">Projects/Robotics</a>
+  <a href="#Projects/Rocketry">Projects/Rocketry</a>
+  <a href="#Projects/Design">Projects/Design</a>
+  <a href="#[test_**caption**]">[test **caption**]</a>
+  <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
+  <a href="#https://music.youtube.com/watch?v=zkWae8B0Urk&si=8hpMV4Crw_ojpDqH">https://music.youtube.com/watch?v=zkWae8B0Urk&si=8hpMV4Crw ojpDqH</a>
+  <a href="####_Songs_I've_been_into_*very*_recently">### Songs I've been into *very* recently</a>
+  <a href="#https://music.youtube.com/watch?v=--vlQCBA3r4&si=PHLvh3YYTpTWX3gA">https://music.youtube.com/watch?v=--vlQCBA3r4&si=PHLvh3YYTpTWX3gA</a>
+  <a href="#https://music.youtube.com/watch?v=Q388f1vfcB4&si=ApWISOSknLWB3oo5">https://music.youtube.com/watch?v=Q388f1vfcB4&si=ApWISOSknLWB3oo5</a>
+  <a href="#https://music.youtube.com/watch?v=pGPQAAXGtl4&si=7g5M8dh3Ig0prluJ">https://music.youtube.com/watch?v=pGPQAAXGtl4&si=7g5M8dh3Ig0prluJ</a>
+  <a href="####_Songs_I've_been_into_for_a_while">### Songs I've been into for a while</a>
+  <a href="#https://music.youtube.com/watch?v=sw9YfI1TkjA&si=Xoj_PNFrhzrf0oxW">https://music.youtube.com/watch?v=sw9YfI1TkjA&si=Xoj PNFrhzrf0oxW</a>
+  <a href="#https://music.youtube.com/watch?v=X5vNu2gI2XA&si=lX3Z8FrTbF1ktONB">https://music.youtube.com/watch?v=X5vNu2gI2XA&si=lX3Z8FrTbF1ktONB</a>
+  <a href="#Personal/Volunteering">Personal/Volunteering</a>
+  <a href="#Projects/Website">Projects/Website</a>
+  <a href="#Personal/About/Earth">Personal/About/Earth</a>
+  <a href="#Professional/Master">Professional/Master</a>
+  <a href="#Personal/Ideas">Personal/Ideas</a>
+  <a href="#Personal">Personal</a>
+  <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
+  <a href="#assets/Images/1771695052486.png">assets/Images/1771695052486.png</a>
+  <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
+</div>
+<!-- SEO_LINK_END -->
 </body>
 
 </html>
