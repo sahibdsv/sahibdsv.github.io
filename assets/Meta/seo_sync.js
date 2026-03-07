@@ -27,44 +27,49 @@ function fetchCSV(url) {
 }
 
 /**
- * Bulletproof CSV line parser that respects quoted commas
+ * Full CSV parser that handles multi-line fields and escaped quotes
  */
-function parseCSVLine(line) {
-    const result = [];
+function parseFullCSV(text) {
+    const p = [[]];
     let cur = '';
     let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (char === '"') {
-            if (inQuotes && line[i + 1] === '"') {
-                cur += '"';
-                i++;
-            } else {
-                inQuotes = !inQuotes;
-            }
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
+        if (char === '"' && inQuotes && next === '"') {
+            cur += '"'; i++;
+        } else if (char === '"') {
+            inQuotes = !inQuotes;
         } else if (char === ',' && !inQuotes) {
-            result.push(cur.trim());
-            cur = '';
+            p[p.length - 1].push(cur.trim()); cur = '';
+        } else if ((char === '\n' || char === '\r') && !inQuotes) {
+            if (char === '\r' && next === '\n') i++;
+            p[p.length - 1].push(cur.trim()); cur = '';
+            p.push([]);
         } else {
             cur += char;
         }
     }
-    result.push(cur.trim());
-    return result;
+    if (cur || p[p.length - 1].length) p[p.length - 1].push(cur.trim());
+    return p.filter(r => r.length > 1);
 }
 
-function parseCSV(csvText) {
-    if (csvText.trim().toLowerCase().startsWith('<html')) {
-        console.error('Error: Received HTML instead of CSV.');
-        return [];
-    }
+async function run() {
+    console.log('Fetching Google Sheet data...');
+    const csvData = await fetchCSV(CONFIG.csvUrl);
+    const rows = parseFullCSV(csvData);
 
-    const rows = csvText.split(/\r?\n/).filter(l => l.trim()).map(parseCSVLine);
-    if (rows.length < 2) return [];
+    if (rows.length < 2) {
+        console.error('No rows found in sheet.');
+        return;
+    }
 
     const header = rows[0];
     const pageIdx = header.indexOf('Page');
-    if (pageIdx === -1) return [];
+    if (pageIdx === -1) {
+        console.error('Could not find Page column.');
+        return;
+    }
 
     const pages = rows.slice(1)
         .map(r => r[pageIdx])
@@ -73,24 +78,15 @@ function parseCSV(csvText) {
             p !== 'Home' &&
             !p.startsWith('{') &&
             !p.endsWith('}') &&
-            !p.startsWith('http') &&
-            !p.startsWith('assets/') &&
-            !p.startsWith('#')
+            p.includes('/') // Real pages usually have folders or paths
         );
 
-    return [...new Set(pages)];
-}
-
-async function run() {
-    console.log('Fetching Google Sheet data...');
-    const csvData = await fetchCSV(CONFIG.csvUrl);
-    const pages = parseCSV(csvData);
-
-    console.log(`Discovered ${pages.length} valid pages from sheet.`);
+    const uniquePages = [...new Set(pages)];
+    console.log(`Discovered ${uniquePages.length} valid pages from sheet.`);
 
     // Default system pages (only add if not in sheet)
     const defaults = ['Professional/Resume', 'Personal/About'];
-    const allPaths = ['', ...new Set([...defaults, ...pages])];
+    const allPaths = ['', ...new Set([...defaults, ...uniquePages])];
 
     const processedPaths = allPaths.map(p => p.replace(/ /g, '_'));
     const uniquePaths = [...new Set(processedPaths)];
@@ -124,6 +120,7 @@ Sitemap: ${CONFIG.baseUrl}/sitemap.xml`;
     const startTag = '<!-- SEO_LINK_START -->';
     const endTag = '<!-- SEO_LINK_END -->';
 
+    // Use human-readable names for the hidden links
     const linkList = uniquePaths.filter(p => p !== '');
     const seoLinksHtml = `\n<div id="seo-links" style="display:none;" aria-hidden="true">\n${linkList.map(p => `  <a href="#${p}">${p.replace(/_/g, ' ')}</a>`).join('\n')}\n</div>\n`;
 
