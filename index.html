@@ -3887,7 +3887,12 @@
 
             // 2. Title & Description Logic
             const baseTitle = "Sahib Virdee";
-            const pageTitle = entry.Title || (cleanPath === "Home" ? "Mechanical Design Engineer Portfolio" : cleanPath);
+            let pageTitle = entry.Title || (cleanPath === "Home" ? "Mechanical Design Engineer Portfolio" : cleanPath);
+
+            // Strip dynamic tags like {Random Quote} from the tab title
+            pageTitle = pageTitle.replace(/\{?random quote\}?/gi, '').trim();
+            if (!pageTitle) pageTitle = cleanPath;
+
             const fullTitle = cleanPath === "Home" ? `${baseTitle} | ${pageTitle}` : `${pageTitle} | ${baseTitle}`;
 
             // Strip markdown and HTML for meta-description
