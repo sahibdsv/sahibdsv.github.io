@@ -3586,7 +3586,10 @@
             const autoplay = lower.includes('-autoplay') || lower.includes('-thumb');
             const loop = !lower.includes('-noloop');
             const controls = !lower.includes('-nocontrols') && !autoplay;
-            const cleanUrl = url.replace(/-(autoplay|thumb|noloop|nocontrols)(?=\.[a-z0-9]+|$)/gi, '');
+
+            // Centralized replacement for all behavior markers
+            const cleanUrl = url.replace(/-(?:autoplay|thumb|noloop|nocontrols)(?=\.[a-z0-9]+|$)/gi, '');
+
             return { url: cleanUrl, autoplay, loop, controls };
         }
 
@@ -3618,7 +3621,7 @@
 
         function getThumbnail(media) {
             if (!media) return null;
-            if (media.match(/\.glb(?:\?.*)?$/i)) return 'GLB_VIEWER';
+            if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*$/i)) return 'GLB_VIEWER';
             const ytId = getYouTubeID(media);
             if (ytId) return getYouTubeThumbnail(ytId);
             return media;
