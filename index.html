@@ -3328,7 +3328,7 @@
                 if (type === 'yt-embed') return `<div class="row-media"><div class="sk-img loader-overlay"></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
 
                 if (type === 'video') {
-                    const isAutoplay = src.toLowerCase().includes("-autoplay") || src.toLowerCase().includes("-thumb");
+                    const isAutoplay = src.toLowerCase().includes("-autoplay");
                     const hasControls = !isAutoplay && !src.toLowerCase().includes("-nocontrols");
                     return `<div class="row-media">
                         <div class="sk-img loader-overlay"></div>
@@ -4344,7 +4344,7 @@
                         ${playIconHTML}
                     </div>`;
             } else if (item.type === 'video') {
-                const isAutoplay = item.url.toLowerCase().includes("-autoplay") || item.url.toLowerCase().includes("-thumb");
+                const isAutoplay = item.url.toLowerCase().includes("-autoplay");
                 const isGalleryItem = isGallery;
                 const showControls = !isAutoplay && !isGalleryItem;
 
