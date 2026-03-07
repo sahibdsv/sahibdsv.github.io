@@ -54,6 +54,17 @@ function parseFullCSV(text) {
     return p.filter(r => r.length > 1);
 }
 
+function cleanContent(text) {
+    if (!text) return '';
+    return text
+        .replace(/[#*`]/g, '') // Strip markdown
+        .replace(/<[^>]*>/g, '') // Strip HTML
+        .replace(/assets\/\S+/g, '') // Strip asset paths
+        .replace(/https?:\/\/\S+/g, '') // Strip URLs
+        .replace(/\n\s*\n/g, '\n') // Collapse double newlines
+        .trim();
+}
+
 async function run() {
     console.log('Fetching Google Sheet data...');
     const csvData = await fetchCSV(CONFIG.csvUrl);
@@ -66,41 +77,50 @@ async function run() {
 
     const header = rows[0];
     const pageIdx = header.indexOf('Page');
-    if (pageIdx === -1) {
-        console.error('Could not find Page column.');
+    const titleIdx = header.indexOf('Title');
+    const contentIdx = header.indexOf('Content');
+
+    if (pageIdx === -1 || contentIdx === -1) {
+        console.error('Could not find required columns.');
         return;
     }
 
-    const pages = rows.slice(1)
-        .map(r => r[pageIdx])
-        .filter(p => p &&
-            p !== 'Footer' &&
-            p !== 'Home' &&
-            !p.startsWith('{') &&
-            !p.endsWith('}') &&
-            p.includes('/') // Real pages usually have folders or paths
-        );
+    // Map rows to projects
+    const entries = rows.slice(1)
+        .filter(r => r[pageIdx] && r[pageIdx] !== 'Footer' && r[pageIdx] !== 'Home' && !r[pageIdx].startsWith('{'))
+        .map(r => ({
+            path: r[pageIdx],
+            title: r[titleIdx] || r[pageIdx].split('/').pop(),
+            content: cleanContent(r[contentIdx])
+        }));
 
-    const uniquePages = [...new Set(pages)];
-    console.log(`Discovered ${uniquePages.length} valid pages from sheet.`);
+    console.log(`Discovered ${entries.length} valid entries from sheet.`);
 
-    // Default system pages (only add if not in sheet)
-    const defaults = ['Professional/Resume', 'Personal/About'];
-    const allPaths = ['', ...new Set([...defaults, ...uniquePages])];
+    // Default system pages (Resume usually in its own DB, but let's include paths)
+    const defaults = [
+        { path: 'Professional/Resume', title: 'Resume', content: 'Professional resume and experiences.' },
+        { path: 'Personal/About', title: 'About Me', content: 'Information about Sahib Virdee.' }
+    ];
 
-    const processedPaths = allPaths.map(p => p.replace(/ /g, '_'));
-    const uniquePaths = [...new Set(processedPaths)];
+    const allEntries = [...defaults, ...entries];
+    const uniquePaths = [...new Set(allEntries.map(e => e.path.replace(/ /g, '_')))];
 
     console.log(`Found ${uniquePaths.length} unique paths for sitemap.`);
 
     // 1. Sitemap
     const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${uniquePaths.map(p => `  <url>
+  <url>
+    <loc>${CONFIG.baseUrl}/#</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+${uniquePaths.filter(p => p !== '').map(p => `  <url>
     <loc>${CONFIG.baseUrl}/#${p}</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>${p === '' ? '1.0' : '0.8'}</priority>
+    <priority>0.8</priority>
   </url>`).join('\n')}
 </urlset>`;
 
@@ -115,19 +135,37 @@ Sitemap: ${CONFIG.baseUrl}/sitemap.xml`;
     fs.writeFileSync(CONFIG.robotsPath, robotsContent);
     console.log('Robots.txt updated.');
 
-    // 3. index.html Links
+    // 3. index.html Links & Content Injection
     let indexHtml = fs.readFileSync(CONFIG.indexHtmlPath, 'utf8');
     const startTag = '<!-- SEO_LINK_START -->';
     const endTag = '<!-- SEO_LINK_END -->';
 
-    // Use human-readable names for the hidden links
-    const linkList = uniquePaths.filter(p => p !== '');
-    const seoLinksHtml = `\n<div id="seo-links" style="display:none;" aria-hidden="true">\n${linkList.map(p => `  <a href="#${p}">${p.replace(/_/g, ' ')}</a>`).join('\n')}\n</div>\n`;
+    // Build the SEO injection content
+    let seoInjection = `\n<div id="seo-content" style="display:none;" aria-hidden="true">\n`;
+
+    // First, provide the discoverable links
+    seoInjection += `  <nav id="seo-nav">\n`;
+    uniquePaths.forEach(p => {
+        const title = p.replace(/_/g, ' ') || 'Home';
+        seoInjection += `    <a href="#${p}">${title}</a>\n`;
+    });
+    seoInjection += `  </nav>\n\n`;
+
+    // Second, provide the actual raw text content for indexing
+    allEntries.forEach(entry => {
+        const cleanPath = entry.path.replace(/ /g, '_');
+        seoInjection += `  <article id="seo-content-${cleanPath}">\n`;
+        seoInjection += `    <h2>${entry.title}</h2>\n`;
+        seoInjection += `    <p>${entry.content}</p>\n`;
+        seoInjection += `  </article>\n\n`;
+    });
+
+    seoInjection += `</div>\n`;
 
     const regex = new RegExp(`${startTag}[\\s\\S]*${endTag}`);
     if (regex.test(indexHtml)) {
-        indexHtml = indexHtml.replace(regex, `${startTag}${seoLinksHtml}${endTag}`);
-        console.log('index.html SEO links updated.');
+        indexHtml = indexHtml.replace(regex, `${startTag}${seoInjection}${endTag}`);
+        console.log('index.html SEO links and content updated.');
     }
 
     fs.writeFileSync(CONFIG.indexHtmlPath, indexHtml);
