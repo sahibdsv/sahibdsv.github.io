@@ -4301,13 +4301,13 @@
             if (ytId) return { type: 'youtube', id: ytId, url: text };
 
             // 2. GLB / 3D Models
-            if (text.match(/\.glb(\?.*)?$/i) || text.match(/assets\/models\/.*\.glb/i)) {
+            if (text.match(/\.glb(\?.*)?(?![\w-])/i) || text.match(/assets\/models\/.*\.glb/i)) {
                 const url = (text.startsWith('assets/') || text.startsWith('http')) ? text : `assets/models/${text}`;
                 return { type: 'glb', url: url };
             }
 
             // 3. Native Video
-            if (text.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+            if (text.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i)) {
                 return { type: 'video', url: text };
             }
 
@@ -4330,8 +4330,8 @@
 
         // Check if a string is an image URL
         function isImageURL(str) {
-            // Check for explicit image extensions
-            if (str.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i)) {
+            // Check for explicit image extensions (allowing behavior markers)
+            if (str.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i)) {
                 return true;
             }
 
