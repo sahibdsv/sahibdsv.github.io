@@ -86,7 +86,7 @@ async function run() {
     }
 
     // Map rows to projects
-    const entries = rows.slice(1)
+    const sheetEntries = rows.slice(1)
         .filter(r => r[pageIdx] && r[pageIdx] !== 'Footer' && r[pageIdx] !== 'Home' && !r[pageIdx].startsWith('{'))
         .map(r => ({
             path: r[pageIdx],
@@ -94,18 +94,26 @@ async function run() {
             content: cleanContent(r[contentIdx])
         }));
 
-    console.log(`Discovered ${entries.length} valid entries from sheet.`);
-
-    // Default system pages (Resume usually in its own DB, but let's include paths)
+    // Default system pages
     const defaults = [
-        { path: 'Professional/Resume', title: 'Resume', content: 'Professional resume and experiences.' },
-        { path: 'Personal/About', title: 'About Me', content: 'Information about Sahib Virdee.' }
+        { path: 'Professional/Resume', title: 'Resume', content: 'Professional resume and experiences of Sahib Virdee.' },
+        { path: 'Personal/About', title: 'About Me', content: 'Information about Sahib Virdee, Mechanical Design Engineer.' }
     ];
 
-    const allEntries = [...defaults, ...entries];
-    const uniquePaths = [...new Set(allEntries.map(e => e.path.replace(/ /g, '_')))];
+    // Combine and deduplicate by 'path'
+    const entryMap = new Map();
+    [...defaults, ...sheetEntries].forEach(e => {
+        const key = e.path.replace(/ /g, '_');
+        // Only add if it's the first time we see this path, or if the new one has more content
+        if (!entryMap.has(key) || (e.content && !entryMap.get(key).content)) {
+            entryMap.set(key, e);
+        }
+    });
 
-    console.log(`Found ${uniquePaths.length} unique paths for sitemap.`);
+    const entries = Array.from(entryMap.values());
+    const uniquePaths = Array.from(entryMap.keys());
+
+    console.log(`Discovered ${uniquePaths.length} unique indexable paths.`);
 
     // 1. Sitemap
     const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
@@ -116,7 +124,7 @@ async function run() {
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-${uniquePaths.filter(p => p !== '').map(p => `  <url>
+${uniquePaths.map(p => `  <url>
     <loc>${CONFIG.baseUrl}/#${p}</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>weekly</changefreq>
@@ -135,24 +143,21 @@ Sitemap: ${CONFIG.baseUrl}/sitemap.xml`;
     fs.writeFileSync(CONFIG.robotsPath, robotsContent);
     console.log('Robots.txt updated.');
 
-    // 3. index.html Links & Content Injection
+    // 3. index.html Injection
     let indexHtml = fs.readFileSync(CONFIG.indexHtmlPath, 'utf8');
     const startTag = '<!-- SEO_LINK_START -->';
     const endTag = '<!-- SEO_LINK_END -->';
 
-    // Build the SEO injection content
     let seoInjection = `\n<div id="seo-content" style="display:none;" aria-hidden="true">\n`;
-
-    // First, provide the discoverable links
     seoInjection += `  <nav id="seo-nav">\n`;
+    seoInjection += `    <a href="#Home">Home</a>\n`;
     uniquePaths.forEach(p => {
-        const title = p.replace(/_/g, ' ') || 'Home';
+        const title = p.replace(/_/g, ' ');
         seoInjection += `    <a href="#${p}">${title}</a>\n`;
     });
     seoInjection += `  </nav>\n\n`;
 
-    // Second, provide the actual raw text content for indexing
-    allEntries.forEach(entry => {
+    entries.forEach(entry => {
         const cleanPath = entry.path.replace(/ /g, '_');
         seoInjection += `  <article id="seo-content-${cleanPath}">\n`;
         seoInjection += `    <h2>${entry.title}</h2>\n`;
@@ -165,7 +170,7 @@ Sitemap: ${CONFIG.baseUrl}/sitemap.xml`;
     const regex = new RegExp(`${startTag}[\\s\\S]*${endTag}`);
     if (regex.test(indexHtml)) {
         indexHtml = indexHtml.replace(regex, `${startTag}${seoInjection}${endTag}`);
-        console.log('index.html SEO links and content updated.');
+        console.log('index.html SEO injection updated.');
     }
 
     fs.writeFileSync(CONFIG.indexHtmlPath, indexHtml);
