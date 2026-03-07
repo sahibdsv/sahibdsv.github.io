@@ -3598,17 +3598,17 @@
         }
 
         function processMediaUrl(url) {
-            if (!url) return { url: '', autoplay: false, loop: true, controls: true };
+            if (!url) return { url: '', autoplay: false, loop: false, controls: true };
             const lower = url.toLowerCase();
             const autoplay = lower.includes('-autoplay');
-            const loop = !lower.includes('-noloop');
+            const loop = lower.includes('-loop');
             // Behavior for controls: generally on, but off for autoplay unless specified
             const controls = !lower.includes('-nocontrols') && !autoplay;
 
             // Strip behavior markers.
             // SPECIAL CASE: Only strip '-thumb' from videos, as some images (like resume-thumb.jpg)
             // legitimately use it in their real filename.
-            let cleanUrl = url.replace(/-(?:autoplay|noloop|nocontrols)/gi, '');
+            let cleanUrl = url.replace(/-(?:autoplay|loop|noloop|nocontrols)/gi, '');
             if (lower.match(/\.(mp4|webm|mov|ogg)/i)) {
                 cleanUrl = cleanUrl.replace(/-thumb/gi, '');
             }
@@ -3645,7 +3645,7 @@
         function getThumbnail(media) {
             if (!media) return null;
             // Catch GLB/3D models
-            if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*$/i)) return 'GLB_VIEWER';
+            if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols))*$/i)) return 'GLB_VIEWER';
             // Catch YouTube
             const ytId = getYouTubeID(media);
             if (ytId) return getYouTubeThumbnail(ytId);
@@ -4341,7 +4341,7 @@
             }
 
             // 3. Native Video
-            if (text.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i)) {
+            if (text.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols))*/i)) {
                 return { type: 'video', url: text };
             }
 
@@ -4365,7 +4365,7 @@
         // Check if a string is an image URL
         function isImageURL(str) {
             // Check for explicit image extensions (allowing behavior markers)
-            if (str.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i)) {
+            if (str.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols))*/i)) {
                 return true;
             }
 
@@ -4382,15 +4382,6 @@
             return false;
         }
 
-        // Extract YouTube video ID from URL (Supports regular, music, shorts, and youtu.be)
-        function getYouTubeID(url) {
-            if (!url) return null;
-
-            // Comprehensive YouTube ID extraction regex
-            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-            const match = url.match(regex);
-            return match ? match[1] : null;
-        }
 
         // Unified Media Renderer (Single Source of Truth)
         function renderUnifiedMediaItem(item, isGallery = false) {
