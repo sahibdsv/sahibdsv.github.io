@@ -316,7 +316,14 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            transition: all var(--anim-quick);
+            cursor: pointer;
+            transition: all var(--anim-quick) var(--ease);
+        }
+
+        .chip:hover {
+            border-color: rgba(var(--bright-rgb), 0.8);
+            background: rgba(var(--bright-rgb), 0.1);
+            color: var(--text-bright);
         }
 
         a:not(.chip):not(.btn-cta):not(.fill-anim) {
@@ -1650,8 +1657,8 @@
         }
 
         .btn-cta:hover {
-            border-color: rgba(var(--bright-rgb), 0.4);
-            background: rgba(var(--bright-rgb), 0.05);
+            border-color: rgba(var(--bright-rgb), 0.8);
+            background: rgba(var(--bright-rgb), 0.1);
             text-decoration: none !important;
         }
 
