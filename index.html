@@ -1653,9 +1653,7 @@
 
             .btn-cta:hover,
             .chip:hover {
-                color: var(--text-bright);
-                border-color: rgba(var(--bright-rgb), 1);
-                box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 1);
+                border-color: rgba(var(--bright-rgb), 0.4);
             }
 
             .btn-cta:hover {
@@ -1663,6 +1661,57 @@
                 transform: none;
                 text-decoration: none !important;
             }
+        }
+
+        /* Standard Button Colors */
+        .btn-cta.green {
+            background: #2ecc71;
+            color: #ffffff !important;
+            border-color: #27ae60 !important;
+        }
+
+        .btn-cta.red {
+            background: #e74c3c;
+            color: #ffffff !important;
+            border-color: #c0392b !important;
+        }
+
+        .btn-cta.blue {
+            background: #3498db;
+            color: #ffffff !important;
+            border-color: #2980b9 !important;
+        }
+
+        .btn-cta.orange {
+            background: #f39c12;
+            color: #ffffff !important;
+            border-color: #d35400 !important;
+        }
+
+        .btn-cta.purple {
+            background: #9b59b6;
+            color: #ffffff !important;
+            border-color: #8e44ad !important;
+        }
+
+        [data-theme="light"] .btn-cta.green {
+            background: #27ae60;
+        }
+
+        [data-theme="light"] .btn-cta.red {
+            background: #c0392b;
+        }
+
+        [data-theme="light"] .btn-cta.blue {
+            background: #2980b9;
+        }
+
+        [data-theme="light"] .btn-cta.orange {
+            background: #d35400;
+        }
+
+        [data-theme="light"] .btn-cta.purple {
+            background: #8e44ad;
         }
 
         .markdown-grid {
@@ -4474,13 +4523,21 @@
         function renderButtonHTML(text, url, isInline = false) {
             const target = (url || "").startsWith('#') ? '' : 'target="_blank"';
 
-            // Allow simple markdown inside button text (bold, italic, underline)
-            const formattedText = text
+            // Extract color markers (e.g. "Text-green")
+            let colorClass = "";
+            let cleanText = text || "";
+            const colorMatch = cleanText.match(/-(green|red|blue|orange|purple)$/i);
+            if (colorMatch) {
+                colorClass = colorMatch[1].toLowerCase();
+                cleanText = cleanText.replace(/-[a-z]+$/i, "");
+            }
+
+            const formattedText = cleanText
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*\*/g, '<em>$1</em>')
                 .replace(/__(.*?)__/g, '<u>$1</u>');
 
-            const btnHTML = `<a href="${url}" class="btn-cta" ${target}>${formattedText}</a>`;
+            const btnHTML = `<a href="${url}" class="btn-cta ${colorClass}" ${target}>${formattedText}</a>`;
             if (isInline) return btnHTML;
             return `<div class="btn-cta-wrapper">${btnHTML}</div>`;
         };
