@@ -1649,25 +1649,22 @@
             transition: color var(--anim-quick), border-color var(--anim-quick), background var(--anim-quick);
         }
 
-        @media (hover: hover) {
-
-            .btn-cta:hover,
-            .chip:hover {
-                border-color: rgba(var(--bright-rgb), 0.4);
-            }
-
-            .btn-cta:hover {
-                background: var(--surface-subtle);
-                transform: none;
-                text-decoration: none !important;
-            }
+        .btn-cta:hover {
+            border-color: rgba(var(--bright-rgb), 0.4);
+            background: rgba(var(--bright-rgb), 0.05);
+            text-decoration: none !important;
         }
 
-        /* Standard Button Colors */
+        /* Standard Button Colors & States */
         .btn-cta.green {
             background: #2ecc71;
             color: #ffffff !important;
             border-color: #27ae60 !important;
+        }
+
+        .btn-cta.green:hover {
+            background: #27ae60;
+            border-color: #219150 !important;
         }
 
         .btn-cta.red {
@@ -1676,10 +1673,20 @@
             border-color: #c0392b !important;
         }
 
+        .btn-cta.red:hover {
+            background: #c0392b;
+            border-color: #a93226 !important;
+        }
+
         .btn-cta.blue {
             background: #3498db;
             color: #ffffff !important;
             border-color: #2980b9 !important;
+        }
+
+        .btn-cta.blue:hover {
+            background: #2980b9;
+            border-color: #2471a3 !important;
         }
 
         .btn-cta.orange {
@@ -1688,10 +1695,20 @@
             border-color: #d35400 !important;
         }
 
+        .btn-cta.orange:hover {
+            background: #d35400;
+            border-color: #ba4a00 !important;
+        }
+
         .btn-cta.purple {
             background: #9b59b6;
             color: #ffffff !important;
             border-color: #8e44ad !important;
+        }
+
+        .btn-cta.purple:hover {
+            background: #8e44ad;
+            border-color: #7d3c98 !important;
         }
 
         [data-theme="light"] .btn-cta.green {
@@ -3585,10 +3602,16 @@
             const lower = url.toLowerCase();
             const autoplay = lower.includes('-autoplay');
             const loop = !lower.includes('-noloop');
+            // Behavior for controls: generally on, but off for autoplay unless specified
             const controls = !lower.includes('-nocontrols') && !autoplay;
 
-            // Only strip autoplay-related markers to avoid breaking filenames with "-thumb"
-            const cleanUrl = url.replace(/-(?:autoplay|noloop|nocontrols)(?=\.[a-z0-9]+|$)/gi, '');
+            // Strip behavior markers.
+            // SPECIAL CASE: Only strip '-thumb' from videos, as some images (like resume-thumb.jpg)
+            // legitimately use it in their real filename.
+            let cleanUrl = url.replace(/-(?:autoplay|noloop|nocontrols)/gi, '');
+            if (lower.match(/\.(mp4|webm|mov|ogg)/i)) {
+                cleanUrl = cleanUrl.replace(/-thumb/gi, '');
+            }
 
             return { url: cleanUrl, autoplay, loop, controls };
         }
@@ -3621,9 +3644,18 @@
 
         function getThumbnail(media) {
             if (!media) return null;
+            // Catch GLB/3D models
             if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*$/i)) return 'GLB_VIEWER';
+            // Catch YouTube
             const ytId = getYouTubeID(media);
             if (ytId) return getYouTubeThumbnail(ytId);
+
+            // For local videos used as thumbnails, ensuring we clean the path
+            // so if the user specifies 'vid.mp4-autoplay' it resolves correctly.
+            if (media.match(/\.(mp4|webm|mov|ogg)/i)) {
+                return processMediaUrl(media).url;
+            }
+
             return media;
         }
 
@@ -4369,7 +4401,22 @@
             const embedClass = isGallery ? 'embed-wrapper video gallery-embed' : 'embed-wrapper video';
 
             // 1. Generate Media HTML
-            if (item.type === 'image') {
+            if (item.type === 'video') {
+                const p = processMediaUrl(item.url);
+                const isGalleryItem = isGallery;
+                const showControls = p.controls && !isGalleryItem;
+
+                mediaHTML = `<div class="${embedClass}">
+                        <div class="sk-img loader-overlay"></div>
+                        <video class="media-enter lazy-video"
+                               data-src="${p.url}"
+                               ${p.autoplay || isGalleryItem ? 'data-autoplay="true" muted' : ''}
+                               ${p.loop ? 'loop' : ''}
+                               ${showControls ? 'controls' : ''} playsinline
+                               onloadeddata="mediaLoaded(this)"
+                               onerror="this.previousElementSibling?.remove()"></video>
+                    </div>`;
+            } else if (item.type === 'image') {
                 const style = isGallery ? 'style="height:100%; width:100%; object-fit:cover;"' : '';
                 mediaHTML = `<div class="sk-img loader-overlay"></div><img class="media-enter" src="${processMediaUrl(item.url).url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">`;
                 if (!isGallery) mediaHTML = `<div class="media-container">${mediaHTML}</div>`;
@@ -4403,21 +4450,6 @@
                              onload="mediaLoaded(this)" 
                              onerror="if(!this.dataset.fallback){this.dataset.fallback='1'; this.src='${fallbackThumb}';} else if(this.dataset.fallback=='1'){this.dataset.fallback='2'; this.src='${fallbackThumb2}';}">
                         ${playIconHTML}
-                    </div>`;
-            } else if (item.type === 'video') {
-                const p = processMediaUrl(item.url);
-                const isGalleryItem = isGallery;
-                const showControls = p.controls && !isGalleryItem;
-
-                mediaHTML = `<div class="${embedClass}">
-                        <div class="sk-img loader-overlay"></div>
-                        <video class="media-enter lazy-video" 
-                               data-src="${p.url}" 
-                               ${p.autoplay || isGalleryItem ? 'data-autoplay="true" muted' : ''} 
-                               ${p.loop ? 'loop' : ''} 
-                               ${showControls ? 'controls' : ''} playsinline 
-                               onloadeddata="mediaLoaded(this)" 
-                               onerror="this.previousElementSibling?.remove()"></video>
                     </div>`;
             } else if (item.type === 'glb' && renderGLBViewer) {
                 // renderGLBViewer returns a div with class "model-viewer-wrapper" which has border-radius
@@ -5256,130 +5288,119 @@
 
     </script>
     <!-- SEO_LINK_START -->
-    <div id="seo-content" style="display:none;" aria-hidden="true">
-        <nav id="seo-nav">
-            <a href="#Home">Home</a>
-            <a href="#Professional/Resume">Professional/Resume</a>
-            <a href="#Personal/About">Personal/About</a>
-            <a href="#Professional/SARIT">Professional/SARIT</a>
-            <a href="#Professional/Honda">Professional/Honda</a>
-            <a href="#Professional/Coursework">Professional/Coursework</a>
-            <a href="#Projects/Robotics">Projects/Robotics</a>
-            <a href="#Projects/Rocketry">Projects/Rocketry</a>
-            <a href="#Projects/Design">Projects/Design</a>
-            <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
-            <a href="#Personal/Volunteering">Personal/Volunteering</a>
-            <a href="#Projects/Website">Projects/Website</a>
-            <a href="#Personal/About/Earth">Personal/About/Earth</a>
-            <a href="#Professional/Master">Professional/Master</a>
-            <a href="#Personal/Ideas">Personal/Ideas</a>
-            <a href="#Personal">Personal</a>
-            <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
-            <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
-        </nav>
+<div id="seo-content" style="display:none;" aria-hidden="true">
+  <nav id="seo-nav">
+    <a href="#Home">Home</a>
+    <a href="#Professional/Resume">Professional/Resume</a>
+    <a href="#Personal/About">Personal/About</a>
+    <a href="#Professional/SARIT">Professional/SARIT</a>
+    <a href="#Professional/Honda">Professional/Honda</a>
+    <a href="#Professional/Coursework">Professional/Coursework</a>
+    <a href="#Projects/Robotics">Projects/Robotics</a>
+    <a href="#Projects/Rocketry">Projects/Rocketry</a>
+    <a href="#Projects/Design">Projects/Design</a>
+    <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
+    <a href="#Personal/Volunteering">Personal/Volunteering</a>
+    <a href="#Projects/Website">Projects/Website</a>
+    <a href="#Personal/About/Earth">Personal/About/Earth</a>
+    <a href="#Professional/Master">Professional/Master</a>
+    <a href="#Personal/Ideas">Personal/Ideas</a>
+    <a href="#Personal">Personal</a>
+    <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
+    <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
+  </nav>
 
-        <article id="seo-content-Professional/Resume">
-            <h2>Resume</h2>
-            <p>Professional resume and experiences of Sahib Virdee.</p>
-        </article>
+  <article id="seo-content-Professional/Resume">
+    <h2>Resume</h2>
+    <p>Professional resume and experiences of Sahib Virdee.</p>
+  </article>
 
-        <article id="seo-content-Personal/About">
-            <h2>About Me</h2>
-            <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
-        </article>
+  <article id="seo-content-Personal/About">
+    <h2>About Me</h2>
+    <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
+  </article>
 
-        <article id="seo-content-Professional/SARIT">
-            <h2>SARIT Micro-EV</h2>
-            <p>SARIT Mobility |
-                About SARIT
-                SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility
-                solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe,
-                Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental
-                concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to
-                use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot.
-                Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and
-                engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial
-                transportation within urban environments, making common trips such as home to work or school, convenient
-                and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery,
-                last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and
-                powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban
-                transportation and enhancing the quality of life in cities worldwide.</p>
-        </article>
+  <article id="seo-content-Professional/SARIT">
+    <h2>SARIT Micro-EV</h2>
+    <p>SARIT Mobility-green | 
+ About SARIT
+SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe, Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot. Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial transportation within urban environments, making common trips such as home to work or school, convenient and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery, last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban transportation and enhancing the quality of life in cities worldwide.</p>
+  </article>
 
-        <article id="seo-content-Professional/Honda">
-            <h2>Honda of Canada</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Professional/Honda">
+    <h2>Honda of Canada</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Professional/Coursework">
-            <h2>Coursework</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Professional/Coursework">
+    <h2>Coursework</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Projects/Robotics">
-            <h2>York University Robotics Society</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Projects/Robotics">
+    <h2>York University Robotics Society</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Projects/Rocketry">
-            <h2>Arbalest Rocketry</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Projects/Rocketry">
+    <h2>Arbalest Rocketry</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Projects/Design">
-            <h2>Design Projects</h2>
-            <p>[test caption]</p>
-        </article>
+  <article id="seo-content-Projects/Design">
+    <h2>Design Projects</h2>
+    <p>[test caption]</p>
+  </article>
 
-        <article id="seo-content-Personal/Hobbies/Music">
-            <h2>Music 🎶</h2>
-            <p>Artist: London Grammar
-                Songs I've been into very recently
-                Songs I've been into for a while</p>
-        </article>
+  <article id="seo-content-Personal/Hobbies/Music">
+    <h2>Music 🎶</h2>
+    <p>Artist: London Grammar
+ Songs I've been into very recently
+ Songs I've been into for a while</p>
+  </article>
 
-        <article id="seo-content-Personal/Volunteering">
-            <h2>Volunteering</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Personal/Volunteering">
+    <h2>Volunteering</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Projects/Website">
-            <h2>this website</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Projects/Website">
+    <h2>this website</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Personal/About/Earth">
-            <h2>the blue marble</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Personal/About/Earth">
+    <h2>the blue marble</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Professional/Master">
-            <h2>Master Fabricators</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Professional/Master">
+    <h2>Master Fabricators</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Personal/Ideas">
-            <h2>Ideas</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Personal/Ideas">
+    <h2>Ideas</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Personal">
-            <h2>{Random Quote}</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Personal">
+    <h2>{Random Quote}</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Personal/Hobbies/GPS_Art">
-            <h2>GPS Art</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Personal/Hobbies/GPS_Art">
+    <h2>GPS Art</h2>
+    <p></p>
+  </article>
 
-        <article id="seo-content-Projects/Hackathons/Siemens">
-            <h2>Realize LIVE 2025</h2>
-            <p></p>
-        </article>
+  <article id="seo-content-Projects/Hackathons/Siemens">
+    <h2>Realize LIVE 2025</h2>
+    <p></p>
+  </article>
 
-    </div>
-    <!-- SEO_LINK_END -->
+</div>
+<!-- SEO_LINK_END -->
 </body>
 
 </html>

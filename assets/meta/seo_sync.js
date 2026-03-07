@@ -13,7 +13,10 @@ const CONFIG = {
 function fetchCSV(url) {
     return new Promise((resolve, reject) => {
         const fetch = (targetUrl) => {
-            https.get(targetUrl, (res) => {
+            const options = {
+                headers: { 'User-Agent': 'Mozilla/5.0 (Node.js SEO Sync)' }
+            };
+            https.get(targetUrl, options, (res) => {
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                     return fetch(res.headers.location);
                 }
