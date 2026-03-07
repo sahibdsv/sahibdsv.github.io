@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history to allow for cleaner rebasing
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,6 +27,12 @@ jobs:
 
       - name: Sync SEO Metadata & Sitemap
         run: node assets/meta/seo_sync.js
+
+      - name: Pull remote changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
 
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
