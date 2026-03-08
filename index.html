@@ -3369,15 +3369,31 @@
             if (!e) return "";
             let t = safeHTML(e);
 
-            // Universal button support (even in titles/previews)
-            t = t.replace(/\[button\]:\s*(.+?)\s*\|\s*(\S+)/gi, (match, text, url) => {
-                return renderButtonHTML(text.trim(), url.trim(), true);
+            // 1. SHORTHAND & LEGACY BUTTONS: [Label | URL] or [button]: Label | URL
+            // This captures standalone CTA blocks with pipes.
+            t = t.replace(/\[\s*(?:button\]:)?\s*([^\]|]+?)\s*\|\s*([^\]\s]+)\s*\]/gi, (match, text, url) => {
+                const cleanURL = url.trim().replace(/-btn(-[a-z]+)?$/i, (m, color) => color || "");
+                return renderButtonHTML(text.trim(), cleanURL, true);
             });
 
             t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
             t = t.replace(/\*(.*?)\*/g, "<em>$1</em>");
             t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
-            t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+            // 2. SMART LINKS: Convert [Label](URL-btn) to Buttons
+            // This aligns with video markers like -autoplay and -loop
+            t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+                const cleanURL = url.trim();
+                // If it has a -btn marker, render it as a button
+                if (cleanURL.match(/-btn(-[a-z]+)?$/i)) {
+                    // Extract potential color from URL (handled by renderButtonHTML internally if we pass it, but we strip it for clean path)
+                    // Actually, we pass the URL as-is to renderButtonHTML and let IT handle the internal stripping
+                    return renderButtonHTML(label, cleanURL, true);
+                }
+                // Standard Link
+                return `<a href="${cleanURL}" target="_blank" rel="noopener">${label}</a>`;
+            });
+
             return t;
         }
         function formatTitle(e, t) {
@@ -4574,23 +4590,37 @@
 
         // Centralized Toolset for Markdown Elements
         function renderButtonHTML(text, url, isInline = false) {
-            const target = (url || "").startsWith('#') ? '' : 'target="_blank"';
-
-            // Extract color markers (e.g. "Text-green")
+            const rawURL = url || "";
             let colorClass = "";
             let cleanText = text || "";
-            const colorMatch = cleanText.match(/-(green|red|blue|orange|purple)$/i);
-            if (colorMatch) {
-                colorClass = colorMatch[1].toLowerCase();
+            let finalURL = rawURL;
+
+            // 1. Identify Color from Text (Legacy Support: "Label-green")
+            const textColorMatch = cleanText.match(/-(green|red|blue|orange|purple)$/i);
+            if (textColorMatch) {
+                colorClass = textColorMatch[1].toLowerCase();
                 cleanText = cleanText.replace(/-[a-z]+$/i, "");
             }
 
+            // 2. Identify Color & Markers from URL (Marker Strategy: "url.pdf-btn-green")
+            // This matches the -autoplay/-loop strategy
+            const urlMarkerMatch = rawURL.match(/-btn(-green|-red|-blue|-orange|-purple)?(?:\?.*)?$/i);
+            if (urlMarkerMatch) {
+                if (!colorClass && urlMarkerMatch[1]) {
+                    colorClass = urlMarkerMatch[1].substring(1).toLowerCase();
+                }
+                // Strip NOT JUST the color, but the functional -btn marker from final href
+                finalURL = rawURL.replace(/-btn(-green|-red|-blue|-orange|-purple)?(?:\?.*)?$/i, "");
+            }
+
+            const target = finalURL.startsWith('#') || finalURL.startsWith('javascript:') ? '' : 'target="_blank"';
+
             const formattedText = cleanText
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*\*/g, '<em>$1</em>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
                 .replace(/__(.*?)__/g, '<u>$1</u>');
 
-            const btnHTML = `<a href="${url}" class="btn-cta ${colorClass}" ${target}>${formattedText}</a>`;
+            const btnHTML = `<a href="${finalURL}" class="btn-cta ${colorClass}" ${target} rel="noopener">${formattedText}</a>`;
             if (isInline) return btnHTML;
             return `<div class="btn-cta-wrapper">${btnHTML}</div>`;
         };
