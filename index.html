@@ -3366,39 +3366,12 @@
             o.length > 0 && renderRows(o, "Recent Activity", true, true, false, true);
         }
         function processSingleLine(e) {
-            if (!e) return "";
-            let t = safeHTML(e);
-
-            // 1. SHORTHAND & LEGACY BUTTONS: [Label | URL] or [button]: Label | URL
-            // This captures standalone CTA blocks with pipes.
-            t = t.replace(/\[\s*(?:button\]:)?\s*([^\]|]+?)\s*\|\s*([^\]\s]+)\s*\]/gi, (match, text, url) => {
-                const cleanURL = url.trim().replace(/-btn(-[a-z]+)?$/i, (m, color) => color || "");
-                return renderButtonHTML(text.trim(), cleanURL, true);
-            });
-
-            t = t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-            t = t.replace(/\*(.*?)\*/g, "<em>$1</em>");
-            t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
-
-            // 2. SMART LINKS: Convert [Label](URL-btn) to Buttons
-            // This aligns with video markers like -autoplay and -loop
-            t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
-                const cleanURL = url.trim();
-                // If it has a -btn marker, render it as a button
-                if (cleanURL.match(/-btn(-[a-z]+)?$/i)) {
-                    // Extract potential color from URL (handled by renderButtonHTML internally if we pass it, but we strip it for clean path)
-                    // Actually, we pass the URL as-is to renderButtonHTML and let IT handle the internal stripping
-                    return renderButtonHTML(label, cleanURL, true);
-                }
-                // Standard Link
-                return `<a href="${cleanURL}" target="_blank" rel="noopener">${label}</a>`;
-            });
-
-            return t;
+            // Using the central high-fidelity inline processor for titles and metadata
+            return processInlineMarkdown(e);
         }
         function formatTitle(e, t) {
             if (!e) return "";
-            const processed = processSingleLine(e);
+            const processed = processInlineMarkdown(e);
             // If the content is basically just a button, don't wrap it in H tags
             if (processed.includes('btn-cta-wrapper')) {
                 return processed;
@@ -3406,7 +3379,7 @@
             const n = e.match(/^(#{1,6})\s+(.*)$/);
             let o = t, r = e;
             n && (o = "h" + n[1].length, r = n[2]);
-            return `<${o} class="header-fade-anim">${processSingleLine(r)}</${o}>`
+            return `<${o} class="header-fade-anim">${processInlineMarkdown(r)}</${o}>`
         }
         // Chip rendering helper
         function renderChip(tag) {
@@ -3416,11 +3389,11 @@
                 const label = linkMatch[1];
                 const url = linkMatch[2];
                 if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(url)) {
-                    return `<a href="${url}" target="_blank" class="chip location">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${safeHTML(label)}</a>`;
+                    return `<a href="${url}" target="_blank" class="chip location">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${processInlineMarkdown(label)}</a>`;
                 }
-                return `<a href="${url}" target="_blank" class="chip location link">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${safeHTML(label)}</a>`;
+                return `<a href="${url}" target="_blank" class="chip location link">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${processInlineMarkdown(label)}</a>`;
             }
-            return `<span class="chip" data-tag="${tag}">${safeHTML(tag)}</span>`;
+            return `<span class="chip" data-tag="${tag}">${processInlineMarkdown(tag)}</span>`;
         }
 
         function renderCardHTML(entry, contextCategory = "") {
@@ -4597,22 +4570,18 @@
             }
 
             // 2. Identify Color & Markers from URL (Marker Strategy: "url.pdf-btn-green")
-            // This matches the -autoplay/-loop strategy
             const urlMarkerMatch = rawURL.match(/-btn(-green|-red|-blue|-orange|-purple)?(?:\?.*)?$/i);
             if (urlMarkerMatch) {
                 if (!colorClass && urlMarkerMatch[1]) {
                     colorClass = urlMarkerMatch[1].substring(1).toLowerCase();
                 }
-                // Strip NOT JUST the color, but the functional -btn marker from final href
                 finalURL = rawURL.replace(/-btn(-green|-red|-blue|-orange|-purple)?(?:\?.*)?$/i, "");
             }
 
             const target = finalURL.startsWith('#') || finalURL.startsWith('javascript:') ? '' : 'target="_blank"';
 
-            const formattedText = cleanText
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/__(.*?)__/g, '<u>$1</u>');
+            // Recursively process markdown inside the button text for full universal support
+            const formattedText = processInlineMarkdown(cleanText, 1);
 
             const btnHTML = `<a href="${finalURL}" class="btn-cta ${colorClass}" ${target} rel="noopener">${formattedText}</a>`;
             if (isInline) return btnHTML;
@@ -4757,28 +4726,41 @@
         function processInlineMarkdown(text, depth = 0) {
             if (!text || depth > 5) return text || '';
 
-            // Escape HTML first using the centralized sanitizer (only on first call)
+            // Escape HTML first (only on first call)
             let result = depth === 0 ? safeHTML(text) : text;
 
             if (depth === 0) {
-                // Allow <br> tags to pass through from spreadsheet content safely 
-                // after initial sanitization to support manual line breaks.
                 result = result.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
 
-                // Universal button support (inline/paragraph)
+                // A. SHORTHAND PIPE: [Label | URL] -> Buttons
+                result = result.replace(/\[\s*([^\]|]+?)\s*\|\s*([^\]\s]+)\s*\]/gi, (match, btnText, btnUrl) => {
+                    const cleanURL = btnUrl.trim();
+                    return renderButtonHTML(btnText.trim(), cleanURL, true);
+                });
+
+                // B. LEGACY CTA: [button]: Label | URL
                 result = result.replace(/\[button\]:\s*(.+?)\s*\|\s*(\S+)/gi, (match, btnText, btnUrl) => {
                     return renderButtonHTML(btnText.trim(), btnUrl.trim(), true);
                 });
             }
 
-            // Process markdown with recursive support for nesting
-            result = result.replace(/\*\*(.*?)\*\*/g, (m, p1) => `<strong>${processInlineMarkdown(p1, depth + 1)}</strong>`); // Bold
-            result = result.replace(/__(.*?)__/g, (m, p1) => `<u>${processInlineMarkdown(p1, depth + 1)}</u>`); // Underline
-            result = result.replace(/\*(.*?)\*/g, (m, p1) => `<em>${processInlineMarkdown(p1, depth + 1)}</em>`); // Italic
-            result = result.replace(/`([^`]+)`/g, '<code>$1</code>'); // Inline code
-            result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>'); // Links
+            // Standard Markdown
+            result = result.replace(/\*\*(.*?)\*\*/g, (m, p1) => `<strong>${processInlineMarkdown(p1, depth + 1)}</strong>`);
+            result = result.replace(/__(.*?)__/g, (m, p1) => `<u>${processInlineMarkdown(p1, depth + 1)}</u>`);
+            result = result.replace(/\*(.*?)\*/g, (m, p1) => `<em>${processInlineMarkdown(p1, depth + 1)}</em>`);
+            result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-            // Auto-link raw URLs that aren't already inside href attributes or markdown links
+            // C. SMART LINKS & MARKDOWN LINKS
+            result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+                const cleanURL = url.trim();
+                // If it has a -btn marker, render it as a button
+                if (cleanURL.match(/-btn(-[a-z]+)?$/i)) {
+                    return renderButtonHTML(label, cleanURL, true);
+                }
+                // Standard Link
+                return `<a href="${cleanURL}" target="_blank" rel="noopener">${processInlineMarkdown(label, depth + 1)}</a>`;
+            });
+
             if (depth === 0) {
                 result = result.replace(/(?<!href=")(https?:\/\/(?:www\.)?(?:strava\.com|strava\.app\.link)\/\S+)/gi, '<a href="$1" target="_blank" rel="noopener">$1</a>');
             }
