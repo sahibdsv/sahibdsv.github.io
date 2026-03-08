@@ -4198,19 +4198,13 @@
                     continue;
                 }
 
-                // 1. Check for Buttons
-                const btnMatch = line.match(/^(.+?)\s*\|\s*(https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+)$/i);
-                if (btnMatch) {
+                // 1. Check for Buttons (Standalone lines or multi-button rows)
+                // This detects lines that are PURELY composed of one or more buttons in any supported syntax.
+                const isButtonRow = line.match(/^(\s*(?:\[\s*(?:button\]:)?\s*[^\]|]+?\s*\|\s*[^\]\s]+\s*\]|\[[^\]]+\]\((?:[^)]+-btn(?:-[a-z]+)?)\)|[^\[\]\s]+?\s*\|\s*(?:https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+))\s*)+$/i);
+
+                if (isButtonRow) {
                     flushText();
-                    let btnLines = [lineRaw];
-                    while (i + 1 < rawLines.length) {
-                        const next = rawLines[i + 1].trim();
-                        if (next.match(/^(.+?)\s*\|\s*(https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+)$/i)) {
-                            btnLines.push(rawLines[i + 1].trimEnd());
-                            i++;
-                        } else break;
-                    }
-                    blocks.push(processBlock(btnLines));
+                    blocks.push(processBlock([lineRaw])); // Process exactly this one line as a centered button row
                     continue;
                 }
 
@@ -4304,24 +4298,24 @@
                 }
             }
 
-            // 3. Zero Syntax: CTA Buttons (Text | URL)
-            const buttonLines = [];
-            let i = 0;
-            while (i < lines.length) {
-                const buttonMatch = lines[i].match(/^(.+?)\s*\|\s*(https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+)$/i);
-                if (buttonMatch) {
-                    buttonLines.push({
-                        text: buttonMatch[1].trim(),
-                        url: buttonMatch[2].trim()
-                    });
-                    i++;
-                } else {
-                    break;
+            // 3. Smart Button Detection (Extract all buttons from the block/line)
+            const buttonItems = [];
+            // Regex to find all button-like patterns in the block
+            const btnRegex = /\[\s*(?:button\]:)?\s*([^\]|]+?)\s*\|\s*([^\]\s]+)\s*\]|\[([^\]]+)\]\(([^)]+-btn(?:-[a-z]+)?)\)|([^\[\]\s]+?)\s*\|\s*(https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+)/gi;
+
+            for (let line of lines) {
+                let match;
+                while ((match = btnRegex.exec(line)) !== null) {
+                    const text = match[1] || match[3] || match[5];
+                    const url = match[2] || match[4] || match[6];
+                    if (text && url) {
+                        buttonItems.push({ text: text.trim(), url: url.trim() });
+                    }
                 }
             }
 
-            if (buttonLines.length > 0 && i === lines.length) {
-                return { type: 'buttons', items: buttonLines };
+            if (buttonItems.length > 0) {
+                return { type: 'buttons', items: buttonItems };
             }
 
             // Otherwise it's text content
@@ -5336,119 +5330,130 @@
 
     </script>
     <!-- SEO_LINK_START -->
-<div id="seo-content" style="display:none;" aria-hidden="true">
-  <nav id="seo-nav">
-    <a href="#Home">Home</a>
-    <a href="#Professional/Resume">Professional/Resume</a>
-    <a href="#Personal/About">Personal/About</a>
-    <a href="#Professional/SARIT">Professional/SARIT</a>
-    <a href="#Professional/Honda">Professional/Honda</a>
-    <a href="#Professional/Coursework">Professional/Coursework</a>
-    <a href="#Projects/Robotics">Projects/Robotics</a>
-    <a href="#Projects/Rocketry">Projects/Rocketry</a>
-    <a href="#Projects/Design">Projects/Design</a>
-    <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
-    <a href="#Personal/Volunteering">Personal/Volunteering</a>
-    <a href="#Projects/Website">Projects/Website</a>
-    <a href="#Personal/About/Earth">Personal/About/Earth</a>
-    <a href="#Professional/Master">Professional/Master</a>
-    <a href="#Personal/Ideas">Personal/Ideas</a>
-    <a href="#Personal">Personal</a>
-    <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
-    <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
-  </nav>
+    <div id="seo-content" style="display:none;" aria-hidden="true">
+        <nav id="seo-nav">
+            <a href="#Home">Home</a>
+            <a href="#Professional/Resume">Professional/Resume</a>
+            <a href="#Personal/About">Personal/About</a>
+            <a href="#Professional/SARIT">Professional/SARIT</a>
+            <a href="#Professional/Honda">Professional/Honda</a>
+            <a href="#Professional/Coursework">Professional/Coursework</a>
+            <a href="#Projects/Robotics">Projects/Robotics</a>
+            <a href="#Projects/Rocketry">Projects/Rocketry</a>
+            <a href="#Projects/Design">Projects/Design</a>
+            <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
+            <a href="#Personal/Volunteering">Personal/Volunteering</a>
+            <a href="#Projects/Website">Projects/Website</a>
+            <a href="#Personal/About/Earth">Personal/About/Earth</a>
+            <a href="#Professional/Master">Professional/Master</a>
+            <a href="#Personal/Ideas">Personal/Ideas</a>
+            <a href="#Personal">Personal</a>
+            <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
+            <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
+        </nav>
 
-  <article id="seo-content-Professional/Resume">
-    <h2>Resume</h2>
-    <p>Professional resume and experiences of Sahib Virdee.</p>
-  </article>
+        <article id="seo-content-Professional/Resume">
+            <h2>Resume</h2>
+            <p>Professional resume and experiences of Sahib Virdee.</p>
+        </article>
 
-  <article id="seo-content-Personal/About">
-    <h2>About Me</h2>
-    <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
-  </article>
+        <article id="seo-content-Personal/About">
+            <h2>About Me</h2>
+            <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
+        </article>
 
-  <article id="seo-content-Professional/SARIT">
-    <h2>SARIT Micro-EV</h2>
-    <p>SARIT Mobility-green | 
- About SARIT
-SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe, Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot. Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial transportation within urban environments, making common trips such as home to work or school, convenient and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery, last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban transportation and enhancing the quality of life in cities worldwide.</p>
-  </article>
+        <article id="seo-content-Professional/SARIT">
+            <h2>SARIT Micro-EV</h2>
+            <p>SARIT Mobility-green |
+                About SARIT
+                SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility
+                solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe,
+                Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental
+                concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to
+                use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot.
+                Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and
+                engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial
+                transportation within urban environments, making common trips such as home to work or school, convenient
+                and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery,
+                last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and
+                powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban
+                transportation and enhancing the quality of life in cities worldwide.</p>
+        </article>
 
-  <article id="seo-content-Professional/Honda">
-    <h2>Honda of Canada</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Honda">
+            <h2>Honda of Canada</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Coursework">
-    <h2>Coursework</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Coursework">
+            <h2>Coursework</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Robotics">
-    <h2>York University Robotics Society</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Robotics">
+            <h2>York University Robotics Society</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Rocketry">
-    <h2>Arbalest Rocketry</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Rocketry">
+            <h2>Arbalest Rocketry</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Design">
-    <h2>Design Projects</h2>
-    <p>[test caption]</p>
-  </article>
+        <article id="seo-content-Projects/Design">
+            <h2>Design Projects</h2>
+            <p>[test caption]</p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/Music">
-    <h2>Music 🎶</h2>
-    <p>Artist: London Grammar
- Songs I've been into very recently
- Songs I've been into for a while</p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/Music">
+            <h2>Music 🎶</h2>
+            <p>Artist: London Grammar
+                Songs I've been into very recently
+                Songs I've been into for a while</p>
+        </article>
 
-  <article id="seo-content-Personal/Volunteering">
-    <h2>Volunteering</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Volunteering">
+            <h2>Volunteering</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Website">
-    <h2>this website</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Website">
+            <h2>this website</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/About/Earth">
-    <h2>the blue marble</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/About/Earth">
+            <h2>the blue marble</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Master">
-    <h2>Master Fabricators</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Master">
+            <h2>Master Fabricators</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Ideas">
-    <h2>Ideas</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Ideas">
+            <h2>Ideas</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal">
-    <h2>{Random Quote}</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal">
+            <h2>{Random Quote}</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/GPS_Art">
-    <h2>GPS Art</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/GPS_Art">
+            <h2>GPS Art</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Hackathons/Siemens">
-    <h2>Realize LIVE 2025</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Hackathons/Siemens">
+            <h2>Realize LIVE 2025</h2>
+            <p></p>
+        </article>
 
-</div>
-<!-- SEO_LINK_END -->
+    </div>
+    <!-- SEO_LINK_END -->
 </body>
 
 </html>
