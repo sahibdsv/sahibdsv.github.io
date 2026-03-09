@@ -2675,8 +2675,8 @@
 
         .cat-music h3 {
             margin-bottom: 0px;
-            font-size: 1.5rem !important;
-            /* Matches regular card titles exactly */
+            font-size: 20px !important;
+            /* Fixed exact match to regular cards - 20px */
             line-height: 1.25;
             opacity: 1;
             font-weight: 600;
@@ -4163,7 +4163,12 @@
             const cardsHTML = latestItems.map((item, index) => {
                 const artist = safeHTML(item.Artist || "Unknown Artist");
                 const track = safeHTML(item.Song || item.Track || "Unknown Track");
-                const link = item.Link || `https://music.youtube.com/search?q=${encodeURIComponent((item.Artist || "") + ' ' + (item.Song || ""))}`;
+
+                // Detection for "useless" links like the home page, which should fallback to search
+                let link = item.Link || "";
+                if (!link || link === "https://music.youtube.com/" || link === "https://music.youtube.com") {
+                    link = `https://music.youtube.com/search?q=${encodeURIComponent((item.Artist || "") + ' ' + (item.Song || ""))}`;
+                }
                 const thumb = item.Thumbnail || placeholderThumb;
 
                 // Live Ripple logic for the absolute latest track
