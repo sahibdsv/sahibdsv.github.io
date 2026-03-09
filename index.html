@@ -2515,18 +2515,78 @@
             /* Subtle separation from art */
         }
 
+        /* Titanium Heat-Tint Waveform Atmosphere */
         .cat-music .steel-waveform-aura {
             position: absolute;
             inset: 0;
             z-index: -1;
             opacity: 0.15;
-            /* Subtly increased for depth */
             pointer-events: none;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d, #22c1c3, #fdbb2d, #b21f1f, #1a2a6c);
-            background-size: 400% 400%;
-            animation: steel-heat-shift 25s ease-in-out infinite alternate;
-            /* Lava lamp lol speed */
+            overflow: hidden;
             mask-image: linear-gradient(to top, black, transparent);
+        }
+
+        /* Layered Titanium blobs for liquid metal feel */
+        .cat-music .steel-waveform-aura::before,
+        .cat-music .steel-waveform-aura::after {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at center, #7B68EE, #1a2a6c, #E4D00A, #FF4500, transparent 70%);
+            background-size: 50% 50%;
+            animation: titanium-liquid 18s infinite linear;
+            filter: blur(40px);
+            opacity: 0.6;
+        }
+
+        .cat-music .steel-waveform-aura::after {
+            animation-duration: 25s;
+            animation-direction: reverse;
+            background: radial-gradient(circle at center, #00BFFF, #8e44ad, #f1c40f, transparent 60%);
+            opacity: 0.4;
+        }
+
+        @keyframes titanium-liquid {
+            0% {
+                transform: rotate(0deg) translate(5%, 5%);
+            }
+
+            33% {
+                transform: rotate(120deg) translate(-5%, 10%);
+            }
+
+            66% {
+                transform: rotate(240deg) translate(10%, -5%);
+            }
+
+            100% {
+                transform: rotate(360deg) translate(5%, 5%);
+            }
+        }
+
+        /* Waveform Oscilloscope Overlay */
+        .cat-music .waveform-overlay {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(var(--bright-rgb), 0.03) 3px, transparent 4px);
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 200'%3E%3Cpath fill='none' stroke='white' stroke-width='2' d='M0,100 Q50,50 100,100 T200,100 T300,100 T400,100 T500,100 T600,100 T700,100 T800,100'/%3E%3C/svg%3E");
+            mask-size: 200% 100%;
+            animation: waveform-flow 4s linear infinite;
+            opacity: 0.4;
+            z-index: 1;
+        }
+
+        @keyframes waveform-flow {
+            from {
+                mask-position: 0% 0%;
+            }
+
+            to {
+                mask-position: 200% 0%;
+            }
         }
 
         @keyframes steel-heat-shift {
@@ -4141,7 +4201,7 @@
             });
             const latestItems = sorted.slice(0, 3);
             const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
-            const placeholderThumb = "https://images.unsplash.com/photo-1603048588665-791ca8aea617?q=80&w=300&h=300&auto=format&fit=crop";
+            const placeholderThumb = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop";
 
             const now = new Date();
             const oneHourAgo = new Date(now.getTime() - (60 * 60 * 1000));
@@ -4169,6 +4229,7 @@
                         liveClass = "is-live";
                         atmosphereHTML = `
                             <div class="steel-waveform-aura"></div>
+                            <div class="waveform-overlay"></div>
                         `;
                     }
                 }
@@ -4215,7 +4276,7 @@
                         const content = el.innerHTML;
                         el.innerHTML = `
                             <span class="marquee-clone">${content}</span>
-                            <span style="display:inline-block; width:40px;"></span>
+                            <span style="display:inline-block; width:100px;"></span>
                             <span class="marquee-clone">${content}</span>
                         `;
                         el.style.display = 'inline-flex';
@@ -4255,6 +4316,9 @@
 
                     const aura = card.querySelector('.steel-waveform-aura');
                     if (aura) aura.style.display = 'none';
+
+                    const wave = card.querySelector('.waveform-overlay');
+                    if (wave) wave.style.display = 'none';
 
                     card.classList.add('is-playing');
                 }
@@ -6007,118 +6071,129 @@
 
     </script>
     <!-- SEO_LINK_START -->
-<div id="seo-content" style="display:none;" aria-hidden="true">
-  <nav id="seo-nav">
-    <a href="#Home">Home</a>
-    <a href="#Professional/Resume">Professional/Resume</a>
-    <a href="#Personal/About">Personal/About</a>
-    <a href="#Professional/SARIT">Professional/SARIT</a>
-    <a href="#Professional/Honda">Professional/Honda</a>
-    <a href="#Professional/Coursework">Professional/Coursework</a>
-    <a href="#Projects/Robotics">Projects/Robotics</a>
-    <a href="#Projects/Rocketry">Projects/Rocketry</a>
-    <a href="#Projects/Design">Projects/Design</a>
-    <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
-    <a href="#Personal/Volunteering">Personal/Volunteering</a>
-    <a href="#Projects/Website">Projects/Website</a>
-    <a href="#Personal/About/Earth">Personal/About/Earth</a>
-    <a href="#Professional/Master">Professional/Master</a>
-    <a href="#Personal/Ideas">Personal/Ideas</a>
-    <a href="#Personal">Personal</a>
-    <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
-    <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
-  </nav>
+    <div id="seo-content" style="display:none;" aria-hidden="true">
+        <nav id="seo-nav">
+            <a href="#Home">Home</a>
+            <a href="#Professional/Resume">Professional/Resume</a>
+            <a href="#Personal/About">Personal/About</a>
+            <a href="#Professional/SARIT">Professional/SARIT</a>
+            <a href="#Professional/Honda">Professional/Honda</a>
+            <a href="#Professional/Coursework">Professional/Coursework</a>
+            <a href="#Projects/Robotics">Projects/Robotics</a>
+            <a href="#Projects/Rocketry">Projects/Rocketry</a>
+            <a href="#Projects/Design">Projects/Design</a>
+            <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
+            <a href="#Personal/Volunteering">Personal/Volunteering</a>
+            <a href="#Projects/Website">Projects/Website</a>
+            <a href="#Personal/About/Earth">Personal/About/Earth</a>
+            <a href="#Professional/Master">Professional/Master</a>
+            <a href="#Personal/Ideas">Personal/Ideas</a>
+            <a href="#Personal">Personal</a>
+            <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
+            <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
+        </nav>
 
-  <article id="seo-content-Professional/Resume">
-    <h2>Resume</h2>
-    <p>Professional resume and experiences of Sahib Virdee.</p>
-  </article>
+        <article id="seo-content-Professional/Resume">
+            <h2>Resume</h2>
+            <p>Professional resume and experiences of Sahib Virdee.</p>
+        </article>
 
-  <article id="seo-content-Personal/About">
-    <h2>About Me</h2>
-    <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
-  </article>
+        <article id="seo-content-Personal/About">
+            <h2>About Me</h2>
+            <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
+        </article>
 
-  <article id="seo-content-Professional/SARIT">
-    <h2>SARIT Micro-EV</h2>
-    <p>[SARIT Mobility-green | 
- About SARIT
-SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe, Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot. Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial transportation within urban environments, making common trips such as home to work or school, convenient and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery, last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban transportation and enhancing the quality of life in cities worldwide.</p>
-  </article>
+        <article id="seo-content-Professional/SARIT">
+            <h2>SARIT Micro-EV</h2>
+            <p>[SARIT Mobility-green |
+                About SARIT
+                SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility
+                solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe,
+                Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental
+                concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to
+                use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot.
+                Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and
+                engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial
+                transportation within urban environments, making common trips such as home to work or school, convenient
+                and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery,
+                last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and
+                powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban
+                transportation and enhancing the quality of life in cities worldwide.</p>
+        </article>
 
-  <article id="seo-content-Professional/Honda">
-    <h2>Honda of Canada</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Honda">
+            <h2>Honda of Canada</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Coursework">
-    <h2>Coursework</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Coursework">
+            <h2>Coursework</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Robotics">
-    <h2>York University Robotics Society</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Robotics">
+            <h2>York University Robotics Society</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Rocketry">
-    <h2>Arbalest Rocketry</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Rocketry">
+            <h2>Arbalest Rocketry</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Design">
-    <h2>Design Projects</h2>
-    <p>[test caption]</p>
-  </article>
+        <article id="seo-content-Projects/Design">
+            <h2>Design Projects</h2>
+            <p>[test caption]</p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/Music">
-    <h2>Music 🎶</h2>
-    <p>Recently Played
-{Recently Played}</p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/Music">
+            <h2>Music 🎶</h2>
+            <p>Recently Played
+                {Recently Played}</p>
+        </article>
 
-  <article id="seo-content-Personal/Volunteering">
-    <h2>Volunteering</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Volunteering">
+            <h2>Volunteering</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Website">
-    <h2>this website</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Website">
+            <h2>this website</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/About/Earth">
-    <h2>the blue marble</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/About/Earth">
+            <h2>the blue marble</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Master">
-    <h2>Master Fabricators</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Master">
+            <h2>Master Fabricators</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Ideas">
-    <h2>Ideas</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Ideas">
+            <h2>Ideas</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal">
-    <h2>{Random Quote}</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal">
+            <h2>{Random Quote}</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/GPS_Art">
-    <h2>GPS Art</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/GPS_Art">
+            <h2>GPS Art</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Hackathons/Siemens">
-    <h2>Realize LIVE 2025</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Hackathons/Siemens">
+            <h2>Realize LIVE 2025</h2>
+            <p></p>
+        </article>
 
-</div>
-<!-- SEO_LINK_END -->
+    </div>
+    <!-- SEO_LINK_END -->
 </body>
 
 </html>
