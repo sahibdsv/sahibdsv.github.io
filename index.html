@@ -2515,77 +2515,59 @@
             /* Subtle separation from art */
         }
 
-        /* Titanium Heat-Tint Waveform Atmosphere */
+        /* Titanium Heat-Tint Liquid Aura */
         .cat-music .steel-waveform-aura {
             position: absolute;
             inset: 0;
             z-index: -1;
-            opacity: 0.15;
+            opacity: 0.25;
+            /* More obvious as requested */
             pointer-events: none;
             overflow: hidden;
             mask-image: linear-gradient(to top, black, transparent);
         }
 
-        /* Layered Titanium blobs for liquid metal feel */
+        /* Layered Titanium blobs for liquid metal feel - rhythmic pulse */
         .cat-music .steel-waveform-aura::before,
         .cat-music .steel-waveform-aura::after {
             content: '';
             position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
-            background: radial-gradient(circle at center, #7B68EE, #1a2a6c, #E4D00A, #FF4500, transparent 70%);
-            background-size: 50% 50%;
-            animation: titanium-liquid 18s infinite linear;
-            filter: blur(40px);
-            opacity: 0.6;
+            width: 300%;
+            height: 300%;
+            top: -100%;
+            left: -100%;
+            /* Titanium spectrum: gold -> purple -> indigo */
+            background: radial-gradient(circle at center, #FFD700, #DAA520, #9370DB, #483D8B, #1a2a6c, transparent 70%);
+            background-size: 33% 33%;
+            animation: titanium-flow 4s ease-in-out infinite;
+            /* Rhythmic 120bpm shift */
+            filter: blur(50px);
+            opacity: 0.8;
+            will-change: transform, opacity;
         }
 
         .cat-music .steel-waveform-aura::after {
-            animation-duration: 25s;
+            animation-duration: 6s;
+            animation-delay: -2s;
             animation-direction: reverse;
-            background: radial-gradient(circle at center, #00BFFF, #8e44ad, #f1c40f, transparent 60%);
-            opacity: 0.4;
+            background: radial-gradient(circle at center, #87CEEB, #4169E1, #8A2BE2, transparent 60%);
+            opacity: 0.5;
         }
 
-        @keyframes titanium-liquid {
+        @keyframes titanium-flow {
             0% {
-                transform: rotate(0deg) translate(5%, 5%);
+                transform: translate(0, 0) scale(1.0);
+                opacity: 0.6;
             }
 
-            33% {
-                transform: rotate(120deg) translate(-5%, 10%);
-            }
-
-            66% {
-                transform: rotate(240deg) translate(10%, -5%);
+            50% {
+                transform: translate(10%, 10%) scale(1.1);
+                opacity: 0.9;
             }
 
             100% {
-                transform: rotate(360deg) translate(5%, 5%);
-            }
-        }
-
-        /* Waveform Oscilloscope Overlay */
-        .cat-music .waveform-overlay {
-            position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(var(--bright-rgb), 0.03) 3px, transparent 4px);
-            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 200'%3E%3Cpath fill='none' stroke='white' stroke-width='2' d='M0,100 Q50,50 100,100 T200,100 T300,100 T400,100 T500,100 T600,100 T700,100 T800,100'/%3E%3C/svg%3E");
-            mask-size: 200% 100%;
-            animation: waveform-flow 4s linear infinite;
-            opacity: 0.4;
-            z-index: 1;
-        }
-
-        @keyframes waveform-flow {
-            from {
-                mask-position: 0% 0%;
-            }
-
-            to {
-                mask-position: 200% 0%;
+                transform: translate(0, 0) scale(1.0);
+                opacity: 0.6;
             }
         }
 
@@ -4229,7 +4211,6 @@
                         liveClass = "is-live";
                         atmosphereHTML = `
                             <div class="steel-waveform-aura"></div>
-                            <div class="waveform-overlay"></div>
                         `;
                     }
                 }
@@ -4303,7 +4284,9 @@
                 const mediaRow = card.querySelector('.row-media');
                 if (mediaRow) {
                     const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1`;
+                    // Use youtube-nocookie and add origin for better embed compatibility
+                    const origin = window.location.origin;
+                    iframe.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&origin=${encodeURIComponent(origin)}`;
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
 
@@ -4316,9 +4299,6 @@
 
                     const aura = card.querySelector('.steel-waveform-aura');
                     if (aura) aura.style.display = 'none';
-
-                    const wave = card.querySelector('.waveform-overlay');
-                    if (wave) wave.style.display = 'none';
 
                     card.classList.add('is-playing');
                 }
