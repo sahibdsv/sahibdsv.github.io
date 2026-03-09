@@ -4237,9 +4237,9 @@
                 const isValidTrackLink = bareURL.includes('watch?v=') || bareURL.includes('youtu.be');
 
                 if (!link || !isValidTrackLink) {
-                    // Fallback to searching regular YouTube for the exact Artist + Track Name
+                    // Fallback to searching YT Music for the exact Artist + Track Name
                     const searchQuery = encodeURIComponent((item.Artist || "") + " " + (item.Song || item.Track || ""));
-                    link = `https://www.youtube.com/results?search_query=${searchQuery}`;
+                    link = `https://music.youtube.com/search?q=${searchQuery}`;
                 }
                 const thumb = item.Thumbnail || placeholderThumb;
 
