@@ -971,8 +971,9 @@
             vertical-align: middle;
             margin-left: 10px;
             margin-top: -4px;
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            /* Elegant, small, higher-fidelity brand icon */
+            height: 18px;
             cursor: pointer;
             opacity: var(--op-line);
             transition: transform var(--anim-layout) cubic-bezier(.175, .885, .32, 1.275), opacity var(--anim-layout) ease, color var(--anim-layout) ease;
@@ -2489,9 +2490,10 @@
         }
 
         .layout-grid.cat-music {
-            border: 2px solid var(--border-subtle);
+            border: 1px solid var(--border-subtle);
+            /* Matches link line thickness */
             background: var(--card-bg);
-            transition: all 0.3s var(--ease);
+            transition: border-width 0.1s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
             position: relative;
             overflow: hidden;
             /* Ensure aura stays inside */
@@ -2501,212 +2503,207 @@
         }
 
         .layout-grid.cat-music:hover {
-            border-color: var(--border-strong);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(var(--bright-rgb), 0.3);
+            /* Distinct hover state */
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
         }
 
-        /* Tempered Steel Waveform Atmosphere */
+        /* High-Contrast Titanium Atmosphere */
+        .cat-music .steel-waveform-aura {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+            mask-image: linear-gradient(to top, black, transparent 90%);
+        }
+
+        /* Sidechain-Inspired Titanium Atmosphere (Flume/Jadu Heart style) */
+        @keyframes titanium-sidechain-swell {
+            0% {
+                transform: scale(1.0);
+                opacity: 0.1;
+            }
+
+            /* The 'Duck' / Kick Hit */
+            10% {
+                transform: scale(0.85) translate(-3%, -3%);
+                opacity: 0.05;
+            }
+
+            /* Compression Peak - Sharp Silence */
+            30% {
+                transform: scale(1.25) translate(6%, 6%);
+                opacity: 0.95;
+            }
+
+            /* The Swell / Recovery - High Contrast */
+            60% {
+                transform: scale(1.15) translate(3%, 3%);
+                opacity: 0.5;
+            }
+
+            /* The Haze / Sustain */
+            100% {
+                transform: scale(1.0);
+                opacity: 0.1;
+            }
+        }
+
+        .cat-music .steel-waveform-aura::before {
+            content: '';
+            position: absolute;
+            width: 300%;
+            height: 300%;
+            top: -100%;
+            left: -100%;
+            /* Vivid Titanium Palette - Gold to Deep Violet */
+            background: radial-gradient(circle at center, #FFEF00, #FFD700, #9370DB, #483D8B, #1a2a6c, transparent 70%);
+            background-size: 33% 33%;
+            animation: titanium-sidechain-swell 2.0s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+            filter: blur(45px);
+            /* Less blur for more hardware-like contrast */
+            will-change: transform, opacity;
+        }
+
+        .cat-music .steel-waveform-aura::after {
+            content: '';
+            position: absolute;
+            width: 300%;
+            height: 300%;
+            top: -80%;
+            left: -80%;
+            /* Neon Titanium Pulse - Cyan to Electric Purple */
+            background: radial-gradient(circle at center, #00FFFF, #00BFFF, #8A2BE2, #EE82EE, transparent 65%);
+            background-size: 33% 33%;
+            animation: titanium-sidechain-swell 2.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+            animation-delay: -0.6s;
+            filter: blur(40px);
+            opacity: 0.7;
+            will-change: transform, opacity;
+        }
+
+        .layout-grid.cat-music .row-media {
+            aspect-ratio: 1/1 !important;
+            overflow: hidden;
+            background: #000;
+            border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
+        }
+
+        .layout-grid.cat-music .row-media img,
+        .layout-grid.cat-music .row-media .sk-img {
+            border-radius: 0 !important;
+        }
+
+        .layout-grid.cat-music .row-media iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            border-radius: 0 !important;
+        }
+
+        .music-yt-overlay {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 18px;
+            /* Elegant, small icon */
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0.6;
+            transition: opacity 0.3s var(--ease);
+            pointer-events: none;
+        }
+
+        .layout-grid.cat-music:hover .music-yt-overlay,
+        .layout-grid.cat-music.is-playing .music-yt-overlay {
+            opacity: 1;
+        }
+
+        .music-yt-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Marquee Effect with Soft Fade (High-Fidelity clipping) */
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
+        }
+
+        .marquee-content {
+            display: inline-block;
+            transition: transform 0.8s ease-in-out;
+            padding-right: 15px;
+        }
+
+        .layout-grid.cat-music:hover .marquee-content.should-scroll {
+            animation: marquee-scroll 8s linear infinite;
+        }
+
+        @keyframes marquee-scroll {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
         .cat-music .card-info {
+            gap: 0px;
+            padding: 10px 14px;
+            padding-right: 45px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
             position: relative;
             z-index: 2;
             background: transparent;
-            overflow: hidden;
             border-top: 1px solid rgba(var(--bright-rgb), 0.05);
+        }
 
-            /* Subtle separation from art */
-            /* Titanium Heat-Tint Liquid Aura */
-            .cat-music .steel-waveform-aura {
-                position: absolute;
-                inset: 0;
-                z-index: -1;
-                opacity: 0.25;
-                pointer-events: none;
-                overflow: hidden;
-                mask-image: linear-gradient(to top, black, transparent);
+        .cat-music h3,
+        .cat-music .music-artist-label {
+            width: fit-content;
+            display: inline-flex !important;
+            white-space: nowrap;
+        }
+
+        .cat-music .music-artist-label {
+            font-size: 0.85em;
+            color: var(--text-dim);
+            opacity: 0.8;
+            margin-top: 2px;
+            font-weight: 400;
+        }
+
+        .cat-music h3 {
+            margin-bottom: 0px;
+            font-size: 20px !important;
+            line-height: 1.25;
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .music-card-container {
+                max-width: 100%;
+                margin: 20px auto;
             }
-
-            /* Sidechain-Inspired Titanium Atmosphere (Flume/Jadu Heart style) */
-            @keyframes titanium-sidechain-swell {
-                0% {
-                    transform: scale(1.0);
-                    opacity: 0.4;
-                }
-
-                /* The 'Duck' / Kick Hit */
-                10% {
-                    transform: scale(0.92) translate(-2%, -2%);
-                    opacity: 0.3;
-                }
-
-                /* Compression Peak */
-                35% {
-                    transform: scale(1.2) translate(5%, 5%);
-                    opacity: 0.9;
-                }
-
-                /* The Swell / Recovery */
-                60% {
-                    transform: scale(1.1) translate(2%, 2%);
-                    opacity: 0.6;
-                }
-
-                /* The Haze / Sustain */
-                100% {
-                    transform: scale(1.0);
-                    opacity: 0.4;
-                }
-            }
-
-            .cat-music .steel-waveform-aura::before {
-                content: '';
-                position: absolute;
-                width: 300%;
-                height: 300%;
-                top: -100%;
-                left: -100%;
-                background: radial-gradient(circle at center, #FFD700, #DAA520, #9370DB, #483D8B, #1a2a6c, transparent 75%);
-                background-size: 33% 33%;
-                animation: titanium-sidechain-swell 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
-                filter: blur(65px);
-                will-change: transform, opacity;
-            }
-
-            .cat-music .steel-waveform-aura::after {
-                content: '';
-                position: absolute;
-                width: 300%;
-                height: 300%;
-                top: -80%;
-                left: -80%;
-                background: radial-gradient(circle at center, #87CEEB, #4169E1, #BC8F8F, #8A2BE2, transparent 65%);
-                background-size: 33% 33%;
-                animation: titanium-sidechain-swell 3.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
-                animation-delay: -0.8s;
-                filter: blur(55px);
-                opacity: 0.5;
-                will-change: transform, opacity;
-            }
-
-            .layout-grid.cat-music .row-media {
-                aspect-ratio: 1/1 !important;
-                overflow: hidden;
-                background: #000;
-                border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
-            }
-
-            .layout-grid.cat-music .row-media img,
-            .layout-grid.cat-music .row-media .sk-img {
-                border-radius: 0 !important;
-            }
-
-            .layout-grid.cat-music .row-media iframe {
-                width: 100%;
-                height: 100%;
-                border: none;
-                display: block;
-                border-radius: 0 !important;
-            }
-
-            .music-yt-overlay {
-                position: absolute;
-                bottom: 15px;
-                right: 15px;
-                width: 24px;
-                height: 24px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10;
-                opacity: 0.6;
-                transition: opacity 0.3s var(--ease);
-                pointer-events: none;
-            }
-
-            .layout-grid.cat-music:hover .music-yt-overlay,
-            .layout-grid.cat-music.is-playing .music-yt-overlay {
-                opacity: 1;
-            }
-
-            .music-yt-overlay img {
-                width: 100%;
-                height: 100%;
-                object-fit: contain;
-            }
-
-            /* Marquee Effect with Soft Fade (High-Fidelity clipping) */
-            .marquee-container {
-                width: 100%;
-                overflow: hidden;
-                white-space: nowrap;
-                position: relative;
-                mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
-                -webkit-mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
-            }
-
-            .marquee-content {
-                display: inline-block;
-                transition: transform 0.8s ease-in-out;
-                padding-right: 15px;
-            }
-
-            .layout-grid.cat-music:hover .marquee-content.should-scroll {
-                animation: marquee-scroll 8s linear infinite;
-            }
-
-            @keyframes marquee-scroll {
-                0% {
-                    transform: translateX(0);
-                }
-
-                100% {
-                    transform: translateX(-50%);
-                }
-            }
-
-            .cat-music .card-info {
-                gap: 0px;
-                padding: 10px 14px;
-                padding-right: 45px;
-                min-height: 60px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                overflow: hidden;
-                position: relative;
-                z-index: 2;
-                background: transparent;
-                border-top: 1px solid rgba(var(--bright-rgb), 0.05);
-            }
-
-            .cat-music h3,
-            .cat-music .music-artist-label {
-                width: fit-content;
-                display: inline-flex !important;
-                white-space: nowrap;
-            }
-
-            .cat-music .music-artist-label {
-                font-size: 0.85em;
-                color: var(--text-dim);
-                opacity: 0.8;
-                margin-top: 2px;
-                font-weight: 400;
-            }
-
-            .cat-music h3 {
-                margin-bottom: 0px;
-                font-size: 20px !important;
-                line-height: 1.25;
-                opacity: 1;
-                font-weight: 600;
-            }
-
-            @media (max-width: 480px) {
-                .music-card-container {
-                    max-width: 100%;
-                    margin: 20px auto;
-                }
-            }
+        }
     </style>
 
     <!-- Three.js for 3D model rendering -->
