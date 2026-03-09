@@ -2870,7 +2870,8 @@
             if (row.scrollWidth <= row.clientWidth + 5) return;
 
             const activeLink = row.querySelector(".active");
-            const behavior = isReset ? "auto" : "smooth";
+            // If the user is actively scrolling a picker or swiping the page, use "auto" for other rows to prevent stutter
+            const behavior = (isReset || _pickerScrollingRow || _gSwipe.active) ? "auto" : "smooth";
 
             if (activeLink) {
                 const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
