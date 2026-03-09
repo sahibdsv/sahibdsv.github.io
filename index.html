@@ -2497,74 +2497,78 @@
 
         /* Hover is now fully inherited from .layout-grid, guaranteeing 100% uniformity with all other cards */
 
-        /* High-Contrast Titanium Liquid Waveform */
+        /* Pure Ambient Titanium Heat Aura */
         .cat-music .steel-waveform-aura {
             position: absolute;
             inset: 0;
             z-index: -1;
             pointer-events: none;
             overflow: hidden;
-            opacity: 0.8;
-            mask-image: linear-gradient(to top, transparent 0%, black 20%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to top, transparent 0%, black 20%, transparent 100%);
-            filter: blur(10px);
-            /* Smooths the overlapping layers into a single aurora */
+            mask-image: linear-gradient(to top, black 0%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
         }
 
-        /* Ambient Sweeping Wave */
-        @keyframes titanium-wave-roll {
+        /* Color Shifting: Heating up and Cooling */
+        @keyframes titanium-heat-shift {
             0% {
-                transform: translateX(0%) scaleY(0.7);
-                opacity: 0.5;
+                background-position: 0% 50%;
             }
 
             50% {
-                transform: translateX(-20%) scaleY(1.3);
-                opacity: 1.0;
+                background-position: 100% 50%;
             }
 
-            /* Rhythmic swell and pan */
             100% {
-                transform: translateX(0%) scaleY(0.7);
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Heartbeat/Sidechain Pump */
+        @keyframes titanium-heat-pump {
+            0% {
+                transform: scaleY(0.6) translateY(10%);
+                opacity: 0.5;
+            }
+
+            15% {
+                transform: scaleY(0.4) translateY(20%);
+                opacity: 0.2;
+            }
+
+            /* Duck */
+            50% {
+                transform: scaleY(1.0) translateY(0%);
+                opacity: 0.95;
+            }
+
+            /* Swell */
+            100% {
+                transform: scaleY(0.6) translateY(10%);
                 opacity: 0.5;
             }
         }
 
-        .cat-music .steel-waveform-aura .wave-layer {
+        /* A single massive, diffuse light source */
+        .cat-music .steel-waveform-aura::before {
+            content: '';
             position: absolute;
-            bottom: -20%;
-            width: 200%;
-            /* Extremely wide, sweeps across the entire card creating shallow hills */
+            bottom: -30%;
+            left: -20%;
+            width: 140%;
             height: 120%;
             border-radius: 50% 50% 0 0;
-            /* Creates an ultra-smooth, flattened dome */
+            /* Creates one massive, flattened dome of light */
+            /* Titanium Heat Spectrum: Pale straw -> dark straw -> purple -> blue -> light blue */
+            background: linear-gradient(90deg, #FFD700, #ff1a75, #8a2be2, #1a2a6c, #00ffff, #FFD700);
+            background-size: 300% 100%;
             transform-origin: bottom center;
-            will-change: transform, opacity;
+            animation:
+                titanium-heat-pump 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite,
+                titanium-heat-shift 8s ease-in-out infinite;
+            filter: blur(35px);
+            /* Massive blur for true 'airy'/foggy aura, no sharp lines at all */
             mix-blend-mode: screen;
-            /* Makes overlaps glow brightly */
-        }
-
-        /* Three overlapping, wide swooshes of titanium gradients */
-        .cat-music .steel-waveform-aura .wave-layer:nth-child(1) {
-            left: -10%;
-            background: linear-gradient(to top, transparent, #1a2a6c, #8A2BE2, #FFD700);
-            animation: titanium-wave-roll 3.2s ease-in-out infinite;
-        }
-
-        .cat-music .steel-waveform-aura .wave-layer:nth-child(2) {
-            left: -50%;
-            height: 90%;
-            background: linear-gradient(to top, transparent, #1a2a6c, #EE82EE, #00FFFF);
-            animation: titanium-wave-roll 2.6s ease-in-out infinite reverse;
-            animation-delay: -0.8s;
-        }
-
-        .cat-music .steel-waveform-aura .wave-layer:nth-child(3) {
-            left: -30%;
-            height: 100%;
-            background: linear-gradient(to top, transparent, #1a2a6c, #8A2BE2, #FFEF00);
-            animation: titanium-wave-roll 3.8s ease-in-out infinite;
-            animation-delay: -1.5s;
+            will-change: transform, opacity, background-position;
         }
 
 
@@ -4193,11 +4197,7 @@
                     if (trackTime > oneHourAgo) {
                         liveClass = "is-live";
                         atmosphereHTML = `
-                            <div class="steel-waveform-aura">
-                                <div class="wave-layer"></div>
-                                <div class="wave-layer"></div>
-                                <div class="wave-layer"></div>
-                            </div>
+                            <div class="steel-waveform-aura"></div>
                         `;
                     }
                 }
