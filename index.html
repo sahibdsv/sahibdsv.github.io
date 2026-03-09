@@ -2519,27 +2519,13 @@
             position: absolute;
             inset: 0;
             z-index: -1;
-            opacity: 0.12;
+            opacity: 0.15;
+            /* Subtly increased for depth */
             pointer-events: none;
-            background: linear-gradient(110deg, #1a2a6c, #b21f1f, #fdbb2d);
-            /* Steel heat signature */
-            background-size: 200% 200%;
-            animation: steel-heat-shift 12s ease-in-out infinite;
-            mask-image: linear-gradient(to top, black, transparent);
-        }
-
-        .cat-music .steel-waveform-aura {
-            position: absolute;
-            inset: 0;
-            z-index: -1;
-            opacity: 0.18;
-            /* Slightly more visible for the lava lamp effect */
-            pointer-events: none;
-            background: linear-gradient(110deg, #1a2a6c, #b21f1f, #fdbb2d, #1a2a6c);
-            /* Loop colors */
-            background-size: 300% 300%;
-            animation: steel-heat-shift 15s ease-in-out infinite;
-            /* Slow, lava lamp speed */
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d, #22c1c3, #fdbb2d, #b21f1f, #1a2a6c);
+            background-size: 400% 400%;
+            animation: steel-heat-shift 25s ease-in-out infinite alternate;
+            /* Lava lamp lol speed */
             mask-image: linear-gradient(to top, black, transparent);
         }
 
@@ -2574,11 +2560,18 @@
             /* Square bottom edges as requested */
         }
 
+        .layout-grid.cat-music .row-media img,
+        .layout-grid.cat-music .row-media .sk-img {
+            border-radius: 0 !important;
+            /* Force square bottom for art corners */
+        }
+
         .layout-grid.cat-music .row-media iframe {
             width: 100%;
             height: 100%;
             border: none;
             display: block;
+            border-radius: 0 !important;
         }
 
         .music-yt-overlay {
@@ -2596,7 +2589,8 @@
             pointer-events: none;
         }
 
-        .layout-grid.cat-music:hover .music-yt-overlay {
+        .layout-grid.cat-music:hover .music-yt-overlay,
+        .layout-grid.cat-music.is-playing .music-yt-overlay {
             opacity: 1;
         }
 
