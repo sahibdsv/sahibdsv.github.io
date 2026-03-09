@@ -2511,20 +2511,20 @@
             filter: blur(12px);
         }
 
-        /* The Spiderman Bounce (Visually universal ~110 BPM rhythm block) */
-        @keyframes wave-bounce {
+        /* Slow, graceful organic swell instead of a metronomic beat */
+        @keyframes wave-breathe {
             0% {
-                transform: scaleY(0.4);
+                transform: scaleY(0.75) translateY(5px);
                 opacity: 0.6;
             }
 
-            15% {
-                transform: scaleY(1.0);
-                opacity: 1.0;
+            50% {
+                transform: scaleY(1.1) translateY(0px);
+                opacity: 0.95;
             }
 
             100% {
-                transform: scaleY(0.4);
+                transform: scaleY(0.75) translateY(5px);
                 opacity: 0.6;
             }
         }
@@ -2584,34 +2584,37 @@
             will-change: transform, mask-position, background-position;
         }
 
-        /* 0.545s bounce exactly mimics a 110bpm hip-hop/house beat for the "dancing spiderman" universal sync */
+        /* Slower, totally out-of-phase prime number mixing for infinite grace and novelty */
         .cat-music .crisp-wave.w1 {
             mask-size: 200px 100%;
             -webkit-mask-size: 200px 100%;
+            height: 90%;
             animation:
-                wave-bounce 0.545s cubic-bezier(0.1, 0.9, 0.2, 1) infinite,
-                pan-w1 5s linear infinite,
-                heat-pan 12s ease-in-out infinite alternate;
+                wave-breathe 7.3s ease-in-out infinite alternate,
+                pan-w1 11s linear infinite,
+                heat-pan 17s ease-in-out infinite alternate;
         }
 
         .cat-music .crisp-wave.w2 {
             mask-size: 140px 100%;
             -webkit-mask-size: 140px 100%;
-            height: 70%;
+            height: 75%;
             animation:
-                wave-bounce 0.545s cubic-bezier(0.1, 0.9, 0.2, 1) infinite 0.15s,
-                pan-w2 3s linear infinite,
-                heat-pan 15s ease-in-out infinite alternate-reverse;
+                wave-breathe 11.2s ease-in-out infinite alternate-reverse,
+                pan-w2 13s linear infinite reverse,
+                heat-pan 23s ease-in-out infinite alternate-reverse;
+            animation-delay: -3s;
         }
 
         .cat-music .crisp-wave.w3 {
             mask-size: 90px 100%;
             -webkit-mask-size: 90px 100%;
-            height: 60%;
+            height: 65%;
             animation:
-                wave-bounce 0.545s cubic-bezier(0.1, 0.9, 0.2, 1) infinite 0.3s,
-                pan-w3 7s linear infinite reverse,
-                heat-pan 9s ease-in-out infinite alternate;
+                wave-breathe 8.9s ease-in-out infinite alternate,
+                pan-w3 19s linear infinite,
+                heat-pan 13s ease-in-out infinite alternate;
+            animation-delay: -7s;
         }
 
 
