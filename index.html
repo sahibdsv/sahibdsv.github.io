@@ -2321,6 +2321,373 @@
         .nav-row.hidden {
             display: none !important;
         }
+
+        /* Music Component - Vinyl Sleeve Edition */
+        .music-card {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 16px 24px;
+            gap: 28px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            margin: 40px 0;
+            width: 100%;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-drag: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .music-card:hover {
+            background: var(--card-bg-hover);
+            border-color: var(--text-dim);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .music-art-wrapper {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            flex-shrink: 0;
+            perspective: 1000px;
+        }
+
+        /* The "Vinyl" peeking from behind */
+        .music-vinyl-disc {
+            position: absolute;
+            top: 4px;
+            right: -15px;
+            width: 82px;
+            height: 82px;
+            background: #050505;
+            background: repeating-radial-gradient(circle at center, #050505, #050505 1px, #0f0f0f 2px, #050505 3px);
+            border-radius: 50%;
+            z-index: 1;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+            animation: record-spin 8s linear infinite;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s ease;
+        }
+
+        .music-card:hover .music-vinyl-disc {
+            right: -30px;
+        }
+
+        .music-art {
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+            /* Sits on top of the vinyl */
+            background: #111;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.4);
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+        }
+
+        .music-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .music-art img.loaded {
+            opacity: 1;
+        }
+
+        @keyframes record-spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .music-info {
+            flex-grow: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 3;
+        }
+
+        .music-track {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-bright);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2px;
+            font-family: 'Jost', sans-serif;
+            letter-spacing: -0.3px;
+        }
+
+        .music-artist {
+            font-size: 15px;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0.85;
+        }
+
+        .music-logo-wrapper {
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+        }
+
+        /* Music Component - Native Card Integration */
+        .music-sections-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 40px auto;
+            max-width: 1200px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .music-grid {
+            display: grid;
+            /* Force 3 strictly equal columns on desktop */
+            grid-template-columns: repeat(3, 300px);
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+            justify-content: center;
+        }
+
+        @media (max-width: 900px) {
+            .music-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 650px) {
+            .music-grid {
+                grid-template-columns: 1fr;
+                max-width: 320px;
+            }
+
+            /* Mobile: Show only the single latest card */
+            .music-grid .layout-grid:not(:first-child) {
+                display: none !important;
+            }
+        }
+
+        .layout-grid.cat-music {
+            border: 2px solid var(--border-subtle);
+            /* Matches link line thickness by default to prevent shift */
+            background: var(--card-bg);
+            transition: all 0.3s var(--ease);
+            position: relative;
+            overflow: visible;
+            /* Allow ripples to breathe */
+            width: 300px;
+            /* Strictly lock the width to ensure square art */
+            margin: 0;
+            box-sizing: border-box;
+            /* Crucial for border-width changes (though we use constant width now) */
+        }
+
+        .layout-grid.cat-music:hover {
+            border-color: var(--border-strong);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Sound Wave Ripple Effect */
+        .music-ripple-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .music-ripple {
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            /* Ultra-faint edges */
+            border-radius: var(--card-radius);
+            /* Soft, atmospheric pulse: very slow and fluid */
+            animation: music-ripple-ambient 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            opacity: 0;
+            filter: blur(2px);
+        }
+
+        /* Prime number delays to create a complex, non-repeating rhythm */
+        .music-ripple:nth-child(2) {
+            animation-delay: 2.3s;
+        }
+
+        .music-ripple:nth-child(3) {
+            animation-delay: 4.7s;
+        }
+
+        @keyframes music-ripple-ambient {
+            0% {
+                inset: 0;
+                border-radius: var(--card-radius);
+                opacity: 0;
+            }
+
+            30% {
+                opacity: 0.3;
+                /* Subtle glow peaks early but softly */
+            }
+
+            100% {
+                inset: -25px;
+                border-radius: calc(var(--card-radius) + 25px);
+                opacity: 0;
+            }
+        }
+
+        .music-card-live-pulse {
+            /* Gently pulse the background color ONLY, no scaling/bouncing */
+            animation: music-card-ambient-light 8s ease-in-out infinite;
+        }
+
+        @keyframes music-card-ambient-light {
+
+            0%,
+            100% {
+                background-color: var(--card-bg);
+            }
+
+            50% {
+                background-color: rgba(255, 255, 255, 0.03);
+            }
+        }
+
+        .layout-grid.cat-music .row-media {
+            aspect-ratio: 1/1 !important;
+            overflow: hidden;
+            background: #000;
+            /* Backdrop for iframes */
+        }
+
+        .layout-grid.cat-music .row-media iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .music-yt-overlay {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0.6;
+            transition: opacity 0.3s var(--ease);
+            pointer-events: none;
+        }
+
+        .layout-grid.cat-music:hover .music-yt-overlay {
+            opacity: 1;
+        }
+
+        .music-yt-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Marquee Effect on Hover */
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            transition: transform 0.8s ease-in-out;
+        }
+
+        .layout-grid.cat-music:hover .marquee-content.should-scroll {
+            animation: marquee-scroll 6s linear infinite;
+        }
+
+        @keyframes marquee-scroll {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .cat-music .card-info {
+            gap: 0px;
+            /* Reduced gap since we use padding */
+            padding: 10px 14px;
+            padding-right: 45px;
+            /* Leave room for the logo */
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .cat-music h3,
+        .cat-music .music-artist-label {
+            width: fit-content;
+            display: inline-flex !important;
+            /* Force inline-flex to stay on one line with clones */
+            white-space: nowrap;
+        }
+
+        .cat-music .music-artist-label {
+            font-size: 14px;
+            /* Back to a very clean, humble size */
+            color: var(--text-dim);
+            opacity: 0.8;
+            width: fit-content;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        .cat-music h3 {
+            margin-bottom: 0px;
+            font-size: 1.5rem !important;
+            /* Matches regular card titles exactly */
+            line-height: 1.25;
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .music-card-container {
+                max-width: 100%;
+                margin: 20px auto;
+            }
+        }
     </style>
 
     <!-- Three.js for 3D model rendering -->
@@ -2393,7 +2760,9 @@
             if (sk && sk.classList.contains('loader-overlay')) {
                 sk.classList.add('finished');
                 setTimeout(() => {
-                    try { if (sk.parentNode) sk.remove(); } catch (e) { }
+                    try {
+                        if (sk.parentNode) sk.remove();
+                    } catch (e) { }
                 }, 800);
             }
         };
@@ -2457,6 +2826,7 @@
         let db = [];
         let quotesDb = [];
         let resumeDb = [];
+        let musicDb = []; // Music logging data
         let quoteBag = []; // New state for shuffle logic
         let isSearchActive = false;
         let _lastRenderedPath = null;
@@ -2465,7 +2835,8 @@
         const CONFIG = {
             main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
             quotes_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv',
-            resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv'
+            resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv',
+            music_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1199341895&single=true&output=csv'
         };
 
         // Quote Randomness Logic (Fisher-Yates Shuffle Bag)
@@ -2512,10 +2883,15 @@
                 resumeDb = (cachedData.resume || []).map(entry => {
                     if (entry.Page && entry.Page.includes('#')) {
                         const [page, sectionType] = entry.Page.split('#');
-                        return { ...entry, Page: page, SectionType: sectionType };
+                        return {
+                            ...entry,
+                            Page: page,
+                            SectionType: sectionType
+                        };
                     }
                     return entry;
                 });
+                musicDb = cachedData.music || [];
 
                 if (!showDrafts) {
                     db = stripDrafts(db);
@@ -2584,10 +2960,20 @@
 
         async function fetchDataAndCache() {
             try {
-                const [mainData, quotesDbLocal, resumeDbLocal] = await Promise.all([
+                const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal] = await Promise.all([
                     fetchCSV(CONFIG.main_sheet),
-                    fetchCSV(CONFIG.quotes_sheet).catch(e => { console.warn('Quotes fetch failed', e); return []; }),
-                    fetchCSV(CONFIG.resume_sheet).catch(e => { console.warn('Resume fetch failed', e); return []; })
+                    fetchCSV(CONFIG.quotes_sheet).catch(e => {
+                        console.warn('Quotes fetch failed', e);
+                        return [];
+                    }),
+                    fetchCSV(CONFIG.resume_sheet).catch(e => {
+                        console.warn('Resume fetch failed', e);
+                        return [];
+                    }),
+                    fetchCSV(CONFIG.music_sheet).catch(e => {
+                        console.warn('Music fetch failed', e);
+                        return [];
+                    })
                 ]);
 
                 const filtered = mainData.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
@@ -2596,22 +2982,38 @@
 
                 db = filtered;
                 quotesDb = quotesDbLocal;
+                musicDb = musicDbLocal;
                 resumeDb = (resumeDbLocal || []).map(entry => {
                     if (entry.Page && entry.Page.includes('#')) {
                         const [page, sectionType] = entry.Page.split('#');
-                        return { ...entry, Page: page, SectionType: sectionType };
+                        return {
+                            ...entry,
+                            Page: page,
+                            SectionType: sectionType
+                        };
                     }
                     return entry;
                 });
                 window.db = db;
 
-                // Cache the data
+                // Cache the data 
+                const cacheData = {
+                    main: db,
+                    quotes: quotesDb,
+                    resume: resumeDb,
+                    music: musicDb
+                };
                 localStorage.setItem(CACHE_KEY, JSON.stringify({
                     ts: Date.now(),
-                    data: { main: db, quotes: quotesDb, resume: resumeDb }
+                    data: cacheData
                 }));
 
-                return [db, quotesDb, resumeDb];
+                // Auto-refresh the current view if we're on a dynamic content page (like music or quotes)
+                if (window.location.hash === '#/' || window.location.hash === '') {
+                    handleRouting();
+                }
+
+                return [db, quotesDb, resumeDb, musicDb];
             } catch (e) {
                 console.error('Fetch failed', e);
             }
@@ -2632,11 +3034,26 @@
             temp.textContent = str;
             return temp.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
+
         function initApp() {
             handleRouting();
             window.addEventListener("hashchange", handleRouting);
-            window.addEventListener("touchmove", () => { document.getElementById("main-header").classList.add("scrolling") }, { passive: true }),
-                window.addEventListener("resize", (() => { let resizeTimeout; return () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { document.querySelectorAll(".nav-row").forEach(row => { centerNavRow(row, true) }) }, 150) } })()),
+            window.addEventListener("touchmove", () => {
+                document.getElementById("main-header").classList.add("scrolling")
+            }, {
+                passive: true
+            }),
+                window.addEventListener("resize", (() => {
+                    let resizeTimeout;
+                    return () => {
+                        clearTimeout(resizeTimeout);
+                        resizeTimeout = setTimeout(() => {
+                            document.querySelectorAll(".nav-row").forEach(row => {
+                                centerNavRow(row, true)
+                            })
+                        }, 150)
+                    }
+                })()),
 
                 // Global Click Handler - Manages Search, Navigation, Haptics
                 document.addEventListener("click", e => {
@@ -2645,7 +3062,9 @@
                     const results = document.getElementById("search-results");
 
                     // 0. Haptics
-                    const interactive = e.target.closest("#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid > div, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip");
+                    const interactive = e.target.closest(
+                        "#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid > div, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip"
+                    );
                     if (interactive && navigator.vibrate) {
                         const isMajor = interactive.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link");
                         haptic(isMajor ? 'pulse' : 'tap');
@@ -2657,7 +3076,9 @@
                         const isInsideSearch = overlay.contains(e.target) ||
                             controls.contains(e.target);
 
-                        const isInsideResultsContent = results && results.contains(e.target) && !e.target.classList.contains("section") && !e.target.classList.contains("grid-container") && e.target.id !== "search-results";
+                        const isInsideResultsContent = results && results.contains(e.target) && !e.target.classList
+                            .contains("section") && !e.target.classList.contains("grid-container") && e.target.id !==
+                            "search-results";
 
                         // If not inside overlay/controls AND not inside actual content (clicking background)
                         if (!isInsideSearch && !isInsideResultsContent) {
@@ -2694,7 +3115,8 @@
                         if (chip.tagName !== 'A') e.stopPropagation();
 
                         if (isSearchActive) closeSearch();
-                        const t = chip.getAttribute("data-tag"), n = chip.getAttribute("data-date");
+                        const t = chip.getAttribute("data-tag"),
+                            n = chip.getAttribute("data-date");
                         if (n) {
                             window.location.hash = "Filter:" + n;
                         } else if (t) {
@@ -2702,7 +3124,9 @@
                         }
                         return;
                     }
-                }, { passive: false }), // Set to false to allow stopPropagation to work correctly for chips
+                }, {
+                    passive: false
+                }), // Set to false to allow stopPropagation to work correctly for chips
 
                 document.addEventListener("keydown", e => {
                     const isSearchFocused = "search-input" === (document.activeElement ? document.activeElement.id : "");
@@ -2715,7 +3139,8 @@
                         }
                     }
 
-                    if (("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) && !isSearchActive && !isSearchFocused) {
+                    if (("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) && !isSearchActive &&
+                        !isSearchFocused) {
                         e.preventDefault();
                         toggleSearch();
                     }
@@ -2729,7 +3154,8 @@
                     }
                 })
         }
-        function renderNavigation(currentPath) {
+
+        function renderNavigation(currentPath, forceSmoothNav = false) {
             const navStack = document.getElementById("nav-stack");
             const header = document.getElementById("main-header");
             const pathParts = currentPath && "Home" !== currentPath ? currentPath.split("/") : [];
@@ -2803,29 +3229,16 @@
                         return `<a href="#${path2url(fullPath)}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
                     }).join("");
                 }
-                // Re-enable snapping after content is set IF there is an active item to lock to
+                // Re-enable snapping and center after content is set
                 requestAnimationFrame(() => {
                     const activeLink = row.querySelector(".active");
-                    const isInteracting = (_pickerScrollingRow === row) || (_gSwipe.active && _gSwipe.row === row);
+                    const isInteracting = (_activeNavControl === row) || (_gSwipe.active && _gSwipe.row === row);
                     if (!isInteracting) {
                         row.style.scrollSnapType = activeLink ? 'x mandatory' : 'none';
                     }
+                    // Centering inside the rAF batch ensures we don't thrash layout between levels
+                    centerNavRow(row, level > 1, forceSmoothNav ? "smooth" : "auto");
                 });
-
-                // Make row visible BEFORE measuring widths so we can synchronously scroll before paint
-                const wasHidden = row.classList.contains("hidden");
-                row.classList.remove("hidden");
-
-                // Restore slide-in animation if re-appearing and not swiping
-                if (!isNew && wasHidden && !_gSwipe.active) {
-                    row.classList.remove("slide-in-right");
-                    void row.offsetWidth; // Trigger reflow
-                    row.classList.add("slide-in-right");
-                }
-
-                // Only center if we didn't just scroll it ourselves (picker mode)
-                centerNavRow(row, level > 1);
-                if (level > 1) setupHapticScroll(row);
             }
 
             navStack.querySelectorAll(".nav-row").forEach(row => {
@@ -2838,6 +3251,7 @@
         }
 
         let _lastHaptic = 0;
+
         function haptic(tier) {
             try {
                 if (!navigator.vibrate) return;
@@ -2858,110 +3272,158 @@
             } catch (e) { }
         }
 
-        let _pickerScrollingRow = null;
+        let _activeNavControl = null; // Tracks the row currently being manually interacted with
 
-        function centerNavRow(row, isSubNav) {
-            if (row === _pickerScrollingRow) return;
-            // CRITICAL: Don't fight the user's thumb if they are currently swiping this row
-            if (_gSwipe.active && row === _gSwipe.row) return;
-
-            if (window.innerWidth > 768) return;
+        function setNavSnapping(row, enabled) {
             if (!row) return;
+            // Snapping is only useful if there's an active item to lock onto
+            const hasActive = row.querySelector(".active");
+            row.style.scrollSnapType = (enabled && hasActive) ? 'x mandatory' : 'none';
+        }
+
+        function centerNavRow(row, isSubNav, behavior = "auto") {
+            if (!row || row === _activeNavControl) return;
+            if (window.innerWidth > 768) return;
 
             row._needsReset = false;
             // Only scroll if there is overflow
-            if (row.scrollWidth <= row.clientWidth + 5) return;
+            if (row.scrollWidth <= row.clientWidth + 5) {
+                setNavSnapping(row, false);
+                return;
+            }
 
             const activeLink = row.querySelector(".active");
+            setNavSnapping(row, false); // Always disable during programmatic glide
 
-            // Rule 1: Always disable snapping during programmatic centering
-            row.style.scrollSnapType = 'none';
+            const restoreSnap = () => {
+                if (row !== _activeNavControl) setNavSnapping(row, true);
+            };
 
             if (activeLink) {
-                // Rule 2: If an item is active, center it precisely (lock mode)
                 const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
-                row.scrollTo({ left: targetScroll, behavior: "auto" });
-
-                requestAnimationFrame(() => {
-                    if ((!_pickerScrollingRow || _pickerScrollingRow !== row) && (!_gSwipe.active || _gSwipe.row !== row)) {
-                        row.style.scrollSnapType = 'x mandatory';
-                    }
+                row.scrollTo({
+                    left: targetScroll,
+                    behavior: behavior
                 });
-            } else {
-                // Rule 3: If NO item is active (new category sweep), center the "Row of Text" mathematically.
-                // This fulfills the "mathematical midpoint" requirement without bias or snapping.
-                const midpoint = (row.scrollWidth - row.clientWidth) / 2;
-                row.scrollTo({ left: midpoint, behavior: "auto" });
 
-                // Leave snapping OFF so it stays exactly at the midpoint without jumping to a subheading
-                row.style.scrollSnapType = 'none';
+                if (behavior === "smooth") {
+                    if ('onscrollend' in window) row.addEventListener('scrollend', restoreSnap, {
+                        once: true
+                    });
+                    else setTimeout(restoreSnap, 500);
+                } else {
+                    requestAnimationFrame(restoreSnap);
+                }
+            } else {
+                const midpoint = (row.scrollWidth - row.clientWidth) / 2;
+                row.scrollTo({
+                    left: midpoint,
+                    behavior: behavior
+                });
             }
         }
 
-        /* Haptic System — Touch-gated, instant-navigate scroll picker */
+        /* 
+         * Haptic System — Touch-gated, instant-navigate scroll picker 
+         */
         const _hapticRows = new WeakSet();
+
         function setupHapticScroll(row) {
             if (_hapticRows.has(row) || !navigator.vibrate) return;
             _hapticRows.add(row);
             let s = {
-                hitStart: false, hitEnd: false,
-                hTicking: false, lastCenteredHref: null,
-                settleTimer: null, lastInputTime: 0, lastScrollTime: 0, fingerDown: false
+                hitStart: false,
+                hitEnd: false,
+                hTicking: false,
+                lastCenteredHref: null,
+                settleTimer: null,
+                lastInputTime: 0,
+                lastScrollTime: 0,
+                fingerDown: false,
+                isValidInteraction: false
             };
-
-            let _isValidUserScroll = false;
-            let _wheelTimeout = null;
 
             const markInput = (e) => {
                 s.lastInputTime = Date.now();
-                _isValidUserScroll = true;
+                s.isValidInteraction = true;
                 s.fingerDown = true;
-                row.style.scrollSnapType = 'none'; // Disable snapping while user is influencing the row
-                if (e && e.type === "wheel") {
-                    clearTimeout(_wheelTimeout);
-                    _wheelTimeout = setTimeout(releaseInput, 150);
-                }
+                _activeNavControl = row;
+                setNavSnapping(row, false);
             };
-            const releaseInput = () => { s.fingerDown = false; };
-            row._markHapticInput = markInput;
-            row._releaseHapticInput = releaseInput;
+
+            const releaseInput = () => {
+                s.fingerDown = false;
+            };
+
+            // Public API for Global Swipe Proxy
+            row._markNavInput = markInput;
+            row._releaseNavInput = releaseInput;
 
             row.addEventListener("touchstart", (e) => {
                 markInput(e);
-                row.scrollTo({ left: row.scrollLeft, behavior: 'auto' });
-                Object.assign(s, { hitStart: false, hitEnd: false });
-            }, { passive: true });
-            row.addEventListener("touchmove", markInput, { passive: true });
-            row.addEventListener("touchend", releaseInput, { passive: true });
-            row.addEventListener("wheel", markInput, { passive: true });
-            row.addEventListener("keydown", markInput, { passive: true });
-            row.addEventListener("mousedown", markInput, { passive: true });
-            row.addEventListener("mouseup", releaseInput, { passive: true });
-            row.addEventListener("mouseleave", releaseInput, { passive: true });
+                row.scrollTo({
+                    left: row.scrollLeft,
+                    behavior: 'auto'
+                });
+                Object.assign(s, {
+                    hitStart: false,
+                    hitEnd: false
+                });
+            }, {
+                passive: true
+            });
+
+            row.addEventListener("touchmove", markInput, {
+                passive: true
+            });
+            row.addEventListener("touchend", releaseInput, {
+                passive: true
+            });
+            row.addEventListener("wheel", markInput, {
+                passive: true
+            });
+            row.addEventListener("mousedown", markInput, {
+                passive: true
+            });
+            row.addEventListener("mouseup", releaseInput, {
+                passive: true
+            });
+            row.addEventListener("mouseleave", releaseInput, {
+                passive: true
+            });
 
             row.addEventListener("scroll", () => {
                 const now = Date.now();
-
-                // If it's been >150ms since the user physically interacted with the row
-                // AND >150ms since the last scroll event in a valid momentum sequence,
-                // then this is considered a "Phantom Scroll" (DOM shift, layout, programmatic smooth scroll)
+                // Determine if this is a user-initiated interaction or a programmatic shift
                 if (now - s.lastInputTime > 150 && now - s.lastScrollTime > 150) {
-                    _isValidUserScroll = false;
+                    s.isValidInteraction = false;
                 }
-
-                if (!_isValidUserScroll) {
-                    _pickerScrollingRow = null;
+                if (!s.isValidInteraction) {
+                    if (_activeNavControl === row) _activeNavControl = null;
                     return;
                 }
 
                 s.lastScrollTime = now;
-                _pickerScrollingRow = row;
-                const currentScroll = row.scrollLeft;
-                const maxScroll = row.scrollWidth - row.clientWidth;
+                _activeNavControl = row;
 
-                if (currentScroll <= 0) { if (!s.hitStart) { haptic('bump'); s.hitStart = true; } }
-                else if (currentScroll >= maxScroll - 1) { if (!s.hitEnd) { haptic('bump'); s.hitEnd = true; } }
-                else Object.assign(s, { hitStart: false, hitEnd: false });
+                const cur = row.scrollLeft;
+                const max = row.scrollWidth - row.clientWidth;
+
+                // End-of-Chain Haptics (Production Polish)
+                if (cur <= 0) {
+                    if (!s.hitStart) {
+                        haptic('bump');
+                        s.hitStart = true;
+                    }
+                } else if (cur >= max - 1) {
+                    if (!s.hitEnd) {
+                        haptic('bump');
+                        s.hitEnd = true;
+                    }
+                } else Object.assign(s, {
+                    hitStart: false,
+                    hitEnd: false
+                });
 
                 if (!s.hTicking) {
                     s.hTicking = true;
@@ -2969,20 +3431,23 @@
                         const links = row.querySelectorAll(".sub-link");
                         if (!links.length) return (s.hTicking = false);
 
-                        const center = currentScroll + row.clientWidth / 2;
-                        let closest = null, minDist = Infinity;
+                        const center = cur + row.clientWidth / 2;
+                        let closest = null,
+                            minDist = Infinity;
                         links.forEach(link => {
                             const dist = Math.abs(link.offsetLeft + link.offsetWidth / 2 - center);
-                            if (dist < minDist) { minDist = dist; closest = link; }
+                            if (dist < minDist) {
+                                minDist = dist;
+                                closest = link;
+                            }
                         });
 
-                        const href = closest?.getAttribute("href");
-                        if (closest && href && href !== s.lastCenteredHref) {
+                        const href = closest?.getAttribute("href")?.substring(1);
+                        if (href && href !== s.lastCenteredHref) {
                             s.lastCenteredHref = href;
                             haptic('tick');
-                            links.forEach(l => l.classList.remove("active"));
-                            closest.classList.add("active");
-                            if (href.substring(1)) navigateTo(href.substring(1), true);
+                            links.forEach(l => l.classList.toggle("active", l === closest));
+                            navigateTo(href, true);
                         }
                         s.hTicking = false;
                     });
@@ -2990,38 +3455,52 @@
 
                 clearTimeout(s.settleTimer);
                 s.settleTimer = setTimeout(() => {
-                    if (s.lastCenteredHref?.substring(1)) {
-                        history.replaceState(null, "", "#" + s.lastCenteredHref.substring(1));
-                        navigateTo(s.lastCenteredHref.substring(1), true);
+                    if (s.lastCenteredHref) {
+                        history.replaceState(null, "", "#" + path2url(s.lastCenteredHref));
                     }
                     if (!s.fingerDown) {
-                        _pickerScrollingRow = null;
-                        _isValidUserScroll = false;
-                        // RESTORE SNAPPING: Only once the scroll picker has settled
-                        row.style.scrollSnapType = 'x mandatory';
+                        _activeNavControl = null;
+                        s.isValidInteraction = false;
+                        setNavSnapping(row, true);
                     }
-                }, 60);
-            }, { passive: true });
+                }, 80);
+            }, {
+                passive: true
+            });
+
             row._resetHaptic = () => {
                 s.lastCenteredHref = null;
-                _isValidUserScroll = false;
+                s.isValidInteraction = false;
                 s.fingerDown = false;
-                s.lastInputTime = 0;
-                s.lastScrollTime = 0;
+                if (_activeNavControl === row) _activeNavControl = null;
             };
         }
 
-        /* EXPERIMENTAL: Global Horizontal Swipe to Subnav */
-        let _gSwipe = { sx: 0, sy: 0, sScroll: 0, row: null, active: false, tracking: false };
+        /* 
+         * GLOBAL SWIPE ENGINE (v68.0) 
+         * Allows horizontal navigation from anywhere on the page.
+         */
+        let _gSwipe = {
+            sx: 0,
+            sy: 0,
+            sScroll: 0,
+            row: null,
+            active: false,
+            tracking: false
+        };
 
         document.addEventListener('touchstart', (e) => {
             if (e.touches.length !== 1 || window.innerWidth > 768) return;
             const tgt = e.target;
-            // Ignore touches on elements that need their own horizontal scrolling or interaction
-            if (tgt.closest('.model-viewer-wrapper.fullscreen') || tgt.closest('.nav-row') || tgt.closest('pre') || tgt.closest('.scrollable-x') || tgt.closest('.iframe-wrapper')) return;
 
-            // Find all visible subnav rows THAT ACTUALLY HAVE SCROLLABLE OVERFLOW
-            const rows = Array.from(document.querySelectorAll('.nav-row.level-n:not(.hidden)')).filter(r => r.scrollWidth > r.clientWidth + 5);
+            // Interaction Protection: Don't hijack 3D models or existing horizontal containers
+            if (tgt.tagName === 'CANVAS' || tgt.closest('.model-viewer-wrapper')) return;
+
+            const local = tgt.closest('pre') || tgt.closest('.scrollable-x');
+            if (local && local.scrollWidth > local.clientWidth + 5) return;
+
+            const rows = Array.from(document.querySelectorAll('.nav-row.level-n:not(.hidden)')).filter(r => r
+                .scrollWidth > r.clientWidth + 5);
             if (!rows.length) return;
 
             // Intelligent Depth Selection: 
@@ -3046,7 +3525,9 @@
                 active: false,
                 tracking: true
             };
-        }, { passive: true });
+        }, {
+            passive: true
+        });
 
         document.addEventListener('touchmove', (e) => {
             if (!_gSwipe.tracking || !_gSwipe.row) return;
@@ -3055,37 +3536,38 @@
             const dy = _gSwipe.sy - e.touches[0].clientY;
 
             if (!_gSwipe.active) {
-                // Determine swipe intent: mostly horizontal and significant enough to distinguish from accidental drift
                 if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
                     _gSwipe.active = true;
-                    _gSwipe.row.style.scrollBehavior = 'auto'; // Prevent smooth scroll fighting
-                    _gSwipe.row.style.scrollSnapType = 'none';  // Prevent snap fighting during direct proxy scroll
-                } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) {
-                    _gSwipe.tracking = false; // Vertical scroll wins, cancel swipe tracking
+                    _gSwipe.row.style.scrollBehavior = 'auto'; // Instant response
+                    _gSwipe.row.style.scrollSnapType = 'none'; // Unlock for proxy swing
+                } else if (Math.abs(dy) > 10) {
+                    _gSwipe.tracking = false;
                     return;
                 }
             }
 
             if (_gSwipe.active) {
-                // Proxy the scroll intent directly into the row and trigger its internal input validation
-                if (_gSwipe.row._markHapticInput) _gSwipe.row._markHapticInput();
-                // 1.2x multiplier makes global swiping feel responsive and less tedious
-                _gSwipe.row.scrollLeft = Math.max(0, _gSwipe.sScroll + (dx * 1.2));
+                if (e.cancelable) e.preventDefault(); // Lock vertical axis
+                if (_gSwipe.row._markNavInput) _gSwipe.row._markNavInput();
+                // 1.25x speed multiplier for effortless global swiping
+                _gSwipe.row.scrollLeft = Math.max(0, _gSwipe.sScroll + (dx * 1.25));
             }
-        }, { passive: true });
+        }, {
+            passive: true
+        });
 
         document.addEventListener('touchend', () => {
             if (_gSwipe.active && _gSwipe.row) {
-                if (_gSwipe.row._markHapticInput) _gSwipe.row._markHapticInput(); // Final alignment ping
-                if (_gSwipe.row._releaseHapticInput) _gSwipe.row._releaseHapticInput(); // Release the settle timer lock
+                if (_gSwipe.row._releaseNavInput) _gSwipe.row._releaseNavInput();
                 _gSwipe.row.style.scrollBehavior = '';
-                // Restore snapping immediately if it was disabled during proxy swipe
-                _gSwipe.row.style.scrollSnapType = 'x mandatory';
+                // Note: snapping is restored by the settle timer in setupHapticScroll
             }
             _gSwipe.tracking = false;
             _gSwipe.active = false;
             _gSwipe.row = null;
-        }, { passive: true });
+        }, {
+            passive: true
+        });
 
 
         let resizeTimeout;
@@ -3099,6 +3581,7 @@
                 }
             });
         });
+
         function resetToHome() {
             closeSearch();
             clearTextSelection();
@@ -3168,6 +3651,7 @@
                 });
             }
         }
+
         function handleSearch(e) {
             if (!document.getElementById("search-overlay").classList.contains("active")) return;
             const resultsContainer = document.getElementById("search-results");
@@ -3175,7 +3659,8 @@
 
             if (!e || e.trim() === "") {
                 if (resultsContainer) {
-                    resultsContainer.innerHTML = '<div class="section layout-hero"><h2 class="header-fade-anim">Search</h2><p style="color:var(--text-dim); font-size:16px;">Type to search across all content...</p></div>';
+                    resultsContainer.innerHTML =
+                        '<div class="section layout-hero"><h2 class="header-fade-anim">Search</h2><p style="color:var(--text-dim); font-size:16px;">Type to search across all content...</p></div>';
                     resultsContainer.style.display = "block";
                 }
                 if (app) app.style.display = "none";
@@ -3187,7 +3672,8 @@
                 location.reload();
                 return;
             }
-            const matchesQuery = (entry, term) => entry?.Title?.toLowerCase().includes(term) || entry?.Content?.toLowerCase().includes(term) || entry?.Tags?.toLowerCase().includes(term);
+            const matchesQuery = (entry, term) => entry?.Title?.toLowerCase().includes(term) || entry?.Content
+                ?.toLowerCase().includes(term) || entry?.Tags?.toLowerCase().includes(term);
 
             const n = db.filter(e => matchesQuery(e, t));
             if (resumeDb.some(e => matchesQuery(e, t)) && !n.find(e => "Professional/Resume" === e.Page)) {
@@ -3206,20 +3692,24 @@
         const path2url = p => p?.replace(/ /g, '_') ?? '';
         const url2path = u => u?.replace(/_/g, ' ') ?? '';
 
-        function navigateTo(path, isSwipe = false) {
+        function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
             if (isSearchActive && !isSwipe) closeSearch();
 
             const header = document.getElementById("main-header");
             if (header && !isSwipe) header.classList.remove("scrolled");
-            if (!isSwipe) window.scrollTo({ top: 0, behavior: 'instant' });
+            if (!isSwipe) window.scrollTo({
+                top: 0,
+                behavior: 'instant'
+            });
 
             clearTextSelection();
 
             const cleanPath = url2path(path || "Home");
             _activeRenderPath = cleanPath;
+            window._lastNavTime = Date.now(); // Mark navigation time for 3D scheduling
 
             // 1. Immediately update navigation metadata (Header Fill + Active States)
-            renderNavigation(cleanPath === "Home" ? null : cleanPath);
+            renderNavigation(cleanPath === "Home" ? null : cleanPath, forceSmoothNav);
 
             // 2. Optimization: If we're swiping and the content is already there, SKIP rendering.
             if (isSwipe && cleanPath === _lastRenderedPath) {
@@ -3233,8 +3723,12 @@
                 // Render Guard: Only build the page if this is still the final target
                 if (_activeRenderPath !== cleanPath) return;
 
-                const route = { "Index": renderIndex, "Professional/Resume": renderResume };
-                (route[cleanPath] ?? (cleanPath.startsWith("Filter:") ? () => renderFiltered(decodeURIComponent(cleanPath.split(":")[1])) : () => renderPage(cleanPath)))();
+                const route = {
+                    "Index": renderIndex,
+                    "Professional/Resume": renderResume
+                };
+                (route[cleanPath] ?? (cleanPath.startsWith("Filter:") ? () => renderFiltered(decodeURIComponent(
+                    cleanPath.split(":")[1])) : () => renderPage(cleanPath)))();
 
                 // Clean up any stale 3D viewers from the old page
                 if (window.cleanupStale3DViewers) window.cleanupStale3DViewers();
@@ -3255,12 +3749,14 @@
 
         function handleRouting() {
             const path = window.location.hash.substring(1) || "Home";
-            navigateTo(path);
+            // Routing via hashchange (clicks, back button) should always be smooth
+            navigateTo(path, false, true);
         }
 
         const getCategoryClass = page => {
             const p = (page || '').toLowerCase();
-            return p.startsWith('projects') ? 'cat-projects' : p.startsWith('professional') ? 'cat-professional' : p.startsWith('personal') ? 'cat-personal' : '';
+            return p.startsWith('projects') ? 'cat-projects' : p.startsWith('professional') ? 'cat-professional' : p
+                .startsWith('personal') ? 'cat-personal' : '';
         };
 
         function renderFiltered(filter) {
@@ -3276,6 +3772,7 @@
                 `Posts from ${safeHTML(label)}`, false, true, false, true
             );
         }
+
         function renderPage(e) {
             if ("Home" === e) return void renderHome();
             const t = db.filter(t => t.Page === e);
@@ -3284,7 +3781,8 @@
 
             // 404 Logic: If no content AND no children AND not personal/quotes -> 404
             if (t.length === 0 && !hasChildren && !("Personal" === e && quotesDb.length > 0)) {
-                document.getElementById("app").innerHTML = `<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn't exist in the database yet.</p></div>`;
+                document.getElementById("app").innerHTML =
+                    `<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn't exist in the database yet.</p></div>`;
                 return;
             }
 
@@ -3311,7 +3809,8 @@
                     const folderName = childPath.split("/").pop().replace(/_/g, ' ');
 
                     // Attempt to borrow a cover image from the first descendant in the DB
-                    const descendant = db.find(entry => entry.Page && entry.Page.startsWith(childPath + "/") && entry.CoverImage);
+                    const descendant = db.find(entry => entry.Page && entry.Page.startsWith(childPath + "/") && entry
+                        .CoverImage);
 
                     return {
                         Page: childPath,
@@ -3327,12 +3826,13 @@
                 renderRows(childEntries, null, true, true);
             }
         }
+
         function childrenPagesCheck(e) {
             // Check if ANY children exist (even deep ones) to validate page existence
             return db.some(t => t.Page && t.Page.startsWith(e + "/"));
         }
+
         function renderIndex() {
-            renderNavigation(null);
             const app = document.getElementById("app");
             app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
 
@@ -3356,12 +3856,14 @@
                     const entry = db.find(e => e.Page === page);
                     const title = entry ? entry.Title : page.split("/").pop();
                     const depth = page.split("/").length;
-                    html += `<a href="#${path2url(page)}" class="index-link fill-anim ${depth > 1 ? `depth-${depth}` : ""}">\n${title} \n</a>`;
+                    html +=
+                        `<a href="#${path2url(page)}" class="index-link fill-anim ${depth > 1 ? `depth-${depth}` : ""}">\n${title} \n</a>`;
                 });
                 html += "</div>";
                 listContainer.innerHTML += html;
             }
         }
+
         function renderHome() {
             const e = db.filter(e => "Home" === e.Page);
             renderRows(e, null, false);
@@ -3374,14 +3876,17 @@
                     n[e.Page] = e;
                 }
             });
-            const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0, 6);
+            const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0,
+                6);
             // Append Recent Activity (isHome=true)
             o.length > 0 && renderRows(o, "Recent Activity", true, true, false, true);
         }
+
         function processSingleLine(e) {
             // Using the central high-fidelity inline processor for titles and metadata
             return processInlineMarkdown(e);
         }
+
         function formatTitle(e, t) {
             if (!e) return "";
             const processed = processInlineMarkdown(e);
@@ -3390,7 +3895,8 @@
                 return processed;
             }
             const n = e.match(/^(#{1,6})\s+(.*)$/);
-            let o = t, r = e;
+            let o = t,
+                r = e;
             n && (o = "h" + n[1].length, r = n[2]);
             return `<${o} class="header-fade-anim">${processInlineMarkdown(r)}</${o}>`
         }
@@ -3438,12 +3944,17 @@
             };
 
             const mediaSources = [
-                () => isTitleLink && !entry.Thumbnail && tEx ? mediaBuilder(tEx.type === 'yt' ? 'yt-embed' : tEx.type, tEx.url, tEx.id) : "",
+                () => isTitleLink && !entry.Thumbnail && tEx ? mediaBuilder(tEx.type === 'yt' ? 'yt-embed' : tEx.type,
+                    tEx.url, tEx.id) : "",
                 () => entry.Thumbnail && thumbUrl === 'GLB_VIEWER' ? mediaBuilder('glb', entry.Thumbnail) : "",
-                () => entry.Thumbnail && thumbUrl?.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i) ? mediaBuilder('video', thumbUrl) : "",
+                () => entry.Thumbnail && thumbUrl?.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i) ?
+                    mediaBuilder('video', thumbUrl) : "",
                 () => entry.Thumbnail && thumbUrl ? mediaBuilder('img', thumbUrl) : "",
-                () => !entry.Thumbnail && cEx ? mediaBuilder(cEx.type === 'yt' ? 'img' : cEx.type, cEx.type === 'yt' ? `https://img.youtube.com/vi/${cEx.id}/mqdefault.jpg` : cEx.url) : "",
-                () => !isTitleLink ? `<div class="row-media placeholder"><span>${(entry.Title || "").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1')}</span></div>` : ""
+                () => !entry.Thumbnail && cEx ? mediaBuilder(cEx.type === 'yt' ? 'img' : cEx.type, cEx.type === 'yt' ?
+                    `https://img.youtube.com/vi/${cEx.id}/mqdefault.jpg` : cEx.url) : "",
+                () => !isTitleLink ?
+                    `<div class="row-media placeholder"><span>${(entry.Title || "").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1')}</span></div>` :
+                    ""
             ];
 
             const mediaHTML = mediaSources.reduce((html, fn) => html || fn(), "");
@@ -3452,33 +3963,41 @@
 
             let metaRowHTML = "";
             if (entry.Timestamp || tagsList.length > 0) {
-                metaRowHTML = `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
+                metaRowHTML =
+                    `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
             }
 
             return `<div class="layout-grid ${contextCategory || getCategoryClass(entry.Page)} ${!entry.Thumbnail ? "has-placeholder" : ""}" onclick="location.hash=path2url('${entry.Page}')">${mediaHTML}<div class="card-info">${(entry.Title && !isTitleLink) ? `<h3 class="fill-anim">${processSingleLine(entry.Title)}</h3>` : ""}${metaRowHTML}</div></div>`;
         };
 
         const SECTION_RENDERERS = {
-            quote: (entry) => `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true"></div>`,
+            quote: (entry) =>
+                `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true"></div>`,
             hero: (entry) => {
                 let metaHTML = "";
                 if (entry.Timestamp) {
-                    const dateStr = formatDate(entry.Timestamp), monthKey = entry.Timestamp.substring(0, 7);
-                    metaHTML += `<span class="chip date" data-val="${dateStr}" onclick="event.stopPropagation(); window.location.hash='Filter:${monthKey}'">${dateStr}</span>`;
+                    const dateStr = formatDate(entry.Timestamp),
+                        monthKey = entry.Timestamp.substring(0, 7);
+                    metaHTML +=
+                        `<span class="chip date" data-val="${dateStr}" onclick="event.stopPropagation(); window.location.hash='Filter:${monthKey}'">${dateStr}</span>`;
                 }
                 if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
                 return `<div class="section layout-hero">\n${formatTitle(entry.Title, "h1")}${metaHTML ? `<div class="hero-meta">${metaHTML}</div>` : ""}${processContentWithBlocks(entry.Content || "")}\n</div>`;
             },
-            text: (entry) => `<div class="section layout-text">\n${entry.Title ? formatTitle(entry.Title, "h2") : ""}${processContentWithBlocks(entry.Content || "")}\n</div>`,
+            text: (entry) =>
+                `<div class="section layout-text">\n${entry.Title ? formatTitle(entry.Title, "h2") : ""}${processContentWithBlocks(entry.Content || "")}\n</div>`,
             article: (entry, index) => {
                 let metaHTML = "";
                 if (index === 0) {
                     metaHTML = `<div class="article-meta-row"><a href="#Personal/About" class="author-link">Sahib Virdee</a>`;
-                    if (entry.LinkURL) metaHTML += `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`;
+                    if (entry.LinkURL) metaHTML +=
+                        `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`;
                     metaHTML += `<div class="article-tags">`;
                     if (entry.Timestamp) {
-                        const dateStr = formatDate(entry.Timestamp), monthKey = entry.Timestamp.substring(0, 7);
-                        metaHTML += `<span class="chip date" data-val="${dateStr}" onclick="event.stopPropagation(); window.location.hash='Filter:${monthKey}'">${dateStr}</span>`;
+                        const dateStr = formatDate(entry.Timestamp),
+                            monthKey = entry.Timestamp.substring(0, 7);
+                        metaHTML +=
+                            `<span class="chip date" data-val="${dateStr}" onclick="event.stopPropagation(); window.location.hash='Filter:${monthKey}'">${dateStr}</span>`;
                     }
                     if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
                     const readTime = Math.ceil((entry.Content || "").trim().split(/\s+/).length / 200);
@@ -3490,7 +4009,8 @@
 
         };
 
-        function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecentActivity = false, targetElement = null) {
+        function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecentActivity = false,
+            targetElement = null) {
             const container = targetElement || document.getElementById("app");
             if (!container) return;
             if (isRecentActivity) {
@@ -3501,10 +4021,13 @@
                     return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
                 });
             }
-            let htmlBuffer = title ? `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:var(--text-dim); --text-hover:var(--text-bright);">${title}</h2></div>` : "";
+            let htmlBuffer = title ?
+                `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:var(--text-dim); --text-hover:var(--text-bright);">${title}</h2></div>` :
+                "";
             if (data.length === 0) {
                 if (isHome) return;
-                if (title) htmlBuffer += `<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>`;
+                if (title) htmlBuffer +=
+                    `<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>`;
                 container.innerHTML = htmlBuffer;
                 return;
             }
@@ -3543,6 +4066,7 @@
             // 4. Post-render logic: Initialize dynamic components
             container.querySelectorAll('[data-needs-init="true"]').forEach(el => {
                 if (el.classList.contains("layout-quote")) renderQuoteCard(el);
+                if (el.getAttribute('data-type') === 'recent-music') renderRecentMusic(el);
                 el.removeAttribute('data-needs-init');
             });
 
@@ -3586,7 +4110,12 @@
             const safeQuote = safeHTML(rawQuote);
             const len = rawQuote.length;
 
-            const sizeClass = [[230, 'xxl'], [150, 'xl'], [100, 'long'], [50, 'medium']]
+            const sizeClass = [
+                [230, 'xxl'],
+                [150, 'xl'],
+                [100, 'long'],
+                [50, 'medium']
+            ]
                 .find(([n]) => len > n)?.[1] || 'short';
 
             let refreshBtnHTML = "";
@@ -3605,6 +4134,146 @@
             container.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
                                 <div class="quote-footer"><span class="author"> &mdash; ${author}</span>${refreshBtnHTML}</div>`;
         }
+
+        function renderRecentMusic(container) {
+            if (musicDb.length === 0) {
+                container.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">No music logged recently.</div>`;
+                return;
+            }
+
+            // Explicitly sort by Timestamp to get absolute newest first
+            const sorted = [...musicDb].sort((a, b) => {
+                const parseDate = (d) => {
+                    if (!d) return 0;
+                    // Handle "YYYY-MM-DD HH:MM:SS"
+                    const parts = d.split(/[ \-:]/);
+                    if (parts.length >= 6) {
+                        return new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]).getTime();
+                    }
+                    return new Date(d.replace(/-/g, '/')).getTime() || 0;
+                };
+                return parseDate(b.Timestamp) - parseDate(a.Timestamp);
+            });
+            const latestItems = sorted.slice(0, 3);
+            const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
+            const placeholderThumb = "https://images.unsplash.com/photo-1603048588665-791ca8aea617?q=80&w=300&h=300&auto=format&fit=crop";
+
+            const now = new Date();
+            const oneHourAgo = new Date(now.getTime() - (60 * 60 * 1000));
+
+            const cardsHTML = latestItems.map((item, index) => {
+                const artist = safeHTML(item.Artist || "Unknown Artist");
+                const track = safeHTML(item.Song || item.Track || "Unknown Track");
+                const link = item.Link || `https://music.youtube.com/search?q=${encodeURIComponent((item.Artist || "") + ' ' + (item.Song || ""))}`;
+                const thumb = item.Thumbnail || placeholderThumb;
+
+                // Live Ripple logic for the absolute latest track
+                let rippleHTML = "";
+                let liveClass = "";
+                if (index === 0 && item.Timestamp) {
+                    const trackTime = new Date(item.Timestamp.replace(/-/g, '/'));
+                    if (trackTime > oneHourAgo) {
+                        liveClass = "music-card-live-pulse";
+                        rippleHTML = `
+                            <div class="music-ripple-wrapper">
+                                <div class="music-ripple"></div>
+                                <div class="music-ripple"></div>
+                                <div class="music-ripple"></div>
+                            </div>
+                        `;
+                    }
+                }
+
+                return `
+                    <div class="layout-grid cat-music ${liveClass}" data-link="${link}" onclick="return playMusicInCard(event)">
+                        ${rippleHTML}
+                        <div class="row-media">
+                            <div class="sk-img loader-overlay"></div>
+                            <img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.src='${placeholderThumb}'">
+                        </div>
+                        <div class="card-info">
+                            <div class="marquee-container track-marquee">
+                                <span class="marquee-content"><h3 class="fill-anim">${track}</h3></span>
+                            </div>
+                            <div class="marquee-container artist-marquee">
+                                <span class="marquee-content"><div class="music-artist-label">${artist}</div></span>
+                            </div>
+                        </div>
+                        <div class="music-yt-overlay">
+                            <img src="${ytLogo}" alt="YT Music">
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            container.innerHTML = `
+                <div class="music-sections-container">
+                    <div class="music-grid" style="--music-cols: ${latestItems.length}">
+                        ${cardsHTML}
+                    </div>
+                </div>
+            `;
+
+            // Initialization for marquee
+            setTimeout(() => {
+                const marqueeContents = container.querySelectorAll('.marquee-content');
+                marqueeContents.forEach(el => {
+                    const parentWidth = el.parentElement.clientWidth;
+                    const contentWidth = el.scrollWidth;
+
+                    if (contentWidth > parentWidth - 5) {
+                        el.classList.add('should-scroll');
+                        const content = el.innerHTML;
+                        el.innerHTML = `
+                            <span class="marquee-clone">${content}</span>
+                            <span style="display:inline-block; width:40px;"></span>
+                            <span class="marquee-clone">${content}</span>
+                        `;
+                        el.style.display = 'inline-flex';
+                        el.style.alignItems = 'center';
+                    }
+                });
+            }, 100);
+        }
+
+        function playMusicInCard(event) {
+            const card = event.currentTarget;
+            const link = card.getAttribute('data-link');
+            const ytId = getYouTubeID(link);
+
+            // Critical for ensuring we don't redirect or do anything else
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            if (card.querySelector('iframe')) return false;
+
+            if (ytId) {
+                const mediaRow = card.querySelector('.row-media');
+                if (mediaRow) {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1`;
+                    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+                    iframe.allowFullscreen = true;
+
+                    mediaRow.innerHTML = '';
+                    mediaRow.appendChild(iframe);
+
+                    const logo = card.querySelector('.music-yt-overlay');
+                    if (logo) logo.style.display = 'none';
+
+                    const ripples = card.querySelector('.music-ripple-wrapper');
+                    if (ripples) ripples.style.display = 'none';
+
+                    card.classList.add('is-playing');
+                }
+            } else if (link) {
+                window.open(link, '_blank');
+            }
+            return false;
+        }
+
         function renderFooter() {
             document.getElementById("footer-links").innerHTML = db.filter(e => "Footer" === e.Page).map(entry => {
                 const title = (entry.Title || "").replace(/{year}/g, new Date().getFullYear());
@@ -3710,13 +4379,17 @@
 
         // Observe newly added videos
         function observeVideos(container) {
-            container.querySelectorAll('.lazy-video').forEach(v => _videoObserver.observe(v));
+            if (!container) return;
+            // Delay observation slightly to let the browser settle after innerHTML
+            setTimeout(() => {
+                container.querySelectorAll('.lazy-video').forEach(v => _videoObserver.observe(v));
+            }, 100);
         }
 
         function processGlbQueue() {
-            // ENGINE CHECK: If Three.js isn't ready (module script deferred), verify before consuming queue
+            // ENGINE CHECK: If Three.js isn't ready, wait
             if (!window.initThreeJSViewer) {
-                setTimeout(processGlbQueue, 100);
+                setTimeout(processGlbQueue, 200);
                 return;
             }
 
@@ -3724,6 +4397,14 @@
                 _isProcessingGlbQueue = false;
                 return;
             }
+
+            // PACE CONTROL: Don't process if a heavy navigation just happened recently
+            const timeSinceNav = Date.now() - (window._lastNavTime || 0);
+            if (timeSinceNav < 300) {
+                setTimeout(processGlbQueue, 100);
+                return;
+            }
+
             _isProcessingGlbQueue = true;
 
             try {
@@ -3744,21 +4425,11 @@
                 }
             } catch (outerError) {
                 console.error("Critical GLB Queue Error:", outerError);
-                _isProcessingGlbQueue = false; // Ensure flag is reset on error
             }
 
-            // PARALLEL BATCHING: Process up to 3 items to reduce CPU burst during entry
-            const ACTIVE_LIMIT = 3;
-            const currentActive = Object.keys(_glbViewers).filter(k => !_glbViewers[k].loaded).length;
-
+            // STAGGERED BATCHING: Only process one model per 150ms to keep main thread free for transitions
             if (_glbInitQueue.length > 0) {
-                // HIGH PRIORITY: Always use requestAnimationFrame for the next one to keep the sequence fluid
-                if (currentActive < ACTIVE_LIMIT) {
-                    requestAnimationFrame(() => processGlbQueue());
-                } else {
-                    // Check back very soon if we're at limit
-                    setTimeout(() => processGlbQueue(), 50);
-                }
+                setTimeout(() => processGlbQueue(), 150);
             } else {
                 _isProcessingGlbQueue = false;
             }
@@ -3776,14 +4447,15 @@
                     _glbInitQueue.push({ uniqueId, glbPath, isCardMode });
                     if (!_isProcessingGlbQueue) {
                         _isProcessingGlbQueue = true;
-                        setTimeout(processGlbQueue, 0); // Immediate — never use requestIdleCallback (too slow on mobile)
+                        // Start processing with a healthy delay to allow page transition to finish
+                        setTimeout(processGlbQueue, 400);
                     }
 
                     // Stop observing once queued
                     _glbObserver.unobserve(entry.target);
                 }
             });
-        }, { rootMargin: '400px' }); // Conservative pre-loading for Homepage performance
+        }, { rootMargin: '200px' }); // Smaller margin to reduce initial burst
 
         // GLB Viewer Renderer
         function renderGLBViewer(glbPath, isCardMode) {
@@ -4027,7 +4699,6 @@
 
 
         function renderResume() {
-            renderNavigation("Professional/Resume");
             const app = document.getElementById("app");
             const data = resumeDb;
 
@@ -4313,6 +4984,11 @@
                 return { type: 'buttons', items: buttonItems };
             }
 
+            // 4. Music Tag Detection
+            if (lines.length === 1 && lines[0].trim().match(/^\{(Recent Music|Recently Played)\}$/i)) {
+                return { type: 'music' };
+            }
+
             // Otherwise it's text content
             return {
                 type: 'text',
@@ -4564,6 +5240,9 @@
                 case 'buttons':
                     const btnsHTML = block.items.map(b => renderButtonHTML(b.text, b.url, true)).join('');
                     return `<div class="btn-cta-wrapper">${btnsHTML}</div>`;
+
+                case 'music':
+                    return `<div class="music-embed-container" data-needs-init="true" data-type="recent-music"></div>`;
 
                 case 'card':
                     return `<div class="markdown-single-card" style="margin: 20px 0;">${renderCardHTML(block.data, contextCategory)}</div>`;
@@ -4902,9 +5581,13 @@
                 }
             }
 
-            // PHASE 1: Force-Render new entrances (Ignore Budget)
+            // PHASE 1: Render new entrances (NOW SUBJECT TO BUDGET)
+            // We only render up to 1 entrance per frame if budget is tight, to avoid 100ms blocks
+            let entrancesProcessed = 0;
             for (let i = 0; i < unrenderedVisible.length; i++) {
+                if (entrancesProcessed >= 1 && (performance.now() - startTime) > budget) break;
                 unrenderedVisible[i].update(now);
+                entrancesProcessed++;
             }
 
             // PHASE 2: Standard Budgeted Rendering
