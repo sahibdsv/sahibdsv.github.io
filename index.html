@@ -2868,20 +2868,19 @@
             if (row.scrollWidth <= row.clientWidth + 5) return;
 
             const activeLink = row.querySelector(".active");
-            // Mobile Optimization (v63.0): Force 'auto' behavior for all programmatic centering.
-            // This eliminates the 'preview scroll' effect which felt unnecessary and caused interaction stutter.
             const behavior = "auto";
+
+            // Temporarily disable snapping during centering to prevent vibrate/shake conflict
+            row.style.scrollSnapType = 'none';
 
             if (activeLink) {
                 const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
-                // Temporarily disable snapping during centering to prevent vibrate/shake conflict
-                row.style.scrollSnapType = 'none';
                 row.scrollTo({ left: targetScroll, behavior: behavior });
-            } else if (isSubNav) {
-                const midpoint = (row.scrollWidth - row.clientWidth) / 2;
-                row.style.scrollSnapType = 'none';
-                row.scrollTo({ left: midpoint, behavior: behavior });
+            } else {
+                // Default to the start of the row for new categories to avoid "midpoint" confusion
+                row.scrollTo({ left: 0, behavior: behavior });
             }
+            // Snapping is re-enabled via RAF in renderNavigation
             // Settle timer in setupHapticScroll will re-enable snapping if applicable
         }
 
