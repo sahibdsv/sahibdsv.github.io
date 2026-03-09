@@ -2616,13 +2616,22 @@
             object-fit: contain;
         }
 
-        /* Marquee Effect with Dual Soft Fades (High-Fidelity) */
+        /* Marquee Effect with Selective Soft Fades (High-Fidelity) */
         .marquee-container {
             width: 100%;
             overflow: hidden;
             white-space: nowrap;
             position: relative;
-            /* Fades on both sides to prevent abrupt cuts during scroll */
+        }
+
+        /* Only show right fade by default if content is long */
+        .marquee-container.has-marquee {
+            mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
+        }
+
+        /* Show both fades only during scroll/hover */
+        .layout-grid.cat-music:hover .marquee-container.has-marquee {
             mask-image: linear-gradient(to right, transparent 0%, black 30px, black calc(100% - 30px), transparent 100%);
             -webkit-mask-image: linear-gradient(to right, transparent 0%, black 30px, black calc(100% - 30px), transparent 100%);
         }
@@ -4230,6 +4239,7 @@
 
                     if (contentWidth > parentWidth - 5) {
                         el.classList.add('should-scroll');
+                        el.parentElement.classList.add('has-marquee');
                         const content = el.innerHTML;
                         el.innerHTML = `
                             <span class="marquee-clone">${content}</span>
