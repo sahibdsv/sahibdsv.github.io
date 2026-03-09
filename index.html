@@ -3008,10 +3008,9 @@
                     data: cacheData
                 }));
 
-                // Auto-refresh the current view if we're on a dynamic content page (like music or quotes)
-                if (window.location.hash === '#/' || window.location.hash === '') {
-                    handleRouting();
-                }
+                // Auto-refresh any dynamic components currently in the DOM
+                document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
+                document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
 
                 return [db, quotesDb, resumeDb, musicDb];
             } catch (e) {
