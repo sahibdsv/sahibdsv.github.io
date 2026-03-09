@@ -2518,35 +2518,21 @@
             mask-image: linear-gradient(to top, black, transparent 90%);
         }
 
-        /* Sidechain-Inspired Titanium Atmosphere (Flume/Jadu Heart style) */
-        @keyframes titanium-sidechain-swell {
+        /* Buttery-Smooth Sidechain Aura Animation */
+        @keyframes titanium-natural-swell {
             0% {
-                transform: scale(1.0);
-                opacity: 0.1;
+                transform: rotate(0deg) scale(1.0);
+                opacity: 0.2;
             }
 
-            /* The 'Duck' / Kick Hit */
-            10% {
-                transform: scale(0.85) translate(-3%, -3%);
-                opacity: 0.05;
+            45% {
+                transform: rotate(15deg) scale(1.35);
+                opacity: 0.85;
             }
 
-            /* Compression Peak - Sharp Silence */
-            30% {
-                transform: scale(1.25) translate(6%, 6%);
-                opacity: 0.95;
-            }
-
-            /* The Swell / Recovery - High Contrast */
-            60% {
-                transform: scale(1.15) translate(3%, 3%);
-                opacity: 0.5;
-            }
-
-            /* The Haze / Sustain */
             100% {
-                transform: scale(1.0);
-                opacity: 0.1;
+                transform: rotate(0deg) scale(1.0);
+                opacity: 0.2;
             }
         }
 
@@ -2557,12 +2543,11 @@
             height: 300%;
             top: -100%;
             left: -100%;
-            /* Vivid Titanium Palette - Gold to Deep Violet */
             background: radial-gradient(circle at center, #FFEF00, #FFD700, #9370DB, #483D8B, #1a2a6c, transparent 70%);
             background-size: 33% 33%;
-            animation: titanium-sidechain-swell 2.0s cubic-bezier(0.16, 1, 0.3, 1) infinite;
-            filter: blur(45px);
-            /* Less blur for more hardware-like contrast */
+            animation: titanium-natural-swell 4s ease-in-out infinite;
+            filter: blur(55px);
+            /* Increased blur for smoother edge transitions */
             will-change: transform, opacity;
         }
 
@@ -2573,13 +2558,12 @@
             height: 300%;
             top: -80%;
             left: -80%;
-            /* Neon Titanium Pulse - Cyan to Electric Purple */
             background: radial-gradient(circle at center, #00FFFF, #00BFFF, #8A2BE2, #EE82EE, transparent 65%);
             background-size: 33% 33%;
-            animation: titanium-sidechain-swell 2.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
-            animation-delay: -0.6s;
-            filter: blur(40px);
-            opacity: 0.7;
+            animation: titanium-natural-swell 5.5s ease-in-out infinite reverse;
+            animation-delay: -1.2s;
+            filter: blur(50px);
+            opacity: 0.6;
             will-change: transform, opacity;
         }
 
@@ -2605,11 +2589,11 @@
 
         .music-yt-overlay {
             position: absolute;
-            bottom: 15px;
-            right: 15px;
-            width: 18px;
-            /* Elegant, small icon */
-            height: 18px;
+            bottom: 12px;
+            right: 12px;
+            width: 16px;
+            /* Elegant badge size */
+            height: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
