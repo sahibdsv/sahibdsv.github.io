@@ -2497,79 +2497,109 @@
 
         /* Hover is now fully inherited from .layout-grid, guaranteeing 100% uniformity with all other cards */
 
-        /* Pure Ambient Titanium Heat Aura */
+        /* High-Contrast Titanium Liquid Waveform */
         .cat-music .steel-waveform-aura {
             position: absolute;
             inset: 0;
             z-index: -1;
             pointer-events: none;
             overflow: hidden;
-            mask-image: linear-gradient(to top, black 0%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
+            mask-image: linear-gradient(to top, black 20%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to top, black 20%, transparent 100%);
         }
 
-        /* Color Shifting: Heating up and Cooling */
-        @keyframes titanium-heat-shift {
+        /* Swirling oil slick morphing blob base */
+        @keyframes titanium-oil-swirl {
             0% {
-                background-position: 0% 50%;
+                border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+                transform: translateX(0%);
             }
 
             50% {
-                background-position: 100% 50%;
+                border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+                transform: translateX(-10%);
             }
 
             100% {
-                background-position: 0% 50%;
+                border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+                transform: translateX(0%);
             }
         }
 
-        /* Heartbeat/Sidechain Pump */
-        @keyframes titanium-heat-pump {
+        /* Beat pulse to make the peaks jump */
+        @keyframes titanium-beat-flash {
             0% {
-                transform: scaleY(0.6) translateY(10%);
-                opacity: 0.5;
+                transform: scaleY(0.7) translateY(10px);
+                opacity: 0.6;
             }
 
-            15% {
-                transform: scaleY(0.4) translateY(20%);
-                opacity: 0.2;
+            20% {
+                transform: scaleY(1.3) translateY(-5px);
+                opacity: 1.0;
             }
 
-            /* Duck */
-            50% {
-                transform: scaleY(1.0) translateY(0%);
-                opacity: 0.95;
-            }
-
-            /* Swell */
             100% {
-                transform: scaleY(0.6) translateY(10%);
-                opacity: 0.5;
+                transform: scaleY(0.7) translateY(10px);
+                opacity: 0.6;
             }
         }
 
-        /* A single massive, diffuse light source */
-        .cat-music .steel-waveform-aura::before {
-            content: '';
+        .cat-music .heat-blob-wrapper {
             position: absolute;
-            bottom: -30%;
-            left: -20%;
-            width: 140%;
-            height: 120%;
-            border-radius: 50% 50% 0 0;
-            /* Creates one massive, flattened dome of light */
-            /* Titanium Heat Spectrum: Pale straw -> dark straw -> purple -> blue -> light blue */
-            background: linear-gradient(90deg, #FFD700, #ff1a75, #8a2be2, #1a2a6c, #00ffff, #FFD700);
-            background-size: 300% 100%;
+            bottom: -30px;
+            width: 150%;
+            height: 120px;
             transform-origin: bottom center;
-            animation:
-                titanium-heat-pump 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite,
-                titanium-heat-shift 8s ease-in-out infinite;
-            filter: blur(35px);
-            /* Massive blur for true 'airy'/foggy aura, no sharp lines at all */
-            mix-blend-mode: screen;
-            will-change: transform, opacity, background-position;
+            will-change: transform, opacity;
         }
+
+        .cat-music .heat-blob {
+            width: 100%;
+            height: 100%;
+            background-size: 200% 200%;
+            filter: blur(25px);
+            /* Soft misty fog */
+            mix-blend-mode: screen;
+            /* Intersections glow like heated metal */
+            will-change: border-radius, transform, background-position;
+        }
+
+        /* Blob 1 */
+        .cat-music .hb-wrap-1 {
+            animation: titanium-beat-flash 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+            left: -10%;
+        }
+
+        .cat-music .hb-blob-1 {
+            background-image: linear-gradient(45deg, #FFD700, #ff1a75, #8a2be2, #00ffff);
+            animation: titanium-oil-swirl 7s ease-in-out infinite;
+        }
+
+        /* Blob 2 */
+        .cat-music .hb-wrap-2 {
+            animation: titanium-beat-flash 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+            animation-delay: -0.4s;
+            left: -30%;
+        }
+
+        .cat-music .hb-blob-2 {
+            background-image: linear-gradient(135deg, #00ffff, #1a2a6c, #ff1a75, #FFD700);
+            animation: titanium-oil-swirl 9s ease-in-out infinite reverse;
+            animation-delay: -2s;
+        }
+
+        /* Blob 3 */
+        .cat-music .hb-wrap-3 {
+            animation: titanium-beat-flash 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+            animation-delay: -0.2s;
+            left: -5%;
+        }
+
+        .cat-music .hb-blob-3 {
+            background-image: linear-gradient(225deg, #ff1a75, #8a2be2, #00ffff, #1a2a6c);
+            animation: titanium-oil-swirl 5.5s ease-in-out infinite 2s;
+        }
+
 
 
         .layout-grid.cat-music .row-media {
@@ -4197,7 +4227,11 @@
                     if (trackTime > oneHourAgo) {
                         liveClass = "is-live";
                         atmosphereHTML = `
-                            <div class="steel-waveform-aura"></div>
+                            <div class="steel-waveform-aura">
+                                <div class="heat-blob-wrapper hb-wrap-1"><div class="heat-blob hb-blob-1"></div></div>
+                                <div class="heat-blob-wrapper hb-wrap-2"><div class="heat-blob hb-blob-2"></div></div>
+                                <div class="heat-blob-wrapper hb-wrap-3"><div class="heat-blob hb-blob-3"></div></div>
+                            </div>
                         `;
                     }
                 }
