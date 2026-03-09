@@ -2504,9 +2504,9 @@
             z-index: -1;
             pointer-events: none;
             overflow: hidden;
-            /* Fade out cleanly near the text, so the flame stays bottom-heavy */
-            mask-image: linear-gradient(to top, black 20%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to top, black 20%, transparent 100%);
+            /* Anchors the flame heavily to the bottom right corner, keeping text on the left completely clear */
+            mask-image: radial-gradient(circle at bottom right, black 0%, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at bottom right, black 0%, transparent 80%);
             /* Heavy container blur melts the waves into each other for an atmospheric fade */
             filter: blur(12px);
         }
@@ -2564,14 +2564,16 @@
 
         .cat-music .crisp-wave {
             position: absolute;
-            bottom: -2px;
-            /* Pull slightly below edge to eliminate any render gap */
-            left: 0;
+            bottom: -5px;
+            left: 15%;
+            /* Push entirely to the right */
             width: 100%;
-            height: 85%;
+            height: 90%;
             transform-origin: bottom;
-            /* Hot center, cool edges - like a flame fanning across metal */
-            background: linear-gradient(to right, #001f3f, #0074D9, #B10DC9, #FF4136, #FFDC00, #FFFFFF, #FFDC00, #FF4136, #B10DC9, #0074D9, #001f3f);
+            /* Flawless continuous Titanium spectrum (Adjacent colors only: Navy->Purple->Pink->Red->Orange->Gold->White) */
+            background: linear-gradient(to right,
+                    #0f172a, #312e81, #5b21b6, #9d174d, #be123c, #b45309, #d97706, #facc15, #ffffff,
+                    #facc15, #d97706, #b45309, #be123c, #9d174d, #5b21b6, #312e81, #0f172a);
             background-size: 300% 100%;
             /* High-definition, mathematically perfect SVG sine wave, filled solid underneath */
             mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,50 C18.2,-10.5 31.8,-10.5 50,50 C68.2,110.5 81.8,110.5 100,50 L100,100 L0,100 Z' fill='black'/%3E%3C/svg%3E");
@@ -6092,118 +6094,129 @@
 
     </script>
     <!-- SEO_LINK_START -->
-<div id="seo-content" style="display:none;" aria-hidden="true">
-  <nav id="seo-nav">
-    <a href="#Home">Home</a>
-    <a href="#Professional/Resume">Professional/Resume</a>
-    <a href="#Personal/About">Personal/About</a>
-    <a href="#Professional/SARIT">Professional/SARIT</a>
-    <a href="#Professional/Honda">Professional/Honda</a>
-    <a href="#Professional/Coursework">Professional/Coursework</a>
-    <a href="#Projects/Robotics">Projects/Robotics</a>
-    <a href="#Projects/Rocketry">Projects/Rocketry</a>
-    <a href="#Projects/Design">Projects/Design</a>
-    <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
-    <a href="#Personal/Volunteering">Personal/Volunteering</a>
-    <a href="#Projects/Website">Projects/Website</a>
-    <a href="#Personal/About/Earth">Personal/About/Earth</a>
-    <a href="#Professional/Master">Professional/Master</a>
-    <a href="#Personal/Ideas">Personal/Ideas</a>
-    <a href="#Personal">Personal</a>
-    <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
-    <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
-  </nav>
+    <div id="seo-content" style="display:none;" aria-hidden="true">
+        <nav id="seo-nav">
+            <a href="#Home">Home</a>
+            <a href="#Professional/Resume">Professional/Resume</a>
+            <a href="#Personal/About">Personal/About</a>
+            <a href="#Professional/SARIT">Professional/SARIT</a>
+            <a href="#Professional/Honda">Professional/Honda</a>
+            <a href="#Professional/Coursework">Professional/Coursework</a>
+            <a href="#Projects/Robotics">Projects/Robotics</a>
+            <a href="#Projects/Rocketry">Projects/Rocketry</a>
+            <a href="#Projects/Design">Projects/Design</a>
+            <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
+            <a href="#Personal/Volunteering">Personal/Volunteering</a>
+            <a href="#Projects/Website">Projects/Website</a>
+            <a href="#Personal/About/Earth">Personal/About/Earth</a>
+            <a href="#Professional/Master">Professional/Master</a>
+            <a href="#Personal/Ideas">Personal/Ideas</a>
+            <a href="#Personal">Personal</a>
+            <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
+            <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
+        </nav>
 
-  <article id="seo-content-Professional/Resume">
-    <h2>Resume</h2>
-    <p>Professional resume and experiences of Sahib Virdee.</p>
-  </article>
+        <article id="seo-content-Professional/Resume">
+            <h2>Resume</h2>
+            <p>Professional resume and experiences of Sahib Virdee.</p>
+        </article>
 
-  <article id="seo-content-Personal/About">
-    <h2>About Me</h2>
-    <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
-  </article>
+        <article id="seo-content-Personal/About">
+            <h2>About Me</h2>
+            <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
+        </article>
 
-  <article id="seo-content-Professional/SARIT">
-    <h2>SARIT Micro-EV</h2>
-    <p>[SARIT Mobility-green | 
- About SARIT
-SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe, Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot. Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial transportation within urban environments, making common trips such as home to work or school, convenient and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery, last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban transportation and enhancing the quality of life in cities worldwide.</p>
-  </article>
+        <article id="seo-content-Professional/SARIT">
+            <h2>SARIT Micro-EV</h2>
+            <p>[SARIT Mobility-green |
+                About SARIT
+                SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility
+                solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe,
+                Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental
+                concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to
+                use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot.
+                Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and
+                engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial
+                transportation within urban environments, making common trips such as home to work or school, convenient
+                and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery,
+                last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and
+                powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban
+                transportation and enhancing the quality of life in cities worldwide.</p>
+        </article>
 
-  <article id="seo-content-Professional/Honda">
-    <h2>Honda of Canada</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Honda">
+            <h2>Honda of Canada</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Coursework">
-    <h2>Coursework</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Coursework">
+            <h2>Coursework</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Robotics">
-    <h2>York University Robotics Society</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Robotics">
+            <h2>York University Robotics Society</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Rocketry">
-    <h2>Arbalest Rocketry</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Rocketry">
+            <h2>Arbalest Rocketry</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Design">
-    <h2>Design Projects</h2>
-    <p>[test caption]</p>
-  </article>
+        <article id="seo-content-Projects/Design">
+            <h2>Design Projects</h2>
+            <p>[test caption]</p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/Music">
-    <h2>Music</h2>
-    <p>Recently Played
-{Recently Played}</p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/Music">
+            <h2>Music</h2>
+            <p>Recently Played
+                {Recently Played}</p>
+        </article>
 
-  <article id="seo-content-Personal/Volunteering">
-    <h2>Volunteering</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Volunteering">
+            <h2>Volunteering</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Website">
-    <h2>this website</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Website">
+            <h2>this website</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/About/Earth">
-    <h2>the blue marble</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/About/Earth">
+            <h2>the blue marble</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Master">
-    <h2>Master Fabricators</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Master">
+            <h2>Master Fabricators</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Ideas">
-    <h2>Ideas</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Ideas">
+            <h2>Ideas</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal">
-    <h2>{Random Quote}</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal">
+            <h2>{Random Quote}</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/GPS_Art">
-    <h2>GPS Art</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/GPS_Art">
+            <h2>GPS Art</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Hackathons/Siemens">
-    <h2>Realize LIVE 2025</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Hackathons/Siemens">
+            <h2>Realize LIVE 2025</h2>
+            <p></p>
+        </article>
 
-</div>
-<!-- SEO_LINK_END -->
+    </div>
+    <!-- SEO_LINK_END -->
 </body>
 
 </html>
