@@ -4232,11 +4232,14 @@
 
                 // Aggressive home-page link detection for fallback to search
                 let link = (item.Link || "").trim();
-                const bareURL = link.replace(/\/+$/, "").toLowerCase();
-                const isHomePage = bareURL === "https://music.youtube.com" || bareURL === "http://music.youtube.com";
+                const bareURL = link.toLowerCase();
+                // A valid track URL almost always contains 'watch?v=' or 'youtu.be'
+                const isValidTrackLink = bareURL.includes('watch?v=') || bareURL.includes('youtu.be');
 
-                if (!link || isHomePage) {
-                    link = `https://music.youtube.com/search?q=${encodeURIComponent((item.Artist || "") + ' ' + (item.Song || ""))}`;
+                if (!link || !isValidTrackLink) {
+                    // Fallback to searching YT Music for the exact Artist + Track Name
+                    const searchQuery = encodeURIComponent((item.Artist || "") + " " + (item.Song || item.Track || ""));
+                    link = `https://music.youtube.com/search?q=${searchQuery}`;
                 }
                 const thumb = item.Thumbnail || placeholderThumb;
 
