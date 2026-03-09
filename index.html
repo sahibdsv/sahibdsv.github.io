@@ -2528,25 +2528,19 @@
             mask-image: linear-gradient(to top, black, transparent);
         }
 
-        .cat-music .music-vibe-bars {
+        .cat-music .steel-waveform-aura {
             position: absolute;
-            bottom: 12px;
-            right: 15px;
-            display: flex;
-            align-items: flex-end;
-            gap: 2px;
-            height: 14px;
-            opacity: 0.5;
-            z-index: 3;
-        }
-
-        .cat-music .vibe-bar {
-            width: 2px;
-            height: 100%;
-            background: var(--text-bright);
-            border-radius: 1px;
-            animation: vibe-rhythm 0.8s ease-in-out infinite alternate;
-            transform-origin: bottom;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.18;
+            /* Slightly more visible for the lava lamp effect */
+            pointer-events: none;
+            background: linear-gradient(110deg, #1a2a6c, #b21f1f, #fdbb2d, #1a2a6c);
+            /* Loop colors */
+            background-size: 300% 300%;
+            animation: steel-heat-shift 15s ease-in-out infinite;
+            /* Slow, lava lamp speed */
+            mask-image: linear-gradient(to top, black, transparent);
         }
 
         @keyframes steel-heat-shift {
@@ -2554,22 +2548,20 @@
                 background-position: 0% 50%;
             }
 
+            25% {
+                background-position: 50% 100%;
+            }
+
             50% {
                 background-position: 100% 50%;
             }
 
+            75% {
+                background-position: 50% 0%;
+            }
+
             100% {
                 background-position: 0% 50%;
-            }
-        }
-
-        @keyframes vibe-rhythm {
-            0% {
-                transform: scaleY(0.2);
-            }
-
-            100% {
-                transform: scaleY(1);
             }
         }
 
@@ -4183,13 +4175,6 @@
                         liveClass = "is-live";
                         atmosphereHTML = `
                             <div class="steel-waveform-aura"></div>
-                            <div class="music-vibe-bars">
-                                <div class="vibe-bar" style="animation-delay: 0.1s"></div>
-                                <div class="vibe-bar" style="animation-delay: 0.4s"></div>
-                                <div class="vibe-bar" style="animation-delay: 0.2s"></div>
-                                <div class="vibe-bar" style="animation-delay: 0.6s"></div>
-                                <div class="vibe-bar" style="animation-delay: 0.3s"></div>
-                            </div>
                         `;
                     }
                 }
@@ -4270,14 +4255,12 @@
                     mediaRow.innerHTML = '';
                     mediaRow.appendChild(iframe);
 
-                    const logo = card.querySelector('.music-yt-overlay');
-                    if (logo) logo.style.display = 'none';
+                    // Keep the YouTube logo visible (optional) 
+                    // const logo = card.querySelector('.music-yt-overlay');
+                    // if (logo) logo.style.display = 'none';
 
                     const aura = card.querySelector('.steel-waveform-aura');
                     if (aura) aura.style.display = 'none';
-
-                    const vibes = card.querySelector('.music-vibe-bars');
-                    if (vibes) vibes.style.display = 'none';
 
                     card.classList.add('is-playing');
                 }
