@@ -2490,17 +2490,14 @@
 
         .layout-grid.cat-music {
             border: 2px solid var(--border-subtle);
-            /* Matches link line thickness by default to prevent shift */
             background: var(--card-bg);
             transition: all 0.3s var(--ease);
             position: relative;
-            overflow: visible;
-            /* Allow ripples to breathe */
+            overflow: hidden;
+            /* Ensure aura stays inside */
             width: 300px;
-            /* Strictly lock the width to ensure square art */
             margin: 0;
             box-sizing: border-box;
-            /* Crucial for border-width changes (though we use constant width now) */
         }
 
         .layout-grid.cat-music:hover {
@@ -2508,71 +2505,71 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
-        /* Sound Wave Ripple Effect */
-        .music-ripple-wrapper {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
+        /* Tempered Steel Waveform Atmosphere */
+        .cat-music .card-info {
+            position: relative;
+            z-index: 2;
+            background: transparent;
+            overflow: hidden;
+            border-top: 1px solid rgba(var(--bright-rgb), 0.05);
+            /* Subtle separation from art */
         }
 
-        .music-ripple {
+        .cat-music .steel-waveform-aura {
             position: absolute;
             inset: 0;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            /* Ultra-faint edges */
-            border-radius: var(--card-radius);
-            /* Soft, atmospheric pulse: very slow and fluid */
-            animation: music-ripple-ambient 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-            opacity: 0;
-            filter: blur(2px);
+            z-index: -1;
+            opacity: 0.12;
+            pointer-events: none;
+            background: linear-gradient(110deg, #1a2a6c, #b21f1f, #fdbb2d);
+            /* Steel heat signature */
+            background-size: 200% 200%;
+            animation: steel-heat-shift 12s ease-in-out infinite;
+            mask-image: linear-gradient(to top, black, transparent);
         }
 
-        /* Prime number delays to create a complex, non-repeating rhythm */
-        .music-ripple:nth-child(2) {
-            animation-delay: 2.3s;
+        .cat-music .music-vibe-bars {
+            position: absolute;
+            bottom: 12px;
+            right: 15px;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 14px;
+            opacity: 0.5;
+            z-index: 3;
         }
 
-        .music-ripple:nth-child(3) {
-            animation-delay: 4.7s;
+        .cat-music .vibe-bar {
+            width: 2px;
+            height: 100%;
+            background: var(--text-bright);
+            border-radius: 1px;
+            animation: vibe-rhythm 0.8s ease-in-out infinite alternate;
+            transform-origin: bottom;
         }
 
-        @keyframes music-ripple-ambient {
+        @keyframes steel-heat-shift {
             0% {
-                inset: 0;
-                border-radius: var(--card-radius);
-                opacity: 0;
-            }
-
-            30% {
-                opacity: 0.3;
-                /* Subtle glow peaks early but softly */
-            }
-
-            100% {
-                inset: -25px;
-                border-radius: calc(var(--card-radius) + 25px);
-                opacity: 0;
-            }
-        }
-
-        .music-card-live-pulse {
-            /* Gently pulse the background color ONLY, no scaling/bouncing */
-            animation: music-card-ambient-light 8s ease-in-out infinite;
-        }
-
-        @keyframes music-card-ambient-light {
-
-            0%,
-            100% {
-                background-color: var(--card-bg);
+                background-position: 0% 50%;
             }
 
             50% {
-                background-color: rgba(255, 255, 255, 0.03);
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes vibe-rhythm {
+            0% {
+                transform: scaleY(0.2);
+            }
+
+            100% {
+                transform: scaleY(1);
             }
         }
 
@@ -2581,6 +2578,8 @@
             overflow: hidden;
             background: #000;
             /* Backdrop for iframes */
+            border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
+            /* Square bottom edges as requested */
         }
 
         .layout-grid.cat-music .row-media iframe {
@@ -4175,18 +4174,21 @@
                 }
                 const thumb = item.Thumbnail || placeholderThumb;
 
-                // Live Ripple logic for the absolute latest track
-                let rippleHTML = "";
+                // Waveform Atmosphere logic for the absolute latest track
+                let atmosphereHTML = "";
                 let liveClass = "";
                 if (index === 0 && item.Timestamp) {
                     const trackTime = new Date(item.Timestamp.replace(/-/g, '/'));
                     if (trackTime > oneHourAgo) {
-                        liveClass = "music-card-live-pulse";
-                        rippleHTML = `
-                            <div class="music-ripple-wrapper">
-                                <div class="music-ripple"></div>
-                                <div class="music-ripple"></div>
-                                <div class="music-ripple"></div>
+                        liveClass = "is-live";
+                        atmosphereHTML = `
+                            <div class="steel-waveform-aura"></div>
+                            <div class="music-vibe-bars">
+                                <div class="vibe-bar" style="animation-delay: 0.1s"></div>
+                                <div class="vibe-bar" style="animation-delay: 0.4s"></div>
+                                <div class="vibe-bar" style="animation-delay: 0.2s"></div>
+                                <div class="vibe-bar" style="animation-delay: 0.6s"></div>
+                                <div class="vibe-bar" style="animation-delay: 0.3s"></div>
                             </div>
                         `;
                     }
@@ -4194,12 +4196,12 @@
 
                 return `
                     <div class="layout-grid cat-music ${liveClass}" data-link="${link}" onclick="return playMusicInCard(event)">
-                        ${rippleHTML}
                         <div class="row-media">
                             <div class="sk-img loader-overlay"></div>
                             <img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.src='${placeholderThumb}'">
                         </div>
                         <div class="card-info">
+                            ${atmosphereHTML}
                             <div class="marquee-container track-marquee">
                                 <span class="marquee-content"><h3 class="fill-anim">${track}</h3></span>
                             </div>
@@ -4271,8 +4273,11 @@
                     const logo = card.querySelector('.music-yt-overlay');
                     if (logo) logo.style.display = 'none';
 
-                    const ripples = card.querySelector('.music-ripple-wrapper');
-                    if (ripples) ripples.style.display = 'none';
+                    const aura = card.querySelector('.steel-waveform-aura');
+                    if (aura) aura.style.display = 'none';
+
+                    const vibes = card.querySelector('.music-vibe-bars');
+                    if (vibes) vibes.style.display = 'none';
 
                     card.classList.add('is-playing');
                 }
@@ -6025,118 +6030,129 @@
 
     </script>
     <!-- SEO_LINK_START -->
-<div id="seo-content" style="display:none;" aria-hidden="true">
-  <nav id="seo-nav">
-    <a href="#Home">Home</a>
-    <a href="#Professional/Resume">Professional/Resume</a>
-    <a href="#Personal/About">Personal/About</a>
-    <a href="#Professional/SARIT">Professional/SARIT</a>
-    <a href="#Professional/Honda">Professional/Honda</a>
-    <a href="#Professional/Coursework">Professional/Coursework</a>
-    <a href="#Projects/Robotics">Projects/Robotics</a>
-    <a href="#Projects/Rocketry">Projects/Rocketry</a>
-    <a href="#Projects/Design">Projects/Design</a>
-    <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
-    <a href="#Personal/Volunteering">Personal/Volunteering</a>
-    <a href="#Projects/Website">Projects/Website</a>
-    <a href="#Personal/About/Earth">Personal/About/Earth</a>
-    <a href="#Professional/Master">Professional/Master</a>
-    <a href="#Personal/Ideas">Personal/Ideas</a>
-    <a href="#Personal">Personal</a>
-    <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
-    <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
-  </nav>
+    <div id="seo-content" style="display:none;" aria-hidden="true">
+        <nav id="seo-nav">
+            <a href="#Home">Home</a>
+            <a href="#Professional/Resume">Professional/Resume</a>
+            <a href="#Personal/About">Personal/About</a>
+            <a href="#Professional/SARIT">Professional/SARIT</a>
+            <a href="#Professional/Honda">Professional/Honda</a>
+            <a href="#Professional/Coursework">Professional/Coursework</a>
+            <a href="#Projects/Robotics">Projects/Robotics</a>
+            <a href="#Projects/Rocketry">Projects/Rocketry</a>
+            <a href="#Projects/Design">Projects/Design</a>
+            <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
+            <a href="#Personal/Volunteering">Personal/Volunteering</a>
+            <a href="#Projects/Website">Projects/Website</a>
+            <a href="#Personal/About/Earth">Personal/About/Earth</a>
+            <a href="#Professional/Master">Professional/Master</a>
+            <a href="#Personal/Ideas">Personal/Ideas</a>
+            <a href="#Personal">Personal</a>
+            <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
+            <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
+        </nav>
 
-  <article id="seo-content-Professional/Resume">
-    <h2>Resume</h2>
-    <p>Professional resume and experiences of Sahib Virdee.</p>
-  </article>
+        <article id="seo-content-Professional/Resume">
+            <h2>Resume</h2>
+            <p>Professional resume and experiences of Sahib Virdee.</p>
+        </article>
 
-  <article id="seo-content-Personal/About">
-    <h2>About Me</h2>
-    <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
-  </article>
+        <article id="seo-content-Personal/About">
+            <h2>About Me</h2>
+            <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
+        </article>
 
-  <article id="seo-content-Professional/SARIT">
-    <h2>SARIT Micro-EV</h2>
-    <p>[SARIT Mobility-green | 
- About SARIT
-SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe, Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot. Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial transportation within urban environments, making common trips such as home to work or school, convenient and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery, last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban transportation and enhancing the quality of life in cities worldwide.</p>
-  </article>
+        <article id="seo-content-Professional/SARIT">
+            <h2>SARIT Micro-EV</h2>
+            <p>[SARIT Mobility-green |
+                About SARIT
+                SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility
+                solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe,
+                Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental
+                concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to
+                use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot.
+                Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and
+                engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial
+                transportation within urban environments, making common trips such as home to work or school, convenient
+                and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery,
+                last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and
+                powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban
+                transportation and enhancing the quality of life in cities worldwide.</p>
+        </article>
 
-  <article id="seo-content-Professional/Honda">
-    <h2>Honda of Canada</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Honda">
+            <h2>Honda of Canada</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Coursework">
-    <h2>Coursework</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Coursework">
+            <h2>Coursework</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Robotics">
-    <h2>York University Robotics Society</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Robotics">
+            <h2>York University Robotics Society</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Rocketry">
-    <h2>Arbalest Rocketry</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Rocketry">
+            <h2>Arbalest Rocketry</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Design">
-    <h2>Design Projects</h2>
-    <p>[test caption]</p>
-  </article>
+        <article id="seo-content-Projects/Design">
+            <h2>Design Projects</h2>
+            <p>[test caption]</p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/Music">
-    <h2>Music 🎶</h2>
-    <p>Recently Played
-{Recently Played}</p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/Music">
+            <h2>Music 🎶</h2>
+            <p>Recently Played
+                {Recently Played}</p>
+        </article>
 
-  <article id="seo-content-Personal/Volunteering">
-    <h2>Volunteering</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Volunteering">
+            <h2>Volunteering</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Website">
-    <h2>this website</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Website">
+            <h2>this website</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/About/Earth">
-    <h2>the blue marble</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/About/Earth">
+            <h2>the blue marble</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Master">
-    <h2>Master Fabricators</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Master">
+            <h2>Master Fabricators</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Ideas">
-    <h2>Ideas</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Ideas">
+            <h2>Ideas</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal">
-    <h2>{Random Quote}</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal">
+            <h2>{Random Quote}</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/GPS_Art">
-    <h2>GPS Art</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/GPS_Art">
+            <h2>GPS Art</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Hackathons/Siemens">
-    <h2>Realize LIVE 2025</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Hackathons/Siemens">
+            <h2>Realize LIVE 2025</h2>
+            <p></p>
+        </article>
 
-</div>
-<!-- SEO_LINK_END -->
+    </div>
+    <!-- SEO_LINK_END -->
 </body>
 
 </html>
