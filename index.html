@@ -2766,12 +2766,12 @@
                 if (isNew) {
                     row = document.createElement("nav");
                     row.id = rowId;
-                    row.className = "nav-row level-" + (level > 1 ? "n" : "1") + " slide-in-right";
+                    row.className = "nav-row level-" + (level > 1 ? "n" : "1");
+                    // Only add slide animation if the user isn't actively swiping 
+                    if (!_gSwipe.active) row.classList.add("slide-in-right");
                     navStack.appendChild(row);
                     setupHapticScroll(row);
                 }
-
-                if (!activeName) row.scrollLeft = 0; // Standardize initial landing
 
                 let html = "";
                 const prefix = parentPath ? parentPath + "/" : "";
@@ -2795,7 +2795,6 @@
 
                     // Mark for instant center-reset when category content changes
                     row._needsReset = true;
-                    if (!activeName) row.scrollLeft = 0; // Prevent index leakage by resetting scroll before haptic listener triggers
 
                     row.innerHTML = items.map(item => {
                         const linkClass = level === 1 ? "nav-link" : "sub-link";
@@ -2804,10 +2803,12 @@
                         return `<a href="#${path2url(fullPath)}" class="${linkClass} fill-anim ${activeClass}" onclick="closeSearch()">${safeHTML(item)}</a>`;
                     }).join("");
                 }
-                // Re-enable snapping after content is set (if not currently user-interacting)
+                // Re-enable snapping after content is set IF there is an active item to lock to
                 requestAnimationFrame(() => {
-                    if (!_pickerScrollingRow || _pickerScrollingRow !== row) {
-                        row.style.scrollSnapType = 'x mandatory';
+                    const activeLink = row.querySelector(".active");
+                    const isInteracting = (_pickerScrollingRow === row) || (_gSwipe.active && _gSwipe.row === row);
+                    if (!isInteracting) {
+                        row.style.scrollSnapType = activeLink ? 'x mandatory' : 'none';
                     }
                 });
 
@@ -2815,8 +2816,8 @@
                 const wasHidden = row.classList.contains("hidden");
                 row.classList.remove("hidden");
 
-                // Restore slide-in animation if re-appearing
-                if (!isNew && wasHidden) {
+                // Restore slide-in animation if re-appearing and not swiping
+                if (!isNew && wasHidden && !_gSwipe.active) {
                     row.classList.remove("slide-in-right");
                     void row.offsetWidth; // Trigger reflow
                     row.classList.add("slide-in-right");
@@ -2861,27 +2862,40 @@
 
         function centerNavRow(row, isSubNav) {
             if (row === _pickerScrollingRow) return;
+            // CRITICAL: Don't fight the user's thumb if they are currently swiping this row
+            if (_gSwipe.active && row === _gSwipe.row) return;
+
             if (window.innerWidth > 768) return;
             if (!row) return;
 
             row._needsReset = false;
+            // Only scroll if there is overflow
             if (row.scrollWidth <= row.clientWidth + 5) return;
 
             const activeLink = row.querySelector(".active");
-            const behavior = "auto";
 
-            // Temporarily disable snapping during centering to prevent vibrate/shake conflict
+            // Rule 1: Always disable snapping during programmatic centering
             row.style.scrollSnapType = 'none';
 
             if (activeLink) {
+                // Rule 2: If an item is active, center it precisely (lock mode)
                 const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
-                row.scrollTo({ left: targetScroll, behavior: behavior });
+                row.scrollTo({ left: targetScroll, behavior: "auto" });
+
+                requestAnimationFrame(() => {
+                    if ((!_pickerScrollingRow || _pickerScrollingRow !== row) && (!_gSwipe.active || _gSwipe.row !== row)) {
+                        row.style.scrollSnapType = 'x mandatory';
+                    }
+                });
             } else {
-                // Default to the start of the row for new categories to avoid "midpoint" confusion
-                row.scrollTo({ left: 0, behavior: behavior });
+                // Rule 3: If NO item is active (new category sweep), center the "Row of Text" mathematically.
+                // This fulfills the "mathematical midpoint" requirement without bias or snapping.
+                const midpoint = (row.scrollWidth - row.clientWidth) / 2;
+                row.scrollTo({ left: midpoint, behavior: "auto" });
+
+                // Leave snapping OFF so it stays exactly at the midpoint without jumping to a subheading
+                row.style.scrollSnapType = 'none';
             }
-            // Snapping is re-enabled via RAF in renderNavigation
-            // Settle timer in setupHapticScroll will re-enable snapping if applicable
         }
 
         /* Haptic System — Touch-gated, instant-navigate scroll picker */
