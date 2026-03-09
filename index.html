@@ -2493,11 +2493,6 @@
         }
 
         .layout-grid.cat-music {
-            outline: 1px solid var(--border-subtle);
-            outline-offset: -1px;
-            border: none;
-            background: var(--card-bg);
-            transition: background var(--anim-instant), outline-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
             position: relative;
             overflow: hidden;
             width: 300px;
@@ -2505,12 +2500,7 @@
             box-sizing: border-box;
         }
 
-        .layout-grid.cat-music:hover {
-            background: var(--card-bg-hover);
-            outline-color: rgba(var(--bright-rgb), 0.15);
-            /* Site-wide consistent hover outline */
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
-        }
+        /* Hover is now fully inherited from .layout-grid, guaranteeing 100% uniformity with all other cards */
 
         /* High-Contrast Titanium Atmosphere */
         .cat-music .steel-waveform-aura {
@@ -2520,55 +2510,39 @@
             pointer-events: none;
             overflow: hidden;
             mask-image: linear-gradient(to top, black, transparent 90%);
+            -webkit-mask-image: linear-gradient(to top, black, transparent 90%);
         }
 
-        /* Buttery-Smooth Sidechain Aura Animation */
-        @keyframes titanium-natural-swell {
+        /* 60FPS Buttery-Smooth Titanium Flow */
+        @keyframes titanium-lava-flow {
             0% {
-                transform: rotate(0deg) scale(1.0);
-                opacity: 0.2;
+                background-position: 0% 50%;
+                opacity: 0.15;
             }
 
-            45% {
-                transform: rotate(15deg) scale(1.35);
-                opacity: 0.85;
+            50% {
+                background-position: 100% 50%;
+                opacity: 0.75;
             }
 
+            /* The rhythmic 'swell' */
             100% {
-                transform: rotate(0deg) scale(1.0);
-                opacity: 0.2;
+                background-position: 0% 50%;
+                opacity: 0.15;
             }
         }
 
         .cat-music .steel-waveform-aura::before {
             content: '';
             position: absolute;
-            width: 300%;
-            height: 300%;
-            top: -100%;
-            left: -100%;
-            background: radial-gradient(circle at center, #FFEF00, #FFD700, #9370DB, #483D8B, #1a2a6c, transparent 70%);
-            background-size: 33% 33%;
-            animation: titanium-natural-swell 4s ease-in-out infinite;
-            filter: blur(55px);
-            /* Increased blur for smoother edge transitions */
-            will-change: transform, opacity;
-        }
-
-        .cat-music .steel-waveform-aura::after {
-            content: '';
-            position: absolute;
-            width: 300%;
-            height: 300%;
-            top: -80%;
-            left: -80%;
-            background: radial-gradient(circle at center, #00FFFF, #00BFFF, #8A2BE2, #EE82EE, transparent 65%);
-            background-size: 33% 33%;
-            animation: titanium-natural-swell 5.5s ease-in-out infinite reverse;
-            animation-delay: -1.2s;
-            filter: blur(50px);
-            opacity: 0.6;
-            will-change: transform, opacity;
+            inset: 0;
+            /* Seamless Titanium Heat Palette */
+            background: linear-gradient(90deg, #1a2a6c, #8A2BE2, #EE82EE, #FFD700, #EE82EE, #8A2BE2, #1a2a6c);
+            background-size: 300% 100%;
+            animation: titanium-lava-flow 4s ease-in-out infinite;
+            filter: blur(15px);
+            /* Lightweight blur for maximum browser performance (no stutter) */
+            will-change: background-position, opacity;
         }
 
         .layout-grid.cat-music .row-media {
