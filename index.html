@@ -2497,88 +2497,119 @@
 
         /* Hover is now fully inherited from .layout-grid, guaranteeing 100% uniformity with all other cards */
 
-        /* High-Fidelity Ambient Waveform Mist */
+        /* High-Definition Edge-Filled SVG Waveforms */
         .cat-music .steel-waveform-aura {
             position: absolute;
             inset: 0;
             z-index: -1;
             pointer-events: none;
             overflow: hidden;
-            /* Ensures light stays anchored near the bottom and fades out before hitting text deeply */
-            mask-image: linear-gradient(to top, black 0%, transparent 80%);
-            -webkit-mask-image: linear-gradient(to top, black 0%, transparent 80%);
-            /* Heavy blur permanently melts the overlapping hills into a single misty fog body */
-            filter: blur(18px);
-            opacity: 0.55;
-            /* Restrained brightness to guarantee crystal clear text readability */
-            mix-blend-mode: screen;
-            /* Let the colors mix gracefully */
+            /* Fade out cleanly near the text, so the flame stays bottom-heavy */
+            mask-image: linear-gradient(to top, black 20%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to top, black 20%, transparent 100%);
         }
 
-        /* Graceful, non-repeating vertical waves (flow and grace, no boom) */
-        @keyframes aura-wave-rise {
+        /* The Spiderman Bounce (Visually universal ~110 BPM rhythm block) */
+        @keyframes wave-bounce {
             0% {
-                transform: translateY(15px) scaleY(0.85);
+                transform: scaleY(0.4);
+                opacity: 0.6;
+            }
+
+            15% {
+                transform: scaleY(1.0);
+                opacity: 1.0;
             }
 
             100% {
-                transform: translateY(-25px) scaleY(1.35);
+                transform: scaleY(0.4);
+                opacity: 0.6;
             }
         }
 
-        /* Oil slick color shifting */
-        @keyframes aura-color-swirl {
+        /* Titanium Heat Map flowing left to right continuously */
+        @keyframes heat-pan {
             0% {
-                background-position: 100% 50%;
-            }
-
-            100% {
                 background-position: 0% 50%;
             }
+
+            100% {
+                background-position: 100% 50%;
+            }
         }
 
-        .cat-music .aura-wave-layer {
+        /* Horizontal scrolling frames for the infinite sine waves */
+        @keyframes pan-w1 {
+            100% {
+                -webkit-mask-position: -200px 0;
+                mask-position: -200px 0;
+            }
+        }
+
+        @keyframes pan-w2 {
+            100% {
+                -webkit-mask-position: -140px 0;
+                mask-position: -140px 0;
+            }
+        }
+
+        @keyframes pan-w3 {
+            100% {
+                -webkit-mask-position: 90px 0;
+                mask-position: 90px 0;
+            }
+        }
+
+        .cat-music .crisp-wave {
             position: absolute;
-            bottom: -50px;
-            height: 160px;
-            border-radius: 50% 50% 0 0;
-            /* Creates flat, wide sweeping hills */
-            transform-origin: bottom center;
-            will-change: transform, background-position;
-            background-size: 200% 100%;
+            bottom: -2px;
+            /* Pull slightly below edge to eliminate any render gap */
+            left: 0;
+            width: 100%;
+            height: 85%;
+            transform-origin: bottom;
+            /* Hot center, cool edges - like a flame fanning across metal */
+            background: linear-gradient(to right, #001f3f, #0074D9, #B10DC9, #FF4136, #FFDC00, #FFFFFF, #FFDC00, #FF4136, #B10DC9, #0074D9, #001f3f);
+            background-size: 300% 100%;
+            /* High-definition, mathematically perfect SVG sine wave, filled solid underneath */
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,50 C18.2,-10.5 31.8,-10.5 50,50 C68.2,110.5 81.8,110.5 100,50 L100,100 L0,100 Z' fill='black'/%3E%3C/svg%3E");
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,50 C18.2,-10.5 31.8,-10.5 50,50 C68.2,110.5 81.8,110.5 100,50 L100,100 L0,100 Z' fill='black'/%3E%3C/svg%3E");
+            mask-repeat: repeat-x;
+            -webkit-mask-repeat: repeat-x;
+            mix-blend-mode: screen;
+            /* A tiny 2px blur maintains the crisp wave shape while making the edge glow intensely like hot metal */
+            filter: blur(2px);
+            will-change: transform, mask-position, background-position;
         }
 
-        /* Bass (Left side: Gold/Bronze) */
-        .cat-music .aura-bass {
-            left: -20%;
-            width: 80%;
-            background: linear-gradient(to left, #7e22ce, #b45309, #7e22ce);
+        /* 0.545s bounce exactly mimics a 110bpm hip-hop/house beat for the "dancing spiderman" universal sync */
+        .cat-music .crisp-wave.w1 {
+            mask-size: 200px 100%;
+            -webkit-mask-size: 200px 100%;
             animation:
-                aura-wave-rise 4.7s ease-in-out infinite alternate,
-                aura-color-swirl 13s linear infinite alternate;
+                wave-bounce 0.545s cubic-bezier(0.1, 0.9, 0.2, 1) infinite,
+                pan-w1 5s linear infinite,
+                heat-pan 12s ease-in-out infinite alternate;
         }
 
-        /* Mid (Center-spanning: Magenta/Purple) */
-        .cat-music .aura-mid {
-            left: 10%;
-            width: 90%;
-            background: linear-gradient(to left, #9d174d, #7e22ce, #9d174d);
+        .cat-music .crisp-wave.w2 {
+            mask-size: 140px 100%;
+            -webkit-mask-size: 140px 100%;
+            height: 70%;
             animation:
-                aura-wave-rise 6.1s ease-in-out infinite alternate-reverse,
-                aura-color-swirl 17s linear infinite alternate-reverse;
-            /* Extra delay forces distinct non-repetition */
-            animation-delay: -1.2s;
+                wave-bounce 0.545s cubic-bezier(0.1, 0.9, 0.2, 1) infinite 0.15s,
+                pan-w2 3s linear infinite,
+                heat-pan 15s ease-in-out infinite alternate-reverse;
         }
 
-        /* Treble (Right side: Deep Navy/Cyan) */
-        .cat-music .aura-treble {
-            left: 45%;
-            width: 75%;
-            background: linear-gradient(to left, #0f766e, #9d174d, #0f766e);
+        .cat-music .crisp-wave.w3 {
+            mask-size: 90px 100%;
+            -webkit-mask-size: 90px 100%;
+            height: 60%;
             animation:
-                aura-wave-rise 3.8s ease-in-out infinite alternate,
-                aura-color-swirl 11s linear infinite alternate;
-            animation-delay: -2.5s;
+                wave-bounce 0.545s cubic-bezier(0.1, 0.9, 0.2, 1) infinite 0.3s,
+                pan-w3 7s linear infinite reverse,
+                heat-pan 9s ease-in-out infinite alternate;
         }
 
 
@@ -4210,11 +4241,12 @@
                         liveClass = "is-live";
                         atmosphereHTML = `
                             <div class="steel-waveform-aura">
-                                <div class="aura-wave-layer aura-bass"></div>
-                                <div class="aura-wave-layer aura-mid"></div>
-                                <div class="aura-wave-layer aura-treble"></div>
+                                <div class="crisp-wave w1"></div>
+                                <div class="crisp-wave w2"></div>
+                                <div class="crisp-wave w3"></div>
                             </div>
                         `;
+
                     }
                 }
 
