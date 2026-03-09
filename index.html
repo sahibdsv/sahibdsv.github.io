@@ -2497,108 +2497,90 @@
 
         /* Hover is now fully inherited from .layout-grid, guaranteeing 100% uniformity with all other cards */
 
-        /* High-Contrast Titanium Liquid Waveform */
+        /* High-Fidelity Ambient Waveform Mist */
         .cat-music .steel-waveform-aura {
             position: absolute;
             inset: 0;
             z-index: -1;
             pointer-events: none;
             overflow: hidden;
-            mask-image: linear-gradient(to top, black 20%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to top, black 20%, transparent 100%);
-        }
-
-        /* Swirling oil slick morphing blob base */
-        @keyframes titanium-oil-swirl {
-            0% {
-                border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-                transform: translateX(0%);
-            }
-
-            50% {
-                border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-                transform: translateX(-10%);
-            }
-
-            100% {
-                border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-                transform: translateX(0%);
-            }
-        }
-
-        /* Beat pulse to make the peaks jump */
-        @keyframes titanium-beat-flash {
-            0% {
-                transform: scaleY(0.7) translateY(10px);
-                opacity: 0.6;
-            }
-
-            20% {
-                transform: scaleY(1.3) translateY(-5px);
-                opacity: 1.0;
-            }
-
-            100% {
-                transform: scaleY(0.7) translateY(10px);
-                opacity: 0.6;
-            }
-        }
-
-        .cat-music .heat-blob-wrapper {
-            position: absolute;
-            bottom: -30px;
-            width: 150%;
-            height: 120px;
-            transform-origin: bottom center;
-            will-change: transform, opacity;
-        }
-
-        .cat-music .heat-blob {
-            width: 100%;
-            height: 100%;
-            background-size: 200% 200%;
-            filter: blur(25px);
-            /* Soft misty fog */
+            /* Ensures light stays anchored near the bottom and fades out before hitting text deeply */
+            mask-image: linear-gradient(to top, black 0%, transparent 80%);
+            -webkit-mask-image: linear-gradient(to top, black 0%, transparent 80%);
+            /* Heavy blur permanently melts the overlapping hills into a single misty fog body */
+            filter: blur(18px);
+            opacity: 0.55;
+            /* Restrained brightness to guarantee crystal clear text readability */
             mix-blend-mode: screen;
-            /* Intersections glow like heated metal */
-            will-change: border-radius, transform, background-position;
+            /* Let the colors mix gracefully */
         }
 
-        /* Blob 1 */
-        .cat-music .hb-wrap-1 {
-            animation: titanium-beat-flash 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
-            left: -10%;
+        /* Graceful, non-repeating vertical waves (flow and grace, no boom) */
+        @keyframes aura-wave-rise {
+            0% {
+                transform: translateY(15px) scaleY(0.85);
+            }
+
+            100% {
+                transform: translateY(-25px) scaleY(1.35);
+            }
         }
 
-        .cat-music .hb-blob-1 {
-            background-image: linear-gradient(45deg, #FFD700, #ff1a75, #8a2be2, #00ffff);
-            animation: titanium-oil-swirl 7s ease-in-out infinite;
+        /* Oil slick color shifting */
+        @keyframes aura-color-swirl {
+            0% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
-        /* Blob 2 */
-        .cat-music .hb-wrap-2 {
-            animation: titanium-beat-flash 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
-            animation-delay: -0.4s;
-            left: -30%;
+        .cat-music .aura-wave-layer {
+            position: absolute;
+            bottom: -50px;
+            height: 160px;
+            border-radius: 50% 50% 0 0;
+            /* Creates flat, wide sweeping hills */
+            transform-origin: bottom center;
+            will-change: transform, background-position;
+            background-size: 200% 100%;
         }
 
-        .cat-music .hb-blob-2 {
-            background-image: linear-gradient(135deg, #00ffff, #1a2a6c, #ff1a75, #FFD700);
-            animation: titanium-oil-swirl 9s ease-in-out infinite reverse;
-            animation-delay: -2s;
+        /* Bass (Left side: Gold/Bronze) */
+        .cat-music .aura-bass {
+            left: -20%;
+            width: 80%;
+            background: linear-gradient(to left, #7e22ce, #b45309, #7e22ce);
+            animation:
+                aura-wave-rise 4.7s ease-in-out infinite alternate,
+                aura-color-swirl 13s linear infinite alternate;
         }
 
-        /* Blob 3 */
-        .cat-music .hb-wrap-3 {
-            animation: titanium-beat-flash 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
-            animation-delay: -0.2s;
-            left: -5%;
+        /* Mid (Center-spanning: Magenta/Purple) */
+        .cat-music .aura-mid {
+            left: 10%;
+            width: 90%;
+            background: linear-gradient(to left, #9d174d, #7e22ce, #9d174d);
+            animation:
+                aura-wave-rise 6.1s ease-in-out infinite alternate-reverse,
+                aura-color-swirl 17s linear infinite alternate-reverse;
+            /* Extra delay forces distinct non-repetition */
+            animation-delay: -1.2s;
         }
 
-        .cat-music .hb-blob-3 {
-            background-image: linear-gradient(225deg, #ff1a75, #8a2be2, #00ffff, #1a2a6c);
-            animation: titanium-oil-swirl 5.5s ease-in-out infinite 2s;
+        /* Treble (Right side: Deep Navy/Cyan) */
+        .cat-music .aura-treble {
+            left: 45%;
+            width: 75%;
+            background: linear-gradient(to left, #0f766e, #9d174d, #0f766e);
+            animation:
+                aura-wave-rise 3.8s ease-in-out infinite alternate,
+                aura-color-swirl 11s linear infinite alternate;
+            animation-delay: -2.5s;
         }
+
 
 
 
@@ -4228,9 +4210,9 @@
                         liveClass = "is-live";
                         atmosphereHTML = `
                             <div class="steel-waveform-aura">
-                                <div class="heat-blob-wrapper hb-wrap-1"><div class="heat-blob hb-blob-1"></div></div>
-                                <div class="heat-blob-wrapper hb-wrap-2"><div class="heat-blob hb-blob-2"></div></div>
-                                <div class="heat-blob-wrapper hb-wrap-3"><div class="heat-blob hb-blob-3"></div></div>
+                                <div class="aura-wave-layer aura-bass"></div>
+                                <div class="aura-wave-layer aura-mid"></div>
+                                <div class="aura-wave-layer aura-treble"></div>
                             </div>
                         `;
                     }
@@ -6073,118 +6055,129 @@
 
     </script>
     <!-- SEO_LINK_START -->
-<div id="seo-content" style="display:none;" aria-hidden="true">
-  <nav id="seo-nav">
-    <a href="#Home">Home</a>
-    <a href="#Professional/Resume">Professional/Resume</a>
-    <a href="#Personal/About">Personal/About</a>
-    <a href="#Professional/SARIT">Professional/SARIT</a>
-    <a href="#Professional/Honda">Professional/Honda</a>
-    <a href="#Professional/Coursework">Professional/Coursework</a>
-    <a href="#Projects/Robotics">Projects/Robotics</a>
-    <a href="#Projects/Rocketry">Projects/Rocketry</a>
-    <a href="#Projects/Design">Projects/Design</a>
-    <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
-    <a href="#Personal/Volunteering">Personal/Volunteering</a>
-    <a href="#Projects/Website">Projects/Website</a>
-    <a href="#Personal/About/Earth">Personal/About/Earth</a>
-    <a href="#Professional/Master">Professional/Master</a>
-    <a href="#Personal/Ideas">Personal/Ideas</a>
-    <a href="#Personal">Personal</a>
-    <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
-    <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
-  </nav>
+    <div id="seo-content" style="display:none;" aria-hidden="true">
+        <nav id="seo-nav">
+            <a href="#Home">Home</a>
+            <a href="#Professional/Resume">Professional/Resume</a>
+            <a href="#Personal/About">Personal/About</a>
+            <a href="#Professional/SARIT">Professional/SARIT</a>
+            <a href="#Professional/Honda">Professional/Honda</a>
+            <a href="#Professional/Coursework">Professional/Coursework</a>
+            <a href="#Projects/Robotics">Projects/Robotics</a>
+            <a href="#Projects/Rocketry">Projects/Rocketry</a>
+            <a href="#Projects/Design">Projects/Design</a>
+            <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
+            <a href="#Personal/Volunteering">Personal/Volunteering</a>
+            <a href="#Projects/Website">Projects/Website</a>
+            <a href="#Personal/About/Earth">Personal/About/Earth</a>
+            <a href="#Professional/Master">Professional/Master</a>
+            <a href="#Personal/Ideas">Personal/Ideas</a>
+            <a href="#Personal">Personal</a>
+            <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
+            <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
+        </nav>
 
-  <article id="seo-content-Professional/Resume">
-    <h2>Resume</h2>
-    <p>Professional resume and experiences of Sahib Virdee.</p>
-  </article>
+        <article id="seo-content-Professional/Resume">
+            <h2>Resume</h2>
+            <p>Professional resume and experiences of Sahib Virdee.</p>
+        </article>
 
-  <article id="seo-content-Personal/About">
-    <h2>About Me</h2>
-    <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
-  </article>
+        <article id="seo-content-Personal/About">
+            <h2>About Me</h2>
+            <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
+        </article>
 
-  <article id="seo-content-Professional/SARIT">
-    <h2>SARIT Micro-EV</h2>
-    <p>[SARIT Mobility-green | 
- About SARIT
-SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe, Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot. Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial transportation within urban environments, making common trips such as home to work or school, convenient and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery, last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban transportation and enhancing the quality of life in cities worldwide.</p>
-  </article>
+        <article id="seo-content-Professional/SARIT">
+            <h2>SARIT Micro-EV</h2>
+            <p>[SARIT Mobility-green |
+                About SARIT
+                SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility
+                solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe,
+                Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental
+                concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to
+                use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot.
+                Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and
+                engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial
+                transportation within urban environments, making common trips such as home to work or school, convenient
+                and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery,
+                last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and
+                powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban
+                transportation and enhancing the quality of life in cities worldwide.</p>
+        </article>
 
-  <article id="seo-content-Professional/Honda">
-    <h2>Honda of Canada</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Honda">
+            <h2>Honda of Canada</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Coursework">
-    <h2>Coursework</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Coursework">
+            <h2>Coursework</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Robotics">
-    <h2>York University Robotics Society</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Robotics">
+            <h2>York University Robotics Society</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Rocketry">
-    <h2>Arbalest Rocketry</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Rocketry">
+            <h2>Arbalest Rocketry</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Design">
-    <h2>Design Projects</h2>
-    <p>[test caption]</p>
-  </article>
+        <article id="seo-content-Projects/Design">
+            <h2>Design Projects</h2>
+            <p>[test caption]</p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/Music">
-    <h2>Music 🎶</h2>
-    <p>Recently Played
-{Recently Played}</p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/Music">
+            <h2>Music 🎶</h2>
+            <p>Recently Played
+                {Recently Played}</p>
+        </article>
 
-  <article id="seo-content-Personal/Volunteering">
-    <h2>Volunteering</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Volunteering">
+            <h2>Volunteering</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Website">
-    <h2>this website</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Website">
+            <h2>this website</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/About/Earth">
-    <h2>the blue marble</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/About/Earth">
+            <h2>the blue marble</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Master">
-    <h2>Master Fabricators</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Master">
+            <h2>Master Fabricators</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Ideas">
-    <h2>Ideas</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Ideas">
+            <h2>Ideas</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal">
-    <h2>{Random Quote}</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal">
+            <h2>{Random Quote}</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/GPS_Art">
-    <h2>GPS Art</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/GPS_Art">
+            <h2>GPS Art</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Hackathons/Siemens">
-    <h2>Realize LIVE 2025</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Hackathons/Siemens">
+            <h2>Realize LIVE 2025</h2>
+            <p></p>
+        </article>
 
-</div>
-<!-- SEO_LINK_END -->
+    </div>
+    <!-- SEO_LINK_END -->
 </body>
 
 </html>
