@@ -2664,19 +2664,19 @@
         }
 
         .cat-music .music-artist-label {
-            font-size: 14px;
-            /* Back to a very clean, humble size */
+            font-size: 0.85em;
+            /* Cleaner, secondary feel */
             color: var(--text-dim);
             opacity: 0.8;
             width: fit-content;
-            margin-top: 4px;
+            margin-top: 2px;
             font-weight: 400;
         }
 
         .cat-music h3 {
             margin-bottom: 0px;
             font-size: 20px !important;
-            /* Fixed exact match to regular cards - 20px */
+            /* Perfect match to site cards */
             line-height: 1.25;
             opacity: 1;
             font-weight: 600;
@@ -2810,7 +2810,8 @@
             if (rows.length < 2) return [];
 
             // Convert to object array
-            const header = rows[0];
+            // Trim header keys to avoid whitespace issues from Google Sheets
+            const header = (rows[0] || []).map(h => h.trim());
             return rows.slice(1)
                 .filter(row => row.some(cell => cell))
                 .map(row => {
@@ -4164,9 +4165,12 @@
                 const artist = safeHTML(item.Artist || "Unknown Artist");
                 const track = safeHTML(item.Song || item.Track || "Unknown Track");
 
-                // Detection for "useless" links like the home page, which should fallback to search
-                let link = item.Link || "";
-                if (!link || link === "https://music.youtube.com/" || link === "https://music.youtube.com") {
+                // Aggressive home-page link detection for fallback to search
+                let link = (item.Link || "").trim();
+                const bareURL = link.replace(/\/+$/, "").toLowerCase();
+                const isHomePage = bareURL === "https://music.youtube.com" || bareURL === "http://music.youtube.com";
+
+                if (!link || isHomePage) {
                     link = `https://music.youtube.com/search?q=${encodeURIComponent((item.Artist || "") + ' ' + (item.Song || ""))}`;
                 }
                 const thumb = item.Thumbnail || placeholderThumb;
