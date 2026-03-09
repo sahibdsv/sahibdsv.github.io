@@ -2490,21 +2490,23 @@
         }
 
         .layout-grid.cat-music {
-            border: 1px solid var(--border-subtle);
-            /* Matches link line thickness */
+            outline: 1px solid var(--border-subtle);
+            /* Use outline to avoid layout shifts/shrinkage */
+            outline-offset: -1px;
+            border: none;
+            /* Clear default border */
             background: var(--card-bg);
-            transition: border-width 0.1s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+            transition: outline-color 0.3s var(--ease), outline-width 0.1s var(--ease), box-shadow 0.3s var(--ease);
             position: relative;
             overflow: hidden;
-            /* Ensure aura stays inside */
             width: 300px;
             margin: 0;
             box-sizing: border-box;
         }
 
         .layout-grid.cat-music:hover {
-            border: 2px solid rgba(var(--bright-rgb), 0.3);
-            /* Distinct hover state */
+            outline: 2px solid rgba(var(--bright-rgb), 0.3);
+            outline-offset: -2px;
             box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
         }
 
@@ -2614,14 +2616,15 @@
             object-fit: contain;
         }
 
-        /* Marquee Effect with Soft Fade (High-Fidelity clipping) */
+        /* Marquee Effect with Dual Soft Fades (High-Fidelity) */
         .marquee-container {
             width: 100%;
             overflow: hidden;
             white-space: nowrap;
             position: relative;
-            mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
+            /* Fades on both sides to prevent abrupt cuts during scroll */
+            mask-image: linear-gradient(to right, transparent 0%, black 30px, black calc(100% - 30px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 30px, black calc(100% - 30px), transparent 100%);
         }
 
         .marquee-content {
