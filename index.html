@@ -2512,204 +2512,201 @@
             background: transparent;
             overflow: hidden;
             border-top: 1px solid rgba(var(--bright-rgb), 0.05);
+
             /* Subtle separation from art */
-        }
-
-        /* Titanium Heat-Tint Liquid Aura */
-        .cat-music .steel-waveform-aura {
-            position: absolute;
-            inset: 0;
-            z-index: -1;
-            opacity: 0.25;
-            /* More obvious as requested */
-            pointer-events: none;
-            overflow: hidden;
-            mask-image: linear-gradient(to top, black, transparent);
-        }
-
-        /* Rhythmic Titanium Heartbeat Animation */
-        @keyframes titanium-heartbeat {
-            0% {
-                transform: translate(0, 0) scale(1.0);
-                opacity: 0.3;
+            /* Titanium Heat-Tint Liquid Aura */
+            .cat-music .steel-waveform-aura {
+                position: absolute;
+                inset: 0;
+                z-index: -1;
+                opacity: 0.25;
+                pointer-events: none;
+                overflow: hidden;
+                mask-image: linear-gradient(to top, black, transparent);
             }
 
-            15% {
-                transform: translate(2%, 2%) scale(1.15);
-                opacity: 0.9;
+            /* Sidechain-Inspired Titanium Atmosphere (Flume/Jadu Heart style) */
+            @keyframes titanium-sidechain-swell {
+                0% {
+                    transform: scale(1.0);
+                    opacity: 0.4;
+                }
+
+                /* The 'Duck' / Kick Hit */
+                10% {
+                    transform: scale(0.92) translate(-2%, -2%);
+                    opacity: 0.3;
+                }
+
+                /* Compression Peak */
+                35% {
+                    transform: scale(1.2) translate(5%, 5%);
+                    opacity: 0.9;
+                }
+
+                /* The Swell / Recovery */
+                60% {
+                    transform: scale(1.1) translate(2%, 2%);
+                    opacity: 0.6;
+                }
+
+                /* The Haze / Sustain */
+                100% {
+                    transform: scale(1.0);
+                    opacity: 0.4;
+                }
             }
 
-            /* Lub */
-            30% {
-                transform: translate(0, 0) scale(1.0);
-                opacity: 0.4;
+            .cat-music .steel-waveform-aura::before {
+                content: '';
+                position: absolute;
+                width: 300%;
+                height: 300%;
+                top: -100%;
+                left: -100%;
+                background: radial-gradient(circle at center, #FFD700, #DAA520, #9370DB, #483D8B, #1a2a6c, transparent 75%);
+                background-size: 33% 33%;
+                animation: titanium-sidechain-swell 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+                filter: blur(65px);
+                will-change: transform, opacity;
             }
 
-            45% {
-                transform: translate(4%, 4%) scale(1.22);
-                opacity: 1.0;
+            .cat-music .steel-waveform-aura::after {
+                content: '';
+                position: absolute;
+                width: 300%;
+                height: 300%;
+                top: -80%;
+                left: -80%;
+                background: radial-gradient(circle at center, #87CEEB, #4169E1, #BC8F8F, #8A2BE2, transparent 65%);
+                background-size: 33% 33%;
+                animation: titanium-sidechain-swell 3.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+                animation-delay: -0.8s;
+                filter: blur(55px);
+                opacity: 0.5;
+                will-change: transform, opacity;
             }
 
-            /* Dub - Stronger */
-            70% {
-                transform: translate(0, 0) scale(1.0);
-                opacity: 0.3;
+            .layout-grid.cat-music .row-media {
+                aspect-ratio: 1/1 !important;
+                overflow: hidden;
+                background: #000;
+                border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
             }
 
-            100% {
-                transform: translate(0, 0) scale(1.0);
-                opacity: 0.3;
-            }
-        }
-
-        .cat-music .steel-waveform-aura::before,
-        .cat-music .steel-waveform-aura::after {
-            content: '';
-            position: absolute;
-            width: 300%;
-            height: 300%;
-            top: -100%;
-            left: -100%;
-            filter: blur(55px);
-            will-change: transform, opacity;
-            animation: titanium-heartbeat 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
-
-        .cat-music .steel-waveform-aura::before {
-            background: radial-gradient(circle at center, #FFD700, #DAA520, #9370DB, #483D8B, #1a2a6c, transparent 70%);
-            background-size: 33% 33%;
-        }
-
-        .cat-music .steel-waveform-aura::after {
-            left: -80%;
-            background: radial-gradient(circle at center, #00BFFF, #4169E1, #8A2BE2, transparent 65%);
-            background-size: 33% 33%;
-            animation-delay: 0.12s;
-            opacity: 0.5;
-        }
-
-        .layout-grid.cat-music .row-media {
-            aspect-ratio: 1/1 !important;
-            overflow: hidden;
-            background: #000;
-            /* Backdrop for iframes */
-            border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
-            /* Square bottom edges as requested */
-        }
-
-        .layout-grid.cat-music .row-media img,
-        .layout-grid.cat-music .row-media .sk-img {
-            border-radius: 0 !important;
-            /* Force square bottom for art corners */
-        }
-
-        .layout-grid.cat-music .row-media iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-            border-radius: 0 !important;
-        }
-
-        .music-yt-overlay {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            opacity: 0.6;
-            transition: opacity 0.3s var(--ease);
-            pointer-events: none;
-        }
-
-        .layout-grid.cat-music:hover .music-yt-overlay,
-        .layout-grid.cat-music.is-playing .music-yt-overlay {
-            opacity: 1;
-        }
-
-        .music-yt-overlay img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        /* Marquee Effect on Hover */
-        .marquee-container {
-            width: 100%;
-            overflow: hidden;
-            white-space: nowrap;
-            position: relative;
-        }
-
-        .marquee-content {
-            display: inline-block;
-            transition: transform 0.8s ease-in-out;
-        }
-
-        .layout-grid.cat-music:hover .marquee-content.should-scroll {
-            animation: marquee-scroll 6s linear infinite;
-        }
-
-        @keyframes marquee-scroll {
-            0% {
-                transform: translateX(0);
+            .layout-grid.cat-music .row-media img,
+            .layout-grid.cat-music .row-media .sk-img {
+                border-radius: 0 !important;
             }
 
-            100% {
-                transform: translateX(-50%);
+            .layout-grid.cat-music .row-media iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: block;
+                border-radius: 0 !important;
             }
-        }
 
-        .cat-music .card-info {
-            gap: 0px;
-            /* Reduced gap since we use padding */
-            padding: 10px 14px;
-            padding-right: 45px;
-            /* Leave room for the logo */
-            min-height: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .cat-music h3,
-        .cat-music .music-artist-label {
-            width: fit-content;
-            display: inline-flex !important;
-            /* Force inline-flex to stay on one line with clones */
-            white-space: nowrap;
-        }
-
-        .cat-music .music-artist-label {
-            font-size: 0.85em;
-            /* Cleaner, secondary feel */
-            color: var(--text-dim);
-            opacity: 0.8;
-            width: fit-content;
-            margin-top: 2px;
-            font-weight: 400;
-        }
-
-        .cat-music h3 {
-            margin-bottom: 0px;
-            font-size: 20px !important;
-            /* Perfect match to site cards */
-            line-height: 1.25;
-            opacity: 1;
-            font-weight: 600;
-        }
-
-        @media (max-width: 480px) {
-            .music-card-container {
-                max-width: 100%;
-                margin: 20px auto;
+            .music-yt-overlay {
+                position: absolute;
+                bottom: 15px;
+                right: 15px;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                opacity: 0.6;
+                transition: opacity 0.3s var(--ease);
+                pointer-events: none;
             }
-        }
+
+            .layout-grid.cat-music:hover .music-yt-overlay,
+            .layout-grid.cat-music.is-playing .music-yt-overlay {
+                opacity: 1;
+            }
+
+            .music-yt-overlay img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+
+            /* Marquee Effect with Soft Fade (High-Fidelity clipping) */
+            .marquee-container {
+                width: 100%;
+                overflow: hidden;
+                white-space: nowrap;
+                position: relative;
+                mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
+                -webkit-mask-image: linear-gradient(to right, black calc(100% - 30px), transparent 100%);
+            }
+
+            .marquee-content {
+                display: inline-block;
+                transition: transform 0.8s ease-in-out;
+                padding-right: 15px;
+            }
+
+            .layout-grid.cat-music:hover .marquee-content.should-scroll {
+                animation: marquee-scroll 8s linear infinite;
+            }
+
+            @keyframes marquee-scroll {
+                0% {
+                    transform: translateX(0);
+                }
+
+                100% {
+                    transform: translateX(-50%);
+                }
+            }
+
+            .cat-music .card-info {
+                gap: 0px;
+                padding: 10px 14px;
+                padding-right: 45px;
+                min-height: 60px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                overflow: hidden;
+                position: relative;
+                z-index: 2;
+                background: transparent;
+                border-top: 1px solid rgba(var(--bright-rgb), 0.05);
+            }
+
+            .cat-music h3,
+            .cat-music .music-artist-label {
+                width: fit-content;
+                display: inline-flex !important;
+                white-space: nowrap;
+            }
+
+            .cat-music .music-artist-label {
+                font-size: 0.85em;
+                color: var(--text-dim);
+                opacity: 0.8;
+                margin-top: 2px;
+                font-weight: 400;
+            }
+
+            .cat-music h3 {
+                margin-bottom: 0px;
+                font-size: 20px !important;
+                line-height: 1.25;
+                opacity: 1;
+                font-weight: 600;
+            }
+
+            @media (max-width: 480px) {
+                .music-card-container {
+                    max-width: 100%;
+                    margin: 20px auto;
+                }
+            }
     </style>
 
     <!-- Three.js for 3D model rendering -->
@@ -6046,118 +6043,129 @@
 
     </script>
     <!-- SEO_LINK_START -->
-<div id="seo-content" style="display:none;" aria-hidden="true">
-  <nav id="seo-nav">
-    <a href="#Home">Home</a>
-    <a href="#Professional/Resume">Professional/Resume</a>
-    <a href="#Personal/About">Personal/About</a>
-    <a href="#Professional/SARIT">Professional/SARIT</a>
-    <a href="#Professional/Honda">Professional/Honda</a>
-    <a href="#Professional/Coursework">Professional/Coursework</a>
-    <a href="#Projects/Robotics">Projects/Robotics</a>
-    <a href="#Projects/Rocketry">Projects/Rocketry</a>
-    <a href="#Projects/Design">Projects/Design</a>
-    <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
-    <a href="#Personal/Volunteering">Personal/Volunteering</a>
-    <a href="#Projects/Website">Projects/Website</a>
-    <a href="#Personal/About/Earth">Personal/About/Earth</a>
-    <a href="#Professional/Master">Professional/Master</a>
-    <a href="#Personal/Ideas">Personal/Ideas</a>
-    <a href="#Personal">Personal</a>
-    <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
-    <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
-  </nav>
+    <div id="seo-content" style="display:none;" aria-hidden="true">
+        <nav id="seo-nav">
+            <a href="#Home">Home</a>
+            <a href="#Professional/Resume">Professional/Resume</a>
+            <a href="#Personal/About">Personal/About</a>
+            <a href="#Professional/SARIT">Professional/SARIT</a>
+            <a href="#Professional/Honda">Professional/Honda</a>
+            <a href="#Professional/Coursework">Professional/Coursework</a>
+            <a href="#Projects/Robotics">Projects/Robotics</a>
+            <a href="#Projects/Rocketry">Projects/Rocketry</a>
+            <a href="#Projects/Design">Projects/Design</a>
+            <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
+            <a href="#Personal/Volunteering">Personal/Volunteering</a>
+            <a href="#Projects/Website">Projects/Website</a>
+            <a href="#Personal/About/Earth">Personal/About/Earth</a>
+            <a href="#Professional/Master">Professional/Master</a>
+            <a href="#Personal/Ideas">Personal/Ideas</a>
+            <a href="#Personal">Personal</a>
+            <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
+            <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
+        </nav>
 
-  <article id="seo-content-Professional/Resume">
-    <h2>Resume</h2>
-    <p>Professional resume and experiences of Sahib Virdee.</p>
-  </article>
+        <article id="seo-content-Professional/Resume">
+            <h2>Resume</h2>
+            <p>Professional resume and experiences of Sahib Virdee.</p>
+        </article>
 
-  <article id="seo-content-Personal/About">
-    <h2>About Me</h2>
-    <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
-  </article>
+        <article id="seo-content-Personal/About">
+            <h2>About Me</h2>
+            <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
+        </article>
 
-  <article id="seo-content-Professional/SARIT">
-    <h2>SARIT Micro-EV</h2>
-    <p>[SARIT Mobility-green | 
- About SARIT
-SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe, Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot. Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial transportation within urban environments, making common trips such as home to work or school, convenient and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery, last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban transportation and enhancing the quality of life in cities worldwide.</p>
-  </article>
+        <article id="seo-content-Professional/SARIT">
+            <h2>SARIT Micro-EV</h2>
+            <p>[SARIT Mobility-green |
+                About SARIT
+                SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility
+                solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe,
+                Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental
+                concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to
+                use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot.
+                Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and
+                engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial
+                transportation within urban environments, making common trips such as home to work or school, convenient
+                and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery,
+                last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and
+                powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban
+                transportation and enhancing the quality of life in cities worldwide.</p>
+        </article>
 
-  <article id="seo-content-Professional/Honda">
-    <h2>Honda of Canada</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Honda">
+            <h2>Honda of Canada</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Coursework">
-    <h2>Coursework</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Coursework">
+            <h2>Coursework</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Robotics">
-    <h2>York University Robotics Society</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Robotics">
+            <h2>York University Robotics Society</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Rocketry">
-    <h2>Arbalest Rocketry</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Rocketry">
+            <h2>Arbalest Rocketry</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Design">
-    <h2>Design Projects</h2>
-    <p>[test caption]</p>
-  </article>
+        <article id="seo-content-Projects/Design">
+            <h2>Design Projects</h2>
+            <p>[test caption]</p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/Music">
-    <h2>Music 🎶</h2>
-    <p>Recently Played
-{Recently Played}</p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/Music">
+            <h2>Music 🎶</h2>
+            <p>Recently Played
+                {Recently Played}</p>
+        </article>
 
-  <article id="seo-content-Personal/Volunteering">
-    <h2>Volunteering</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Volunteering">
+            <h2>Volunteering</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Website">
-    <h2>this website</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Website">
+            <h2>this website</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/About/Earth">
-    <h2>the blue marble</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/About/Earth">
+            <h2>the blue marble</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Master">
-    <h2>Master Fabricators</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Master">
+            <h2>Master Fabricators</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Ideas">
-    <h2>Ideas</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Ideas">
+            <h2>Ideas</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal">
-    <h2>{Random Quote}</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal">
+            <h2>{Random Quote}</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/GPS_Art">
-    <h2>GPS Art</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/GPS_Art">
+            <h2>GPS Art</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Hackathons/Siemens">
-    <h2>Realize LIVE 2025</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Hackathons/Siemens">
+            <h2>Realize LIVE 2025</h2>
+            <p></p>
+        </article>
 
-</div>
-<!-- SEO_LINK_END -->
+    </div>
+    <!-- SEO_LINK_END -->
 </body>
 
 </html>
