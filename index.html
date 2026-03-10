@@ -2637,52 +2637,28 @@
             opacity: 1 !important;
         }
 
-        /* Subtly Dynamic "Void Plasma" Placeholder */
-        .music-card-placeholder {
+        /* Minimal Fallback Placeholder */
+        .music-card-fallback {
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 50% 50%, #151525 0%, #050510 100%);
-            overflow: hidden;
+            background: var(--card-bg-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 0;
+            color: var(--text-dim);
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            padding: 20px;
         }
 
-        .music-card-placeholder::before {
-            content: '';
-            position: absolute;
-            inset: -100%;
-            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
-            animation: void-plasma 20s ease-in-out infinite alternate;
-        }
-
-        .music-card-placeholder::after {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
-            background: conic-gradient(from 0deg at 50% 50%, transparent, rgba(139, 92, 246, 0.03) 25%, transparent 50%);
-            animation: void-swirl 30s linear infinite;
-        }
-
-        @keyframes void-plasma {
-            0% {
-                transform: translate(-10%, -10%) scale(1);
-            }
-
-            100% {
-                transform: translate(10%, 10%) scale(1.1);
-            }
-        }
-
-        @keyframes void-swirl {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
+        .music-card-fallback img {
+            width: 48px;
+            height: 48px;
+            opacity: 0.2;
+            object-fit: contain;
+            filter: grayscale(100%);
         }
 
         .music-yt-overlay {
@@ -4261,6 +4237,12 @@
             // The absolute bottom of the sheet represents the newest items.
             // Slice the last 3 rows and reverse them so index 0 is the newest.
             const latestItems = [...musicDb].slice(-3).reverse();
+
+            // Prevent double-render stutter if local cache matches remote data perfectly
+            const renderHash = JSON.stringify(latestItems);
+            if (container.getAttribute('data-last-render') === renderHash) return;
+            container.setAttribute('data-last-render', renderHash);
+
             const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
 
             const cardsHTML = latestItems.map((item, index) => {
@@ -4297,19 +4279,22 @@
                 }
 
                 // Source icon mapping handling explicit 'YT Music' OPSEC update
-                // Source icon mapping handling explicit 'YT Music' OPSEC update
                 let sourceIconHTML = "";
-                if (!item.Source || item.Source === "YT Music" || item.Source === "YouTube Music" || item.Source === "Music (Desktop)") {
+                let isYTMusic = (!item.Source || item.Source === "YT Music" || item.Source === "YouTube Music" || item.Source === "Music (Desktop)");
+
+                if (isYTMusic) {
                     sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
                 } else {
                     sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open Track" style="cursor: pointer; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: white; border-radius: 4px; font-size: 10px; padding: 4px 6px; font-weight: 600;">${safeHTML(item.Source)}</div>`;
                 }
 
+                const fallbackPlaceholder = isYTMusic ? `<img src="${ytLogo}" alt="YT Music">` : `<span>${safeHTML(item.Source || "Music")}</span>`;
+
                 return `
                     <div class="layout-grid cat-music ${liveClass}" data-link="${link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
                             <div class="sk-img loader-overlay"></div>
-                            <div class="music-card-placeholder"></div>
+                            <div class="music-card-fallback">${fallbackPlaceholder}</div>
                             ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.opacity='0'">` : ''}
                         </div>
                         <div class="card-info">
@@ -4414,16 +4399,21 @@
                 };
             }));
 
+            // Prevent double-render stutter if local cache matches remote data perfectly
+            const renderHash = JSON.stringify(cardsData);
+            if (container.getAttribute('data-last-render') === renderHash) return;
+            container.setAttribute('data-last-render', renderHash);
+
             const cardsHTML = cardsData.map((item, index) => {
                 const sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
 
-
+                const fallbackPlaceholder = `<img src="${ytLogo}" alt="YT Music">`;
 
                 return `
                     <div class="layout-grid cat-music" data-link="${item.link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
                             <div class="sk-img loader-overlay"></div>
-                            <div class="music-card-placeholder"></div>
+                            <div class="music-card-fallback">${fallbackPlaceholder}</div>
                             ${item.thumb ? `<img src="${item.thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.opacity='0'">` : ''}
                         </div>
                         <div class="card-info">
@@ -6281,118 +6271,129 @@
 
     </script>
     <!-- SEO_LINK_START -->
-<div id="seo-content" style="display:none;" aria-hidden="true">
-  <nav id="seo-nav">
-    <a href="#Home">Home</a>
-    <a href="#Professional/Resume">Professional/Resume</a>
-    <a href="#Personal/About">Personal/About</a>
-    <a href="#Professional/SARIT">Professional/SARIT</a>
-    <a href="#Professional/Honda">Professional/Honda</a>
-    <a href="#Professional/Coursework">Professional/Coursework</a>
-    <a href="#Projects/Robotics">Projects/Robotics</a>
-    <a href="#Projects/Rocketry">Projects/Rocketry</a>
-    <a href="#Projects/Design">Projects/Design</a>
-    <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
-    <a href="#Personal/Volunteering">Personal/Volunteering</a>
-    <a href="#Projects/Website">Projects/Website</a>
-    <a href="#Personal/About/Earth">Personal/About/Earth</a>
-    <a href="#Professional/Master">Professional/Master</a>
-    <a href="#Personal/Ideas">Personal/Ideas</a>
-    <a href="#Personal">Personal</a>
-    <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
-    <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
-  </nav>
+    <div id="seo-content" style="display:none;" aria-hidden="true">
+        <nav id="seo-nav">
+            <a href="#Home">Home</a>
+            <a href="#Professional/Resume">Professional/Resume</a>
+            <a href="#Personal/About">Personal/About</a>
+            <a href="#Professional/SARIT">Professional/SARIT</a>
+            <a href="#Professional/Honda">Professional/Honda</a>
+            <a href="#Professional/Coursework">Professional/Coursework</a>
+            <a href="#Projects/Robotics">Projects/Robotics</a>
+            <a href="#Projects/Rocketry">Projects/Rocketry</a>
+            <a href="#Projects/Design">Projects/Design</a>
+            <a href="#Personal/Hobbies/Music">Personal/Hobbies/Music</a>
+            <a href="#Personal/Volunteering">Personal/Volunteering</a>
+            <a href="#Projects/Website">Projects/Website</a>
+            <a href="#Personal/About/Earth">Personal/About/Earth</a>
+            <a href="#Professional/Master">Professional/Master</a>
+            <a href="#Personal/Ideas">Personal/Ideas</a>
+            <a href="#Personal">Personal</a>
+            <a href="#Personal/Hobbies/GPS_Art">Personal/Hobbies/GPS Art</a>
+            <a href="#Projects/Hackathons/Siemens">Projects/Hackathons/Siemens</a>
+        </nav>
 
-  <article id="seo-content-Professional/Resume">
-    <h2>Resume</h2>
-    <p>Professional resume and experiences of Sahib Virdee.</p>
-  </article>
+        <article id="seo-content-Professional/Resume">
+            <h2>Resume</h2>
+            <p>Professional resume and experiences of Sahib Virdee.</p>
+        </article>
 
-  <article id="seo-content-Personal/About">
-    <h2>About Me</h2>
-    <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
-  </article>
+        <article id="seo-content-Personal/About">
+            <h2>About Me</h2>
+            <p>Information about Sahib Virdee, Mechanical Design Engineer.</p>
+        </article>
 
-  <article id="seo-content-Professional/SARIT">
-    <h2>SARIT Micro-EV</h2>
-    <p>[SARIT Mobility-green | 
- About SARIT
-SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe, Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot. Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial transportation within urban environments, making common trips such as home to work or school, convenient and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery, last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban transportation and enhancing the quality of life in cities worldwide.</p>
-  </article>
+        <article id="seo-content-Professional/SARIT">
+            <h2>SARIT Micro-EV</h2>
+            <p>[SARIT Mobility-green |
+                About SARIT
+                SARIT International Inc., is a pioneer in the development of sustainable micro and mini mobility
+                solutions. The company owns, manufactures, assembles, supports, and offers services for SARIT (Safe,
+                Affordable, Reliable, Innovative, Transport) vehicles, which are designed to address environmental
+                concerns, urban congestion, and parking challenges. SARIT’s innovative micro vehicles are engineered to
+                use minimal power and maximize space efficiency, fitting four vehicles in a single parking spot.
+                Leveraging the pedigree of its founder, Frank Stronach, who redefined automotive manufacturing and
+                engineering by founding Magna International, SARIT vehicles are ideal for consumer and commercial
+                transportation within urban environments, making common trips such as home to work or school, convenient
+                and efficient. In addition, SARIT manufactures exceptional fleet solutions for last-mile delivery,
+                last-mile transportation and municipal needs. With a focus on advanced technology, robust design, and
+                powerful connectivity solutions, SARIT International Inc. is committed to revolutionizing urban
+                transportation and enhancing the quality of life in cities worldwide.</p>
+        </article>
 
-  <article id="seo-content-Professional/Honda">
-    <h2>Honda of Canada</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Honda">
+            <h2>Honda of Canada</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Coursework">
-    <h2>Coursework</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Coursework">
+            <h2>Coursework</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Robotics">
-    <h2>York University Robotics Society</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Robotics">
+            <h2>York University Robotics Society</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Rocketry">
-    <h2>Arbalest Rocketry</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Rocketry">
+            <h2>Arbalest Rocketry</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Design">
-    <h2>Design Projects</h2>
-    <p>[test caption]</p>
-  </article>
+        <article id="seo-content-Projects/Design">
+            <h2>Design Projects</h2>
+            <p>[test caption]</p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/Music">
-    <h2>Music</h2>
-    <p>Recently Played
-{Recently Played}</p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/Music">
+            <h2>Music</h2>
+            <p>Recently Played
+                {Recently Played}</p>
+        </article>
 
-  <article id="seo-content-Personal/Volunteering">
-    <h2>Volunteering</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Volunteering">
+            <h2>Volunteering</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Website">
-    <h2>this website</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Website">
+            <h2>this website</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/About/Earth">
-    <h2>the blue marble</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/About/Earth">
+            <h2>the blue marble</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Professional/Master">
-    <h2>Master Fabricators</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Professional/Master">
+            <h2>Master Fabricators</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Ideas">
-    <h2>Ideas</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Ideas">
+            <h2>Ideas</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal">
-    <h2>{Random Quote}</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal">
+            <h2>{Random Quote}</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Personal/Hobbies/GPS_Art">
-    <h2>GPS Art</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Personal/Hobbies/GPS_Art">
+            <h2>GPS Art</h2>
+            <p></p>
+        </article>
 
-  <article id="seo-content-Projects/Hackathons/Siemens">
-    <h2>Realize LIVE 2025</h2>
-    <p></p>
-  </article>
+        <article id="seo-content-Projects/Hackathons/Siemens">
+            <h2>Realize LIVE 2025</h2>
+            <p></p>
+        </article>
 
-</div>
-<!-- SEO_LINK_END -->
+    </div>
+    <!-- SEO_LINK_END -->
 </body>
 
 </html>
