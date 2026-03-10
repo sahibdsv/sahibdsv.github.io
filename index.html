@@ -3063,15 +3063,40 @@
         }
 
         // Live Dashboard Polling
+        let musicStateHistory = []; // Tracks hashes of recently seen valid states to reject stale CDN edge nodes
+
         function startLiveMusicPolling() {
             // Check for new songs every 10 seconds (10000ms)
             setInterval(async () => {
                 try {
                     const freshMusicDb = await fetchCSV(CONFIG.music_sheet).catch(() => null);
                     if (freshMusicDb && freshMusicDb.length > 0) {
+                        // Google Sheets /pub URLs are distributed across edge nodes which cache independently.
+                        // This causes "cache bouncing" where consecutive fetches hit different nodes (new vs stale).
+                        // To fix this, we hash the last ~10 tracks. If we receive a state we've already seen, 
+                        // but it's NOT our current state, we are interacting with a stale ghost node.
+                        
+                        const stateHash = JSON.stringify(freshMusicDb.slice(-10));
+                        
+                        if (musicStateHistory.length > 0) {
+                            const currentStateHash = musicStateHistory[musicStateHistory.length - 1];
+                            
+                            if (stateHash !== currentStateHash) {
+                                if (musicStateHistory.includes(stateHash)) {
+                                    // Ghost node detected! We've seen this exact past state recently. Ignore it.
+                                    return;
+                                }
+                                // Completely novel state!
+                                musicStateHistory.push(stateHash);
+                                // Keep history window to the last 20 states (~max changes in a 5 min CDN TTL window)
+                                if (musicStateHistory.length > 20) musicStateHistory.shift();
+                            }
+                        } else {
+                            musicStateHistory.push(stateHash);
+                        }
+
                         musicDb = freshMusicDb;
-                        // The renderRecentMusic fn handles diffing (via data-last-render hash), 
-                        // so it will only visibly update the DOM if the song actually changed.
+                        // The renderRecentMusic fn handles diffing (via data-last-render hash) for the DOM,
                         document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
                     }
                 } catch (e) {
