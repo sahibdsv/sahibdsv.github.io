@@ -4247,11 +4247,13 @@
                 }
 
                 // Source icon mapping handling explicit 'YT Music' OPSEC update
+                // Source icon mapping handling explicit 'YT Music' OPSEC update
                 let sourceIconHTML = "";
+                const extLinkAction = `event.stopPropagation(); window.open('${link}', '_blank');`;
                 if (!item.Source || item.Source === "YT Music" || item.Source === "YouTube Music" || item.Source === "Music (Desktop)") {
-                    sourceIconHTML = `<div class="music-yt-overlay"><img src="${ytLogo}" alt="YT Music"></div>`;
+                    sourceIconHTML = `<div class="music-yt-overlay" onclick="${extLinkAction}" data-tooltip="Open in YouTube Music" style="cursor: pointer; z-index: 10;"><img src="${ytLogo}" alt="YT Music"></div>`;
                 } else {
-                    sourceIconHTML = `<div class="music-yt-overlay" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: white; border-radius: 4px; font-size: 10px; padding: 4px 6px; font-weight: 600;">${safeHTML(item.Source)}</div>`;
+                    sourceIconHTML = `<div class="music-yt-overlay" onclick="${extLinkAction}" data-tooltip="Open Track" style="cursor: pointer; z-index: 10; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: white; border-radius: 4px; font-size: 10px; padding: 4px 6px; font-weight: 600;">${safeHTML(item.Source)}</div>`;
                 }
 
                 return `
