@@ -4849,6 +4849,9 @@
             const baseTitle = "Sahib Virdee";
             let pageTitle = entry.Title || "";
 
+            // Strip dynamic tags like {Random Quote} from the tab title first
+            pageTitle = pageTitle.replace(/\{?random quote\}?/gi, '').trim();
+
             if (!pageTitle) {
                 if (cleanPath === "Home") {
                     pageTitle = "Mechanical Design Engineer Portfolio";
@@ -4858,9 +4861,6 @@
                     pageTitle = cleanPath.split("/").pop();
                 }
             }
-
-            // Strip dynamic tags like {Random Quote} from the tab title
-            pageTitle = pageTitle.replace(/\{?random quote\}?/gi, '').trim();
 
             const fullTitle = cleanPath === "Home" ? `${baseTitle} | ${pageTitle}` : `${pageTitle} | ${baseTitle}`;
 
