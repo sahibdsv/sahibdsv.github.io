@@ -3063,16 +3063,8 @@
 
         // Cache Management
         async function loadFromCache() {
-            try {
-                const cached = localStorage.getItem(CACHE_KEY);
-                if (!cached) return null;
-
-                const parsed = JSON.parse(cached);
-                // Return data instantly regardless of age (Stale-while-revalidate)
-                return parsed.data;
-            } catch (e) {
-                return null;
-            }
+            // Disabled local caching per request to ensure real-time data accuracy
+            return null;
         }
 
         async function fetchDataAndCache() {
@@ -3113,17 +3105,7 @@
                 });
                 window.db = db;
 
-                // Cache the data 
-                const cacheData = {
-                    main: db,
-                    quotes: quotesDb,
-                    resume: resumeDb,
-                    music: musicDb
-                };
-                localStorage.setItem(CACHE_KEY, JSON.stringify({
-                    ts: Date.now(),
-                    data: cacheData
-                }));
+                // Caching removed to enforce direct fetching
 
                 // Auto-refresh any dynamic components currently in the DOM
                 document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
@@ -3136,7 +3118,9 @@
         }
 
         function fetchCSV(url) {
-            return fetch(url)
+            // Append cache-buster to completely bypass browser caching of Google Sheets exports
+            const cacheBustedUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+            return fetch(cacheBustedUrl, { cache: 'no-store' })
                 .then(res => res.text())
                 .then(text => parseCSV(text));
         }
