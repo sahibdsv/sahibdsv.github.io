@@ -2620,14 +2620,21 @@
         .layout-grid.cat-music .row-media img,
         .layout-grid.cat-music .row-media .sk-img {
             border-radius: 0 !important;
+            position: relative;
+            z-index: 1;
         }
 
-        .layout-grid.cat-music .row-media iframe {
+        .layout-grid.cat-music .row-media img {
             width: 100%;
             height: 100%;
-            border: none;
-            display: block;
-            border-radius: 0 !important;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s var(--ease);
+        }
+
+        /* Specific rule to show loaded images */
+        .layout-grid.cat-music .row-media img.loaded {
+            opacity: 1 !important;
         }
 
         /* Subtly Dynamic "Void Plasma" Placeholder */
