@@ -2655,8 +2655,14 @@
             justify-content: center;
             z-index: 10;
             opacity: 0.6;
-            transition: opacity 0.3s var(--ease);
-            pointer-events: none;
+            transition: opacity 0.3s var(--ease), transform 0.2s var(--ease);
+            pointer-events: auto;
+            /* Crucial: allows this icon to intercept clicks from the parent card */
+        }
+
+        .music-yt-overlay:hover {
+            transform: scale(1.2) translateY(-1px);
+            opacity: 1 !important;
         }
 
         .layout-grid.cat-music:hover .music-yt-overlay,
