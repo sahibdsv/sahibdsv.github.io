@@ -4417,8 +4417,7 @@
             const cardsHTML = cardsData.map((item, index) => {
                 const sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
 
-                // Chained fallback exactly replicating Unified Media Renderer's resilient thumbnail loading
-                const fallbackChain = `if(!this.dataset.fallback){this.dataset.fallback='1'; this.src='https://img.youtube.com/vi/${item.ytId}/hqdefault.jpg';} else if(this.dataset.fallback=='1'){this.dataset.fallback='2'; this.src='https://img.youtube.com/vi/${item.ytId}/mqdefault.jpg';} else {this.src='${placeholderThumb}';}`;
+
 
                 return `
                     <div class="layout-grid cat-music" data-link="${item.link}" onclick="return playMusicInCard(event)">
