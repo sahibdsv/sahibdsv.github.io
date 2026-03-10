@@ -112,8 +112,9 @@
             --op-low: 0.1;
             --surface-subtle: rgba(var(--bright-rgb), var(--op-subtle));
             --surface-strong: rgba(var(--bright-rgb), 0.2);
-            --border: var(--border-subtle);
             --border-hover: var(--border-strong);
+            --music-fallback-opacity: 0.15;
+            --music-fallback-inv: 1;
         }
 
         :root[data-theme="light"] {
@@ -154,6 +155,8 @@
             --op-low: 0.1;
             --surface-subtle: rgba(var(--bright-rgb), var(--op-subtle));
             --surface-strong: rgba(var(--bright-rgb), 0.2);
+            --music-fallback-opacity: 0.12;
+            --music-fallback-inv: 0;
         }
 
         #main-header,
@@ -2647,19 +2650,24 @@
             align-items: center;
             justify-content: center;
             z-index: 0;
-            color: var(--text-dim);
-            font-size: 14px;
-            font-weight: 500;
-            text-align: center;
-            padding: 20px;
+            padding: 0;
+            /* Resetting padding to guarantee absolute centering */
         }
 
         .music-card-fallback img {
-            width: 48px;
-            height: 48px;
-            opacity: 0.2;
+            width: 64px;
+            /* Medium size as requested */
+            height: 64px;
+            opacity: var(--music-fallback-opacity);
             object-fit: contain;
-            filter: grayscale(100%);
+            filter: brightness(0) invert(var(--music-fallback-inv));
+        }
+
+        .music-card-fallback span {
+            color: var(--text-dim);
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.5;
         }
 
         .music-yt-overlay {
@@ -4294,7 +4302,7 @@
                 return `
                     <div class="layout-grid cat-music ${liveClass}" data-link="${link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
-                            <div class="sk-img loader-overlay"></div>
+                            ${thumb ? `<div class="sk-img loader-overlay"></div>` : ''}
                             <div class="music-card-fallback">${fallbackPlaceholder}</div>
                             ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
@@ -4413,7 +4421,7 @@
                 return `
                     <div class="layout-grid cat-music" data-link="${item.link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
-                            <div class="sk-img loader-overlay"></div>
+                            ${item.thumb ? `<div class="sk-img loader-overlay"></div>` : ''}
                             <div class="music-card-fallback">${fallbackPlaceholder}</div>
                             ${item.thumb ? `<img src="${item.thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
