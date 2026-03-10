@@ -3102,7 +3102,7 @@
                 } catch (e) {
                     // Fail silently to avoid console spam, will retry next interval
                 }
-            }, 10000);
+            }, 20000);
         }
 
         // Cache Management
@@ -3162,9 +3162,9 @@
         }
 
         function fetchCSV(url) {
-            // Append cache-buster to completely bypass browser caching of Google Sheets exports
-            const cacheBustedUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
-            return fetch(cacheBustedUrl, { cache: 'no-store' })
+            // Use browser directive to skip local cache, but DO NOT modify the URL with timestamps.
+            // Bypassing Google's CDN with dynamic query parameters triggers 429 Rate Limits from the origin server.
+            return fetch(url, { cache: 'no-store' })
                 .then(res => res.text())
                 .then(text => parseCSV(text));
         }
