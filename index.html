@@ -4317,21 +4317,38 @@
             const cardsData = await Promise.all(urls.map(async (rawLink) => {
                 const bareURL = rawLink.trim();
                 const ytId = getYouTubeID(bareURL);
-                const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : placeholderThumb;
 
                 let artist = "Unknown Artist";
                 let track = "Unknown Track";
+                let thumb = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : placeholderThumb;
+                let fromDb = false;
 
-                try {
-                    // Grab high-fidelity metadata from public oembed wrapper without violating CORS
-                    const noembedUrl = `https://noembed.com/embed?url=${encodeURIComponent(bareURL)}`;
-                    const res = await fetch(noembedUrl);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.title) track = data.title;
-                        if (data.author_name) artist = data.author_name.replace(" - Topic", "");
+                // 1. Cross-reference with our Music Logger DB for high-fidelity square album art
+                if (typeof musicDb !== 'undefined') {
+                    const dbMatch = musicDb.find(item => item.Link && (item.Link.includes(ytId) || item.Link === bareURL));
+                    if (dbMatch) {
+                        if (dbMatch.Thumbnail) {
+                            thumb = dbMatch.Thumbnail;
+                            fromDb = true;
+                        }
+                        if (dbMatch.Artist) artist = dbMatch.Artist;
+                        if (dbMatch.Song || dbMatch.Track) track = dbMatch.Song || dbMatch.Track;
                     }
-                } catch (e) { }
+                }
+
+                // 2. Fallback to scraping NoEmbed if it's a completely novel track we haven't logged
+                if (!fromDb || artist === "Unknown Artist" || track === "Unknown Track") {
+                    try {
+                        // Grab high-fidelity metadata from public oembed wrapper without violating CORS
+                        const noembedUrl = `https://noembed.com/embed?url=${encodeURIComponent(bareURL)}`;
+                        const res = await fetch(noembedUrl);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.title && track === "Unknown Track") track = data.title;
+                            if (data.author_name && artist === "Unknown Artist") artist = data.author_name.replace(" - Topic", "");
+                        }
+                    } catch (e) { }
+                }
 
                 return {
                     link: bareURL,
