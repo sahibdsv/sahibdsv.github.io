@@ -2640,6 +2640,14 @@
             opacity: 1 !important;
         }
 
+        .layout-grid.cat-music .row-media iframe {
+            width: 100% !important;
+            height: 100% !important;
+            border: 0;
+            display: block;
+            pointer-events: auto;
+        }
+
         /* Minimal Fallback Placeholder */
         .music-card-fallback {
             position: absolute;
@@ -4499,6 +4507,8 @@
                     iframe.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&origin=${encodeURIComponent(origin)}`;
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
 
                     mediaRow.innerHTML = '';
                     mediaRow.appendChild(iframe);
