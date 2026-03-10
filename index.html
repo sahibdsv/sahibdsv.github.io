@@ -4510,21 +4510,32 @@
             if (ytId) {
                 const mediaRow = card.querySelector('.row-media');
                 if (mediaRow) {
+                    // 1. Stop any other currently playing cards
+                    document.querySelectorAll('.layout-grid.cat-music.is-playing').forEach(pCard => {
+                        const pMedia = pCard.querySelector('.row-media');
+                        const originalHTML = pCard.getAttribute('data-original-media');
+                        if (pMedia && originalHTML) {
+                            pMedia.innerHTML = originalHTML;
+                            pCard.classList.remove('is-playing');
+                            const pAura = pCard.querySelector('.steel-waveform-aura');
+                            if (pAura) pAura.style.display = '';
+                        }
+                    });
+
+                    // 2. Save current state if not already saved
+                    if (!card.getAttribute('data-original-media')) {
+                        card.setAttribute('data-original-media', mediaRow.innerHTML);
+                    }
+
                     const iframe = document.createElement('iframe');
-                    // Use youtube-nocookie and add origin for better embed compatibility
                     const origin = window.location.origin;
                     iframe.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&origin=${encodeURIComponent(origin)}`;
                     iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                     iframe.allowFullscreen = true;
-                    iframe.style.width = '100%';
-                    iframe.style.height = '100%';
+                    // Note: CSS now handles width/height 100% natively in cat-music .row-media iframe rule
 
                     mediaRow.innerHTML = '';
                     mediaRow.appendChild(iframe);
-
-                    // Keep the YouTube logo visible (optional) 
-                    // const logo = card.querySelector('.music-yt-overlay');
-                    // if (logo) logo.style.display = 'none';
 
                     const aura = card.querySelector('.steel-waveform-aura');
                     if (aura) aura.style.display = 'none';
