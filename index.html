@@ -2615,6 +2615,7 @@
             overflow: hidden;
             background: #000;
             border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
+            position: relative;
         }
 
         .layout-grid.cat-music .row-media img.media-enter,
@@ -4295,7 +4296,7 @@
                         <div class="row-media">
                             <div class="sk-img loader-overlay"></div>
                             <div class="music-card-fallback">${fallbackPlaceholder}</div>
-                            ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.opacity='0'">` : ''}
+                            ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
                         <div class="card-info">
                             ${atmosphereHTML}
@@ -4414,7 +4415,7 @@
                         <div class="row-media">
                             <div class="sk-img loader-overlay"></div>
                             <div class="music-card-fallback">${fallbackPlaceholder}</div>
-                            ${item.thumb ? `<img src="${item.thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.opacity='0'">` : ''}
+                            ${item.thumb ? `<img src="${item.thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
                         <div class="card-info">
                             <div class="marquee-container track-marquee">
