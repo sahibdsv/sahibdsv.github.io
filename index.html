@@ -2617,14 +2617,14 @@
             border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
         }
 
-        .layout-grid.cat-music .row-media img,
+        .layout-grid.cat-music .row-media img.media-enter,
         .layout-grid.cat-music .row-media .sk-img {
             border-radius: 0 !important;
             position: relative;
             z-index: 1;
         }
 
-        .layout-grid.cat-music .row-media img {
+        .layout-grid.cat-music .row-media img.media-enter {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -2633,7 +2633,7 @@
         }
 
         /* Specific rule to show loaded images */
-        .layout-grid.cat-music .row-media img.loaded {
+        .layout-grid.cat-music .row-media img.media-enter.loaded {
             opacity: 1 !important;
         }
 
