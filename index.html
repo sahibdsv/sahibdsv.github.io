@@ -2653,15 +2653,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: 50;
             opacity: 0.6;
-            transition: opacity 0.3s var(--ease), transform 0.2s var(--ease);
+            transition: opacity 0.3s var(--ease), transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: auto;
             /* Crucial: allows this icon to intercept clicks from the parent card */
         }
 
         .music-yt-overlay:hover {
-            transform: scale(1.2) translateY(-1px);
+            transform: scale(1.35) translateY(-2px);
             opacity: 1 !important;
         }
 
@@ -4255,11 +4255,10 @@
                 // Source icon mapping handling explicit 'YT Music' OPSEC update
                 // Source icon mapping handling explicit 'YT Music' OPSEC update
                 let sourceIconHTML = "";
-                const extLinkAction = `event.stopPropagation(); window.open('${link}', '_blank');`;
                 if (!item.Source || item.Source === "YT Music" || item.Source === "YouTube Music" || item.Source === "Music (Desktop)") {
-                    sourceIconHTML = `<div class="music-yt-overlay" onclick="${extLinkAction}" data-tooltip="Open in YouTube Music" style="cursor: pointer; z-index: 10;"><img src="${ytLogo}" alt="YT Music"></div>`;
+                    sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
                 } else {
-                    sourceIconHTML = `<div class="music-yt-overlay" onclick="${extLinkAction}" data-tooltip="Open Track" style="cursor: pointer; z-index: 10; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: white; border-radius: 4px; font-size: 10px; padding: 4px 6px; font-weight: 600;">${safeHTML(item.Source)}</div>`;
+                    sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open Track" style="cursor: pointer; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: white; border-radius: 4px; font-size: 10px; padding: 4px 6px; font-weight: 600;">${safeHTML(item.Source)}</div>`;
                 }
 
                 return `
@@ -4316,6 +4315,15 @@
         function playMusicInCard(event) {
             const card = event.currentTarget;
             const link = card.getAttribute('data-link');
+
+            // Explicitly handle Outward Redirection via Corner Badge first
+            if (event && event.target.closest('.music-yt-overlay')) {
+                event.preventDefault();
+                event.stopPropagation();
+                window.open(link, '_blank');
+                return false;
+            }
+
             const ytId = getYouTubeID(link);
 
             // Critical for ensuring we don't redirect or do anything else
