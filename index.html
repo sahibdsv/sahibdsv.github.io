@@ -4140,6 +4140,7 @@
             container.querySelectorAll('[data-needs-init="true"]').forEach(el => {
                 if (el.classList.contains("layout-quote")) renderQuoteCard(el);
                 if (el.getAttribute('data-type') === 'recent-music') renderRecentMusic(el);
+                if (el.getAttribute('data-type') === 'music-cluster') renderMusicCluster(el);
                 el.removeAttribute('data-needs-init');
             });
 
@@ -4286,6 +4287,103 @@
             container.innerHTML = `
                 <div class="music-sections-container">
                     <div class="music-grid" style="--music-cols: ${latestItems.length}">
+                        ${cardsHTML}
+                    </div>
+                </div>
+            `;
+
+            // Initialization for marquee
+            setTimeout(() => {
+                const marqueeContents = container.querySelectorAll('.marquee-content');
+                marqueeContents.forEach(el => {
+                    const parentWidth = el.parentElement.clientWidth;
+                    const contentWidth = el.scrollWidth;
+
+                    if (contentWidth > parentWidth - 5) {
+                        el.classList.add('should-scroll');
+                        el.parentElement.classList.add('has-marquee');
+                        const content = el.innerHTML;
+                        el.innerHTML = `
+                            <span class="marquee-clone">${content}</span>
+                            <span style="display:inline-block; width:100px;"></span>
+                            <span class="marquee-clone">${content}</span>
+                        `;
+                        el.style.display = 'inline-flex';
+                        el.style.alignItems = 'center';
+                    }
+                });
+            }, 100);
+        }
+
+        async function renderMusicCluster(container) {
+            const urlsRaw = container.getAttribute('data-urls') || "";
+            const urls = urlsRaw.split(',').filter(Boolean);
+            if (urls.length === 0) return;
+
+            const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
+            const placeholderThumb = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop";
+
+            // Show a tiny loading skeleton immediately to prevent layout jumps
+            container.innerHTML = `<div class="music-sections-container"><div class="sk-img loader-overlay" style="border-radius:12px; height:80px; width:100%;"></div></div>`;
+
+            // Fetch details for each independently 
+            const cardsData = await Promise.all(urls.map(async (rawLink) => {
+                const bareURL = rawLink.trim();
+                const ytId = getYouTubeID(bareURL);
+                const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : placeholderThumb;
+
+                let artist = "Unknown Artist";
+                let track = "Unknown Track";
+
+                try {
+                    // Grab high-fidelity metadata from public oembed wrapper without violating CORS
+                    const noembedUrl = `https://noembed.com/embed?url=${encodeURIComponent(bareURL)}`;
+                    const res = await fetch(noembedUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.title) track = data.title;
+                        if (data.author_name) artist = data.author_name.replace(" - Topic", "");
+                    }
+                } catch (e) { }
+
+                return {
+                    link: bareURL,
+                    ytId: ytId,
+                    artist: safeHTML(artist),
+                    track: safeHTML(track),
+                    thumb: thumb,
+                    source: "YT Music"
+                };
+            }));
+
+            const cardsHTML = cardsData.map((item, index) => {
+                const sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
+
+                // Chained fallback exactly replicating Unified Media Renderer's resilient thumbnail loading
+                const fallbackChain = `if(!this.dataset.fallback){this.dataset.fallback='1'; this.src='https://img.youtube.com/vi/${item.ytId}/hqdefault.jpg';} else if(this.dataset.fallback=='1'){this.dataset.fallback='2'; this.src='https://img.youtube.com/vi/${item.ytId}/mqdefault.jpg';} else {this.src='${placeholderThumb}';}`;
+
+                return `
+                    <div class="layout-grid cat-music" data-link="${item.link}" onclick="return playMusicInCard(event)">
+                        <div class="row-media">
+                            <div class="sk-img loader-overlay"></div>
+                            <img src="${item.thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="${item.ytId ? fallbackChain : `this.src='${placeholderThumb}'`}">
+                        </div>
+                        <div class="card-info">
+                            <div class="marquee-container track-marquee">
+                                <span class="marquee-content"><h3 class="fill-anim">${item.track}</h3></span>
+                            </div>
+                            <div class="marquee-container artist-marquee">
+                                <span class="marquee-content"><div class="music-artist-label">${item.artist}</div></span>
+                            </div>
+                        </div>
+                        ${sourceIconHTML}
+                    </div>
+                `;
+            }).join("");
+
+            container.innerHTML = `
+                <div class="music-sections-container">
+                    <div class="music-grid" style="--music-cols: ${cardsData.length}">
                         ${cardsHTML}
                     </div>
                 </div>
@@ -5039,6 +5137,15 @@
             }
 
             if (allMediaMatches.length > 0 && allTextMatches) {
+                // If every item is a pure YT Music URL, trigger the dynamic music-card renderer
+                const allMusicCards = allMediaMatches.every(m => m.type === 'music-card');
+                if (allMusicCards) {
+                    return {
+                        type: 'music-cluster',
+                        items: allMediaMatches
+                    };
+                }
+
                 // If it's more than one item, it's a gallery
                 if (allMediaMatches.length > 1) {
                     return {
@@ -5133,7 +5240,12 @@
 
             // 1. YouTube (including Music)
             const ytId = getYouTubeID(text);
-            if (ytId) return { type: 'youtube', id: ytId, url: text };
+            if (ytId) {
+                if (text.includes('music.youtube.com')) {
+                    return { type: 'music-card', id: ytId, url: text };
+                }
+                return { type: 'youtube', id: ytId, url: text };
+            }
 
             // 2. GLB / 3D Models
             if (text.match(/\.glb(\?.*)?(?![\w-])/i) || text.match(/assets\/models\/.*\.glb/i)) {
@@ -5333,6 +5445,10 @@
 
                 case 'music':
                     return `<div class="music-embed-container" data-needs-init="true" data-type="recent-music"></div>`;
+
+                case 'music-cluster':
+                    const clusterUrls = block.items.map(i => i.url).join(',');
+                    return `<div class="music-embed-container" data-needs-init="true" data-type="music-cluster" data-urls="${clusterUrls}"></div>`;
 
                 case 'card':
                     return `<div class="markdown-single-card" style="margin: 20px 0;">${renderCardHTML(block.data, contextCategory)}</div>`;
