@@ -5373,7 +5373,8 @@
             }
 
             // 3.5 GeoJSON / GPS Visualizer Art
-            if (text.match(/\.geojson(\?.*)?(?![\w-])/i) || text.match(/assets\/GPX\/.*\.geojson/i)) {
+            if (text.match(/\.geojson(?:-[A-Z]{1,2})?(\?.*)?(?![\w-])/i) || text.match(/assets\/GPX\/.*\.geojson(?:-[A-Z]{1,2})?/i)) {
+                // If it doesn't already have an HTTP or assets prefix, add it. (Preserve the suffix for init parsing)
                 const url = (text.startsWith('assets/') || text.startsWith('http')) ? text : `assets/GPX/${text}`;
                 return { type: 'geojson', url: url };
             }
@@ -5845,9 +5846,23 @@
             // Split to bypass aggressive GitHub secret scanners that confuse 'pk' public keys with 'sk' private keys.
             mapboxgl.accessToken = 'pk.' + 'eyJ1Ijoic2FoaWJkc3YiLCJhIjoiY21tbGY2YW5lMWJhMjJwcHlka3l4eWh5cSJ9.fZj2rE1j3Eb7xn013s1DHA';
 
+            let realUrl = geojsonUrl;
+            let orientationBearing = -17.6; // Default artistic twist
+
+            // Extract explicit bearing from URL suffix (e.g. .geojson-NW)
+            const bearingFormatMatch = geojsonUrl.match(/\.geojson-([NSEW]{1,2})(?:\?.*)?$/i);
+            if (bearingFormatMatch) {
+                const dir = bearingFormatMatch[1].toUpperCase();
+                realUrl = geojsonUrl.replace(`-${dir}`, '');
+                const bearingMap = { 'N': 0, 'NE': 45, 'E': 90, 'SE': 135, 'S': 180, 'SW': 225, 'W': 270, 'NW': 315 };
+                if (bearingMap[dir] !== undefined) {
+                    orientationBearing = bearingMap[dir];
+                }
+            }
+
             try {
                 // Fetch GeoJSON directly to evaluate bounds before loading
-                const geoReq = await fetch(geojsonUrl);
+                const geoReq = await fetch(realUrl);
                 const geoData = await geoReq.json();
 
                 const bounds = new mapboxgl.LngLatBounds();
@@ -5880,44 +5895,54 @@
                     container: containerId,
                     style: styleUrl,
                     pitch: 45,       // Artistic isometric lean
-                    bearing: -17.6,  // Subtle twist
+                    bearing: orientationBearing, // Uses explicit suffix or default twist
                     interactive: true,
                     attributionControl: false // Minimalist aesthetic
                 });
 
+                // Prevent cursor trap where map intercepts all scroll events
+                map.scrollZoom.disable();
+
+                const addMapboxArtLayers = () => {
+                    const currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent-personal').trim() || '#00e676';
+                    
+                    if (!map.getSource('route')) {
+                        map.addSource('route', { 'type': 'geojson', 'data': geoData });
+                    }
+                    if (!map.getLayer('route-glow')) {
+                        map.addLayer({
+                            'id': 'route-glow', 'type': 'line', 'source': 'route',
+                            'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                            'paint': { 'line-color': currentAccent, 'line-width': 12, 'line-blur': 12, 'line-opacity': 0.3 }
+                        });
+                    }
+                    if (!map.getLayer('route')) {
+                        map.addLayer({
+                            'id': 'route', 'type': 'line', 'source': 'route',
+                            'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                            'paint': { 'line-color': currentAccent, 'line-width': 3, 'line-opacity': 0.9 }
+                        });
+                    }
+                };
+
+                // Mapbox setStyle wipes all sources and layers, so we must inject them cleanly 
+                // every time the style physically finishes loading.
+                map.on('style.load', () => {
+                    addMapboxArtLayers();
+                });
+
                 map.on('load', () => {
                     if (hasCoords) {
-                        map.fitBounds(bounds, { padding: 40, duration: 0, pitch: 45, bearing: -17.6 });
+                        map.fitBounds(bounds, { padding: 40, duration: 0, pitch: 45, bearing: orientationBearing });
                     }
 
-                    map.addSource('route', { 'type': 'geojson', 'data': geoData });
-
-                    // Ghost/Glow Base Layer
-                    map.addLayer({
-                        'id': 'route-glow',
-                        'type': 'line',
-                        'source': 'route',
-                        'layout': { 'line-join': 'round', 'line-cap': 'round' },
-                        'paint': {
-                            'line-color': accentColor,
-                            'line-width': 12,
-                            'line-blur': 12,
-                            'line-opacity': 0.3
-                        }
+                    // Dynamically react to theme changes
+                    const observer = new MutationObserver(() => {
+                        const newIsLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+                        map.setStyle(newIsLightMode ? 'mapbox://styles/mapbox/light-v11' : 'mapbox://styles/mapbox/dark-v11');
                     });
-
-                    // Sharp Center Line Art
-                    map.addLayer({
-                        'id': 'route',
-                        'type': 'line',
-                        'source': 'route',
-                        'layout': { 'line-join': 'round', 'line-cap': 'round' },
-                        'paint': {
-                            'line-color': accentColor,
-                            'line-width': 3,
-                            'line-opacity': 0.9
-                        }
-                    });
+                    
+                    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
                     // Re-trigger layout calculation just in case container flex flexed
                     setTimeout(() => map.resize(), 200);
