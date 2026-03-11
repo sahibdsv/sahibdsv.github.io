@@ -4287,6 +4287,29 @@
                                 <div class="quote-footer"><span class="author"> &mdash; ${author}</span>${refreshBtnHTML}</div>`;
         }
 
+        window.__initMusicMarquee = function(container) {
+            const marqueeContents = container.querySelectorAll('.marquee-content');
+            marqueeContents.forEach(el => {
+                if (el.classList.contains('marquee-processed')) return; // Avoid double processing
+                const parentWidth = el.parentElement.clientWidth;
+                const contentWidth = el.scrollWidth;
+
+                if (contentWidth > parentWidth - 5) {
+                    el.classList.add('should-scroll');
+                    el.classList.add('marquee-processed');
+                    el.parentElement.classList.add('has-marquee');
+                    const content = el.innerHTML;
+                    el.innerHTML = `
+                        <span class="marquee-clone">${content}</span>
+                        <span style="display:inline-block; width:100px;"></span>
+                        <span class="marquee-clone">${content}</span>
+                    `;
+                    el.style.display = 'inline-flex';
+                    el.style.alignItems = 'center';
+                }
+            });
+        };
+
         function renderRecentMusic(container) {
             if (musicDb.length === 0) {
                 container.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">No music logged recently.</div>`;
@@ -4380,26 +4403,7 @@
             `;
 
             // Initialization for marquee
-            setTimeout(() => {
-                const marqueeContents = container.querySelectorAll('.marquee-content');
-                marqueeContents.forEach(el => {
-                    const parentWidth = el.parentElement.clientWidth;
-                    const contentWidth = el.scrollWidth;
-
-                    if (contentWidth > parentWidth - 5) {
-                        el.classList.add('should-scroll');
-                        el.parentElement.classList.add('has-marquee');
-                        const content = el.innerHTML;
-                        el.innerHTML = `
-                            <span class="marquee-clone">${content}</span>
-                            <span style="display:inline-block; width:100px;"></span>
-                            <span class="marquee-clone">${content}</span>
-                        `;
-                        el.style.display = 'inline-flex';
-                        el.style.alignItems = 'center';
-                    }
-                });
-            }, 100);
+            setTimeout(() => window.__initMusicMarquee(container), 100);
         }
 
         async function renderMusicCluster(container) {
@@ -4498,26 +4502,7 @@
             `;
 
             // Initialization for marquee
-            setTimeout(() => {
-                const marqueeContents = container.querySelectorAll('.marquee-content');
-                marqueeContents.forEach(el => {
-                    const parentWidth = el.parentElement.clientWidth;
-                    const contentWidth = el.scrollWidth;
-
-                    if (contentWidth > parentWidth - 5) {
-                        el.classList.add('should-scroll');
-                        el.parentElement.classList.add('has-marquee');
-                        const content = el.innerHTML;
-                        el.innerHTML = `
-                            <span class="marquee-clone">${content}</span>
-                            <span style="display:inline-block; width:100px;"></span>
-                            <span class="marquee-clone">${content}</span>
-                        `;
-                        el.style.display = 'inline-flex';
-                        el.style.alignItems = 'center';
-                    }
-                });
-            }, 100);
+            setTimeout(() => window.__initMusicMarquee(container), 100);
         }
 
         function playMusicInCard(event) {
@@ -5228,7 +5213,6 @@
             // 0. GPS Card / Grid Detection (No brackets, separated by || and |)
             if (lines.length === 1) {
                 const lineStr = lines[0].trim();
-                // We do a fast check for .geojson before doing heavy string splits to avoid false positives
                 if (lineStr.includes('.geojson') && lineStr.includes('|')) {
                     const cardStrings = lineStr.split('||').map(s => s.trim()).filter(s => s);
                     let validGpsCards = [];
@@ -5241,20 +5225,17 @@
                             if (detected && (detected.type === 'geojson' || detected.type === 'strava')) {
                                 let link = null;
                                 let caption = "";
-                                
                                 // Format: url | title | caption | optional link
                                 if (parts.length >= 4) {
                                     caption = parts[2];
                                     link = parts[3];
                                 } else if (parts.length === 3) {
-                                    // if part 3 looks like a URL, it's a link, otherwise it's a caption
                                     if (parts[2].match(/^(https?:\/\/|www\.)/i)) {
                                         link = parts[2];
                                     } else {
                                         caption = parts[2];
                                     }
                                 }
-
                                 validGpsCards.push({
                                     type: 'gps-card',
                                     url: detected.url,
@@ -5265,12 +5246,8 @@
                             }
                         }
                     }
-                    
-                    if (validGpsCards.length === 1) {
-                        return validGpsCards[0];
-                    } else if (validGpsCards.length > 1) {
-                        return { type: 'gps-grid', cards: validGpsCards };
-                    }
+                    if (validGpsCards.length === 1) return validGpsCards[0];
+                    if (validGpsCards.length > 1) return { type: 'gps-grid', cards: validGpsCards };
                 }
             }
 
@@ -5664,8 +5641,15 @@
                     return `<div class="music-embed-container" data-needs-init="true" data-type="music-cluster" data-urls="${clusterUrls}"></div>`;
 
                 case 'gps-grid':
+                    const gridId = 'gps-grid-' + Math.random().toString(36).substr(2, 9);
                     const gridCardsHTML = block.cards.map(c => renderContentBlock(c, index)).join('');
-                    return `<div class="music-embed-container" data-needs-init="true" data-type="recent-music">
+                    
+                    setTimeout(() => {
+                        const gridEl = document.getElementById(gridId);
+                        if (gridEl) window.__initMusicMarquee(gridEl);
+                    }, 200);
+
+                    return `<div id="${gridId}" class="music-embed-container" data-type="gps-grid-rendered">
                                 <div class="music-sections-container">
                                     <div class="music-grid" style="--music-cols: ${block.cards.length}">
                                         ${gridCardsHTML}
@@ -5674,7 +5658,12 @@
                             </div>`;
 
                 case 'gps-card':
-                    // Dynamically acquire the Strava Profile link from the 'Variables' Google Sheet if no explicit link was mapped.
+                    const cardId = 'gps-card-' + Math.random().toString(36).substr(2, 9);
+                    setTimeout(() => {
+                        const cardEl = document.getElementById(cardId);
+                        if (cardEl) window.__initMusicMarquee(cardEl);
+                    }, 200);
+
                     let stravaTarget = block.link;
                     if (!stravaTarget) {
                         const fallbackDB = typeof variablesDb !== 'undefined' ? variablesDb.find(v => v.Variable && v.Variable.trim() === 'Strava Profile') : null;
@@ -5710,11 +5699,11 @@
                         }
                     }
 
-                    // A cohesive Strava/GPS card built on the music logic
+                    // A cohesive Strava/GPS card built on the music logic but overriding the aspect-ratio to 16:9
                     return `
-                        <div class="layout-grid cat-music" style="position: relative; overflow: hidden; border-radius: var(--card-radius); display:flex; flex-direction:column; padding: 0; align-items: stretch; max-width: 100%;">
-                            <!-- Top Map Area (16:9) -->
-                            <div style="width:100%; aspect-ratio:16/9; position:relative; background: var(--card-bg-dark);" class="mapbox-embed-placeholder row-media" onclick="const overlay=this.querySelector('.map-overlay-guard'); if(overlay){overlay.style.pointerEvents='none'; overlay.style.opacity='0';}">
+                        <div id="${cardId}" class="layout-grid cat-music" style="position: relative; overflow: hidden; border-radius: var(--card-radius); display:flex; flex-direction:column; padding: 0; align-items: stretch; max-width: 100%;">
+                            <!-- Top Map Area (16:9 Override) -->
+                            <div style="width:100%; aspect-ratio:16/9; position:relative; background: var(--card-bg-dark);" class="row-media" onclick="const overlay=this.querySelector('.map-overlay-guard'); if(overlay){overlay.style.pointerEvents='none'; overlay.style.opacity='0';}">
                                 <div id="${mapIdCard}" style="width: 100%; height: 100%; position: absolute; inset:0; border-radius: 0;" class="media-enter loader-overlay"></div>
                                 <div class="map-overlay-guard" style="position: absolute; inset:0; z-index:10; cursor:pointer; background: rgba(0,0,0,0.01); transition: opacity 0.3s ease;" title="Click to interact with map"></div>
                             </div>
