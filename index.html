@@ -5719,11 +5719,11 @@
                                 <div class="marquee-container artist-marquee">
                                     <span class="marquee-content"><div class="music-artist-label" style="opacity:0.8; font-size: 14px; white-space: normal; line-height: 1.4;">${processInlineMarkdown(block.caption)}</div></span>
                                 </div>
-                                <!-- Enhanced Strava Icon Link (Larger and reactive) -->
-                                <a href="${stravaTarget}" target="_blank" rel="noopener" class="music-yt-overlay" data-tooltip="View on Strava" style="width: 32px; height: 32px; bottom: 8px; right: 8px; transform-origin: center;">
-                                    <svg viewBox="0 0 24 24" style="width: 28px; height: 28px; fill: #fc4c02; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); transition: transform 0.3s ease;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
-                                </a>
                             </div>
+                            <!-- Enhanced Strava Icon Link (outside card-info to avoid clipping and match YTM card logic) -->
+                            <a href="${stravaTarget}" target="_blank" rel="noopener" class="music-yt-overlay" data-tooltip="View on Strava" style="width: 32px; height: 32px; bottom: 8px; right: 8px;">
+                                <svg viewBox="0 0 24 24" style="width: 28px; height: 28px; fill: #fc4c02; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
+                            </a>
                         </div>`;
 
                 case 'card':
