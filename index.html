@@ -5372,6 +5372,11 @@
                 return { type: 'video', url: text };
             }
 
+            // 3.5 GeoJSON / GPS Visualizer Art
+            if (text.match(/\.geojson(\?.*)?/i)) {
+                return { type: 'geojson', url: text };
+            }
+
             // 4. Strava Activities (Links, IDs, Snippets)
             const stravaIdMatch = text.match(/(?:strava\.com\/activities\/|strava\.app\.link\/|strava:\/\/activity\/|data-embed-id=")\s*(\d{10,12})/i);
             if (stravaIdMatch) {
@@ -5468,7 +5473,42 @@
                     </div>`;
             } else if (item.type === 'glb' && renderGLBViewer) {
                 // renderGLBViewer returns a div with class "model-viewer-wrapper" which has border-radius
+                // Strip wrapper width/height on mobile using specific css later if needed
                 mediaHTML = renderGLBViewer(item.url, false);
+
+            } else if (item.type === 'geojson') {
+                const mapId = 'mapbox-' + Math.random().toString(36).substr(2, 9);
+                
+                // Construct placeholder frame for Mapbox
+                mediaHTML = `<div class="${embedClass} mapbox-embed-placeholder" style="position: relative; overflow: hidden; display: block; background: var(--card-bg-dark); border-radius: var(--card-radius); border: 1px solid var(--border-subtle); box-sizing: border-box;">
+                        <div id="${mapId}" style="width: 100%; height: 100%; position: absolute; inset:0;" class="media-enter loader-overlay"></div>
+                    </div>`;
+
+                // Lazy load mapbox
+                if (!window._mapboxScriptLoaded) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css';
+                    document.head.appendChild(link);
+
+                    window._mapboxQueue = [{ id: mapId, url: item.url }];
+                    window._mapboxScriptLoaded = true;
+
+                    const script = document.createElement('script');
+                    script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js';
+                    script.onload = () => {
+                        window._mapboxQueue.forEach(q => window.__initMapbox(q.id, q.url));
+                        window._mapboxQueue = [];
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    if (window.mapboxgl) {
+                        setTimeout(() => window.__initMapbox(mapId, item.url), 10);
+                    } else {
+                        window._mapboxQueue.push({ id: mapId, url: item.url });
+                    }
+                }
+
             } else if (item.type === 'strava') {
                 const stravaId = item.id;
                 const stravaUrl = item.url.startsWith('http') ? item.url : `https://www.strava.com/activities/${stravaId}`;
@@ -5544,6 +5584,7 @@
                 case 'youtube':
                 case 'video':
                 case 'glb':
+                case 'geojson': // Added geojson to renderable types
                 case 'strava':
                     return renderUnifiedMediaItem(block, false);
 
@@ -5778,6 +5819,11 @@
                 if (cleanURL.match(/-btn(-[a-z]+)?$/i)) {
                     return renderButtonHTML(label, cleanURL, true);
                 }
+                // Process blockquotes as usual
+                if (label.startsWith('>')) {
+                    // It's a blockquote that was parsed via standard markdown logic
+                    return renderBlockquote(label);
+                }
                 // Standard Link
                 return `<a href="${cleanURL}" target="_blank" rel="noopener">${processInlineMarkdown(label, depth + 1)}</a>`;
             });
@@ -5788,6 +5834,99 @@
 
             return result;
         }
+
+        // --- MAPBOX GL JS INITIALIZER FOR GEOJSON ART ---
+        window.__initMapbox = async function(containerId, geojsonUrl) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            // TODO: MUST UPDATE WITH ACTUAL PUBLIC TOKEN
+            mapboxgl.accessToken = 'pk.eyJ1Ijoic2FoaWJ2aXJkZWUiLCJhIjoiY2x0bmVhb3M2MDUyYzJqcGM3ZnY4YXRnOCJ9.placeholder';
+
+            try {
+                // Fetch GeoJSON directly to evaluate bounds before loading
+                const geoReq = await fetch(geojsonUrl);
+                const geoData = await geoReq.json();
+
+                const bounds = new mapboxgl.LngLatBounds();
+                let hasCoords = false;
+                
+                const processCoords = (coords) => {
+                    if (typeof coords[0] === 'number') {
+                        bounds.extend(coords);
+                        hasCoords = true;
+                    } else {
+                        coords.forEach(processCoords);
+                    }
+                };
+                
+                if (geoData.features) {
+                    geoData.features.forEach(f => {
+                         if (f.geometry && f.geometry.coordinates) processCoords(f.geometry.coordinates);
+                    });
+                }
+
+                container.classList.remove('loader-overlay');
+                
+                const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+                const styleUrl = isLightMode ? 'mapbox://styles/mapbox/light-v11' : 'mapbox://styles/mapbox/dark-v11';
+                
+                // Grab styling rules visually
+                const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-personal').trim() || '#00e676';
+
+                const map = new mapboxgl.Map({
+                    container: containerId,
+                    style: styleUrl,
+                    pitch: 45,       // Artistic isometric lean
+                    bearing: -17.6,  // Subtle twist
+                    interactive: true,
+                    attributionControl: false // Minimalist aesthetic
+                });
+
+                map.on('load', () => {
+                    if (hasCoords) {
+                        map.fitBounds(bounds, { padding: 40, duration: 0, pitch: 45, bearing: -17.6 });
+                    }
+
+                    map.addSource('route', { 'type': 'geojson', 'data': geoData });
+
+                    // Ghost/Glow Base Layer
+                    map.addLayer({
+                        'id': 'route-glow',
+                        'type': 'line',
+                        'source': 'route',
+                        'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                        'paint': {
+                            'line-color': accentColor,
+                            'line-width': 12,
+                            'line-blur': 12,
+                            'line-opacity': 0.3
+                        }
+                    });
+
+                    // Sharp Center Line Art
+                    map.addLayer({
+                        'id': 'route',
+                        'type': 'line',
+                        'source': 'route',
+                        'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                        'paint': {
+                            'line-color': accentColor,
+                            'line-width': 3,
+                            'line-opacity': 0.9
+                        }
+                    });
+
+                    // Re-trigger layout calculation just in case container flex flexed
+                    setTimeout(() => map.resize(), 200);
+                });
+
+            } catch(e) {
+                console.warn("Mapbox load failed:", e);
+                container.classList.remove('loader-overlay');
+                container.innerHTML = '<div style="padding: 20px; font-family: monospace; color: var(--text-dim); text-align: center;">GPS Route processing failed or Invalid Mapbox Token.</div>';
+            }
+        };
 
 
         // Process content with block system - convenience function
