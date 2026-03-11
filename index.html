@@ -5699,25 +5699,24 @@
                         }
                     }
 
-                    // A cohesive Strava/GPS card built on the music logic but overriding the aspect-ratio to 16:9
+                    // A cohesive Strava/GPS card built on the music logic architecture
                     return `
                         <div id="${cardId}" class="layout-grid cat-music" style="position: relative; overflow: hidden; border-radius: var(--card-radius); display:flex; flex-direction:column; padding: 0; align-items: stretch; max-width: 100%;">
-                            <!-- Top Map Area (16:9 Override) -->
-                            <div style="width:100%; aspect-ratio:16/9; position:relative; background: var(--card-bg-dark);" class="row-media" onclick="const overlay=this.querySelector('.map-overlay-guard'); if(overlay){overlay.style.pointerEvents='none'; overlay.style.opacity='0';}">
+                            <!-- Top Map Area (16:9 cinematic aspect-ratio) -->
+                            <div style="width:100%; aspect-ratio:16/9; position:relative; background: var(--card-bg-dark);" class="row-media">
                                 <div id="${mapIdCard}" style="width: 100%; height: 100%; position: absolute; inset:0; border-radius: 0;" class="media-enter loader-overlay"></div>
-                                <div class="map-overlay-guard" style="position: absolute; inset:0; z-index:10; cursor:pointer; background: rgba(0,0,0,0.01); transition: opacity 0.3s ease;" title="Click to interact with map"></div>
                             </div>
-                            <!-- Bottom Info Area -->
-                            <div class="card-info" style="padding: 16px 20px; flex:1; position:relative; background: var(--card-bg);">
+                            <!-- Bottom Info Area (Synced with YTM card architecture) -->
+                            <div class="card-info" style="padding: 10px 14px; padding-right: 45px; flex:1; position:relative; background: var(--card-bg); display: flex; flex-direction: column; justify-content: center; min-height: 60px;">
                                 <div class="marquee-container track-marquee" style="margin-bottom: 2px;">
-                                    <span class="marquee-content"><h3 class="fill-anim" style="margin:0; font-size: 18px;">${processInlineMarkdown(block.title)}</h3></span>
+                                    <span class="marquee-content"><h3 class="fill-anim" style="margin:0; font-size: 18px; white-space: normal; line-height: 1.2;">${processInlineMarkdown(block.title)}</h3></span>
                                 </div>
                                 <div class="marquee-container artist-marquee">
-                                    <span class="marquee-content"><div class="music-artist-label" style="opacity:0.8; font-size: 14px;">${processInlineMarkdown(block.caption)}</div></span>
+                                    <span class="marquee-content"><div class="music-artist-label" style="opacity:0.8; font-size: 14px; white-space: normal; line-height: 1.4;">${processInlineMarkdown(block.caption)}</div></span>
                                 </div>
-                                <!-- Strava Corner Link inside the card -->
-                                <a href="${stravaTarget}" target="_blank" rel="noopener" class="music-yt-overlay" data-tooltip="View on Strava">
-                                    <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #fc4c02;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
+                                <!-- Enhanced Strava Icon Link (Larger and reactive) -->
+                                <a href="${stravaTarget}" target="_blank" rel="noopener" class="music-yt-overlay" data-tooltip="View on Strava" style="width: 32px; height: 32px; bottom: 8px; right: 8px; transform-origin: center;">
+                                    <svg viewBox="0 0 24 24" style="width: 28px; height: 28px; fill: #fc4c02; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); transition: transform 0.3s ease;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
                                 </a>
                             </div>
                         </div>`;
