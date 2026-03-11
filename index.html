@@ -6042,6 +6042,40 @@
                             'paint': { 'line-color': currentAccent, 'line-width': 3, 'line-opacity': 0.9 }
                         });
                     }
+
+                    // --- Pace Pulse Layers (Auto-reinject on Style Switch) ---
+                    const routeFeature = geoData.features && geoData.features.find(f => f.geometry.type === 'LineString');
+                    const coordTimes = routeFeature?.properties?.coordTimes;
+                    if (routeFeature && coordTimes && coordTimes.length > 1) {
+                        if (!map.getSource('pulse-point')) {
+                            map.addSource('pulse-point', {
+                                'type': 'geojson',
+                                'data': { 'type': 'FeatureCollection', 'features': [] }
+                            });
+                        }
+                        if (!map.getLayer('pulse-glow')) {
+                            map.addLayer({
+                                'id': 'pulse-glow', 'type': 'circle', 'source': 'pulse-point',
+                                'paint': {
+                                    'circle-radius': 8,
+                                    'circle-color': currentAccent,
+                                    'circle-opacity': 0.4,
+                                    'circle-blur': 1
+                                }
+                            });
+                        }
+                        if (!map.getLayer('pulse-core')) {
+                            map.addLayer({
+                                'id': 'pulse-core', 'type': 'circle', 'source': 'pulse-point',
+                                'paint': {
+                                    'circle-radius': 4,
+                                    'circle-color': '#fff',
+                                    'circle-stroke-width': 2,
+                                    'circle-stroke-color': currentAccent
+                                }
+                            });
+                        }
+                    }
                 };
 
                 // Mapbox setStyle wipes all sources and layers, so we must inject them cleanly 
@@ -6053,6 +6087,52 @@
                 map.on('load', () => {
                     if (hasCoords) {
                         map.fitBounds(bounds, { padding: 40, duration: 0, pitch: 45, bearing: orientationBearing });
+                    }
+
+                    // --- Pace Pulse Animation Loop ---
+                    const routeFeaturePulse = geoData.features && geoData.features.find(f => f.geometry.type === 'LineString');
+                    const coordTimesPulse = routeFeaturePulse?.properties?.coordTimes;
+                    
+                    if (routeFeaturePulse && coordTimesPulse && coordTimesPulse.length > 1) {
+                        const coords = routeFeaturePulse.geometry.coordinates;
+                        const startTime = new Date(coordTimesPulse[0]).getTime();
+                        const totalDuration = new Date(coordTimesPulse[coordTimesPulse.length - 1]).getTime() - startTime;
+                        const timing = coordTimesPulse.map(t => (new Date(t).getTime() - startTime) / totalDuration);
+
+                        const loopDuration = 15000; // 15s artistic loop
+                        function animatePulse(timestamp) {
+                            if (!map.loaded()) { requestAnimationFrame(animatePulse); return; }
+                            const progress = (timestamp % loopDuration) / loopDuration;
+                            
+                            // Find the index in our pace-timing array
+                            let idx = 0;
+                            while (idx < timing.length - 1 && timing[idx] < progress) {
+                                idx++;
+                            }
+
+                            const t1 = timing[idx - 1] || 0;
+                            const t2 = timing[idx];
+                            const segmentProgress = (progress - t1) / (t2 - t1 || 1);
+
+                            const p1 = coords[idx - 1] || coords[0];
+                            const p2 = coords[idx];
+
+                            const lng = p1[0] + (p2[0] - p1[0]) * segmentProgress;
+                            const lat = p1[1] + (p2[1] - p1[1]) * segmentProgress;
+
+                            const source = map.getSource('pulse-point');
+                            if (source) {
+                                source.setData({
+                                    'type': 'FeatureCollection',
+                                    'features': [{
+                                        'type': 'Feature',
+                                        'geometry': { 'type': 'Point', 'coordinates': [lng, lat] }
+                                    }]
+                                });
+                            }
+                            requestAnimationFrame(animatePulse);
+                        }
+                        requestAnimationFrame(animatePulse);
                     }
 
                     // Dynamically react to theme changes
