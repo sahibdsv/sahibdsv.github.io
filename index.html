@@ -2944,6 +2944,7 @@
         let quotesDb = [];
         let resumeDb = [];
         let musicDb = []; // Music logging data
+        let variablesDb = []; // Variables metadata
         let quoteBag = []; // New state for shuffle logic
         let isSearchActive = false;
         let _lastRenderedPath = null;
@@ -2953,7 +2954,8 @@
             main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
             quotes_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv',
             resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv',
-            music_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1199341895&single=true&output=csv'
+            music_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1199341895&single=true&output=csv',
+            variables_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=554193488&single=true&output=csv'
         };
 
         // Quote Randomness Logic (Fisher-Yates Shuffle Bag)
@@ -3113,7 +3115,7 @@
 
         async function fetchDataAndCache() {
             try {
-                const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal] = await Promise.all([
+                const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal, variablesDbLocal] = await Promise.all([
                     fetchCSV(CONFIG.main_sheet),
                     fetchCSV(CONFIG.quotes_sheet).catch(e => {
                         console.warn('Quotes fetch failed', e);
@@ -3126,6 +3128,10 @@
                     fetchCSV(CONFIG.music_sheet).catch(e => {
                         console.warn('Music fetch failed', e);
                         return [];
+                    }),
+                    fetchCSV(CONFIG.variables_sheet).catch(e => {
+                        console.warn('Variables fetch failed', e);
+                        return [];
                     })
                 ]);
 
@@ -3136,6 +3142,7 @@
                 db = filtered;
                 quotesDb = quotesDbLocal;
                 musicDb = musicDbLocal;
+                variablesDb = variablesDbLocal;
                 resumeDb = (resumeDbLocal || []).map(entry => {
                     if (entry.Page && entry.Page.includes('#')) {
                         const [page, sectionType] = entry.Page.split('#');
@@ -5218,6 +5225,55 @@
         function processBlock(lines) {
             if (lines.length === 0) return null;
 
+            // 0. GPS Card / Grid Detection (No brackets, separated by || and |)
+            if (lines.length === 1) {
+                const lineStr = lines[0].trim();
+                // We do a fast check for .geojson before doing heavy string splits to avoid false positives
+                if (lineStr.includes('.geojson') && lineStr.includes('|')) {
+                    const cardStrings = lineStr.split('||').map(s => s.trim()).filter(s => s);
+                    let validGpsCards = [];
+                    
+                    for (let cardStr of cardStrings) {
+                        const parts = cardStr.split('|').map(p => p.trim());
+                        if (parts.length >= 2) {
+                            const maybeMedia = parts[0];
+                            const detected = detectBasicUrlType(maybeMedia);
+                            if (detected && (detected.type === 'geojson' || detected.type === 'strava')) {
+                                let link = null;
+                                let caption = "";
+                                
+                                // Format: url | title | caption | optional link
+                                if (parts.length >= 4) {
+                                    caption = parts[2];
+                                    link = parts[3];
+                                } else if (parts.length === 3) {
+                                    // if part 3 looks like a URL, it's a link, otherwise it's a caption
+                                    if (parts[2].match(/^(https?:\/\/|www\.)/i)) {
+                                        link = parts[2];
+                                    } else {
+                                        caption = parts[2];
+                                    }
+                                }
+
+                                validGpsCards.push({
+                                    type: 'gps-card',
+                                    url: detected.url,
+                                    title: parts[1],
+                                    link: link && link.match(/^(https?:\/\/|www\.)/i) ? (link.startsWith('http') ? link : `https://${link}`) : null,
+                                    caption: caption
+                                });
+                            }
+                        }
+                    }
+                    
+                    if (validGpsCards.length === 1) {
+                        return validGpsCards[0];
+                    } else if (validGpsCards.length > 1) {
+                        return { type: 'gps-grid', cards: validGpsCards };
+                    }
+                }
+            }
+
             // 1. Smart Caption Detection: [This is a caption]
             // We check the last line for square brackets.
             let sharedCaption = null;
@@ -5227,36 +5283,7 @@
             if (captionMatch) {
                 sharedCaption = captionMatch[1].trim();
                 lines = lines.slice(0, -1); // Remove caption line from media processing
-                if (lines.length === 0) {
-                    // Check for GPS Card: [url | title | link? | caption]
-                    const parts = sharedCaption.split('|');
-                    if (parts.length >= 2) {
-                        const maybeMedia = parts[0].trim();
-                        const detected = detectBasicUrlType(maybeMedia);
-                        if (detected && (detected.type === 'geojson' || detected.type === 'strava')) {
-                            let link = null;
-                            let caption = "";
-                            const p2 = parts[2] ? parts[2].trim() : "";
-                            
-                            // Check if 3rd part is URL, OR if it's a markdown link [Text](URL) that starts with http
-                            if (p2.match(/^(https?:\/\/|www\.)/i)) {
-                                link = p2.startsWith('http') ? p2 : `https://${p2}`;
-                                caption = parts.slice(3).join('|').trim();
-                            } else {
-                                caption = parts.slice(2).join('|').trim();
-                            }
-
-                            return {
-                                type: 'gps-card',
-                                url: detected ? detected.url : maybeMedia,
-                                title: parts[1].trim(),
-                                link: link,
-                                caption: caption
-                            };
-                        }
-                    }
-                    return { type: 'text', content: `[${sharedCaption}]` }; // Fallback for standalone bracketed text
-                }
+                if (lines.length === 0) return { type: 'text', content: `[${sharedCaption}]` }; // Fallback for standalone bracketed text
             }
 
             // 2. Fluid Media Detection (Support for multi-line and comma-separated media)
@@ -5636,8 +5663,24 @@
                     const clusterUrls = block.items.map(i => i.url).join(',');
                     return `<div class="music-embed-container" data-needs-init="true" data-type="music-cluster" data-urls="${clusterUrls}"></div>`;
 
+                case 'gps-grid':
+                    const gridCardsHTML = block.cards.map(c => renderContentBlock(c, index)).join('');
+                    return `<div class="music-embed-container" data-needs-init="true" data-type="recent-music">
+                                <div class="music-sections-container">
+                                    <div class="music-grid" style="--music-cols: ${block.cards.length}">
+                                        ${gridCardsHTML}
+                                    </div>
+                                </div>
+                            </div>`;
+
                 case 'gps-card':
-                    const stravaTarget = block.link || 'https://www.strava.com/athletes/sahibvirdee';
+                    // Dynamically acquire the Strava Profile link from the 'Variables' Google Sheet if no explicit link was mapped.
+                    let stravaTarget = block.link;
+                    if (!stravaTarget) {
+                        const fallbackDB = typeof variablesDb !== 'undefined' ? variablesDb.find(v => v.Variable && v.Variable.trim() === 'Strava Profile') : null;
+                        stravaTarget = fallbackDB && fallbackDB.Value ? fallbackDB.Value.trim() : 'https://www.strava.com/';
+                    }
+                    
                     const mapIdCard = 'mapbox-card-' + Math.random().toString(36).substr(2, 9);
                     
                     // Enqueue Mapbox
@@ -5669,9 +5712,9 @@
 
                     // A cohesive Strava/GPS card built on the music logic
                     return `
-                        <div class="layout-grid cat-music" style="position: relative; margin: 20px 0; overflow: hidden; border-radius: var(--card-radius); border: 1px solid var(--border-subtle); display:flex; flex-direction:column; padding: 0; align-items: stretch; max-width: 100%;">
+                        <div class="layout-grid cat-music" style="position: relative; overflow: hidden; border-radius: var(--card-radius); display:flex; flex-direction:column; padding: 0; align-items: stretch; max-width: 100%;">
                             <!-- Top Map Area (16:9) -->
-                            <div style="width:100%; aspect-ratio:16/9; position:relative;" class="mapbox-embed-placeholder row-media" onclick="const overlay=this.querySelector('.map-overlay-guard'); if(overlay){overlay.style.pointerEvents='none'; overlay.style.opacity='0';}">
+                            <div style="width:100%; aspect-ratio:16/9; position:relative; background: var(--card-bg-dark);" class="mapbox-embed-placeholder row-media" onclick="const overlay=this.querySelector('.map-overlay-guard'); if(overlay){overlay.style.pointerEvents='none'; overlay.style.opacity='0';}">
                                 <div id="${mapIdCard}" style="width: 100%; height: 100%; position: absolute; inset:0; border-radius: 0;" class="media-enter loader-overlay"></div>
                                 <div class="map-overlay-guard" style="position: absolute; inset:0; z-index:10; cursor:pointer; background: rgba(0,0,0,0.01); transition: opacity 0.3s ease;" title="Click to interact with map"></div>
                             </div>
@@ -5684,8 +5727,8 @@
                                     <span class="marquee-content"><div class="music-artist-label" style="opacity:0.8; font-size: 14px;">${processInlineMarkdown(block.caption)}</div></span>
                                 </div>
                                 <!-- Strava Corner Link inside the card -->
-                                <a href="${stravaTarget}" target="_blank" rel="noopener" class="music-yt-overlay" data-tooltip="View on Strava" style="cursor: pointer; position:absolute; bottom:16px; right:16px; opacity:1; display:flex; align-items:center; justify-content:center; width: 36px; height: 36px; background: transparent; border: none; box-shadow: none;">
-                                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: var(--accent-personal);"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
+                                <a href="${stravaTarget}" target="_blank" rel="noopener" class="music-yt-overlay" data-tooltip="View on Strava">
+                                    <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #fc4c02;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
                                 </a>
                             </div>
                         </div>`;
