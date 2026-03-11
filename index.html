@@ -4037,13 +4037,19 @@
             const t = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page);
             const n = {};
             t.forEach(e => {
-                // Discovery logic for Recent Activity: only show content up to 1 level deep
-                if (e.Page.split("/").length <= 2) {
+                const isFeatured = e.Tags && e.Tags.toLowerCase().includes("featured");
+                // Discovery logic for Recent Activity: only show content up to 1 level deep, 
+                // OR any page explicitly marked as 'featured'
+                if (e.Page.split("/").length <= 2 || isFeatured) {
                     n[e.Page] = e;
                 }
             });
-            const o = Object.values(n).sort((e, t) => new Date(t.Timestamp || 0) - new Date(e.Timestamp || 0)).slice(0,
-                6);
+            const o = Object.values(n).sort((a, b) => {
+                const featA = a.Tags?.toLowerCase().includes("featured") ? 1 : 0;
+                const featB = b.Tags?.toLowerCase().includes("featured") ? 1 : 0;
+                if (featA !== featB) return featB - featA;
+                return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
+            }).slice(0, 6);
             // Append Recent Activity (isHome=true)
             o.length > 0 && renderRows(o, "Recent Activity", true, true, false, true);
         }
