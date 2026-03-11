@@ -2467,6 +2467,12 @@
             align-items: center;
         }
 
+        @media (max-width: 768px) {
+            .music-sections-container {
+                margin: 8px auto;
+            }
+        }
+
         .music-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -2474,6 +2480,12 @@
             width: 100%;
             max-width: 1200px;
             justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .music-grid {
+                gap: 12px;
+            }
         }
 
         /* Enforce a stable grid on desktop for side-by-side cards */
