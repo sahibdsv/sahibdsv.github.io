@@ -2468,12 +2468,19 @@
         }
 
         .music-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
             width: 100%;
             max-width: 1200px;
             justify-content: center;
+        }
+
+        /* Enforce a stable grid on desktop for side-by-side cards */
+        @media (min-width: 768px) {
+            .music-grid {
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            }
         }
 
         .layout-grid.cat-music {
@@ -5210,45 +5217,43 @@
         function processBlock(lines) {
             if (lines.length === 0) return null;
 
-            // 0. GPS Card / Grid Detection (No brackets, separated by || and |)
-            if (lines.length === 1) {
-                const lineStr = lines[0].trim();
-                if (lineStr.includes('.geojson') && lineStr.includes('|')) {
-                    const cardStrings = lineStr.split('||').map(s => s.trim()).filter(s => s);
-                    let validGpsCards = [];
-                    
-                    for (let cardStr of cardStrings) {
-                        const parts = cardStr.split('|').map(p => p.trim());
-                        if (parts.length >= 2) {
-                            const maybeMedia = parts[0];
-                            const detected = detectBasicUrlType(maybeMedia);
-                            if (detected && (detected.type === 'geojson' || detected.type === 'strava')) {
-                                let link = null;
-                                let caption = "";
-                                // Format: url | title | caption | optional link
-                                if (parts.length >= 4) {
+            // 0. GPS Card / Grid Detection (Supporting multi-line joins with || or single line pipelines)
+            const combinedBlock = lines.join(' ').trim();
+            if (combinedBlock.includes('.geojson') && combinedBlock.includes('|')) {
+                const cardStrings = combinedBlock.split('||').map(s => s.trim()).filter(s => s);
+                let validGpsCards = [];
+                
+                for (let cardStr of cardStrings) {
+                    const parts = cardStr.split('|').map(p => p.trim());
+                    if (parts.length >= 2) {
+                        const maybeMedia = parts[0];
+                        const detected = detectBasicUrlType(maybeMedia);
+                        if (detected && (detected.type === 'geojson' || detected.type === 'strava')) {
+                            let link = null;
+                            let caption = "";
+                            // url | title | caption | optional link
+                            if (parts.length >= 4) {
+                                caption = parts[2];
+                                link = parts[3];
+                            } else if (parts.length === 3) {
+                                if (parts[2].match(/^(https?:\/\/|www\.)/i)) {
+                                    link = parts[2];
+                                } else {
                                     caption = parts[2];
-                                    link = parts[3];
-                                } else if (parts.length === 3) {
-                                    if (parts[2].match(/^(https?:\/\/|www\.)/i)) {
-                                        link = parts[2];
-                                    } else {
-                                        caption = parts[2];
-                                    }
                                 }
-                                validGpsCards.push({
-                                    type: 'gps-card',
-                                    url: detected.url,
-                                    title: parts[1],
-                                    link: link && link.match(/^(https?:\/\/|www\.)/i) ? (link.startsWith('http') ? link : `https://${link}`) : null,
-                                    caption: caption
-                                });
                             }
+                            validGpsCards.push({
+                                type: 'gps-card',
+                                url: detected.url,
+                                title: parts[1],
+                                link: link && link.match(/^(https?:\/\/|www\.)/i) ? (link.startsWith('http') ? link : `https://${link}`) : null,
+                                caption: caption
+                            });
                         }
                     }
-                    if (validGpsCards.length === 1) return validGpsCards[0];
-                    if (validGpsCards.length > 1) return { type: 'gps-grid', cards: validGpsCards };
                 }
+                if (validGpsCards.length === 1) return validGpsCards[0];
+                if (validGpsCards.length > 1) return { type: 'gps-grid', cards: validGpsCards };
             }
 
             // 1. Smart Caption Detection: [This is a caption]
