@@ -3666,22 +3666,30 @@
             const local = tgt.closest('pre') || tgt.closest('.scrollable-x');
             if (local && local.scrollWidth > local.clientWidth + 5) return;
 
+            // V69.0: PRIORITIZE HEADING ROW SWIPE & REDUCE ACCIDENTAL PAGE SWIPES
+            // We restrict the start of a swipe to the header region to avoid accidental triggers
+            const touchedHeader = tgt.closest('#main-header');
+            if (!touchedHeader) return;
+
             const rows = Array.from(document.querySelectorAll('.nav-row.level-n:not(.hidden)')).filter(r => r
                 .scrollWidth > r.clientWidth + 5);
             if (!rows.length) return;
 
-            // Intelligent Depth Selection: 
-            // We find the deepest subnav row that ACTUALLY has an active selection.
-            let activeRow = null;
-            for (let i = rows.length - 1; i >= 0; i--) {
-                if (rows[i].querySelector('.active')) {
-                    activeRow = rows[i];
-                    break;
+            // Intelligent Target Selection:
+            // 1. If we touched a row directly, that row is the absolute priority.
+            // 2. Fallback: find the deepest subnav row that HAS an active selection.
+            const touchedRow = tgt.closest('.nav-row');
+            let activeRow = touchedRow;
+
+            if (!activeRow) {
+                for (let i = rows.length - 1; i >= 0; i--) {
+                    if (rows[i].querySelector('.active')) {
+                        activeRow = rows[i];
+                        break;
+                    }
                 }
             }
 
-            // If no subnav row has an active selection, we are on a Main Category Page (e.g., Professional).
-            // Disable global swiping entirely here to prevent accidental dives into subcategories.
             if (!activeRow) return;
 
             _gSwipe = {
@@ -3703,24 +3711,27 @@
             const dy = _gSwipe.sy - e.touches[0].clientY;
 
             if (!_gSwipe.active) {
+                // Directional Lock: latch into horizontal mode if horizontal movement exceeds vertical
                 if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
                     _gSwipe.active = true;
                     _gSwipe.row.style.scrollBehavior = 'auto'; // Instant response
                     _gSwipe.row.style.scrollSnapType = 'none'; // Unlock for proxy swing
                 } else if (Math.abs(dy) > 10) {
-                    _gSwipe.tracking = false;
+                    _gSwipe.tracking = false; // Vertical intent detected, bail
                     return;
                 }
             }
 
             if (_gSwipe.active) {
-                if (e.cancelable) e.preventDefault(); // Lock vertical axis
+                // Lock the viewport: prevent page jitter and vertical scrolling once header swipe is active
+                if (e.cancelable) e.preventDefault(); 
+                
                 if (_gSwipe.row._markNavInput) _gSwipe.row._markNavInput();
-                // 1.25x speed multiplier for effortless global swiping
+                // 1.25x speed multiplier for effortless proxy swiping (allows finger to move less than row)
                 _gSwipe.row.scrollLeft = Math.max(0, _gSwipe.sScroll + (dx * 1.25));
             }
         }, {
-            passive: true
+            passive: false // CRITICAL: Must be false to allow e.preventDefault() for axis locking
         });
 
         document.addEventListener('touchend', () => {
