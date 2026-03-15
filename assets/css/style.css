@@ -1484,7 +1484,7 @@
 
             .layout-text,
             .layout-hero {
-                gap: 20px;
+                gap: 15px;
             }
 
             .media-gallery {
@@ -1931,7 +1931,7 @@
         }
 
         .resume-section {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .resume-section h3 {
@@ -1939,7 +1939,7 @@
         }
 
         .resume-entry {
-            margin-bottom: 35px;
+            margin-bottom: 25px;
         }
 
         .resume-entry ul {
@@ -2101,8 +2101,14 @@
         .article-body h2,
         .article-body h3,
         .article-body h4 {
-            margin-top: 2rem;
+            margin-top: 1.2rem;
             margin-bottom: 0.5rem;
+        }
+
+        .article-body h2:first-child,
+        .article-body h3:first-child,
+        .article-body h4:first-child {
+            margin-top: 0;
         }
 
         .article-body h2 {
@@ -2116,13 +2122,17 @@
         }
 
         .article-body p {
-            margin-bottom: 20px;
+            margin-bottom: 0.9rem;
+        }
+
+        .article-body p:last-child {
+            margin-bottom: 0;
         }
 
         /* Unified block spacing for media elements in articles */
         .article-body .unified-media-wrapper,
         .layout-hero .unified-media-wrapper {
-            margin-bottom: 28px;
+            margin-bottom: 16px;
         }
 
         @media (max-width: 768px) {
