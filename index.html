@@ -75,13 +75,39 @@
     <div class="content-container" id="app">
         <!-- Skeleton loaders matching homepage: Hero + Recent Activity cards -->
         <div class="section layout-hero skeleton-visible" style="min-height: 200px;">
-            <div class="sk-line title" style="width: 60%; max-width: 600px; height: 56px; margin: 0 auto 20px;"></div>
+            <div class="sk-line title" style="width: 60%; max-width: 600px; height: 56px; margin: 10px auto 26px;"></div>
             <div class="sk-line text" style="width: 80%; max-width: 700px; height: 18px; margin: 0 auto 0;"></div>
         </div>
-        <div id="skeleton-grid" class="grid-container section skeleton-visible"></div>
+        <div id="skeleton-grid" class="grid-container section skeleton-visible">
+            <!-- Initial set of skeleton cards for instant layout matching -->
+            <div class="layout-grid">
+                <div class="row-media"><div class="sk-img"></div></div>
+                <div class="card-info">
+                    <div class="sk-line title"></div>
+                    <div class="sk-line text"></div>
+                    <div class="sk-line text short"></div>
+                </div>
+            </div>
+            <div class="layout-grid">
+                <div class="row-media"><div class="sk-img"></div></div>
+                <div class="card-info">
+                    <div class="sk-line title"></div>
+                    <div class="sk-line text"></div>
+                    <div class="sk-line text short"></div>
+                </div>
+            </div>
+            <div class="layout-grid">
+                <div class="row-media"><div class="sk-img"></div></div>
+                <div class="card-info">
+                    <div class="sk-line title"></div>
+                    <div class="sk-line text"></div>
+                    <div class="sk-line text short"></div>
+                </div>
+            </div>
+        </div>
         <template id="sk-card-tpl">
             <div class="layout-grid">
-                <div class="sk-img" style="border-radius: var(--media-radius);"></div>
+                <div class="row-media"><div class="sk-img"></div></div>
                 <div class="card-info">
                     <div class="sk-line title"></div>
                     <div class="sk-line text"></div>

@@ -176,12 +176,8 @@
         });
 
         function startApp() {
-            // Skeleton duplication
-            const skTpl = document.getElementById('sk-card-tpl');
-            const skGrid = document.getElementById('skeleton-grid');
-            if (skTpl && skGrid) {
-                for (let i = 0; i < 6; i++) skGrid.appendChild(skTpl.content.cloneNode(true));
-            }
+            // Initial Skeleton setup
+            showPageSkeleton();
 
             // Clean URL
             if (window.location.search) {
@@ -1012,6 +1008,11 @@
             // 3. Debounced heavy rendering pipeline
             if (_renderRAF) cancelAnimationFrame(_renderRAF);
 
+            // Show skeleton for transitions to give immediate feedback
+            if (!isSwipe && cleanPath !== _lastRenderedPath) {
+                showPageSkeleton();
+            }
+
             _renderRAF = requestAnimationFrame(() => {
                 // Render Guard: Only build the page if this is still the final target
                 if (_activeRenderPath !== cleanPath) return;
@@ -1372,6 +1373,22 @@
 
             // Observe lazy videos
             observeVideos(container);
+        }
+
+        function showPageSkeleton() {
+            const app = document.getElementById("app");
+            const skTpl = document.getElementById('sk-card-tpl');
+            if (!app || !skTpl) return;
+            // Immediate partial clear for responsiveness
+            app.innerHTML = `
+                <div class="section layout-hero skeleton-visible">
+                    <div class="sk-line title" style="width: 60%; max-width: 600px; height: 50px; margin: 10px auto 26px;"></div>
+                    <div class="sk-line text" style="width: 80%; max-width: 700px; height: 18px; margin: 0 auto;"></div>
+                </div>
+                <div class="grid-container section skeleton-visible">
+                    ${Array(6).fill(skTpl.innerHTML).join('')}
+                </div>
+            `;
         }
 
         function renderQuoteCard(container) {
