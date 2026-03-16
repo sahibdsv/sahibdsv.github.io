@@ -321,6 +321,16 @@
             }, {
                 passive: true
             }),
+                // Central Haptic Engine: Captures taps before bubbling can be stopped
+                document.addEventListener("pointerdown", e => {
+                    const interactive = e.target.closest(
+                        "#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip, .article-link-btn, .author-link, .music-yt-overlay"
+                    );
+                    if (interactive && navigator.vibrate) {
+                        const isMajor = interactive.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link");
+                        haptic(isMajor ? 'pulse' : 'tap');
+                    }
+                }, { passive: true }),
                 window.addEventListener("resize", (() => {
                     let resizeTimeout;
                     return () => {
@@ -333,20 +343,11 @@
                     }
                 })()),
 
-                // Global Click Handler - Manages Search, Navigation, Haptics
+                // Global Click Handler - Manages Search, Navigation
                 document.addEventListener("click", e => {
                     const overlay = document.getElementById("search-overlay");
                     const controls = document.getElementById("search-controls");
                     const results = document.getElementById("search-results");
-
-                    // 0. Haptics
-                    const interactive = e.target.closest(
-                        "#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid > div, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip"
-                    );
-                    if (interactive && navigator.vibrate) {
-                        const isMajor = interactive.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link");
-                        haptic(isMajor ? 'pulse' : 'tap');
-                    }
 
                     // 1. Search Dismissal Logic
                     // Close if clicking outside overlay, controls, results OR empty space in results
