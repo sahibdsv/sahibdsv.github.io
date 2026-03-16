@@ -1763,7 +1763,7 @@
 
             // If we injected a counter, fetch raw JSON to display as plain text
             if (hasVisitorCounter) {
-                fetch('https://sahib.goatcounter.com/counter/TOTAL.json')
+                fetch('https://analytics.sahibvirdee.com/counter/TOTAL.json')
                     .then(response => response.json())
                     .then(data => {
                         const el = document.getElementById('gc-visit-count');
