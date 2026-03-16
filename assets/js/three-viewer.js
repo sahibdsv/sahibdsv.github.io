@@ -284,11 +284,11 @@
                     if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
 
                     // Track interaction with this specific model
-                    if (window.posthog) {
-                        posthog.capture('model_interaction_start', {
-                            model_path: glbPath,
-                            view_mode: isCardMode ? 'card' : 'article',
-                            container_id: container.id
+                    if (window.goatcounter && window.goatcounter.count) {
+                        goatcounter.count({
+                            path: 'model-spin-' + glbPath,
+                            title: '3D Interaction: ' + glbPath.split('/').pop(),
+                            event: true
                         });
                     }
                 });

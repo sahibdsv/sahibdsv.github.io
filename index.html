@@ -35,30 +35,26 @@
     <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg" />
     <link rel="shortcut icon" href="/assets/images/favicon.ico" />
 
-    <!-- Analytics: PostHog (Privacy-First) -->
+    <!-- Analytics: GoatCounter (Privacy-First) -->
     <script>
-        !function (t, e) { var o, n, p, r; e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) { function g(t, e) { var o = e.split("."); 2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } } (p = t.createElement("script")).type = "text/javascript", p.async = !0, p.src = s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r); var u = e; for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e }, u.people.toString = function () { return u.toString(1) + ".people (stub)" }, o = "init capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "), n = 0; n < o.length; n++)g(u, o[n]); e._i.push([i, s, a]) }, e.__SV = 1) } (document, window.posthog || []);
+        window.goatcounter = {
+            no_onload: true,
+            allow_local: false
+        };
 
-        // Intentional Implementation: Filter out dev noise and respect local preferences
-        (function() {
+        (function () {
             const isLocal = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
-            const isDev = localStorage.getItem('preview_drafts') === 'true' || localStorage.getItem('ph_ignore') === 'true';
-            
-            if (!isLocal && !isDev) {
-                posthog.init('phc_8r4vE829to6nXczS2khbfpR1s4amMh2J9zO5s5q74sG', {
-                    api_host: 'https://us.i.posthog.com',
-                    person_profiles: 'always',
-                    persistence: 'memory', // Cookieless/Privacy-First (No banner needed)
-                    autocapture: true,
-                    capture_pageview: true,
-                    capture_performance: true
-                });
-            } else {
+            const isDev = localStorage.getItem('preview_drafts') === 'true' || localStorage.getItem('gc_ignore') === 'true';
+
+            if (isLocal || isDev) {
                 console.info("Analytics: Opted out (Local or Dev mode)");
-                // Create a stub to prevent errors in other scripts
-                if (!window.posthog.capture) {
-                    window.posthog.capture = function() {};
-                }
+                window.goatcounter.no_onload = true;
+            } else {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = "//gc.zgo.at/count.js";
+                script.dataset.goatcounter = "https://sahib.goatcounter.com/count";
+                document.head.appendChild(script);
             }
         })();
     </script>
@@ -148,8 +144,8 @@
     <footer>
         <div id="footer-links"></div>
     </footer>
-    <script src="assets/js/app.js?v=20260316-0351"></script>
-    <script type="module" src="assets/js/three-viewer.js?v=20260316-0350"></script>
+    <script src="assets/js/app.js?v=20260316-0360"></script>
+    <script type="module" src="assets/js/three-viewer.js?v=20260316-0360"></script>
     <!-- SEO_LINK_START -->
 <div id="seo-content" style="display:none;" aria-hidden="true">
   <nav id="seo-nav">

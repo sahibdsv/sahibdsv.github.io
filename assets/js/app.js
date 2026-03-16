@@ -166,47 +166,39 @@
         let musicStateHistory = []; // Tracks hashes of recently seen valid states to reject stale CDN edge nodes
 
         function startAnalytics() {
-            // 1. HEARTBEAT: Track time specifically on hash-based pages every 30s
-            setInterval(() => {
-                if (document.visibilityState === 'visible' && window.posthog) {
-                    const currentHash = window.location.hash || '#Home';
-                    posthog.capture('page_heartbeat', {
-                        page_hash: currentHash,
-                        page_title: document.title
-                    });
-                }
-            }, 5000);
+            if (!window.goatcounter) return;
 
-            // 2. ENRICHED LINK TRACKING: Distinguish between internal navigation and external exit
+            // 1. Initial Pageview (Manually triggered because no_onload is true)
+            goatcounter.count({
+                path: location.pathname + (location.hash || '#Home'),
+                title: document.title
+            });
+
+            // 2. Hash-Navigation Tracking: Treat every hash change as a new pageview
+            window.addEventListener('hashchange', () => {
+                goatcounter.count({
+                    path: location.pathname + (location.hash || '#Home'),
+                    title: document.title
+                });
+            });
+
+            // 3. CTA Tracking: Capture specific clicks as events
             document.addEventListener('click', (e) => {
                 const link = e.target.closest('a');
-                if (link && link.href && window.posthog) {
+                if (link && link.href) {
                     const url = link.href;
                     const isInternal = url.includes(window.location.hostname) || url.startsWith('#');
                     
-                    posthog.capture('cta_click', {
-                        text: link.innerText.trim().substring(0, 50),
-                        destination: url,
-                        type: isInternal ? 'internal' : 'external'
-                    });
+                    // Only track external exits as events (Internal is handled by hashchange/initial)
+                    if (!isInternal) {
+                        goatcounter.count({
+                            path:  'click-' + url,
+                            title: 'Exit: ' + (link.innerText.trim().substring(0, 30) || 'Link'),
+                            event: true
+                        });
+                    }
                 }
             }, { capture: true });
-            
-            // 3. THEME TRACKING: Know which aesthetic is preferred
-            const trackTheme = () => {
-                const theme = document.documentElement.getAttribute('data-theme');
-                posthog.capture('theme_changed', { mode: theme });
-            };
-            
-            // Initial theme track
-            trackTheme();
-            
-            // Observer for future changes
-            new MutationObserver((mutations) => {
-                mutations.forEach(m => {
-                    if (m.attributeName === 'data-theme') trackTheme();
-                });
-            }).observe(document.documentElement, { attributes: true });
         }
 
         function startLiveMusicPolling() {
