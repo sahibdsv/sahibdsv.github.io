@@ -282,6 +282,15 @@
                 controls.addEventListener('start', () => {
                     isInteracting = true;
                     if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
+
+                    // Track interaction with this specific model
+                    if (window.posthog) {
+                        posthog.capture('model_interaction_start', {
+                            model_path: glbPath,
+                            view_mode: isCardMode ? 'card' : 'article',
+                            container_id: container.id
+                        });
+                    }
                 });
 
                 controls.addEventListener('end', () => resumeAutoRotate());
