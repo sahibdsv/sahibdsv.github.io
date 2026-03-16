@@ -85,6 +85,8 @@
         let _lastRenderedPath = null;
 
         const CACHE_KEY = 'sahib_v1_cache';
+        localStorage.removeItem(CACHE_KEY); // Purge legacy cache once and for all
+
         const CONFIG = {
             main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
             quotes_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv',
@@ -128,51 +130,14 @@
 
         const stripDrafts = arr => arr.filter(e => !e.Tags?.includes('Draft'));
 
-        loadFromCache().then(cachedData => {
-            const showDrafts = localStorage.getItem('preview_drafts') === 'true' || window.location.hostname === 'localhost';
+        const showDrafts = localStorage.getItem('preview_drafts') === 'true' || window.location.hostname === 'localhost';
 
-            if (cachedData) {
-                db = cachedData.main;
-                quotesDb = cachedData.quotes;
-                resumeDb = (cachedData.resume || []).map(entry => {
-                    if (entry.Page && entry.Page.includes('#')) {
-                        const [page, sectionType] = entry.Page.split('#');
-                        return {
-                            ...entry,
-                            Page: page,
-                            SectionType: sectionType
-                        };
-                    }
-                    return entry;
-                });
-                musicDb = cachedData.music || [];
-
-                if (!showDrafts) {
-                    db = stripDrafts(db);
-                    quotesDb = stripDrafts(quotesDb);
-                }
-
-                // Expose db to window for GLB injection
-                window.db = db;
-
-                startApp();
-
-                // Fetch fresh data in background
-                fetchDataAndCache().then(() => {
-                    if (!showDrafts) {
-                        db = stripDrafts(db);
-                        quotesDb = stripDrafts(quotesDb);
-                    }
-                });
-            } else {
-                fetchDataAndCache().then(() => {
-                    if (!showDrafts) {
-                        db = stripDrafts(db);
-                        quotesDb = stripDrafts(quotesDb);
-                    }
-                    startApp();
-                });
+        fetchDataAndCache().then(() => {
+            if (!showDrafts) {
+                db = stripDrafts(db);
+                quotesDb = stripDrafts(quotesDb);
             }
+            startApp();
         });
 
         function startApp() {
