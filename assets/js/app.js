@@ -511,10 +511,10 @@
                 _lastHaptic = now;
 
                 const tiers = {
-                    tick: 3,
-                    tap: 10,
-                    bump: 15,
-                    pulse: [7, 30, 7]
+                    tick: 1,
+                    tap: 1,
+                    bump: 3,
+                    pulse: [1, 25, 1]
                 };
                 navigator.vibrate(tiers[tier] || tier || 2);
             } catch (e) { }
