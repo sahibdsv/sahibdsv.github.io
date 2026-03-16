@@ -321,16 +321,21 @@
             }, {
                 passive: true
             }),
-                // Central Haptic Engine: Captures taps before bubbling can be stopped
-                document.addEventListener("pointerdown", e => {
+                // Central Haptic Engine: Captures taps in the CAPTURING phase
+                // This ensures we get the trigger even if stopPropagation() is called later,
+                // but ONLY if the browser considers the interaction a 'click' (not a scroll).
+                document.addEventListener("click", e => {
                     const interactive = e.target.closest(
                         "#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip, .article-link-btn, .author-link, .music-yt-overlay"
                     );
                     if (interactive && navigator.vibrate) {
-                        const isMajor = interactive.closest("#brand-name, #search-controls, .nav-row.level-1 .nav-link");
+                        const isMajor = interactive.closest("#brand-name, #search-controls, #theme-toggle, .nav-row.level-1 .nav-link");
                         haptic(isMajor ? 'pulse' : 'tap');
                     }
-                }, { passive: true }),
+                }, { 
+                    passive: true,
+                    capture: true // Intercept before bubble-phase stopPropagation
+                }),
                 window.addEventListener("resize", (() => {
                     let resizeTimeout;
                     return () => {
@@ -371,7 +376,6 @@
                 document.getElementById("app").addEventListener("click", e => {
                     const refreshBtn = e.target.closest(".refresh-btn");
                     if (refreshBtn) {
-                        haptic('tap');
                         const container = refreshBtn.closest(".layout-quote");
                         if (container) {
                             if (!container.classList.contains("loading")) {
@@ -542,10 +546,10 @@
                 _lastHaptic = now;
 
                 const tiers = {
-                    tick: 1,
-                    tap: 2,
-                    bump: 5,
-                    pulse: [1, 20, 1]
+                    tick: 3,
+                    tap: 10,
+                    bump: 15,
+                    pulse: [7, 30, 7]
                 };
                 navigator.vibrate(tiers[tier] || tier || 2);
             } catch (e) { }
@@ -916,7 +920,6 @@
         }
 
         function toggleTheme() {
-            haptic('pulse');
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
