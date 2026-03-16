@@ -175,7 +175,7 @@
                         page_title: document.title
                     });
                 }
-            }, 30000);
+            }, 5000);
 
             // 2. ENRICHED LINK TRACKING: Distinguish between internal navigation and external exit
             document.addEventListener('click', (e) => {
