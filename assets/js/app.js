@@ -1745,12 +1745,38 @@
         }
 
         function renderFooter() {
-            document.getElementById("footer-links").innerHTML = db.filter(e => "Footer" === e.Page).map(entry => {
-                const title = (entry.Title || "").replace(/{year}/g, new Date().getFullYear());
+            const footerEl = document.getElementById("footer-links");
+            let hasVisitorCounter = false;
+
+            footerEl.innerHTML = db.filter(e => "Footer" === e.Page).map(entry => {
+                let title = (entry.Title || "").replace(/{year}/g, new Date().getFullYear());
+                
+                if (title.includes("{Visitor Counter}")) {
+                    hasVisitorCounter = true;
+                    title = title.replace("{Visitor Counter}", '<span id="gc-visit-count">...</span>');
+                }
+
                 const m = title.match(/\[([^\]]+)\]\(([^)]+)\)/);
                 if (m) return `<a href="${m[2]}" target="_blank">${m[1]}</a>`;
                 return title ? `<span>${title}</span>` : "";
             }).join("");
+
+            // If we injected a counter, trigger GoatCounter to fill it
+            if (hasVisitorCounter) {
+                const triggerCounter = () => {
+                    if (window.goatcounter && window.goatcounter.visit_count) {
+                        goatcounter.visit_count({
+                            append: '#gc-visit-count',
+                            path: 'TOTAL', // Site-wide total
+                            no_branding: true,
+                            style: 'display: inline; font-weight: inherit;'
+                        });
+                    } else {
+                        setTimeout(triggerCounter, 500);
+                    }
+                };
+                triggerCounter();
+            }
         }
         // === MEDIA UTILITIES ===
         function getYouTubeID(url) {
