@@ -129,9 +129,9 @@
         window.initThreeJSViewer = function initThreeJSViewer(container, glbPath, isCardMode) {
             const canvas = container.querySelector('canvas');
 
-            // Parse custom scale from path (e.g., -size50, -scale73, -73%)
+            // Parse custom scale from path (e.g., -scale73)
             let customScale = 1.0;
-            const sizeMatch = glbPath.match(/-(?:size|scale)(\d+)/i) || glbPath.match(/-(\d+)%/i);
+            const sizeMatch = glbPath.match(/-scale(\d+)/i);
             if (sizeMatch) {
                 customScale = parseInt(sizeMatch[1]) / 100;
                 if (customScale <= 0) customScale = 1.0; // Safety fallback
@@ -419,15 +419,10 @@
                     const multiplier = baseMultiplier / (viewerInstance.customScale || 1.0);
                     const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
 
-                    // VISUAL CENTER DISPLACEMENT (Y-Shift):
-                    // Pointing slightly below the origin physically lifts the model's mass
-                    // UP into the visual center of the 4:3 frame for perfect balance.
-                    const yOffset = -radius * 0.1;
-
                     const dir = new THREE.Vector3(2.4, 1.6, 2.8).normalize();
                     camera.position.copy(dir.multiplyScalar(cameraDist));
-                    camera.lookAt(0, yOffset, 0);
-                    if (controls) controls.target.set(0, yOffset, 0);
+                    camera.lookAt(0, 0, 0);
+                    if (controls) controls.target.set(0, 0, 0);
                 },
                 onResize: () => {
                     const newW = container.clientWidth;
