@@ -165,22 +165,26 @@
         // Live Dashboard Polling
         let musicStateHistory = []; // Tracks hashes of recently seen valid states to reject stale CDN edge nodes
 
+        window.triggerAnalytics = function(cleanPath) {
+            if (!window.goatcounter || !window.goatcounter.count) return;
+
+            // Normalize path for cleaner reports (convert #Personal/About to /Personal/About)
+            const p = cleanPath || url2path(window.location.hash.substring(1) || "Home");
+            const virtualPath = '/' + p.replace(/^#/, '');
+            
+            goatcounter.count({
+                path: virtualPath,
+                title: document.title
+            });
+        };
+
         function startAnalytics() {
             if (!window.goatcounter) return;
 
-            // 1. Initial Pageview (Manually triggered because no_onload is true)
-            goatcounter.count({
-                path: location.pathname + (location.hash || '#Home'),
-                title: document.title
-            });
+            // 1. Initial Pageview
+            triggerAnalytics();
 
-            // 2. Hash-Navigation Tracking: Treat every hash change as a new pageview
-            window.addEventListener('hashchange', () => {
-                goatcounter.count({
-                    path: location.pathname + (location.hash || '#Home'),
-                    title: document.title
-                });
-            });
+            // 2. CTA Tracking: Capture specific clicks as events
 
             // 3. CTA Tracking: Capture specific clicks as events
             document.addEventListener('click', (e) => {
@@ -1036,6 +1040,9 @@
 
                 // 4. Update SEO based on the newly rendered page
                 updateSEO(cleanPath);
+                
+                // 4.5 Trigger Analytics AFTER title and URL are clean
+                if (window.triggerAnalytics) triggerAnalytics(cleanPath);
 
                 // Mark this path as rendered so subsequent identical swipes don't trigger re-renders
                 _lastRenderedPath = cleanPath;
