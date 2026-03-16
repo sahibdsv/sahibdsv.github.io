@@ -135,6 +135,8 @@
             if (sizeMatch) {
                 customScale = parseInt(sizeMatch[1]) / 100;
                 if (customScale <= 0) customScale = 1.0; // Safety fallback
+                // Strip scale from path so we fetch the actual file
+                glbPath = glbPath.replace(sizeMatch[0], '');
             }
 
             // Setup scene
