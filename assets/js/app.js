@@ -1763,8 +1763,9 @@
                     title = title.replace("{Visitor Counter}", '<span id="gc-visit-count">...</span>');
                 }
 
-                const m = title.match(/\[([^\]]+)\]\(([^)]+)\)/);
-                if (m) return `<a href="${m[2]}" target="_blank">${m[1]}</a>`;
+                // Replace markdown links globally within the string
+                title = title.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+                
                 return title ? `<span>${title}</span>` : "";
             }).join("");
 
