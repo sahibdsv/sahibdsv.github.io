@@ -1761,21 +1761,18 @@
                 return title ? `<span>${title}</span>` : "";
             }).join("");
 
-            // If we injected a counter, trigger GoatCounter to fill it
+            // If we injected a counter, fetch raw JSON to display as plain text
             if (hasVisitorCounter) {
-                const triggerCounter = () => {
-                    if (window.goatcounter && window.goatcounter.visit_count) {
-                        goatcounter.visit_count({
-                            append: '#gc-visit-count',
-                            path: 'TOTAL', // Site-wide total
-                            no_branding: true,
-                            style: 'display: inline; font-weight: inherit;'
-                        });
-                    } else {
-                        setTimeout(triggerCounter, 500);
-                    }
-                };
-                triggerCounter();
+                fetch('https://sahib.goatcounter.com/counter/TOTAL.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        const el = document.getElementById('gc-visit-count');
+                        if (el) el.innerText = data.count;
+                    })
+                    .catch(() => {
+                        const el = document.getElementById('gc-visit-count');
+                        if (el) el.innerText = '0';
+                    });
             }
         }
         // === MEDIA UTILITIES ===
