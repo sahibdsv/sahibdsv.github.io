@@ -1192,7 +1192,11 @@
             const thumbUrl = getThumbnail(entry.Thumbnail);
 
             const mediaBuilder = (type, src, id) => {
-                if (type === 'glb') return `<div class="row-media">${renderGLBViewer(src, true)}</div>`;
+                if (type === 'glb') {
+                    // Resolve path for internal models
+                    const glbPath = (src.startsWith('assets/') || src.startsWith('http')) ? src : `assets/models/${src}`;
+                    return `<div class="row-media">${renderGLBViewer(glbPath, true)}</div>`;
+                }
                 if (type === 'yt-embed') return `<div class="row-media"><div class="sk-img loader-overlay"></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
 
                 if (type === 'video') {
@@ -1768,8 +1772,8 @@
 
         function getThumbnail(media) {
             if (!media) return null;
-            // Catch GLB/3D models
-            if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols))*$/i)) return 'GLB_VIEWER';
+            // Catch GLB/3D models - support new -scale and -z-up suffixes
+            if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols|scale\d+|z-up))*$/i)) return 'GLB_VIEWER';
             // Catch YouTube
             const ytId = getYouTubeID(media);
             if (ytId) return getYouTubeThumbnail(ytId);
@@ -2526,8 +2530,8 @@
                 return { type: 'youtube', id: ytId, url: text };
             }
 
-            // 2. GLB / 3D Models
-            if (text.match(/\.glb(\?.*)?(?![\w-])/i) || text.match(/assets\/models\/.*\.glb/i)) {
+            // 2. GLB / 3D Models - support new -scale and -z-up suffixes
+            if (text.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols|scale\d+|z-up))*$/i) || text.match(/assets\/models\/.*\.glb/i)) {
                 const url = (text.startsWith('assets/') || text.startsWith('http')) ? text : `assets/models/${text}`;
                 return { type: 'glb', url: url };
             }
