@@ -396,8 +396,6 @@
                 controls,
                 canvas,
                 fitStage: () => {
-                    if (!model) return;
-
                     // Root Fix: Use Bounding Sphere instead of Box3 (AABB)
                     // Bounding Sphere radius is rotationally invariant, eliminating "breathing".
                     if (!viewerInstance._modelRadius) {
@@ -405,7 +403,6 @@
                         const sphere = box.getBoundingSphere(new THREE.Sphere());
                         viewerInstance._modelRadius = sphere.radius;
                     }
-
                     const radius = viewerInstance._modelRadius;
                     const vFOV = camera.fov * (Math.PI / 180);
                     const hFOV = 2 * Math.atan(Math.tan(vFOV / 2) * camera.aspect);
@@ -417,8 +414,8 @@
                     const distHorizontal = radius / Math.tan(hFOV / 2);
 
                     const baseMultiplier = isCardMode ? 0.85 : 0.65;
-                    // Apply custom scale factor (e.g., size50 = 0.5, results in 2x distance)
-                    const multiplier = baseMultiplier / (viewerInstance.customScale || 1.0);
+                    // Apply custom scale factor (e.g., scale60 = 0.6, results in larger camera distance)
+                    const multiplier = baseMultiplier / (customScale || 1.0);
                     const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
 
                     const dir = new THREE.Vector3(2.4, 1.6, 2.8).normalize();
