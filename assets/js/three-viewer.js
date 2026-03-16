@@ -129,6 +129,14 @@
         window.initThreeJSViewer = function initThreeJSViewer(container, glbPath, isCardMode) {
             const canvas = container.querySelector('canvas');
 
+            // Parse custom scale from path (e.g., -size50, -scale73, -73%)
+            let customScale = 1.0;
+            const sizeMatch = glbPath.match(/-(?:size|scale)(\d+)/i) || glbPath.match(/-(\d+)%/i);
+            if (sizeMatch) {
+                customScale = parseInt(sizeMatch[1]) / 100;
+                if (customScale <= 0) customScale = 1.0; // Safety fallback
+            }
+
             // Setup scene
             const scene = new THREE.Scene();
             // scene.background = null; // Transparent background
@@ -406,7 +414,9 @@
                     const distVertical = radius / Math.tan(vFOV / 2);
                     const distHorizontal = radius / Math.tan(hFOV / 2);
 
-                    const multiplier = isCardMode ? 0.85 : 0.65;
+                    const baseMultiplier = isCardMode ? 0.85 : 0.65;
+                    // Apply custom scale factor (e.g., size50 = 0.5, results in 2x distance)
+                    const multiplier = baseMultiplier / (viewerInstance.customScale || 1.0);
                     const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
 
                     // VISUAL CENTER DISPLACEMENT (Y-Shift):
@@ -509,6 +519,7 @@
                     scene.clear();
                 },
                 model: () => model,
+                customScale, // Store parsed scale for fitStage
                 loaded: false,
                 hasRenderedState: false
             };
