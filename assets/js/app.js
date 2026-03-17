@@ -324,82 +324,79 @@
             handleRouting();
             window.addEventListener("hashchange", handleRouting);
             window.addEventListener("touchmove", () => {
-                document.getElementById("main-header").classList.add("scrolling")
+                document.getElementById("main-header").classList.add("scrolling");
+            }, { passive: true });
+
+            // 1. Central Haptic Engine: Intercepts taps in CAPTURE phase
+            document.addEventListener("click", e => {
+                const interactive = e.target.closest(
+                    "#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip, .article-link-btn, .author-link, .music-yt-overlay"
+                );
+                if (interactive && navigator.vibrate) {
+                    const isMajor = interactive.closest("#brand-name, #search-controls, #theme-toggle, .nav-row.level-1 .nav-link");
+                    haptic(isMajor ? 'pulse' : 'tap');
+                }
             }, {
-                passive: true
-            }),
-                // Central Haptic Engine: Captures taps in the CAPTURING phase
-                // This ensures we get the trigger even if stopPropagation() is called later,
-                // but ONLY if the browser considers the interaction a 'click' (not a scroll).
-                document.addEventListener("click", e => {
-                    const interactive = e.target.closest(
-                        "#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip, .article-link-btn, .author-link, .music-yt-overlay"
-                    );
-                    if (interactive && navigator.vibrate) {
-                        const isMajor = interactive.closest("#brand-name, #search-controls, #theme-toggle, .nav-row.level-1 .nav-link");
-                        haptic(isMajor ? 'pulse' : 'tap');
-                    }
-                }, { 
-                    passive: true,
-                    capture: true // Intercept before bubble-phase stopPropagation
-                }),
-                window.addEventListener("resize", (() => {
-                    let resizeTimeout;
-                    return () => {
-                        clearTimeout(resizeTimeout);
-                        resizeTimeout = setTimeout(() => {
-                            document.querySelectorAll(".nav-row").forEach(row => {
-                                centerNavRow(row, true)
-                            })
-                        }, 150)
-                    }
-                })()),
+                passive: true,
+                capture: true
+            });
 
-                // Global Click Handler - Manages Search, Navigation
-                document.addEventListener("click", e => {
-                    const overlay = document.getElementById("search-overlay");
-                    const controls = document.getElementById("search-controls");
-                    const results = document.getElementById("search-results");
+            window.addEventListener("resize", (() => {
+                let resizeTimeout;
+                return () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => {
+                        document.querySelectorAll(".nav-row").forEach(row => {
+                            centerNavRow(row, true);
+                        });
+                    }, 150);
+                };
+            })());
 
-                            // 1. Search Dismissal & Result Navigation Logic
-                    if (overlay.classList.contains("active")) {
-                        const card = e.target.closest('.layout-grid');
-                        const isInsideSearch = overlay.contains(e.target) || controls.contains(e.target);
-                        const isInsideResultsContent = results && results.contains(e.target) && !e.target.classList.contains("section") && !e.target.classList.contains("grid-container") && e.target.id !== "search-results";
+            // 2. Search & Dismissal Logic
+            document.addEventListener("click", e => {
+                const overlay = document.getElementById("search-overlay");
+                const controls = document.getElementById("search-controls");
+                const results = document.getElementById("search-results");
 
-                        // If we clicked a result card, ensure search is closed (covers same-page navigation)
-                        if (card && results.contains(card)) {
-                            closeSearch();
-                            return;
-                        }
+                if (overlay.classList.contains("active")) {
+                    const card = e.target.closest('.layout-grid');
+                    const isInsideSearch = overlay.contains(e.target) || controls.contains(e.target);
+                    const isInsideResultsContent = results && results.contains(e.target);
 
-                        // Close if not inside overlay/controls AND not inside actual content (clicking background)
-                        if (!isInsideSearch && !isInsideResultsContent) {
-                            closeSearch();
-                        }
-                    }
-                }),
-
-
-                // App-specific handlers (Chip & Refresh)
-                document.getElementById("app").addEventListener("click", e => {
-                    const chip = e.target.closest(".chip");
-                    if (chip) {
-                        if (chip.tagName !== 'A') e.stopPropagation();
-
-                        if (isSearchActive) closeSearch();
-                        const t = chip.getAttribute("data-tag"),
-                            n = chip.getAttribute("data-date");
-                        if (n) {
-                            window.location.hash = "Filter:" + n;
-                        } else if (t) {
-                            window.location.hash = "Filter:" + t;
-                        }
+                    if (card && results.contains(card)) {
+                        closeSearch();
                         return;
                     }
-                }, {
-                    passive: false
-                }); // Set to false to allow stopPropagation to work correctly for chips
+
+                    if (!isInsideSearch && !isInsideResultsContent) {
+                        closeSearch();
+                    }
+                }
+            });
+
+            // 3. Chip Filtering (CAPTURE phase to prevent card navigation)
+            document.getElementById("app").addEventListener("click", e => {
+                const chip = e.target.closest(".chip");
+                if (chip) {
+                    // Prevent navigation of parent card
+                    e.stopPropagation();
+
+                    if (isSearchActive) closeSearch();
+
+                    const t = chip.getAttribute("data-tag");
+                    const n = chip.getAttribute("data-date");
+
+                    if (n) {
+                        window.location.hash = "Filter:" + n;
+                    } else if (t) {
+                        window.location.hash = "Filter:" + t;
+                    }
+                }
+            }, {
+                capture: true,
+                passive: false
+            });
 
                 document.addEventListener("keydown", e => {
                     const isSearchFocused = "search-input" === (document.activeElement ? document.activeElement.id : "");
@@ -1205,11 +1202,11 @@
                 const label = linkMatch[1];
                 const url = linkMatch[2];
                 if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(url)) {
-                    return `<a href="${url}" target="_blank" class="chip location" onclick="event.stopPropagation();">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${processInlineMarkdown(label)}</a>`;
+                    return `<a href="${url}" target="_blank" class="chip location">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${processInlineMarkdown(label)}</a>`;
                 }
-                return `<a href="${url}" target="_blank" class="chip location link" onclick="event.stopPropagation();">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${processInlineMarkdown(label)}</a>`;
+                return `<a href="${url}" target="_blank" class="chip location link">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${processInlineMarkdown(label)}</a>`;
             }
-            return `<span class="chip" data-tag="${tag}" onclick="event.stopPropagation();">${processInlineMarkdown(tag)}</span>`;
+            return `<span class="chip" data-tag="${tag}">${processInlineMarkdown(tag)}</span>`;
         }
 
         function renderCardHTML(entry, contextCategory = "") {
@@ -1270,7 +1267,7 @@
             let metaRowHTML = "";
             if (entry.Timestamp || tagsList.length > 0) {
                 metaRowHTML =
-                    `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}" onclick="event.stopPropagation();">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
+                    `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
             }
 
             return `<div class="layout-grid ${contextCategory || getCategoryClass(entry.Page)} ${!entry.Thumbnail ? "has-placeholder" : ""}" onclick="location.hash=path2url('${entry.Page}')">${mediaHTML}<div class="card-info">${(entry.Title && !isTitleLink) ? `<h3 class="fill-anim">${processSingleLine(entry.Title)}</h3>` : ""}${metaRowHTML}</div></div>`;
@@ -1294,7 +1291,7 @@
                     const dateStr = formatDate(entry.Timestamp),
                         monthKey = entry.Timestamp.substring(0, 7);
                     metaHTML +=
-                        `<span class="chip date" data-val="${dateStr}" onclick="event.stopPropagation(); window.location.hash='Filter:${monthKey}'">${dateStr}</span>`;
+                        `<span class="chip date" data-val="${dateStr}" data-date="${monthKey}">${dateStr}</span>`;
                 }
                 if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
                 return `<div class="section layout-hero">\n${formatTitle(entry.Title, "h1")}${metaHTML ? `<div class="hero-meta">${metaHTML}</div>` : ""}${processContentWithBlocks(entry.Content || "")}\n</div>`;
@@ -1312,7 +1309,7 @@
                         const dateStr = formatDate(entry.Timestamp),
                             monthKey = entry.Timestamp.substring(0, 7);
                         metaHTML +=
-                            `<span class="chip date" data-val="${dateStr}" onclick="event.stopPropagation(); window.location.hash='Filter:${monthKey}'">${dateStr}</span>`;
+                            `<span class="chip date" data-val="${dateStr}" data-date="${monthKey}">${dateStr}</span>`;
                     }
                     if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
                     const readTime = Math.ceil((entry.Content || "").trim().split(/\s+/).length / 200);
