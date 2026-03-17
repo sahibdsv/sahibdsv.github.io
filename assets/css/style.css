@@ -875,25 +875,29 @@
             text-align: center;
             flex-direction: column;
             min-height: 180px;
-            /* Transition for background during load only */
-            transition: height var(--anim-layout) var(--ease), background 0.4s var(--ease);
+            /* No background on base: text-only on page background */
+            transition: height var(--anim-layout) var(--ease);
             border-radius: var(--card-radius);
             position: relative;
             overflow: hidden;
         }
 
         .layout-quote.loading {
-            /* Card background ONLY during load to act as the skeleton card */
-            background: linear-gradient(90deg, var(--card-bg) 25%, var(--card-bg-hover) 50%, var(--card-bg) 75%);
+            /* Card background ONLY during load to act as the single skeleton card */
+            background: linear-gradient(90deg, 
+                var(--card-bg-dark) 25%, 
+                var(--card-bg-hover) 50%, 
+                var(--card-bg-dark) 75%
+            );
             background-size: 200% 100%;
-            animation: skeleton-shimmer 2.2s infinite linear;
+            animation: skeleton-shimmer 2s infinite linear;
             box-shadow: var(--shadow-subtle, none);
             border: 1px solid var(--border-subtle);
         }
 
-        .layout-quote.loading .quote-footer,
-        .layout-quote.loading blockquote {
-            opacity: 0;
+        .layout-quote.loading blockquote,
+        .layout-quote.loading .quote-footer {
+            opacity: 0 !important;
             pointer-events: none;
         }
 
@@ -947,11 +951,7 @@
             line-height: normal
         }
 
-        .layout-quote.loading .quote-footer,
-        .layout-quote.loading blockquote {
-            opacity: var(--op-line);
-            pointer-events: none
-        }
+
 
         .dice-icon {
             display: inline-block;
