@@ -1095,7 +1095,6 @@
         .row-media {
             aspect-ratio: 4/3;
             width: 100%;
-            overflow: hidden;
             border-radius: var(--card-radius) var(--card-radius) 0 0;
             background: var(--surface-subtle);
             margin-bottom: 0;
@@ -1103,8 +1102,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Force clipping for non-overflow:hidden browsers and fix bleed */
+            /* Force robust clipping to fix corner bleed */
+            clip-path: inset(0 round var(--card-radius) var(--card-radius) 0 0);
             isolation: isolate;
+            overflow: hidden;
+        }
+
+        .row-media.loaded {
+            background: transparent !important;
         }
 
         .row-media img,
@@ -1625,11 +1630,13 @@
             margin: 12px 0;
         }
         
-        /* Ensure standalone inline buttons in articles are centered */
-        .article-body .inline-btn-wrapper {
+        /* Ensure standalone inline buttons in articles are centered and on their own row */
+        .inline-btn-wrapper {
             display: flex;
             justify-content: center;
             width: 100%;
+            margin: 15px 0;
+            clear: both;
         }
 
         .btn-cta {
@@ -2877,6 +2884,7 @@
             min-height: auto;
             border-bottom: 1px solid var(--border-subtle);
             border-radius: var(--card-radius) var(--card-radius) 0 0;
+            clip-path: inset(0 round var(--card-radius) var(--card-radius) 0 0);
             overflow: hidden;
         }
         
