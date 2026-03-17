@@ -81,6 +81,7 @@
         let musicDb = []; // Music logging data
         let variablesDb = []; // Variables metadata
         let quoteBag = []; // New state for shuffle logic
+        let _lastQuoteIndex = -1; // Track last index to avoid boundary repeats
         let isSearchActive = false;
         let _lastRenderedPath = null;
         let _activeRandomQuote = null; // Sticky session quote
@@ -113,10 +114,17 @@
 
             if (quoteBag.length === 0) {
                 refillQuoteBag();
+
+                // Boundary Fix: If the first quote in the new bag is the same as the very last one we showed...
+                if (quotesDb.length > 1 && quoteBag[quoteBag.length - 1] === _lastQuoteIndex) {
+                    // ...move it to the start/bottom of the bag so it's picked last in this cycle
+                    const repeatIndex = quoteBag.pop();
+                    quoteBag.unshift(repeatIndex);
+                }
             }
 
-            const index = quoteBag.pop();
-            return quotesDb[index];
+            _lastQuoteIndex = quoteBag.pop();
+            return quotesDb[_lastQuoteIndex];
         }
 
         // App Initialization
