@@ -883,20 +883,24 @@
         }
 
         .layout-quote.loading {
-            /* Card background ONLY during load: matches exact site-wide skeleton style */
-            background: linear-gradient(90deg, 
-                var(--card-bg-dark) 25%, 
-                var(--card-bg-hover) 50%, 
-                var(--card-bg-dark) 75%
+            /* High-visibility skeleton card */
+            background-color: var(--card-bg-dark) !important;
+            background-image: linear-gradient(90deg, 
+                rgba(var(--bright-rgb), 0) 0%, 
+                rgba(var(--bright-rgb), 0.08) 50%, 
+                rgba(var(--bright-rgb), 0) 100%
             ) !important;
             background-size: 200% 100% !important;
-            animation: skeleton-shimmer 2s infinite linear !important;
-            border: 1px solid var(--border-subtle) !important;
+            animation: skeleton-shimmer 1.2s infinite linear !important;
+            border: 1px solid var(--border-strong) !important;
+            box-shadow: var(--shadow-medium) !important;
+            transition: none !important; /* No fade-in: instant pop for feedback */
         }
 
         .layout-quote.loading blockquote,
         .layout-quote.loading .quote-footer {
             opacity: 0 !important;
+            transition: none !important;
             pointer-events: none;
         }
 

@@ -1414,7 +1414,7 @@
                 _activeRandomQuote = null;
                 renderQuoteCard(container);
                 container.classList.remove("loading");
-            }, 600); // Site-wide rhythmic delay
+            }, 800); // 800ms: enough time for the shimmer to be clearly visible
         };
 
         function renderQuoteCard(container) {
