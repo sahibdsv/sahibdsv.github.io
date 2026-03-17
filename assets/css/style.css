@@ -1393,7 +1393,7 @@
 
         .image-caption {
             display: block;
-            padding: 6px 12px 6px 12px;
+            padding: 4px 12px 6px 12px; /* Reduced top padding for tighter visual connection */
             background: transparent;
             color: var(--text-dim);
             font-size: 15px;
@@ -1403,7 +1403,7 @@
             text-align: center;
             position: relative;
             z-index: 5;
-            margin-top: 0;
+            margin-top: 2px; /* Fine-tuned micro-gap */
         }
 
         .media-gallery {
@@ -2888,7 +2888,7 @@
 
         /* Responsive Map sizing for articles */
         .article-body .mapbox-container {
-            margin: 20px 0;
+            margin: 0; /* Margin is now handled by .unified-media-wrapper for consistency */
             aspect-ratio: 16 / 9; /* Allow wide view in articles */
             min-height: 300px; 
         }
