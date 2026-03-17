@@ -83,6 +83,7 @@
         let quoteBag = []; // New state for shuffle logic
         let isSearchActive = false;
         let _lastRenderedPath = null;
+        let _activeRandomQuote = null; // Sticky session quote
 
         const CACHE_KEY = 'sahib_v1_cache';
         localStorage.removeItem(CACHE_KEY); // Purge legacy cache once and for all
@@ -1425,8 +1426,11 @@
                     container.innerHTML = "Quote sheet empty.";
                     return;
                 }
-                // Use the new bag logic instead of random selection
-                quoteData = getNextQuote();
+                // Sticky: Only roll a new one if we don't have an active session quote yet
+                if (!_activeRandomQuote) {
+                    _activeRandomQuote = getNextQuote();
+                }
+                quoteData = _activeRandomQuote;
                 isRandom = true;
             } else {
                 quoteData = {
@@ -1462,7 +1466,7 @@
             let refreshBtnHTML = "";
             if (isRandom) {
                 refreshBtnHTML = `
-                <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">
+                <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll" onclick="event.stopPropagation(); window._activeRandomQuote = null; renderQuoteCard(this.closest('.layout-quote'));">
                     <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor"></rect>
                     <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
                     <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
