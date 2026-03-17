@@ -1414,7 +1414,7 @@
                 _activeRandomQuote = null;
                 renderQuoteCard(container);
                 container.classList.remove("loading");
-            }, 300); // 300ms: SNAPPY response now that skeleton is gone
+            }, 600); // 600ms: Smooth fade-out/pause/fade-in rhythm
         };
 
         function renderQuoteCard(container) {
