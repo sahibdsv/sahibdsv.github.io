@@ -1224,11 +1224,11 @@
                 const label = linkMatch[1];
                 const url = linkMatch[2];
                 if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(url)) {
-                    return `<a href="${url}" target="_blank" class="chip location">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${processInlineMarkdown(label)}</a>`;
+                    return `<a href="${url}" target="_blank" class="chip location" onclick="event.stopPropagation();">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${processInlineMarkdown(label)}</a>`;
                 }
-                return `<a href="${url}" target="_blank" class="chip location link">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${processInlineMarkdown(label)}</a>`;
+                return `<a href="${url}" target="_blank" class="chip location link" onclick="event.stopPropagation();">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${processInlineMarkdown(label)}</a>`;
             }
-            return `<span class="chip" data-tag="${tag}">${processInlineMarkdown(tag)}</span>`;
+            return `<span class="chip" data-tag="${tag}" onclick="event.stopPropagation();">${processInlineMarkdown(tag)}</span>`;
         }
 
         function renderCardHTML(entry, contextCategory = "") {
@@ -1289,7 +1289,7 @@
             let metaRowHTML = "";
             if (entry.Timestamp || tagsList.length > 0) {
                 metaRowHTML =
-                    `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
+                    `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}" onclick="event.stopPropagation();">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
             }
 
             return `<div class="layout-grid ${contextCategory || getCategoryClass(entry.Page)} ${!entry.Thumbnail ? "has-placeholder" : ""}" onclick="location.hash=path2url('${entry.Page}')">${mediaHTML}<div class="card-info">${(entry.Title && !isTitleLink) ? `<h3 class="fill-anim">${processSingleLine(entry.Title)}</h3>` : ""}${metaRowHTML}</div></div>`;
@@ -1298,9 +1298,13 @@
         const SECTION_RENDERERS = {
             quote: (entry) =>
                 `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true">
-                    <div class="skeleton-visible">
-                        <div class="sk-line" style="width: 100%; height: 80px; margin-bottom: 15px;"></div>
-                        <div class="sk-line" style="width: 40%; height: 14px; margin: 0 auto;"></div>
+                    <div class="skeleton-visible quote-skeleton" style="padding: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                        <div class="sk-line" style="width: 80%; height: 28px; margin: 0 auto 10px; border-radius: 4px;"></div>
+                        <div class="sk-line" style="width: 50%; height: 28px; margin: 0 auto 20px; border-radius: 4px;"></div>
+                        <div class="quote-footer" style="margin-top: 10px; width: 100%; text-align: center;">
+                            <div class="sk-line" style="width: 30%; height: 14px; display: inline-block; vertical-align: middle; border-radius: 4px;"></div>
+                            <div class="sk-box" style="width: 24px; height: 24px; display: inline-block; margin-left:12px; vertical-align: middle; border-radius: 6px;"></div>
+                        </div>
                     </div>
                 </div>`,
             hero: (entry) => {
@@ -1425,11 +1429,15 @@
             const container = btn.closest('.layout-quote');
             if (!container) return;
 
-            // Artificial skeleton state for rhythmic consistency
+            // Artificial skeleton state for rhythmic consistency - matching quote card layout
             container.innerHTML = `
-                <div class="skeleton-visible">
-                    <div class="sk-line" style="width: 100%; height: 80px; margin-bottom: 15px;"></div>
-                    <div class="sk-line" style="width: 40%; height: 14px; margin: 0 auto;"></div>
+                <div class="skeleton-visible quote-skeleton" style="padding: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                    <div class="sk-line" style="width: 85%; height: 28px; margin: 0 auto 10px; border-radius: 4px;"></div>
+                    <div class="sk-line" style="width: 60%; height: 28px; margin: 0 auto 20px; border-radius: 4px;"></div>
+                    <div class="quote-footer" style="margin-top: 10px; width: 100%; text-align: center;">
+                        <div class="sk-line" style="width: 35%; height: 14px; display: inline-block; vertical-align: middle; border-radius: 4px;"></div>
+                        <div class="sk-box" style="width: 24px; height: 24px; display: inline-block; margin-left:12px; vertical-align: middle; border-radius: 6px;"></div>
+                    </div>
                 </div>`;
 
             setTimeout(() => {
