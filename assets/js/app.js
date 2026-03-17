@@ -1422,8 +1422,20 @@
         }
 
         window.rollQuote = function(btn) {
-            _activeRandomQuote = null;
-            renderQuoteCard(btn.closest('.layout-quote'));
+            const container = btn.closest('.layout-quote');
+            if (!container) return;
+
+            // Artificial skeleton state for rhythmic consistency
+            container.innerHTML = `
+                <div class="skeleton-visible">
+                    <div class="sk-line" style="width: 100%; height: 80px; margin-bottom: 15px;"></div>
+                    <div class="sk-line" style="width: 40%; height: 14px; margin: 0 auto;"></div>
+                </div>`;
+
+            setTimeout(() => {
+                _activeRandomQuote = null;
+                renderQuoteCard(container);
+            }, 400); // Site-wide rhythmic delay
         };
 
         function renderQuoteCard(container) {
