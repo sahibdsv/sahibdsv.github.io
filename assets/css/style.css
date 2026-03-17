@@ -937,10 +937,10 @@
             display: inline-block;
             vertical-align: middle;
             margin-left: 10px;
-            margin-top: -4px;
-            width: 18px;
-            /* Elegant, small, higher-fidelity brand icon */
-            height: 18px;
+            width: 26px; /* Larger, more readable icon */
+            height: 26px;
+            cursor: pointer;
+            color: #ffffff; /* Forced white as requested */
             cursor: pointer;
             opacity: var(--op-line);
             transition: transform var(--anim-layout) cubic-bezier(.175, .885, .32, 1.275), opacity var(--anim-layout) ease, color var(--anim-layout) ease;

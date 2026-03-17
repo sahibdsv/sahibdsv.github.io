@@ -1474,14 +1474,7 @@
             let refreshBtnHTML = "";
             if (isRandom) {
                 refreshBtnHTML = `
-                <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">
-                    <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor"></rect>
-                    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
-                    <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
-                    <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
-                    <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
-                    <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
-                </svg>`;
+                <img src="assets/images/icons/dice-icon-white.svg" class="dice-icon refresh-btn" data-tooltip="Roll" alt="Roll">`;
             }
 
             container.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
@@ -2790,7 +2783,7 @@
                 if (stravaId) {
                     mediaHTML = `<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard" data-from-embed="false" style="width: 100%; min-height: 180px; border-radius: var(--card-radius); overflow: hidden; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; box-sizing: border-box;">
                         <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: var(--accent-strava); margin-bottom: 12px; opacity: 0.8;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
-                        <a href="${stravaUrl}" target="_blank" class="btn-cta strava">View on <svg class="strava-wordmark" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 10"><path d="m23.775019 8.983579-.000216-.000345h2.350918l1.44399-2.90337 1.443988 2.90337h2.856266L27.569495.68l-4.082476 7.88311-1.567494-2.288917c.967765-.46671 1.570946-1.275008 1.570946-2.436089v-.022867c0-.819494-.250355-1.41151-.72852-1.889698-.557878-.557779-1.457149-.910658-2.86867-.910658H16v7.968698h2.663834V6.706753h.569096l1.502667 2.276826h3.03942ZM40.340995.68l-4.30004 8.303234h2.856375l1.44388-2.90337 1.44399 2.90337h2.856373L40.340995.68Zm-6.315281 8.623237L38.325645 1h-2.856266L34.02539 3.903363 32.581401 1h-2.856266l4.300579 8.303237ZM19.95127 4.805718c.637374 0 1.024502-.28458 1.024502-.77405v-.022867c0-.51224-.398453-.76267-1.013068-.76267h-1.161167v1.559587h1.149733Zm-9.606317-1.55175H8V1h7.353774v2.253968h-2.344878V8.9687h-2.663942V3.253968ZM1.605005 6.092084.181912 7.788273c1.013205.888063 2.470343 1.343307 4.086765 1.343307 2.140236 0 3.517694-1.024588 3.517694-2.698092v-.022684c0-1.605118-1.366078-2.197135-3.403767-2.572689-.842458-.159554-1.058738-.29596-1.058738-.512337v-.02277c0-.19351.182227-.33011.580551-.33011.73991 0 1.639365.23905 2.39057.78544L7.59286 1.959797C6.670723 1.231177 5.532402.866823 3.995574.866823 1.79833.866823.61448 2.039477.61448 3.553438v.022867c0 1.684712 1.571065 2.197135 3.358237 2.561212.853827.170848 1.104171.29597 1.104171.523717v.022868c0 .216183-.204803.341306-.68299.341306-.933432 0-1.923773-.273017-2.788894-.933324Z" fill="currentColor"/></svg></a>
+                        <a href="${stravaUrl}" target="_blank" class="btn-cta strava">View on <img src="assets/images/icons/strava-wordmark-white.svg" class="strava-wordmark" alt="Strava"></a>
                     </div>`;
                 } else {
                     // Fallback for links where we couldn't parse the ID (like short redirects)
@@ -2926,9 +2919,10 @@
             // Recursively process markdown inside the button text
             let formattedText = processInlineMarkdown(cleanText, 1);
 
-            // Inject Strava Wordmark if branded
-            if (colorClass === 'strava' && !formattedText.includes('<svg')) {
-                const stravaWordmark = `<svg class="strava-wordmark" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 10"><path d="m23.775019 8.983579-.000216-.000345h2.350918l1.44399-2.90337 1.443988 2.90337h2.856266L27.569495.68l-4.082476 7.88311-1.567494-2.288917c.967765-.46671 1.570946-1.275008 1.570946-2.436089v-.022867c0-.819494-.250355-1.41151-.72852-1.889698-.557878-.557779-1.457149-.910658-2.86867-.910658H16v7.968698h2.663834V6.706753h.569096l1.502667 2.276826h3.03942ZM40.340995.68l-4.30004 8.303234h2.856375l1.44388-2.90337 1.44399 2.90337h2.856373L40.340995.68Zm-6.315281 8.623237L38.325645 1h-2.856266L34.02539 3.903363 32.581401 1h-2.856266l4.300579 8.303237ZM19.95127 4.805718c.637374 0 1.024502-.28458 1.024502-.77405v-.022867c0-.51224-.398453-.76267-1.013068-.76267h-1.161167v1.559587h1.149733Zm-9.606317-1.55175H8V1h7.353774v2.253968h-2.344878V8.9687h-2.663942V3.253968ZM1.605005 6.092084.181912 7.788273c1.013205.888063 2.470343 1.343307 4.086765 1.343307 2.140236 0 3.517694-1.024588 3.517694-2.698092v-.022684c0-1.605118-1.366078-2.197135-3.403767-2.572689-.842458-.159554-1.058738-.29596-1.058738-.512337v-.02277c0-.19351.182227-.33011.580551-.33011.73991 0 1.639365.23905 2.39057.78544L7.59286 1.959797C6.670723 1.231177 5.532402.866823 3.995574.866823 1.79833.866823.61448 2.039477.61448 3.553438v.022867c0 1.684712 1.571065 2.197135 3.358237 2.561212.853827.170848 1.104171.29597 1.104171.523717v.022868c0 .216183-.204803.341306-.68299.341306-.933432 0-1.923773-.273017-2.788894-.933324Z" fill="currentColor"/></svg>`;
+            // Use image-based white wordmark for Strava branding to bypass hardcoding paths in JS
+            if (colorClass === 'strava' && !formattedText.includes('<img')) {
+                const stravaWordmarkURL = 'assets/images/icons/strava-wordmark-white.svg';
+                const stravaWordmark = `<img src="${stravaWordmarkURL}" class="strava-wordmark" alt="Strava">`;
                 const cleanLabel = formattedText.replace(/strava/i, '').trim();
                 formattedText = `${cleanLabel} ${stravaWordmark}`;
             }
