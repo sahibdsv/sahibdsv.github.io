@@ -2843,31 +2843,42 @@
 
         // Centralized Toolset for Markdown Elements
         function renderButtonHTML(text, url, isInline = false) {
-            const rawURL = url || "";
+            const rawURL = (url || "").trim().replace(/^\(|\)$/g, "").trim(); // Remove outer ( ) if present
             let colorClass = "";
-            let cleanText = text || "";
+            let cleanText = (text || "").trim();
             let finalURL = rawURL;
 
             // 1. Identify Color from Text (Legacy Support: "Label-green")
-            const textColorMatch = cleanText.match(/-(green|red|blue|orange|purple)$/i);
+            const textColorMatch = cleanText.match(/-(green|red|blue|orange|purple|strava)$/i);
             if (textColorMatch) {
                 colorClass = textColorMatch[1].toLowerCase();
                 cleanText = cleanText.replace(/-[a-z]+$/i, "");
             }
 
             // 2. Identify Color & Markers from URL (Marker Strategy: "url.pdf-btn-green")
-            const urlMarkerMatch = rawURL.match(/-btn(-green|-red|-blue|-orange|-purple)?(?:\?.*)?$/i);
+            const urlMarkerMatch = rawURL.match(/-btn(-green|-red|-blue|-orange|-purple|-strava)?(?:\?.*)?$/i);
             if (urlMarkerMatch) {
                 if (!colorClass && urlMarkerMatch[1]) {
                     colorClass = urlMarkerMatch[1].substring(1).toLowerCase();
                 }
-                finalURL = rawURL.replace(/-btn(-green|-red|-blue|-orange|-purple)?(?:\?.*)?$/i, "");
+                finalURL = rawURL.replace(/-btn(-green|-red|-blue|-orange|-purple|-strava)?(?:\?.*)?$/i, "");
+            }
+
+            // 3. Auto-Branding for Strava
+            if (!colorClass && (cleanText.toLowerCase().includes("strava") || finalURL.includes("strava.com"))) {
+                colorClass = "strava";
             }
 
             const target = finalURL.startsWith('#') || finalURL.startsWith('javascript:') ? '' : 'target="_blank"';
 
-            // Recursively process markdown inside the button text for full universal support
-            const formattedText = processInlineMarkdown(cleanText, 1);
+            // Recursively process markdown inside the button text
+            let formattedText = processInlineMarkdown(cleanText, 1);
+
+            // Inject Strava Icon if branded
+            if (colorClass === 'strava' && !formattedText.includes('<svg')) {
+                const stravaIcon = `<svg class="strava-icon" style="fill: currentColor; width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>`;
+                formattedText = stravaIcon + formattedText;
+            }
 
             const btnHTML = `<a href="${finalURL}" class="btn-cta ${colorClass}" ${target} rel="noopener">${formattedText}</a>`;
             if (isInline) return btnHTML;
@@ -3019,9 +3030,8 @@
                 result = result.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
 
                 // A. SHORTHAND PIPE: [Label | URL] -> Buttons
-                result = result.replace(/\[\s*([^\]|]+?)\s*\|\s*([^\]\s]+)\s*\]/gi, (match, btnText, btnUrl) => {
-                    const cleanURL = btnUrl.trim();
-                    return renderButtonHTML(btnText.trim(), cleanURL, true);
+                result = result.replace(/\[\s*([^\]|]+?)\s*\|\s*([^\]]+?)\s*\]/gi, (match, btnText, btnUrl) => {
+                    return renderButtonHTML(btnText.trim(), btnUrl.trim(), true);
                 });
 
                 // B. LEGACY CTA: [button]: Label | URL
