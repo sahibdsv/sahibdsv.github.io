@@ -422,14 +422,8 @@
                     const distVertical = radius / Math.tan(vFOV / 2);
                     const distHorizontal = radius / Math.tan(hFOV / 2);
 
-                    const baseMultiplier = isCardMode ? 0.85 : 0.65;
-                    // Apply custom scale factor (e.g., scale60 = 0.6)
-                    const multiplier = baseMultiplier / (customScale || 1.0);
-
-                    // Adaptive Bottleneck: On portrait screens (mobile), width usually forces the camera way back.
-                    // We apply a slight boost to keep the model feeling significant without excessive clipping.
-                    const hFitOffset = camera.aspect < 1 ? 0.8 : 1.0; 
-                    const cameraDist = Math.max(distVertical, distHorizontal * hFitOffset) * multiplier;
+                    const multiplier = 1.0 / (customScale || 1.0);
+                    const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
 
                     const dir = new THREE.Vector3(2.4, 1.6, 2.8).normalize();
                     camera.position.copy(dir.multiplyScalar(cameraDist));
