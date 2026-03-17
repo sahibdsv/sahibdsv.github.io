@@ -865,7 +865,7 @@
         .layout-quote {
             margin: 0 auto 15px;
             -webkit-tap-highlight-color: transparent;
-            padding: 40px clamp(15px, 6%, 60px);
+            padding: 30px clamp(15px, 5%, 40px);
             height: auto;
             width: 100%;
             max-width: 100%;
@@ -875,6 +875,19 @@
             text-align: center;
             flex-direction: column;
             min-height: 180px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-subtle, none);
+            overflow: hidden;
+            transition: background var(--anim-instant), border-color var(--anim-instant), height var(--anim-layout) var(--ease);
+        }
+
+        @media (hover: hover) {
+            .layout-quote:hover {
+                background: var(--card-bg-hover);
+                border-color: rgba(var(--bright-rgb), 0.15);
+            }
         }
 
         .layout-quote blockquote {
