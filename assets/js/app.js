@@ -361,17 +361,19 @@
                     const controls = document.getElementById("search-controls");
                     const results = document.getElementById("search-results");
 
-                    // 1. Search Dismissal Logic
-                    // Close if clicking outside overlay, controls, results OR empty space in results
+                            // 1. Search Dismissal & Result Navigation Logic
                     if (overlay.classList.contains("active")) {
-                        const isInsideSearch = overlay.contains(e.target) ||
-                            controls.contains(e.target);
+                        const card = e.target.closest('.layout-grid');
+                        const isInsideSearch = overlay.contains(e.target) || controls.contains(e.target);
+                        const isInsideResultsContent = results && results.contains(e.target) && !e.target.classList.contains("section") && !e.target.classList.contains("grid-container") && e.target.id !== "search-results";
 
-                        const isInsideResultsContent = results && results.contains(e.target) && !e.target.classList
-                            .contains("section") && !e.target.classList.contains("grid-container") && e.target.id !==
-                            "search-results";
+                        // If we clicked a result card, ensure search is closed (covers same-page navigation)
+                        if (card && results.contains(card)) {
+                            closeSearch();
+                            return;
+                        }
 
-                        // If not inside overlay/controls AND not inside actual content (clicking background)
+                        // Close if not inside overlay/controls AND not inside actual content (clicking background)
                         if (!isInsideSearch && !isInsideResultsContent) {
                             closeSearch();
                         }
@@ -993,7 +995,7 @@
         const url2path = u => u?.replace(/_/g, ' ') ?? '';
 
         function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
-            if (isSearchActive && !isSwipe) closeSearch();
+            if (window.closeSearch && !isSwipe) closeSearch();
 
             const header = document.getElementById("main-header");
             if (header && !isSwipe) header.classList.remove("scrolled");

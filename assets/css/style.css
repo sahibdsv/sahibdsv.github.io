@@ -1021,6 +1021,8 @@
             background: var(--card-bg);
             box-shadow: var(--shadow-subtle, none);
             overflow: hidden;
+            text-decoration: none;
+            color: inherit;
         }
 
         @media (hover: hover) {
