@@ -281,11 +281,12 @@
                     isInteracting = true;
                     if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
 
-                    // Track interaction with this specific model
+                    // Track interaction with this specific model (Simplified event name)
                     if (window.goatcounter && window.goatcounter.count) {
+                        const filename = glbPath.split('/').pop();
                         goatcounter.count({
-                            path: 'model-spin-' + glbPath,
-                            title: '3D Interaction: ' + glbPath.split('/').pop(),
+                            path: '3d-' + filename,
+                            title: '3D Interaction: ' + filename,
                             event: true
                         });
                     }
