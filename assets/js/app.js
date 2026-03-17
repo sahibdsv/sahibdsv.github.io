@@ -1410,16 +1410,13 @@
             const container = btn.closest('.layout-quote');
             if (!container || container.classList.contains("loading")) return;
 
-            // Lock height to prevent layout jumps during refresh
-            container.style.height = container.clientHeight + "px";
+            // No height locking needed: height is now fixed at 250px in CSS
             container.classList.add("loading");
 
             setTimeout(() => {
                 _activeRandomQuote = null;
                 renderQuoteCard(container);
                 container.classList.remove("loading");
-                // Immediately allow expansion/contraction to the new size in a single "leap"
-                container.style.height = "auto";
             }, 600); // Site-wide rhythmic delay
         };
 
@@ -1462,16 +1459,18 @@
             const safeQuote = safeHTML(rawQuote);
             const len = rawQuote.length;
 
+            // Flexible scaling for a FIXED 250px container
             const sizeClass = [
-                [230, 'xxl'],
-                [150, 'xl'],
-                [100, 'long'],
-                [50, 'medium']
+                [350, 'xxl'], // Extremely long quotes fit gracefully
+                [250, 'xl'],
+                [150, 'long'],
+                [80, 'medium']
             ]
                 .find(([n]) => len > n)?.[1] || 'short';
 
             let refreshBtnHTML = "";
             if (isRandom) {
+                // Fixed in bottom right via CSS
                 refreshBtnHTML = `
                 <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll" onclick="event.stopPropagation(); rollQuote(this);">
                     <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor"></rect>
@@ -1484,7 +1483,8 @@
             }
 
             container.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
-                                <div class="quote-footer"><span class="author"> &mdash; ${author}</span>${refreshBtnHTML}</div>`;
+                                <div class="quote-footer"><span class="author"> &mdash; ${author}</span></div>
+                                ${refreshBtnHTML}`;
         }
 
         window.__initMusicMarquee = function(container) {

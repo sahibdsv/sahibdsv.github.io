@@ -866,7 +866,7 @@
             margin: 0 auto 15px;
             -webkit-tap-highlight-color: transparent;
             padding: 40px clamp(15px, 6%, 60px);
-            height: auto;
+            height: 250px; /* FIXED HEIGHT: Never changes size, no page jumps */
             width: 100%;
             max-width: 100%;
             display: flex;
@@ -874,12 +874,12 @@
             justify-content: center;
             text-align: center;
             flex-direction: column;
-            min-height: 180px;
-            /* No background on base: text-only on page background */
-            transition: height var(--anim-layout) var(--ease);
+            /* Transition colors, but height is now static */
+            transition: background var(--anim-quick) var(--ease);
             border-radius: var(--card-radius);
             position: relative;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         .layout-quote.loading {
@@ -966,18 +966,18 @@
 
 
         .dice-icon {
-            display: inline-block;
-            vertical-align: middle;
-            margin-left: 15px;
-            margin-top: -2px;
+            position: absolute;
+            bottom: 20px;
+            right: 20px; /* FIXED POSITION: Bottom right corner as requested */
             width: 24px;
             height: 24px;
             cursor: pointer;
-            color: var(--text-bright); /* Brighter from standard list */
-            opacity: 0.7;
+            color: var(--text-bright);
+            opacity: 0.5;
             transition: transform 0.4s cubic-bezier(.175, .885, .32, 1.275), opacity 0.2s ease, color 0.2s ease;
             -webkit-tap-highlight-color: transparent;
-            outline: 0
+            outline: 0;
+            z-index: 10;
         }
 
         .dice-icon:hover {
