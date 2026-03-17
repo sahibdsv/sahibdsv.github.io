@@ -2888,12 +2888,12 @@
         .article-body .mapbox-container {
             margin: 20px 0;
             aspect-ratio: 16 / 9; /* Allow wide view in articles */
-            min-height: 400px;
+            min-height: 300px; 
         }
 
         @media (max-width: 768px) {
             .article-body .mapbox-container {
-                aspect-ratio: 1 / 1;
-                min-height: 300px;
+                aspect-ratio: 16 / 9;
+                min-height: auto;
             }
         }
