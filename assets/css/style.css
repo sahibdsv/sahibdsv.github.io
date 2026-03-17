@@ -1660,7 +1660,7 @@
             opacity: 1;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center; /* Center content horizontally */
             vertical-align: middle;
             line-height: normal;
             padding: 8px 24px;
@@ -1675,6 +1675,15 @@
             cursor: pointer;
             overflow: visible;
             transition: color var(--anim-quick), border-color var(--anim-quick), background var(--anim-quick), box-shadow var(--anim-quick);
+            text-align: center;
+        }
+
+        /* Tighten spacing for paragraphs that are just wrappers for buttons */
+        article p:has(.btn-cta-wrapper),
+        .article-body p:has(.btn-cta-wrapper),
+        .section p:has(.btn-cta-wrapper) {
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         .btn-cta:hover {

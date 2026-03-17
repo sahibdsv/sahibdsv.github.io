@@ -404,27 +404,24 @@
                 controls,
                 canvas,
                 fitStage: () => {
-                    // Root Fix: Use Bounding Sphere instead of Box3 (AABB)
-                    // Bounding Sphere radius is rotationally invariant, eliminating "breathing".
-                    if (!viewerInstance._modelRadius) {
-                        if (!model || !model.updateMatrixWorld) return;
+                    if (!model) return;
+                    if (!viewerInstance._isStableFit) {
                         model.updateMatrixWorld(true);
                         const box = new THREE.Box3().setFromObject(model);
-                        const sphere = box.getBoundingSphere(new THREE.Sphere());
-                        viewerInstance._modelRadius = sphere.radius;
+                        const size = box.getSize(new THREE.Vector3());
+                        // Use the largest dimension for fitting
+                        viewerInstance._stableSize = Math.max(size.x, size.y, size.z);
+                        viewerInstance._isStableFit = true;
                     }
-                    const radius = viewerInstance._modelRadius;
+                    
+                    const radius = viewerInstance._stableSize / 2;
                     const vFOV = camera.fov * (Math.PI / 180);
                     const hFOV = 2 * Math.atan(Math.tan(vFOV / 2) * camera.aspect);
 
-                    // BOTTLENECK-BASED SAFETY (Option A):
-                    // 1. Find the "Boss Bottleneck" - the axis requiring the most distance for a 100% fit.
-                    // 2. Start from that safety point and zoom in exactly 15% for consistent heroics.
                     const distVertical = radius / Math.tan(vFOV / 2);
                     const distHorizontal = radius / Math.tan(hFOV / 2);
 
-                    const baseMultiplier = isCardMode ? 0.35 : 0.25;
-                    // Apply custom scale factor (e.g., scale60 = 0.6, results in larger camera distance)
+                    const baseMultiplier = isCardMode ? 1.2 : 0.9;
                     const multiplier = baseMultiplier / (customScale || 1.0);
                     const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
 
