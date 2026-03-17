@@ -883,28 +883,15 @@
         }
 
         .layout-quote.loading {
-            /* Card background ONLY during load to act as the single skeleton card */
-            background-color: var(--card-bg-hover) !important;
-            box-shadow: var(--shadow-subtle, none) !important;
-            border: 1px solid var(--border-strong) !important;
-            min-height: 180px;
-        }
-
-        .layout-quote.loading::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            /* Card background ONLY during load: matches exact site-wide skeleton style */
             background: linear-gradient(90deg, 
-                transparent 25%, 
-                rgba(var(--bright-rgb), 0.05) 50%, 
-                transparent 75%
-            );
-            background-size: 200% 100%;
-            animation: skeleton-shimmer 1.5s infinite linear;
-            z-index: 1;
+                var(--card-bg-dark) 25%, 
+                var(--card-bg-hover) 50%, 
+                var(--card-bg-dark) 75%
+            ) !important;
+            background-size: 200% 100% !important;
+            animation: skeleton-shimmer 2s infinite linear !important;
+            border: 1px solid var(--border-subtle) !important;
         }
 
         .layout-quote.loading blockquote,
@@ -982,7 +969,7 @@
 
         .dice-icon:hover {
             opacity: 1;
-            transform: rotate(360deg) scale(1.1);
+            transform: rotate(360deg); /* SPIN ONLY: No enlargement/scale as requested */
             color: var(--text-bright);
         }
 
@@ -1023,14 +1010,6 @@
 
         .sk-line.text.short {
             width: 40%;
-        }
-
-        .sk-box.quote {
-            height: 100px;
-            width: 100%;
-            margin: 0 auto 10px;
-            border-radius: var(--card-radius);
-            opacity: 1;
         }
 
         .layout-grid .sk-img {
