@@ -181,7 +181,10 @@
             min-height: 100vh;
             width: 100%;
             position: relative;
-            overflow-x: hidden
+            overflow-x: hidden;
+            /* Humble Emojis: Match them to text color by removing vibrancy */
+            filter: grayscale(1);
+            opacity: 0.95;
         }
 
         a,
@@ -2115,7 +2118,7 @@
 
         .article-body h2 {
             font-size: 1.8rem;
-            color: var(--text-bright);
+            color: var(--text-dim);
         }
 
         .article-body h3 {
