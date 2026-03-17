@@ -875,32 +875,26 @@
             text-align: center;
             flex-direction: column;
             min-height: 180px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-subtle);
+            /* Transition for background during load only */
+            transition: height var(--anim-layout) var(--ease), background 0.4s var(--ease);
             border-radius: var(--card-radius);
-            box-shadow: var(--shadow-subtle, none);
+            position: relative;
             overflow: hidden;
-            transition: background var(--anim-instant), border-color var(--anim-instant), height var(--anim-layout) var(--ease);
-        }
-
-        @media (hover: hover) {
-            .layout-quote:hover {
-                background: var(--card-bg-hover);
-                border-color: rgba(var(--bright-rgb), 0.15);
-            }
         }
 
         .layout-quote.loading {
+            /* Card background ONLY during load to act as the skeleton card */
             background: linear-gradient(90deg, var(--card-bg) 25%, var(--card-bg-hover) 50%, var(--card-bg) 75%);
             background-size: 200% 100%;
-            animation: skeleton-shimmer 2s infinite linear;
+            animation: skeleton-shimmer 2.2s infinite linear;
+            box-shadow: var(--shadow-subtle, none);
+            border: 1px solid var(--border-subtle);
         }
 
         .layout-quote.loading .quote-footer,
         .layout-quote.loading blockquote {
-            opacity: var(--op-line);
+            opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
         }
 
         .layout-quote blockquote {
@@ -1073,8 +1067,6 @@
             --text-hover: var(--cat-accent, var(--text-bright));
             font-weight: 600;
             line-height: 1.3;
-            transform: translateY(-1px);
-            padding-bottom: 2px;
         }
 
         .layout-grid:hover .row-media.placeholder span {
@@ -1100,14 +1092,14 @@
         }
 
         .card-info {
-            padding: 14px 15px;
+            padding: 15px; /* Symmetrical 15px padding for perfect title balance */
             display: flex;
             flex-direction: column;
             gap: 6px;
             width: 100%;
             box-sizing: border-box;
             flex-grow: 1;
-            justify-content: center;
+            justify-content: center; /* Vertically center titles/content */
         }
 
         .meta-row {
