@@ -2891,12 +2891,6 @@
             // Recursively process markdown inside the button text
             let formattedText = processInlineMarkdown(cleanText, 1);
 
-            // Inject Strava Icon if branded
-            if (colorClass === 'strava' && !formattedText.includes('<svg')) {
-                const stravaIcon = `<svg class="strava-icon" style="fill: currentColor; width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>`;
-                formattedText = stravaIcon + formattedText;
-            }
-
             const btnHTML = `<a href="${finalURL}" class="btn-cta ${colorClass}" ${target} rel="noopener">${formattedText}</a>`;
             if (isInline) return btnHTML;
             return `<div class="btn-cta-wrapper">${btnHTML}</div>`;
@@ -3079,8 +3073,7 @@
                 }
                 // Standard Link
                 if (label.toLowerCase().includes('strava')) {
-                    const stravaIcon = `<svg class="strava-icon" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>`;
-                    return `<a href="${cleanURL}" target="_blank" rel="noopener" class="strava-link">${stravaIcon}${processInlineMarkdown(label, depth + 1)}</a>`;
+                    return `<a href="${cleanURL}" target="_blank" rel="noopener" class="strava-link">${processInlineMarkdown(label, depth + 1)}</a>`;
                 }
                 return `<a href="${cleanURL}" target="_blank" rel="noopener">${processInlineMarkdown(label, depth + 1)}</a>`;
             });
