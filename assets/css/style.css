@@ -1078,14 +1078,14 @@
         }
 
         .card-info {
-            padding: 15px; /* Symmetrical 15px padding for perfect title balance */
+            padding: 12px 15px 15px 15px; /* 12px top + 3px title line-height bubble = 15px visual TOP gap, matching sides/bottom */
             display: flex;
             flex-direction: column;
             gap: 6px;
             width: 100%;
             box-sizing: border-box;
             flex-grow: 1;
-            justify-content: center; /* Vertically center titles/content */
+            justify-content: flex-start; /* Pin to top to maintain consistent gutter below media */
         }
 
         .meta-row {
