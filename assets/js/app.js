@@ -1926,7 +1926,11 @@
                         try {
                             const viewer = window.initThreeJSViewer(container, glbPath, isCardMode);
                             _glbViewers[uniqueId] = viewer;
-                            new ResizeObserver(() => viewer.onResize()).observe(container);
+                            new ResizeObserver(() => {
+                                if (document.contains(container) && viewer.onResize) {
+                                    viewer.onResize();
+                                }
+                            }).observe(container);
                         } catch (e) {
                             console.error("GLB Init Warning:", e);
                         }
@@ -2002,8 +2006,28 @@
         function renderMapBoxViewer(geojsonUrl, isCardMode) {
             const mapId = 'mapbox-' + Math.random().toString(36).substr(2, 9);
             
-            if (!window._mapboxQueue) window._mapboxQueue = [];
-            window._mapboxQueue.push({ id: mapId, url: geojsonUrl, isInteractive: !isCardMode });
+            // Lazy-loading Observer for Mapbox to prevent WebGL context exhaustion
+            if (!window._mapboxObserver) {
+                window._mapboxObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const container = entry.target;
+                            const url = container.dataset.geojsonUrl;
+                            const isInteractive = container.dataset.interactive === 'true';
+                            
+                            const tryInit = () => {
+                                if (window.mapboxgl) {
+                                    window.__initMapbox(container.id, url, isInteractive);
+                                } else {
+                                    setTimeout(tryInit, 100);
+                                }
+                            };
+                            tryInit();
+                            window._mapboxObserver.unobserve(container);
+                        }
+                    });
+                }, { rootMargin: '300px' });
+            }
 
             if (!window._mapboxScriptLoaded) {
                 const link = document.createElement('link');
@@ -2014,24 +2038,17 @@
                 window._mapboxScriptLoaded = true;
                 const script = document.createElement('script');
                 script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js';
-                script.onload = () => {
-                    if (window._mapboxQueue) {
-                        window._mapboxQueue.forEach(q => window.__initMapbox(q.id, q.url, q.isInteractive));
-                        window._mapboxQueue = [];
-                    }
-                };
+                // No longer need immediate init here as the observer will handle it
                 document.head.appendChild(script);
-            } else if (window.mapboxgl) {
-                setTimeout(() => {
-                    const queueItem = window._mapboxQueue.find(q => q.id === mapId);
-                    if (queueItem) {
-                        window.__initMapbox(queueItem.id, queueItem.url, queueItem.isInteractive);
-                        window._mapboxQueue = window._mapboxQueue.filter(q => q.id !== mapId);
-                    }
-                }, 50);
             }
 
-            return `<div class="mapbox-container ${isCardMode ? 'card-preview' : ''}" id="${mapId}">
+            // Start observing for viewport entry
+            setTimeout(() => {
+                const mapEl = document.getElementById(mapId);
+                if (mapEl) window._mapboxObserver.observe(mapEl);
+            }, 0);
+
+            return `<div class="mapbox-container ${isCardMode ? 'card-preview' : ''}" id="${mapId}" data-geojson-url="${geojsonUrl}" data-interactive="${!isCardMode}">
                         <div class="loader-overlay sk-img">
                             <div class="glb-loader-text">Loading Map</div>
                         </div>
@@ -2622,7 +2639,7 @@
             }
 
             // 3.5 GeoJSON / GPS Visualizer Art
-            if (text.match(/\.geojson(?:-[A-Z]{1,2})?(\?.*)?(?![\w-])/i) || text.match(/assets\/GPX\/.*\.geojson(?:-[A-Z]{1,2})?/i)) {
+            if (!text.includes('|') && (text.match(/\.geojson(?:-[A-Z]{1,2})?(\?.*)?(?![\w-])/i) || text.match(/assets\/GPX\/.*\.geojson(?:-[A-Z]{1,2})?/i))) {
                 // If it doesn't already have an HTTP or assets prefix, add it. (Preserve the suffix for init parsing)
                 const url = (text.startsWith('assets/') || text.startsWith('http')) ? text : `assets/GPX/${text}`;
                 return { type: 'geojson', url: url };
@@ -3077,6 +3094,9 @@
         window.__initMapbox = async function(containerId, geojsonUrl, isInteractive = true) {
             const container = document.getElementById(containerId);
             if (!container) return;
+
+            // Clear the container to avoid "The map container element should be empty" warnings
+            container.innerHTML = '';
 
             // Automatically authenticating with provided Mapbox account token.
             // Split to bypass aggressive GitHub secret scanners that confuse 'pk' public keys with 'sk' private keys.

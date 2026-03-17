@@ -407,6 +407,7 @@
                     // Root Fix: Use Bounding Sphere instead of Box3 (AABB)
                     // Bounding Sphere radius is rotationally invariant, eliminating "breathing".
                     if (!viewerInstance._modelRadius) {
+                        if (!model) return;
                         const box = new THREE.Box3().setFromObject(model);
                         const sphere = box.getBoundingSphere(new THREE.Sphere());
                         viewerInstance._modelRadius = sphere.radius;

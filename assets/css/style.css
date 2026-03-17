@@ -1590,13 +1590,14 @@
 
         .model-viewer-wrapper.card-preview canvas {
             pointer-events: none !important;
-            border-radius: var(--media-radius);
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
         }
 
         .btn-cta-wrapper {
             width: 100%;
             display: flex;
             justify-content: center;
+            text-align: center;
             flex-wrap: wrap;
             gap: 12px;
             padding: 0;
@@ -2649,14 +2650,18 @@
             display: block;
         }
 
-        .layout-grid.cat-music .row-media img.media-enter,
         .layout-grid.cat-music .row-media .sk-img {
-            border-radius: 0 !important;
-            position: relative;
-            z-index: 1;
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
+        }
+
+        .layout-grid .row-media .sk-img {
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
         }
 
         .layout-grid.cat-music .row-media img.media-enter {
+            border-radius: 0 !important;
+            position: relative;
+            z-index: 1;
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -2840,7 +2845,7 @@
             aspect-ratio: 1 / 1;
             min-height: auto;
             border-bottom: 1px solid var(--border-subtle);
-            border-radius: var(--media-radius) var(--media-radius) 0 0;
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
         }
 
         .strava-link {
