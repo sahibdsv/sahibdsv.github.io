@@ -97,6 +97,7 @@
         } catch(e) { console.warn("Failed to restore quote session", e); }
 
         let isSearchActive = false;
+        let _lastRenderedPath = null;
 
         const CACHE_KEY = 'sahib_v1_cache';
         localStorage.removeItem(CACHE_KEY); // Purge legacy cache once and for all
