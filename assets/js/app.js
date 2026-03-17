@@ -185,8 +185,6 @@
             triggerAnalytics();
 
             // 2. CTA Tracking: Capture specific clicks as events
-
-            // 3. CTA Tracking: Capture specific clicks as events
             document.addEventListener('click', (e) => {
                 const link = e.target.closest('a');
                 if (link && link.href) {
