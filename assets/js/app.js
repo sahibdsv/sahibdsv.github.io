@@ -144,17 +144,18 @@
             // Initial Skeleton setup
             showPageSkeleton();
 
-            // Clean URL
-            if (window.location.search) {
-                history.replaceState(null, null, window.location.pathname + window.location.hash);
-            }
-
             initApp();
             startLiveMusicPolling();
             updateSEO();
             renderFooter();
 
+            // 1. Fire Analytics FIRST to capture referrals/UTMs
             startAnalytics();
+
+            // 2. Clear URL parameters for aesthetics AFTER tracking
+            if (window.location.search) {
+                history.replaceState(null, null, window.location.pathname + window.location.hash);
+            }
 
             requestAnimationFrame(() => {
                 document.body.classList.remove('no-transition');
