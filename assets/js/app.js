@@ -1414,7 +1414,7 @@
                 _activeRandomQuote = null;
                 renderQuoteCard(container);
                 container.classList.remove("loading");
-            }, 800); // 800ms: enough time for the shimmer to be clearly visible
+            }, 300); // 300ms: SNAPPY response now that skeleton is gone
         };
 
         function renderQuoteCard(container) {

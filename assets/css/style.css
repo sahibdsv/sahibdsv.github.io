@@ -882,43 +882,10 @@
             box-sizing: border-box;
         }
 
-        .layout-quote.loading {
-            /* High-visibility skeletal base card */
-            background: var(--card-bg-dark) !important; 
-            border: 1px solid var(--border-strong) !important;
-            box-shadow: var(--shadow-medium) !important;
-            transition: none !important;
-            position: relative;
-            overflow: hidden;
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-
-        /* The pseudo-element shimmer is much harder to suppress than a flat background */
-        .layout-quote.loading::after {
-            content: "" !important;
-            display: block !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            background: linear-gradient(90deg, 
-                rgba(var(--bright-rgb), 0) 0%, 
-                rgba(var(--bright-rgb), 0.12) 50%, 
-                rgba(var(--bright-rgb), 0) 100%
-            ) !important;
-            background-size: 200% 100% !important;
-            animation: skeleton-shimmer 1.5s infinite linear !important;
-            z-index: 5 !important;
-            pointer-events: none !important;
-        }
-
         .layout-quote.loading blockquote,
         .layout-quote.loading .quote-footer {
-            opacity: 0 !important;
-            transition: none !important;
-            pointer-events: none !important;
+            opacity: 0;
+            pointer-events: none;
         }
 
         .layout-quote blockquote {
