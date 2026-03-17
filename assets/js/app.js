@@ -1243,6 +1243,10 @@
                     const glbPath = (src.startsWith('assets/') || src.startsWith('http')) ? src : `assets/models/${src}`;
                     return `<div class="row-media">${renderGLBViewer(glbPath, true)}</div>`;
                 }
+                if (type === 'map') {
+                    const mapPath = (src.startsWith('assets/') || src.startsWith('http')) ? src : `assets/GPX/${src}`;
+                    return `<div class="row-media">${renderMapBoxViewer(mapPath, true)}</div>`;
+                }
                 if (type === 'yt-embed') return `<div class="row-media"><div class="sk-img loader-overlay"></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
 
                 if (type === 'video') {
@@ -1266,6 +1270,7 @@
                 () => isTitleLink && !entry.Thumbnail && tEx ? mediaBuilder(tEx.type === 'yt' ? 'yt-embed' : tEx.type,
                     tEx.url, tEx.id) : "",
                 () => entry.Thumbnail && thumbUrl === 'GLB_VIEWER' ? mediaBuilder('glb', entry.Thumbnail) : "",
+                () => entry.Thumbnail && thumbUrl === 'MAP_VIEWER' ? mediaBuilder('map', entry.Thumbnail) : "",
                 () => entry.Thumbnail && thumbUrl?.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i) ?
                     mediaBuilder('video', thumbUrl) : "",
                 () => entry.Thumbnail && thumbUrl ? mediaBuilder('img', thumbUrl) : "",
@@ -1844,6 +1849,8 @@
             if (!media) return null;
             // Catch GLB/3D models - support new -scale and -z-up suffixes
             if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols|scale\d+|z-up))*$/i)) return 'GLB_VIEWER';
+            // Catch GeoJSON maps
+            if (media.match(/\.geojson(?:-[NSEW]{1,2})?(\?.*)?$/i)) return 'MAP_VIEWER';
             // Catch YouTube
             const ytId = getYouTubeID(media);
             if (ytId) return getYouTubeThumbnail(ytId);
@@ -1990,6 +1997,46 @@
 
             return html;
         };
+
+        // --- UNIVERSAL MAPBOX VIEWER ---
+        function renderMapBoxViewer(geojsonUrl, isCardMode) {
+            const mapId = 'mapbox-' + Math.random().toString(36).substr(2, 9);
+            
+            if (!window._mapboxQueue) window._mapboxQueue = [];
+            window._mapboxQueue.push({ id: mapId, url: geojsonUrl, isInteractive: !isCardMode });
+
+            if (!window._mapboxScriptLoaded) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css';
+                document.head.appendChild(link);
+
+                window._mapboxScriptLoaded = true;
+                const script = document.createElement('script');
+                script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js';
+                script.onload = () => {
+                    if (window._mapboxQueue) {
+                        window._mapboxQueue.forEach(q => window.__initMapbox(q.id, q.url, q.isInteractive));
+                        window._mapboxQueue = [];
+                    }
+                };
+                document.head.appendChild(script);
+            } else if (window.mapboxgl) {
+                setTimeout(() => {
+                    const queueItem = window._mapboxQueue.find(q => q.id === mapId);
+                    if (queueItem) {
+                        window.__initMapbox(queueItem.id, queueItem.url, queueItem.isInteractive);
+                        window._mapboxQueue = window._mapboxQueue.filter(q => q.id !== mapId);
+                    }
+                }, 50);
+            }
+
+            return `<div class="mapbox-container ${isCardMode ? 'card-preview' : ''}" id="${mapId}">
+                        <div class="loader-overlay sk-img">
+                            <div class="glb-loader-text">Loading Map</div>
+                        </div>
+                    </div>`;
+        }
 
         function toggleFullscreen(viewerId) {
             const wrapper = document.getElementById(viewerId);
@@ -2418,44 +2465,7 @@
         function processBlock(lines) {
             if (lines.length === 0) return null;
 
-            // 0. GPS Card / Grid Detection (Supporting multi-line joins with || or single line pipelines)
             const combinedBlock = lines.join(' ').trim();
-            if (combinedBlock.includes('.geojson') && combinedBlock.includes('|')) {
-                const cardStrings = combinedBlock.split('||').map(s => s.trim()).filter(s => s);
-                let validGpsCards = [];
-                
-                for (let cardStr of cardStrings) {
-                    const parts = cardStr.split('|').map(p => p.trim());
-                    if (parts.length >= 2) {
-                        const maybeMedia = parts[0];
-                        const detected = detectBasicUrlType(maybeMedia);
-                        if (detected && (detected.type === 'geojson' || detected.type === 'strava')) {
-                            let link = null;
-                            let caption = "";
-                            // url | title | caption | optional link
-                            if (parts.length >= 4) {
-                                caption = parts[2];
-                                link = parts[3];
-                            } else if (parts.length === 3) {
-                                if (parts[2].match(/^(https?:\/\/|www\.)/i)) {
-                                    link = parts[2];
-                                } else {
-                                    caption = parts[2];
-                                }
-                            }
-                            validGpsCards.push({
-                                type: 'gps-card',
-                                url: detected.url,
-                                title: parts[1],
-                                link: link && link.match(/^(https?:\/\/|www\.)/i) ? (link.startsWith('http') ? link : `https://${link}`) : null,
-                                caption: caption
-                            });
-                        }
-                    }
-                }
-                if (validGpsCards.length === 1) return validGpsCards[0];
-                if (validGpsCards.length > 1) return { type: 'gps-grid', cards: validGpsCards };
-            }
 
             // 1. Smart Caption Detection: [This is a caption]
             // We check the last line for square brackets.
@@ -2718,37 +2728,7 @@
                 mediaHTML = renderGLBViewer(item.url, false);
 
             } else if (item.type === 'geojson') {
-                const mapId = 'mapbox-' + Math.random().toString(36).substr(2, 9);
-                
-                // Construct placeholder frame for Mapbox
-                mediaHTML = `<div class="${embedClass} mapbox-embed-placeholder" style="position: relative; overflow: hidden; display: block; background: var(--card-bg-dark); border-radius: var(--card-radius); border: 1px solid var(--border-subtle); box-sizing: border-box; width: 100%; aspect-ratio: 16 / 9; min-height: 200px;">
-                        <div id="${mapId}" style="width: 100%; height: 100%; position: absolute; inset:0;" class="media-enter loader-overlay"></div>
-                    </div>`;
-
-                // Lazy load mapbox
-                if (!window._mapboxScriptLoaded) {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css';
-                    document.head.appendChild(link);
-
-                    window._mapboxQueue = [{ id: mapId, url: item.url }];
-                    window._mapboxScriptLoaded = true;
-
-                    const script = document.createElement('script');
-                    script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js';
-                    script.onload = () => {
-                        window._mapboxQueue.forEach(q => window.__initMapbox(q.id, q.url));
-                        window._mapboxQueue = [];
-                    };
-                    document.head.appendChild(script);
-                } else {
-                    if (window.mapboxgl) {
-                        setTimeout(() => window.__initMapbox(mapId, item.url), 10);
-                    } else {
-                        window._mapboxQueue.push({ id: mapId, url: item.url });
-                    }
-                }
+                mediaHTML = renderMapBoxViewer(item.url, false);
 
             } else if (item.type === 'strava') {
                 const stravaId = item.id;
@@ -2846,86 +2826,8 @@
                     const clusterUrls = block.items.map(i => i.url).join(',');
                     return `<div class="music-embed-container" data-needs-init="true" data-type="music-cluster" data-urls="${clusterUrls}"></div>`;
 
-                case 'gps-grid':
-                    const gridId = 'gps-grid-' + Math.random().toString(36).substr(2, 9);
-                    const gridCardsHTML = block.cards.map(c => renderContentBlock(c, index)).join('');
-                    
-                    setTimeout(() => {
-                        const gridEl = document.getElementById(gridId);
-                        if (gridEl) window.__initMusicMarquee(gridEl);
-                    }, 200);
-
-                    return `<div id="${gridId}" class="music-embed-container" data-type="gps-grid-rendered">
-                                <div class="music-sections-container">
-                                    <div class="music-grid" style="--music-cols: ${block.cards.length}">
-                                        ${gridCardsHTML}
-                                    </div>
-                                </div>
-                            </div>`;
-
-                case 'gps-card':
-                    const cardId = 'gps-card-' + Math.random().toString(36).substr(2, 9);
-                    setTimeout(() => {
-                        const cardEl = document.getElementById(cardId);
-                        if (cardEl) window.__initMusicMarquee(cardEl);
-                    }, 200);
-
-                    let stravaTarget = block.link;
-                    if (!stravaTarget) {
-                        const fallbackDB = typeof variablesDb !== 'undefined' ? variablesDb.find(v => v.Variable && v.Variable.trim() === 'Strava Profile') : null;
-                        stravaTarget = fallbackDB && fallbackDB.Value ? fallbackDB.Value.trim() : 'https://www.strava.com/';
-                    }
-                    
-                    const mapIdCard = 'mapbox-card-' + Math.random().toString(36).substr(2, 9);
-                    
-                    // Enqueue Mapbox
-                    if (!window._mapboxScriptLoaded) {
-                        const linkEl = document.createElement('link');
-                        linkEl.rel = 'stylesheet';
-                        linkEl.href = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css';
-                        document.head.appendChild(linkEl);
-
-                        window._mapboxQueue = window._mapboxQueue || [];
-                        window._mapboxQueue.push({ id: mapIdCard, url: block.url });
-                        window._mapboxScriptLoaded = true;
-
-                        const scriptEl = document.createElement('script');
-                        scriptEl.src = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js';
-                        scriptEl.onload = () => {
-                            window._mapboxQueue.forEach(q => window.__initMapbox(q.id, q.url));
-                            window._mapboxQueue = [];
-                        };
-                        document.head.appendChild(scriptEl);
-                    } else {
-                        if (window.mapboxgl) {
-                            setTimeout(() => window.__initMapbox(mapIdCard, block.url), 10);
-                        } else {
-                            window._mapboxQueue = window._mapboxQueue || [];
-                            window._mapboxQueue.push({ id: mapIdCard, url: block.url });
-                        }
-                    }
-
-                    // A cohesive Strava/GPS card built on the music logic architecture
-                    return `
-                        <div id="${cardId}" class="layout-grid cat-music" style="position: relative; overflow: hidden; border-radius: var(--card-radius); display:flex; flex-direction:column; padding: 0; align-items: stretch; max-width: 100%;">
-                            <!-- Top Map Area (16:9 cinematic aspect-ratio) -->
-                            <div style="width:100%; aspect-ratio:16/9; position:relative; background: var(--card-bg-dark);" class="row-media">
-                                <div id="${mapIdCard}" style="width: 100%; height: 100%; position: absolute; inset:0; border-radius: 0;" class="media-enter loader-overlay"></div>
-                            </div>
-                            <!-- Bottom Info Area (Synced with YTM card architecture) -->
-                            <div class="card-info" style="padding: 10px 14px; padding-right: 45px; flex:1; position:relative; background: var(--card-bg); display: flex; flex-direction: column; justify-content: center; min-height: 60px;">
-                                <div class="marquee-container track-marquee" style="margin-bottom: 2px;">
-                                    <span class="marquee-content"><h3 class="fill-anim" style="margin:0; font-size: 18px; white-space: normal; line-height: 1.2;">${processInlineMarkdown(block.title)}</h3></span>
-                                </div>
-                                <div class="marquee-container artist-marquee">
-                                    <span class="marquee-content"><div class="music-artist-label" style="opacity:0.8; font-size: 14px; white-space: normal; line-height: 1.4;">${processInlineMarkdown(block.caption)}</div></span>
-                                </div>
-                            </div>
-                            <!-- Enhanced Strava Icon Link (Matches YTM <img> architecture for perfect hover parity) -->
-                            <div class="music-yt-overlay" data-tooltip="View on Strava" style="width: 32px; height: 32px; bottom: 8px; right: 8px; cursor: pointer;" onclick="event.stopPropagation(); window.open('${stravaTarget}', '_blank');">
-                                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZjNGMwMiI+PHBhdGggZD0iTTE1LjM4NyAxNy45NDRsLTIuMDg5LTQuMTE2aC0zLjA2NUwxNS4zODcgMjRsNS4xNS0xMC4xNzJoLTMuMDY2bS03LjAwOC01LjU5OWwyLjgzNiA1LjU5OGg0LjE3MkwxMC40NjMgMGwtNyAxMy44MjhoNC4xNjkiPjwvcGF0aD48L3N2Zz4=" alt="Strava" style="width: 28px; height: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); pointer-events: none;">
-                            </div>
-                        </div>`;
+                // GPS gimmicks removed in favor of standard card structure
+                case 'strava':
 
                 case 'card':
                     return `<div class="markdown-single-card" style="margin: 20px 0;">${renderCardHTML(block.data, contextCategory)}</div>`;
@@ -3147,6 +3049,10 @@
                     return renderBlockquote(label);
                 }
                 // Standard Link
+                if (label.toLowerCase().includes('strava')) {
+                    const stravaIcon = `<svg class="strava-icon" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>`;
+                    return `<a href="${cleanURL}" target="_blank" rel="noopener" class="strava-link">${stravaIcon}${processInlineMarkdown(label, depth + 1)}</a>`;
+                }
                 return `<a href="${cleanURL}" target="_blank" rel="noopener">${processInlineMarkdown(label, depth + 1)}</a>`;
             });
 
@@ -3158,7 +3064,7 @@
         }
 
         // --- MAPBOX GL JS INITIALIZER FOR GEOJSON ART ---
-        window.__initMapbox = async function(containerId, geojsonUrl) {
+        window.__initMapbox = async function(containerId, geojsonUrl, isInteractive = true) {
             const container = document.getElementById(containerId);
             if (!container) return;
 
@@ -3216,7 +3122,7 @@
                     style: styleUrl,
                     pitch: 45,       // Artistic isometric lean
                     bearing: orientationBearing, // Uses explicit suffix or default twist
-                    interactive: true,
+                    interactive: isInteractive,
                     attributionControl: false // Minimalist aesthetic
                 });
 

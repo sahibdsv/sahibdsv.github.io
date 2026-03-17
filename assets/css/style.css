@@ -74,6 +74,7 @@
             --surface-subtle: rgba(var(--bright-rgb), var(--op-subtle));
             --surface-strong: rgba(var(--bright-rgb), 0.2);
             --border-hover: var(--border-strong);
+            --accent-strava: #FC6100;
             --music-fallback-opacity: 0.22;
             --music-fallback-inv: 1;
         }
@@ -2809,5 +2810,60 @@
             .music-card-container {
                 max-width: 100%;
                 margin: 20px auto;
+            }
+        }
+
+        /* Mapbox & GPS Art Styles */
+        .mapbox-container {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            background: var(--card-bg-dark);
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--card-radius);
+        }
+
+        .mapbox-container.card-preview {
+            aspect-ratio: 1 / 1;
+            min-height: auto;
+            border-bottom: 1px solid var(--border-subtle);
+            border-radius: var(--media-radius) var(--media-radius) 0 0;
+        }
+
+        .strava-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-strava) !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .strava-link:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .strava-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* Responsive Map sizing for articles */
+        .article-body .mapbox-container {
+            margin: 20px 0;
+            aspect-ratio: 16 / 9; /* Allow wide view in articles */
+            min-height: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .article-body .mapbox-container {
+                aspect-ratio: 1 / 1;
+                min-height: 300px;
             }
         }
