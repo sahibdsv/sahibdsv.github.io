@@ -399,7 +399,7 @@
                     }
                 }, {
                     passive: false
-                }), // Set to false to allow stopPropagation to work correctly for chips
+                }); // Set to false to allow stopPropagation to work correctly for chips
 
                 document.addEventListener("keydown", e => {
                     const isSearchFocused = "search-input" === (document.activeElement ? document.activeElement.id : "");
@@ -1408,23 +1408,11 @@
 
         window.rollQuote = function(btn) {
             const container = btn.closest('.layout-quote');
-            if (!container) return;
+            if (!container || container.classList.contains("loading")) return;
 
             // Lock height to prevent layout jumps during refresh
-            const h = container.clientHeight;
-            container.style.height = h + "px";
+            container.style.height = container.clientHeight + "px";
             container.classList.add("loading");
-
-            // Artificial skeleton state for rhythmic consistency - matching quote card layout
-            container.innerHTML = `
-                <div class="skeleton-visible quote-skeleton" style="padding: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
-                    <div class="sk-line" style="width: 85%; height: 28px; margin: 0 auto 10px; border-radius: 4px;"></div>
-                    <div class="sk-line" style="width: 60%; height: 28px; margin: 0 auto 20px; border-radius: 4px;"></div>
-                    <div class="quote-footer" style="margin-top: 10px; width: 100%; text-align: center;">
-                        <div class="sk-line" style="width: 35%; height: 14px; display: inline-block; vertical-align: middle; border-radius: 4px;"></div>
-                        <div class="sk-box" style="width: 24px; height: 24px; display: inline-block; margin-left:12px; vertical-align: middle; border-radius: 6px;"></div>
-                    </div>
-                </div>`;
 
             setTimeout(() => {
                 _activeRandomQuote = null;

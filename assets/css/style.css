@@ -865,7 +865,7 @@
         .layout-quote {
             margin: 0 auto 15px;
             -webkit-tap-highlight-color: transparent;
-            padding: 30px clamp(15px, 5%, 40px);
+            padding: 40px clamp(15px, 6%, 60px);
             height: auto;
             width: 100%;
             max-width: 100%;
@@ -888,6 +888,19 @@
                 background: var(--card-bg-hover);
                 border-color: rgba(var(--bright-rgb), 0.15);
             }
+        }
+
+        .layout-quote.loading {
+            background: linear-gradient(90deg, var(--card-bg) 25%, var(--card-bg-hover) 50%, var(--card-bg) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 2s infinite linear;
+        }
+
+        .layout-quote.loading .quote-footer,
+        .layout-quote.loading blockquote {
+            opacity: var(--op-line);
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
 
         .layout-quote blockquote {
@@ -1087,13 +1100,14 @@
         }
 
         .card-info {
-            padding: 13px 15px;
+            padding: 14px 15px;
             display: flex;
             flex-direction: column;
             gap: 6px;
             width: 100%;
             box-sizing: border-box;
             flex-grow: 1;
+            justify-content: center;
         }
 
         .meta-row {
