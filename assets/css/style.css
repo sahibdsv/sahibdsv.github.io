@@ -1077,10 +1077,17 @@
             padding: 12px 14px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px; /* Standardized gap */
             width: 100%;
             box-sizing: border-box;
             flex-grow: 1;
+        }
+
+        .card-info h3 {
+            margin: 0 !important;
+            padding: 0;
+            line-height: 1.25;
+            font-size: 1.15rem;
         }
 
         .meta-row {
@@ -1260,16 +1267,19 @@
             display: block;
         }
 
+        /* Default is Article view (16:9) */
         .model-viewer-wrapper {
             position: relative;
-            aspect-ratio: 4/3;
+            aspect-ratio: 16/9;
             width: 100%;
             border-radius: var(--card-radius);
             overflow: hidden;
             background: var(--bg);
         }
 
+        /* Card Preview view (4:3) */
         .model-viewer-wrapper.card-preview {
+            aspect-ratio: 4/3;
             background: var(--card-bg);
             border-bottom: none;
         }
@@ -1680,11 +1690,21 @@
         }
 
         .strava-wordmark {
-            height: 1.2em; /* Proportionate scale */
-            width: auto;
-            display: block; /* Works best inside flex-center */
+            height: 1.2em;
+            width: 5.5em; /* Explicit width for mask sizing */
+            display: inline-block;
+            background-color: #ffffff; /* Default but overridden by parent btn color if needed */
+            -webkit-mask: url('../images/icons/strava-wordmark-white.svg') no-repeat center;
+            mask: url('../images/icons/strava-wordmark-white.svg') no-repeat center;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            vertical-align: middle;
             margin: 0;
             pointer-events: none;
+        }
+
+        .btn-cta.strava .strava-wordmark {
+            background-color: #ffffff;
         }
 
         /* Tighten spacing for paragraphs that are just wrappers for buttons */
@@ -1709,7 +1729,19 @@
         }
 
         .dice-icon {
-            transition: transform 0.3s ease, opacity 0.3s ease, color 0.3s ease;
+            width: 28px;
+            height: 28px;
+            background-color: var(--text-dim);
+            -webkit-mask: url('../images/icons/dice-icon-white.svg') no-repeat center;
+            mask: url('../images/icons/dice-icon-white.svg') no-repeat center;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            transition: transform var(--anim-layout) cubic-bezier(.175, .885, .32, 1.275), opacity var(--anim-layout) ease, background-color var(--anim-layout) ease;
+        }
+
+        .dice-wrapper:hover .dice-icon,
+        .quote-footer:hover .dice-icon {
+            background-color: var(--text-bright);
         }
 
         /* Standard Button Colors & States */

@@ -1474,7 +1474,7 @@
             let refreshBtnHTML = "";
             if (isRandom) {
                 refreshBtnHTML = `
-                <img src="assets/images/icons/dice-icon-white.svg" class="dice-icon refresh-btn" data-tooltip="Roll" alt="Roll">`;
+                <span class="dice-icon refresh-btn" data-tooltip="Roll" aria-label="Roll"></span>`;
             }
 
             container.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
@@ -2783,7 +2783,7 @@
                 if (stravaId) {
                     mediaHTML = `<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard" data-from-embed="false" style="width: 100%; min-height: 180px; border-radius: var(--card-radius); overflow: hidden; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; box-sizing: border-box;">
                         <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: var(--accent-strava); margin-bottom: 12px; opacity: 0.8;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
-                        <a href="${stravaUrl}" target="_blank" class="btn-cta strava">View on <img src="assets/images/icons/strava-wordmark-white.svg" class="strava-wordmark" alt="Strava"></a>
+                        <a href="${stravaUrl}" target="_blank" class="btn-cta strava">View on <span class="strava-wordmark"></span></a>
                     </div>`;
                 } else {
                     // Fallback for links where we couldn't parse the ID (like short redirects)
@@ -2919,10 +2919,9 @@
             // Recursively process markdown inside the button text
             let formattedText = processInlineMarkdown(cleanText, 1);
 
-            // Use image-based white wordmark for Strava branding to bypass hardcoding paths in JS
-            if (colorClass === 'strava' && !formattedText.includes('<img')) {
-                const stravaWordmarkURL = 'assets/images/icons/strava-wordmark-white.svg';
-                const stravaWordmark = `<img src="${stravaWordmarkURL}" class="strava-wordmark" alt="Strava">`;
+            // Use theme-responsive masking for Strava wordmark
+            if (colorClass === 'strava' && !formattedText.includes('strava-wordmark')) {
+                const stravaWordmark = `<span class="strava-wordmark"></span>`;
                 const cleanLabel = formattedText.replace(/strava/i, '').trim();
                 formattedText = `${cleanLabel} ${stravaWordmark}`;
             }
