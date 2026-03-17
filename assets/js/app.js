@@ -383,25 +383,6 @@
 
                 // App-specific handlers (Chip & Refresh)
                 document.getElementById("app").addEventListener("click", e => {
-                    const refreshBtn = e.target.closest(".refresh-btn");
-                    if (refreshBtn) {
-                        const container = refreshBtn.closest(".layout-quote");
-                        if (container) {
-                            if (!container.classList.contains("loading")) {
-                                const rect = container.clientHeight;
-                                container.style.height = rect + "px";
-                                container.classList.add("loading");
-                                container.innerHTML = '<div class="sk-box quote" style="height: 100%;"></div>';
-                                setTimeout(() => {
-                                    renderQuoteCard(container);
-                                    container.classList.remove("loading");
-                                    container.style.height = "auto";
-                                }, 600);
-                            }
-                        }
-                        return void e.stopPropagation();
-                    }
-
                     const chip = e.target.closest(".chip");
                     if (chip) {
                         if (chip.tagName !== 'A') e.stopPropagation();
@@ -1429,9 +1410,14 @@
             const container = btn.closest('.layout-quote');
             if (!container) return;
 
+            // Lock height to prevent layout jumps during refresh
+            const h = container.clientHeight;
+            container.style.height = h + "px";
+            container.classList.add("loading");
+
             // Artificial skeleton state for rhythmic consistency - matching quote card layout
             container.innerHTML = `
-                <div class="skeleton-visible quote-skeleton" style="padding: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                <div class="skeleton-visible quote-skeleton" style="padding: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     <div class="sk-line" style="width: 85%; height: 28px; margin: 0 auto 10px; border-radius: 4px;"></div>
                     <div class="sk-line" style="width: 60%; height: 28px; margin: 0 auto 20px; border-radius: 4px;"></div>
                     <div class="quote-footer" style="margin-top: 10px; width: 100%; text-align: center;">
@@ -1443,7 +1429,10 @@
             setTimeout(() => {
                 _activeRandomQuote = null;
                 renderQuoteCard(container);
-            }, 400); // Site-wide rhythmic delay
+                container.classList.remove("loading");
+                // Immediately allow expansion/contraction to the new size in a single "leap"
+                container.style.height = "auto";
+            }, 600); // Site-wide rhythmic delay
         };
 
         function renderQuoteCard(container) {
