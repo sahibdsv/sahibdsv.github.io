@@ -1661,10 +1661,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px; /* Standardized gap for text and logos */
-            vertical-align: middle;
-            line-height: normal;
-            padding: 8px 24px;
+            gap: 8px; /* Precise gap for content */
+            padding: 12px 24px; /* Standardized hug-content padding */
             font-size: 17px;
             font-family: inherit !important;
             font-weight: 500;
@@ -1676,7 +1674,17 @@
             cursor: pointer;
             overflow: visible;
             transition: color var(--anim-quick), border-color var(--anim-quick), background var(--anim-quick), box-shadow var(--anim-quick);
-            text-align: center;
+            width: auto; /* Ensure it stays compact */
+            flex-grow: 0; /* No stretching */
+            line-height: 1;
+        }
+
+        .strava-wordmark {
+            height: 1.2em; /* Proportionate scale */
+            width: auto;
+            display: block; /* Works best inside flex-center */
+            margin: 0;
+            pointer-events: none;
         }
 
         /* Tighten spacing for paragraphs that are just wrappers for buttons */
