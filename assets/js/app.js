@@ -5,19 +5,17 @@
 
         // Shared Media Entrance Handler
         window.mediaLoaded = function (el) {
-            if (!el) return;
             el.classList.add('loaded');
-            const parent = el.closest('.row-media, .model-viewer-wrapper, .mapbox-container');
-            if (parent) parent.classList.add('loaded');
-
-            // Aggressively find and remove all skeletons in the container
-            const skeletons = parent ? parent.querySelectorAll('.loader-overlay') : [];
-            skeletons.forEach(sk => {
+            // Find the loader skeleton - either immediate sibling or as a child of the parent
+            const sk = el.previousElementSibling || el.parentElement?.querySelector('.loader-overlay');
+            if (sk && sk.classList.contains('loader-overlay')) {
                 sk.classList.add('finished');
                 setTimeout(() => {
-                    try { if (sk.parentNode) sk.remove(); } catch (e) { }
+                    try {
+                        if (sk.parentNode) sk.remove();
+                    } catch (e) { }
                 }, 800);
-            });
+            }
         };
 
         // === CORE APPLICATION (app.js inlined) ===
@@ -1427,18 +1425,8 @@
                     container.innerHTML = "Quote sheet empty.";
                     return;
                 }
-                
-                // Persistence Strategy: Try to restore the quote used in this session first
-                const sessionQuoteKey = 'session_random_quote';
-                const cached = sessionStorage.getItem(sessionQuoteKey);
-                
-                if (cached) {
-                    quoteData = JSON.parse(cached);
-                } else {
-                    quoteData = getNextQuote();
-                    sessionStorage.setItem(sessionQuoteKey, JSON.stringify(quoteData));
-                }
-                
+                // Use the new bag logic instead of random selection
+                quoteData = getNextQuote();
                 isRandom = true;
             } else {
                 quoteData = {
@@ -1474,7 +1462,14 @@
             let refreshBtnHTML = "";
             if (isRandom) {
                 refreshBtnHTML = `
-                <span class="dice-icon refresh-btn" data-tooltip="Roll" aria-label="Roll"></span>`;
+                <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll">
+                    <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor"></rect>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                </svg>`;
             }
 
             container.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
@@ -1852,10 +1847,10 @@
 
         function getThumbnail(media) {
             if (!media) return null;
-            // Catch GeoJSON maps - ensure it's a clean URL without pipes
-            if (!media.includes('|') && media.match(/\.geojson(?:-[NSEW]{1,2})?(\?.*)?$/i)) return 'MAP_VIEWER';
-            // Catch GLB/3D models - ensure clean URL
-            if (!media.includes('|') && media.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols|scale\d+|z-up))*$/i)) return 'GLB_VIEWER';
+            // Catch GLB/3D models - support new -scale and -z-up suffixes
+            if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols|scale\d+|z-up))*$/i)) return 'GLB_VIEWER';
+            // Catch GeoJSON maps
+            if (media.match(/\.geojson(?:-[NSEW]{1,2})?(\?.*)?$/i)) return 'MAP_VIEWER';
             // Catch YouTube
             const ytId = getYouTubeID(media);
             if (ytId) return getYouTubeThumbnail(ytId);
@@ -1954,33 +1949,26 @@
         }
 
         // Initialize the IntersectionObserver for lazy loading
-        // Initialize the IntersectionObserver for lazy loading and resource management
         _glbObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const container = entry.target;
-                const uniqueId = container.id;
-                const glbPath = container.dataset.glbPath;
-                const isCardMode = container.classList.contains('card-preview');
-
                 if (entry.isIntersecting) {
-                    // Queue the initialization if not already initialized
-                    if (!container.dataset.initialized) {
-                        _glbInitQueue.push({ uniqueId, glbPath, isCardMode });
-                        container.dataset.initialized = 'true';
-                        if (!_isProcessingGlbQueue) {
-                            _isProcessingGlbQueue = true;
-                            setTimeout(processGlbQueue, 300);
-                        }
+                    const uniqueId = entry.target.id;
+                    const glbPath = entry.target.dataset.glbPath;
+                    const isCardMode = entry.target.classList.contains('card-preview');
+
+                    // Queue the initialization
+                    _glbInitQueue.push({ uniqueId, glbPath, isCardMode });
+                    if (!_isProcessingGlbQueue) {
+                        _isProcessingGlbQueue = true;
+                        // Start processing with a healthy delay to allow page transition to finish
+                        setTimeout(processGlbQueue, 400);
                     }
-                } else {
-                    // Optimization: If it's not and-viewer, we can't easily hibernate Three.js context 
-                    // without losing state, but we CAN pause the animation loop.
-                    if (window.__threeViewers && window.__threeViewers[uniqueId]) {
-                        // Custom logic to pause loop can be added here
-                    }
+
+                    // Stop observing once queued
+                    _glbObserver.unobserve(entry.target);
                 }
             });
-        }, { rootMargin: '300px' });
+        }, { rootMargin: '200px' }); // Smaller margin to reduce initial burst
 
         // GLB Viewer Renderer
         function renderGLBViewer(glbPath, isCardMode) {
@@ -1988,8 +1976,7 @@
             const html = `
                 <div class="model-viewer-wrapper ${isCardMode ? 'card-preview' : ''}" 
                      id="${uniqueId}" 
-                     data-glb-path="${glbPath}"
-                     style="position: relative; height: 100%; width: 100%;">
+                     data-glb-path="${glbPath}">
                     <div class="loader-overlay sk-img">
                         <div class="glb-loader-text">Loading 3D</div>
                     </div>
@@ -2004,10 +1991,12 @@
                 </div>
             `;
 
-            // Start observing for lazy initialization
+            // Start observing for lazy initialization (needs 0+ms for DOM insertion)
             setTimeout(() => {
                 const container = document.getElementById(uniqueId);
-                if (container) _glbObserver.observe(container);
+                if (container) {
+                    _glbObserver.observe(container);
+                }
             }, 0);
 
             return html;
@@ -2017,7 +2006,29 @@
         function renderMapBoxViewer(geojsonUrl, isCardMode) {
             const mapId = 'mapbox-' + Math.random().toString(36).substr(2, 9);
             
-            // 1. Load Mapbox dependencies on first demand
+            // Lazy-loading Observer for Mapbox to prevent WebGL context exhaustion
+            if (!window._mapboxObserver) {
+                window._mapboxObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const container = entry.target;
+                            const url = container.dataset.geojsonUrl;
+                            const isInteractive = container.dataset.interactive === 'true';
+                            
+                            const tryInit = () => {
+                                if (window.mapboxgl) {
+                                    window.__initMapbox(container.id, url, isInteractive);
+                                } else {
+                                    setTimeout(tryInit, 100);
+                                }
+                            };
+                            tryInit();
+                            window._mapboxObserver.unobserve(container);
+                        }
+                    });
+                }, { rootMargin: '300px' });
+            }
+
             if (!window._mapboxScriptLoaded) {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
@@ -2027,52 +2038,17 @@
                 window._mapboxScriptLoaded = true;
                 const script = document.createElement('script');
                 script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js';
+                // No longer need immediate init here as the observer will handle it
                 document.head.appendChild(script);
             }
 
-            // 2. Initialize management observer if missing
-            if (!window._mapboxObserver) {
-                window._mapboxObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        const container = entry.target;
-                        const url = container.dataset.geojsonUrl;
-                        const isInteractive = container.dataset.interactive === 'true';
-
-                        if (entry.isIntersecting) {
-                            if (!container.dataset.initialized) {
-                                container.dataset.initialized = 'true';
-                                const tryInit = () => {
-                                    if (window.mapboxgl) {
-                                        window.__initMapbox(container.id, url, isInteractive);
-                                    } else {
-                                        setTimeout(tryInit, 100);
-                                    }
-                                };
-                                tryInit();
-                            }
-                        } else {
-                            // OPTIMIZATION: If map is initialized, we remove it to free WebGL context
-                            if (container.dataset.initialized === 'true' && window.mapboxInstances && window.mapboxInstances[container.id]) {
-                                window.mapboxInstances[container.id].remove();
-                                delete window.mapboxInstances[container.id];
-                                container.dataset.initialized = '';
-                                container.innerHTML = '<div class="loader-overlay sk-img"><div class="glb-loader-text">Resume Map</div></div>';
-                            }
-                        }
-                    });
-                }, { rootMargin: '400px' });
-            }
-            
-            // 3. Start observing once inserted
+            // Start observing for viewport entry
             setTimeout(() => {
                 const mapEl = document.getElementById(mapId);
                 if (mapEl) window._mapboxObserver.observe(mapEl);
-            }, 10);
+            }, 0);
 
-            return `<div id="${mapId}" class="mapbox-container ${isCardMode ? 'card-preview' : ''}" 
-                        data-geojson-url="${geojsonUrl}" 
-                        data-interactive="${!isCardMode}"
-                        style="height: 100%; width: 100%; position: relative;">
+            return `<div class="mapbox-container ${isCardMode ? 'card-preview' : ''}" id="${mapId}" data-geojson-url="${geojsonUrl}" data-interactive="${!isCardMode}">
                         <div class="loader-overlay sk-img">
                             <div class="glb-loader-text">Loading Map</div>
                         </div>
@@ -2582,12 +2558,7 @@
             }
 
             if (buttonItems.length > 0) {
-                // Only return as a button block if the text is EXCLUSIVELY buttons (to avoid losing captions/titles)
-                const textWithoutButtons = combinedBlock.replace(btnRegex, '').trim();
-                // If there's meaningful text left, treat as a text block (buttons will be handled by inline markdown)
-                if (textWithoutButtons.length < 5) { 
-                    return { type: 'buttons', items: buttonItems };
-                }
+                return { type: 'buttons', items: buttonItems };
             }
 
             // 4. Music Tag Detection
@@ -2781,9 +2752,10 @@
                 const stravaUrl = item.url.startsWith('http') ? item.url : `https://www.strava.com/activities/${stravaId}`;
 
                 if (stravaId) {
-                    mediaHTML = `<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard" data-from-embed="false" style="width: 100%; min-height: 180px; border-radius: var(--card-radius); overflow: hidden; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; box-sizing: border-box;">
-                        <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: var(--accent-strava); margin-bottom: 12px; opacity: 0.8;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
-                        <a href="${stravaUrl}" target="_blank" class="btn-cta strava">View on <span class="strava-wordmark"></span></a>
+                    mediaHTML = `<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard" data-from-embed="false" style="width: 100%; min-height: 180px; border-radius: var(--card-radius); overflow: hidden; background: var(--card-bg-dark); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; border: 1px solid var(--border-subtle); box-sizing: border-box;">
+                        <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: var(--accent-projects); margin-bottom: 12px; opacity: 0.8;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
+                        <a href="${stravaUrl}" target="_blank" style="color: var(--text-bright); text-decoration: none; font-weight: 600; font-family: Jost, sans-serif; font-size: 16px; letter-spacing: 0.5px;">VIEW ON STRAVA</a>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">Interactive Map Loading...</div>
                     </div>`;
                 } else {
                     // Fallback for links where we couldn't parse the ID (like short redirects)
@@ -2919,16 +2891,15 @@
             // Recursively process markdown inside the button text
             let formattedText = processInlineMarkdown(cleanText, 1);
 
-            // Use theme-responsive masking for Strava wordmark
-            if (colorClass === 'strava' && !formattedText.includes('strava-wordmark')) {
-                const stravaWordmark = `<span class="strava-wordmark"></span>`;
-                const cleanLabel = formattedText.replace(/strava/i, '').trim();
-                formattedText = `${cleanLabel} ${stravaWordmark}`;
+            // Inject Strava Icon if branded
+            if (colorClass === 'strava' && !formattedText.includes('<svg')) {
+                const stravaIcon = `<svg class="strava-icon" style="fill: currentColor; width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>`;
+                formattedText = stravaIcon + formattedText;
             }
 
             const btnHTML = `<a href="${finalURL}" class="btn-cta ${colorClass}" ${target} rel="noopener">${formattedText}</a>`;
-            // Force wrapping for ALL buttons to ensure centering and correct row behavior
-            return `<div class="btn-cta-wrapper ${isInline ? 'inline-btn-wrapper' : ''}">${btnHTML}</div>`;
+            if (isInline) return btnHTML;
+            return `<div class="btn-cta-wrapper">${btnHTML}</div>`;
         };
 
 
@@ -3045,21 +3016,17 @@
                     continue;
                 }
 
-                // Zero Syntax: Inline Button Support (Label | URL)
-                const inlineButtonMatch = trimmed.match(/^(.+?)\s*\|\s*(https?:\/\/\S+|#\S+)$/i);
-                if (inlineButtonMatch) {
-                    output.push(renderButtonHTML(inlineButtonMatch[1].trim(), inlineButtonMatch[2].trim(), false));
+                // Zero Syntax: Block-level Button Support (Label | URL or [Label | URL])
+                // We use a broader regex to catch his bracketed syntax as a centered block
+                const buttonBlockRegex = /^\[?\s*([^\]|]+?)\s*\|\s*([^\]]+?)\s*\]?$/i;
+                const buttonMatch = trimmed.match(buttonBlockRegex);
+                if (buttonMatch) {
+                    output.push(renderButtonHTML(buttonMatch[1].trim(), buttonMatch[2].trim(), false));
                     continue;
                 }
 
-                // Normal Markdown Paragraph (Handle Inline)
-                const markdownContent = processInlineMarkdown(trimmed);
-                // Avoid wrapping block-level buttons in paragraphs to prevent double spacing/centering issues
-                if (markdownContent.includes('class="btn-cta-wrapper') && markdownContent.startsWith('<div')) {
-                    output.push(markdownContent);
-                } else {
-                    output.push(`<p>${markdownContent}</p>`);
-                }
+                // Regular paragraph
+                output.push(`<p>${processInlineMarkdown(trimmed)}</p>`);
             }
 
             // Close any remaining open lists

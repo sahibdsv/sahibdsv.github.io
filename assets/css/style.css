@@ -937,10 +937,10 @@
             display: inline-block;
             vertical-align: middle;
             margin-left: 10px;
-            width: 26px; /* Larger, more readable icon */
-            height: 26px;
-            cursor: pointer;
-            color: #ffffff; /* Forced white as requested */
+            margin-top: -4px;
+            width: 18px;
+            /* Elegant, small, higher-fidelity brand icon */
+            height: 18px;
             cursor: pointer;
             opacity: var(--op-line);
             transition: transform var(--anim-layout) cubic-bezier(.175, .885, .32, 1.275), opacity var(--anim-layout) ease, color var(--anim-layout) ease;
@@ -1077,17 +1077,10 @@
             padding: 12px 14px;
             display: flex;
             flex-direction: column;
-            gap: 12px; /* Standardized gap */
+            gap: 10px;
             width: 100%;
             box-sizing: border-box;
             flex-grow: 1;
-        }
-
-        .card-info h3 {
-            margin: 0 !important;
-            padding: 0;
-            line-height: 1.25;
-            font-size: 1.15rem;
         }
 
         .meta-row {
@@ -1102,6 +1095,7 @@
         .row-media {
             aspect-ratio: 4/3;
             width: 100%;
+            overflow: hidden;
             border-radius: var(--card-radius) var(--card-radius) 0 0;
             background: transparent;
             margin-bottom: 0;
@@ -1109,21 +1103,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Force robust clipping to fix corner bleed */
-            clip-path: inset(0 round var(--card-radius) var(--card-radius) 0 0);
-            isolation: isolate;
-            overflow: hidden;
-            border: none;
-        }
-
-        .row-media.loaded {
-            background: transparent !important;
         }
 
         .row-media img,
         .row-media video {
-            z-index: 2;
-            position: relative;
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -1267,19 +1250,16 @@
             display: block;
         }
 
-        /* Default is Article view (16:9) */
         .model-viewer-wrapper {
             position: relative;
-            aspect-ratio: 16/9;
+            aspect-ratio: 4/3;
             width: 100%;
             border-radius: var(--card-radius);
             overflow: hidden;
             background: var(--bg);
         }
 
-        /* Card Preview view (4:3) */
         .model-viewer-wrapper.card-preview {
-            aspect-ratio: 4/3;
             background: var(--card-bg);
             border-bottom: none;
         }
@@ -1593,50 +1573,36 @@
         }
 
         .model-viewer-wrapper {
-            width: 100%;
-            height: 100%;
-            min-height: 450px;
-            background: transparent;
+            height: 450px;
+            opacity: 1;
             position: relative;
-            overflow: hidden;
+            background: var(--card-bg-dark);
+            border: none;
             border-radius: var(--card-radius);
-            isolation: isolate;
-        }
-
-        .model-viewer-wrapper.loaded {
-            background: transparent !important;
+            box-sizing: border-box;
         }
 
         .gallery-item .model-viewer-wrapper {
             background: transparent !important;
             border-radius: 0 !important;
             height: 100%;
-            min-height: auto;
-        }
-
-        .model-viewer-wrapper.card-preview {
-            aspect-ratio: 1 / 1;
-            min-height: auto;
-            border-bottom: none;
-            border-radius: var(--card-radius) var(--card-radius) 0 0;
-            clip-path: inset(0 round var(--card-radius) var(--card-radius) 0 0);
         }
 
         .model-viewer-wrapper.card-preview canvas {
             pointer-events: none !important;
-            border-radius: 0;
-            background: transparent !important;
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
         }
 
         .btn-cta-wrapper {
             width: 100%;
             display: flex;
             justify-content: center;
+            align-items: center;
             text-align: center;
             flex-wrap: wrap;
             gap: 12px;
             padding: 0;
-            margin: 8px 0; /* Tightened from 12px */
+            margin: 20px 0;
             mask: none;
             -webkit-mask: none;
             opacity: 1;
@@ -1647,16 +1613,7 @@
         .article-body .btn-cta-wrapper,
         .layout-hero .btn-cta-wrapper,
         .layout-text .btn-cta-wrapper {
-            margin: 8px 0;
-        }
-        
-        /* Ensure standalone inline buttons in articles are centered and on their own row */
-        .inline-btn-wrapper {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            margin: 8px 0;
-            clear: both;
+            margin: 20px auto; /* Centered with even vertical breathing room */
         }
 
         .btn-cta {
@@ -1671,11 +1628,11 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px; /* Precise gap for content */
-            padding: 12px 24px; /* Standardized hug-content padding */
+            vertical-align: middle;
+            line-height: normal;
+            padding: 10px 24px;
             font-size: 17px;
-            font-family: inherit !important;
-            font-weight: 500;
+            font-weight: 400;
             color: var(--text-main);
             background: var(--surface-subtle);
             border: 1px solid var(--border-strong);
@@ -1683,36 +1640,17 @@
             text-decoration: none !important;
             cursor: pointer;
             overflow: visible;
+            margin: 5px; /* Minimum breathing room for wrapped buttons */
             transition: color var(--anim-quick), border-color var(--anim-quick), background var(--anim-quick), box-shadow var(--anim-quick);
-            width: auto; /* Ensure it stays compact */
-            flex-grow: 0; /* No stretching */
-            line-height: 1;
         }
 
-        .strava-wordmark {
-            height: 1.2em;
-            width: 5.5em; /* Explicit width for mask sizing */
-            display: inline-block;
-            background-color: #ffffff; /* Default but overridden by parent btn color if needed */
-            -webkit-mask: url('../images/icons/strava-wordmark-white.svg') no-repeat center;
-            mask: url('../images/icons/strava-wordmark-white.svg') no-repeat center;
-            -webkit-mask-size: contain;
-            mask-size: contain;
-            vertical-align: middle;
-            margin: 0;
-            pointer-events: none;
-        }
-
-        .btn-cta.strava .strava-wordmark {
-            background-color: #ffffff;
-        }
-
-        /* Tighten spacing for paragraphs that are just wrappers for buttons */
-        article p:has(.btn-cta-wrapper),
-        .article-body p:has(.btn-cta-wrapper),
-        .section p:has(.btn-cta-wrapper) {
-            margin: 0 !important;
-            padding: 0 !important;
+        /* Centering fallback for buttons inside non-flex paragraphs */
+        p:has(> .btn-cta:only-child) {
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin: 20px 0;
         }
 
         .btn-cta:hover {
@@ -1720,28 +1658,6 @@
             box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 0.8);
             background: rgba(var(--bright-rgb), 0.1);
             text-decoration: none !important;
-        }
-
-        .dice-wrapper:hover .dice-icon {
-            opacity: 1 !important;
-            color: var(--text-bright);
-            transform: rotate(15deg);
-        }
-
-        .dice-icon {
-            width: 28px;
-            height: 28px;
-            background-color: var(--text-dim);
-            -webkit-mask: url('../images/icons/dice-icon-white.svg') no-repeat center;
-            mask: url('../images/icons/dice-icon-white.svg') no-repeat center;
-            -webkit-mask-size: contain;
-            mask-size: contain;
-            transition: transform var(--anim-layout) cubic-bezier(.175, .885, .32, 1.275), opacity var(--anim-layout) ease, background-color var(--anim-layout) ease;
-        }
-
-        .dice-wrapper:hover .dice-icon,
-        .quote-footer:hover .dice-icon {
-            background-color: var(--text-bright);
         }
 
         /* Standard Button Colors & States */
@@ -1806,16 +1722,15 @@
         }
 
         .btn-cta.strava {
-            background: #FC6100; /* Official Strava Orange */
+            background: var(--accent-strava);
             color: #ffffff !important;
-            border-color: #E34402 !important;
-            font-weight: 600;
+            border-color: #d85200 !important;
         }
 
         .btn-cta.strava:hover {
-            background: #E34402;
-            border-color: #C13A02 !important;
-            box-shadow: inset 0 0 0 1px #C13A02;
+            background: #e65800;
+            border-color: #cc4e00 !important;
+            box-shadow: inset 0 0 0 1px #cc4e00;
         }
 
         [data-theme="light"] .btn-cta.green {
@@ -2746,15 +2661,12 @@
             display: block;
         }
 
-        .layout-grid.cat-music .row-media .sk-img,
-        .layout-grid .row-media .sk-img {
+        .layout-grid.cat-music .row-media .sk-img {
             border-radius: var(--card-radius) var(--card-radius) 0 0;
         }
 
-        /* Loading skeleton within specific viewers should NOT have bottom radii */
-        .mapbox-container .sk-img,
-        .model-viewer-wrapper .sk-img {
-            border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
+        .layout-grid .row-media .sk-img {
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
         }
 
         .layout-grid.cat-music .row-media img.media-enter {
@@ -2934,7 +2846,7 @@
             width: 100%;
             height: 100%;
             min-height: 300px;
-            background: transparent;
+            background: var(--card-bg-dark);
             position: relative;
             overflow: hidden;
             border-radius: var(--card-radius);
@@ -2943,20 +2855,8 @@
         .mapbox-container.card-preview {
             aspect-ratio: 1 / 1;
             min-height: auto;
-            border-bottom: none;
+            border-bottom: 1px solid var(--border-subtle);
             border-radius: var(--card-radius) var(--card-radius) 0 0;
-            clip-path: inset(0 round var(--card-radius) var(--card-radius) 0 0);
-            overflow: hidden;
-            background: transparent;
-        }
-
-        .mapbox-container.loaded,
-        .mapbox-container.card-preview.loaded {
-            background: transparent !important;
-        }
-        
-        .mapbox-container.card-preview .mapboxgl-canvas {
-            border-radius: 0 !important;
         }
 
         .strava-link {
