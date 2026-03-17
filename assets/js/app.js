@@ -1413,6 +1413,9 @@
             setTimeout(() => {
                 _activeRandomQuote = null;
                 renderQuoteCard(container);
+                // Force reflow to ensure the transition from .loading (opacity 0) 
+                // to normal (opacity 1) is captured for the NEW content
+                void container.offsetWidth;
                 container.classList.remove("loading");
             }, 600); // 600ms: Smooth fade-out/pause/fade-in rhythm
         };
@@ -1465,23 +1468,33 @@
             ]
                 .find(([n]) => len > n)?.[1] || 'short';
 
-            let refreshBtnHTML = "";
-            if (isRandom) {
-                // Fixed in bottom right via CSS
-                refreshBtnHTML = `
-                <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll" onclick="event.stopPropagation(); rollQuote(this);">
-                    <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor"></rect>
-                    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
-                    <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
-                    <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
-                    <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
-                    <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
-                </svg>`;
-            }
+            let bq = container.querySelector('blockquote');
+            let footer = container.querySelector('.quote-footer');
 
-            container.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
-                                <div class="quote-footer"><span class="author"> &mdash; ${author}</span></div>
-                                ${refreshBtnHTML}`;
+            if (bq && footer) {
+                // Surgical update: preserves the dice icon element (and its hover state)
+                bq.className = sizeClass;
+                bq.innerHTML = `"${safeQuote}"`;
+                footer.innerHTML = `<span class="author"> &mdash; ${author}</span>`;
+            } else {
+                // Standard refresh button HTML
+                let refreshBtnHTML = "";
+                if (isRandom) {
+                    refreshBtnHTML = `
+                    <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll" onclick="event.stopPropagation(); rollQuote(this);">
+                        <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor"></rect>
+                        <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+                        <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                        <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                        <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                        <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                    </svg>`;
+                }
+
+                container.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
+                                    <div class="quote-footer"><span class="author"> &mdash; ${author}</span></div>
+                                    ${refreshBtnHTML}`;
+            }
         }
 
         window.__initMusicMarquee = function(container) {

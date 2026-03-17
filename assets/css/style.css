@@ -948,21 +948,22 @@
         .dice-icon {
             position: absolute;
             bottom: 20px;
-            right: 20px; /* FIXED POSITION: Bottom right corner as requested */
+            right: 20px;
             width: 24px;
             height: 24px;
             cursor: pointer;
             color: var(--text-bright);
             opacity: 0.5;
-            transition: transform 0.4s cubic-bezier(.175, .885, .32, 1.275), opacity 0.2s ease, color 0.2s ease;
+            transition: transform 0.4s cubic-bezier(.175, .885, .32, 1.275), opacity 0.3s var(--ease), color 0.3s var(--ease);
             -webkit-tap-highlight-color: transparent;
             outline: 0;
             z-index: 10;
         }
 
-        .dice-icon:hover {
+        .dice-icon:hover,
+        .dice-icon:active {
             opacity: 1;
-            transform: rotate(360deg); /* SPIN ONLY: No enlargement/scale as requested */
+            transform: rotate(360deg);
             color: var(--text-bright);
         }
 
