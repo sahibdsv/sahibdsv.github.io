@@ -1961,26 +1961,33 @@
         }
 
         // Initialize the IntersectionObserver for lazy loading
+        // Initialize the IntersectionObserver for lazy loading and resource management
         _glbObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
+                const container = entry.target;
+                const uniqueId = container.id;
+                const glbPath = container.dataset.glbPath;
+                const isCardMode = container.classList.contains('card-preview');
+
                 if (entry.isIntersecting) {
-                    const uniqueId = entry.target.id;
-                    const glbPath = entry.target.dataset.glbPath;
-                    const isCardMode = entry.target.classList.contains('card-preview');
-
-                    // Queue the initialization
-                    _glbInitQueue.push({ uniqueId, glbPath, isCardMode });
-                    if (!_isProcessingGlbQueue) {
-                        _isProcessingGlbQueue = true;
-                        // Start processing with a healthy delay to allow page transition to finish
-                        setTimeout(processGlbQueue, 400);
+                    // Queue the initialization if not already initialized
+                    if (!container.dataset.initialized) {
+                        _glbInitQueue.push({ uniqueId, glbPath, isCardMode });
+                        container.dataset.initialized = 'true';
+                        if (!_isProcessingGlbQueue) {
+                            _isProcessingGlbQueue = true;
+                            setTimeout(processGlbQueue, 300);
+                        }
                     }
-
-                    // Stop observing once queued
-                    _glbObserver.unobserve(entry.target);
+                } else {
+                    // Optimization: If it's not and-viewer, we can't easily hibernate Three.js context 
+                    // without losing state, but we CAN pause the animation loop.
+                    if (window.__threeViewers && window.__threeViewers[uniqueId]) {
+                        // Custom logic to pause loop can be added here
+                    }
                 }
             });
-        }, { rootMargin: '200px' }); // Smaller margin to reduce initial burst
+        }, { rootMargin: '300px' });
 
         // GLB Viewer Renderer
         function renderGLBViewer(glbPath, isCardMode) {
@@ -1988,7 +1995,8 @@
             const html = `
                 <div class="model-viewer-wrapper ${isCardMode ? 'card-preview' : ''}" 
                      id="${uniqueId}" 
-                     data-glb-path="${glbPath}">
+                     data-glb-path="${glbPath}"
+                     style="position: relative; height: 100%; width: 100%;">
                     <div class="loader-overlay sk-img">
                         <div class="glb-loader-text">Loading 3D</div>
                     </div>
@@ -2003,12 +2011,10 @@
                 </div>
             `;
 
-            // Start observing for lazy initialization (needs 0+ms for DOM insertion)
+            // Start observing for lazy initialization
             setTimeout(() => {
                 const container = document.getElementById(uniqueId);
-                if (container) {
-                    _glbObserver.observe(container);
-                }
+                if (container) _glbObserver.observe(container);
             }, 0);
 
             return html;
@@ -2018,29 +2024,7 @@
         function renderMapBoxViewer(geojsonUrl, isCardMode) {
             const mapId = 'mapbox-' + Math.random().toString(36).substr(2, 9);
             
-            // Lazy-loading Observer for Mapbox to prevent WebGL context exhaustion
-            if (!window._mapboxObserver) {
-                window._mapboxObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const container = entry.target;
-                            const url = container.dataset.geojsonUrl;
-                            const isInteractive = container.dataset.interactive === 'true';
-                            
-                            const tryInit = () => {
-                                if (window.mapboxgl) {
-                                    window.__initMapbox(container.id, url, isInteractive);
-                                } else {
-                                    setTimeout(tryInit, 100);
-                                }
-                            };
-                            tryInit();
-                            window._mapboxObserver.unobserve(container);
-                        }
-                    });
-                }, { rootMargin: '300px' });
-            }
-
+            // 1. Load Mapbox dependencies on first demand
             if (!window._mapboxScriptLoaded) {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
@@ -2050,17 +2034,52 @@
                 window._mapboxScriptLoaded = true;
                 const script = document.createElement('script');
                 script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js';
-                // No longer need immediate init here as the observer will handle it
                 document.head.appendChild(script);
             }
 
-            // Start observing for viewport entry
+            // 2. Initialize management observer if missing
+            if (!window._mapboxObserver) {
+                window._mapboxObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const container = entry.target;
+                        const url = container.dataset.geojsonUrl;
+                        const isInteractive = container.dataset.interactive === 'true';
+
+                        if (entry.isIntersecting) {
+                            if (!container.dataset.initialized) {
+                                container.dataset.initialized = 'true';
+                                const tryInit = () => {
+                                    if (window.mapboxgl) {
+                                        window.__initMapbox(container.id, url, isInteractive);
+                                    } else {
+                                        setTimeout(tryInit, 100);
+                                    }
+                                };
+                                tryInit();
+                            }
+                        } else {
+                            // OPTIMIZATION: If map is initialized, we remove it to free WebGL context
+                            if (container.dataset.initialized === 'true' && window.mapboxInstances && window.mapboxInstances[container.id]) {
+                                window.mapboxInstances[container.id].remove();
+                                delete window.mapboxInstances[container.id];
+                                container.dataset.initialized = '';
+                                container.innerHTML = '<div class="loader-overlay sk-img"><div class="glb-loader-text">Resume Map</div></div>';
+                            }
+                        }
+                    });
+                }, { rootMargin: '400px' });
+            }
+            
+            // 3. Start observing once inserted
             setTimeout(() => {
                 const mapEl = document.getElementById(mapId);
                 if (mapEl) window._mapboxObserver.observe(mapEl);
-            }, 0);
+            }, 10);
 
-            return `<div class="mapbox-container ${isCardMode ? 'card-preview' : ''}" id="${mapId}" data-geojson-url="${geojsonUrl}" data-interactive="${!isCardMode}">
+            return `<div id="${mapId}" class="mapbox-container ${isCardMode ? 'card-preview' : ''}" 
+                        data-geojson-url="${geojsonUrl}" 
+                        data-interactive="${!isCardMode}"
+                        style="height: 100%; width: 100%; position: relative;">
                         <div class="loader-overlay sk-img">
                             <div class="glb-loader-text">Loading Map</div>
                         </div>
