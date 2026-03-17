@@ -1416,6 +1416,11 @@
             `;
         }
 
+        window.rollQuote = function(btn) {
+            _activeRandomQuote = null;
+            renderQuoteCard(btn.closest('.layout-quote'));
+        };
+
         function renderQuoteCard(container) {
             let quoteData;
             let isRandom = false;
@@ -1466,7 +1471,7 @@
             let refreshBtnHTML = "";
             if (isRandom) {
                 refreshBtnHTML = `
-                <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll" onclick="event.stopPropagation(); window._activeRandomQuote = null; renderQuoteCard(this.closest('.layout-quote'));">
+                <svg class="dice-icon refresh-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-tooltip="Roll" onclick="event.stopPropagation(); rollQuote(this);">
                     <rect x="4" y="4" width="16" height="16" rx="4" ry="4" fill="none" stroke="currentColor"></rect>
                     <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
                     <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>

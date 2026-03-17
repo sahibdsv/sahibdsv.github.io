@@ -950,8 +950,8 @@
 
         .dice-icon:hover {
             opacity: 1;
-            transform: rotate(15deg) scale(1.1);
-            color: var(--accent-personal);
+            transform: rotate(360deg) scale(1.1);
+            color: var(--text-bright);
         }
 
         @keyframes skeleton-shimmer {
@@ -1093,7 +1093,7 @@
         }
 
         .row-media {
-            aspect-ratio: 4/3;
+            aspect-ratio: 16/9;
             width: 100%;
             overflow: hidden;
             border-radius: var(--card-radius) var(--card-radius) 0 0;
@@ -2853,7 +2853,7 @@
         }
 
         .mapbox-container.card-preview {
-            aspect-ratio: 1 / 1;
+            aspect-ratio: 16 / 9;
             min-height: auto;
             border-bottom: 1px solid var(--border-subtle);
             border-radius: var(--card-radius) var(--card-radius) 0 0;
