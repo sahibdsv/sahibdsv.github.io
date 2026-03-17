@@ -5,20 +5,19 @@
 
         // Shared Media Entrance Handler
         window.mediaLoaded = function (el) {
+            if (!el) return;
             el.classList.add('loaded');
-            const parent = el.closest('.row-media');
+            const parent = el.closest('.row-media, .model-viewer-wrapper, .mapbox-container');
             if (parent) parent.classList.add('loaded');
 
-            // Find the loader skeleton - either immediate sibling or as a child of the container (e.g. .row-media)
-            const sk = el.previousElementSibling || parent?.querySelector('.loader-overlay');
-            if (sk && sk.classList.contains('loader-overlay')) {
+            // Aggressively find and remove all skeletons in the container
+            const skeletons = parent ? parent.querySelectorAll('.loader-overlay') : [];
+            skeletons.forEach(sk => {
                 sk.classList.add('finished');
                 setTimeout(() => {
-                    try {
-                        if (sk.parentNode) sk.remove();
-                    } catch (e) { }
+                    try { if (sk.parentNode) sk.remove(); } catch (e) { }
                 }, 800);
-            }
+            });
         };
 
         // === CORE APPLICATION (app.js inlined) ===

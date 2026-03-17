@@ -1114,6 +1114,8 @@
 
         .row-media img,
         .row-media video {
+            z-index: 2;
+            position: relative;
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -1583,10 +1585,15 @@
             width: 100%;
             height: 100%;
             min-height: 450px;
-            background: var(--card-bg-dark);
+            background: transparent;
             position: relative;
             overflow: hidden;
             border-radius: var(--card-radius);
+            isolation: isolate;
+        }
+
+        .model-viewer-wrapper.loaded {
+            background: transparent !important;
         }
 
         .gallery-item .model-viewer-wrapper {
@@ -1599,13 +1606,15 @@
         .model-viewer-wrapper.card-preview {
             aspect-ratio: 1 / 1;
             min-height: auto;
-            border-bottom: 1px solid var(--border-subtle);
+            border-bottom: none;
             border-radius: var(--card-radius) var(--card-radius) 0 0;
+            clip-path: inset(0 round var(--card-radius) var(--card-radius) 0 0);
         }
 
         .model-viewer-wrapper.card-preview canvas {
             pointer-events: none !important;
             border-radius: 0;
+            background: transparent !important;
         }
 
         .btn-cta-wrapper {
@@ -2873,7 +2882,7 @@
             width: 100%;
             height: 100%;
             min-height: 300px;
-            background: var(--card-bg-dark);
+            background: transparent;
             position: relative;
             overflow: hidden;
             border-radius: var(--card-radius);
@@ -2882,10 +2891,16 @@
         .mapbox-container.card-preview {
             aspect-ratio: 1 / 1;
             min-height: auto;
-            border-bottom: 1px solid var(--border-subtle);
+            border-bottom: none;
             border-radius: var(--card-radius) var(--card-radius) 0 0;
             clip-path: inset(0 round var(--card-radius) var(--card-radius) 0 0);
             overflow: hidden;
+            background: transparent;
+        }
+
+        .mapbox-container.loaded,
+        .mapbox-container.card-preview.loaded {
+            background: transparent !important;
         }
         
         .mapbox-container.card-preview .mapboxgl-canvas {
