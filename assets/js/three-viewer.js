@@ -422,7 +422,8 @@
                     const distVertical = radius / Math.tan(vFOV / 2);
                     const distHorizontal = radius / Math.tan(hFOV / 2);
 
-                    const multiplier = 1.0 / (customScale || 1.0);
+                    const baseMultiplier = isCardMode ? 1.0 : 0.85; // 15% larger in articles
+                    const multiplier = baseMultiplier / (customScale || 1.0);
                     const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
 
                     const dir = new THREE.Vector3(2.4, 1.6, 2.8).normalize();
