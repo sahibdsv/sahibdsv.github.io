@@ -1660,7 +1660,8 @@
             opacity: 1;
             display: inline-flex;
             align-items: center;
-            justify-content: center; /* Center content horizontally */
+            justify-content: center;
+            gap: 8px; /* Standardized gap for text and logos */
             vertical-align: middle;
             line-height: normal;
             padding: 8px 24px;
