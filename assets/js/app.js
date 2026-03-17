@@ -80,11 +80,23 @@
         let resumeDb = [];
         let musicDb = []; // Music logging data
         let variablesDb = []; // Variables metadata
-        let quoteBag = []; // New state for shuffle logic
-        let _lastQuoteIndex = -1; // Track last index to avoid boundary repeats
+        let quoteBag = []; // Shuffled indices to pick from
+        let _lastQuoteIndex = -1;
+        
+        // Restore quote session state from localStorage if available
+        let _activeRandomQuote = null;
+        try {
+            const savedQuote = localStorage.getItem('sahib_active_quote');
+            if (savedQuote) _activeRandomQuote = JSON.parse(savedQuote);
+            
+            const savedLastIndex = localStorage.getItem('sahib_last_quote_index');
+            if (savedLastIndex) _lastQuoteIndex = parseInt(savedLastIndex);
+            
+            const savedBag = localStorage.getItem('sahib_quote_bag');
+            if (savedBag) quoteBag = JSON.parse(savedBag);
+        } catch(e) { console.warn("Failed to restore quote session", e); }
+
         let isSearchActive = false;
-        let _lastRenderedPath = null;
-        let _activeRandomQuote = null; // Sticky session quote
 
         const CACHE_KEY = 'sahib_v1_cache';
         localStorage.removeItem(CACHE_KEY); // Purge legacy cache once and for all
@@ -99,7 +111,7 @@
 
         // Quote Randomness Logic (Fisher-Yates Shuffle Bag)
         function refillQuoteBag() {
-            // Create a shallow copy of indices [0, 1, ... n-1]
+            // Create a fresh batch of indices
             quoteBag = quotesDb.map((_, index) => index);
 
             // Fisher-Yates Shuffle
@@ -107,6 +119,14 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [quoteBag[i], quoteBag[j]] = [quoteBag[j], quoteBag[i]];
             }
+            
+            // Boundary Fix: Don't start a new bag with the same quote we just ended with
+            if (quotesDb.length > 1 && quoteBag[quoteBag.length - 1] === _lastQuoteIndex) {
+                const repeatIndex = quoteBag.pop();
+                quoteBag.unshift(repeatIndex);
+            }
+            
+            localStorage.setItem('sahib_quote_bag', JSON.stringify(quoteBag));
         }
 
         function getNextQuote() {
@@ -114,17 +134,16 @@
 
             if (quoteBag.length === 0) {
                 refillQuoteBag();
-
-                // Boundary Fix: If the first quote in the new bag is the same as the very last one we showed...
-                if (quotesDb.length > 1 && quoteBag[quoteBag.length - 1] === _lastQuoteIndex) {
-                    // ...move it to the start/bottom of the bag so it's picked last in this cycle
-                    const repeatIndex = quoteBag.pop();
-                    quoteBag.unshift(repeatIndex);
-                }
             }
 
             _lastQuoteIndex = quoteBag.pop();
-            return quotesDb[_lastQuoteIndex];
+            const selected = quotesDb[_lastQuoteIndex];
+            
+            // Persist the bag and last index state
+            localStorage.setItem('sahib_quote_bag', JSON.stringify(quoteBag));
+            localStorage.setItem('sahib_last_quote_index', _lastQuoteIndex.toString());
+            
+            return selected;
         }
 
         // App Initialization
@@ -1415,17 +1434,18 @@
             const container = btn.closest('.layout-quote');
             if (!container || container.classList.contains("loading")) return;
 
-            // No height locking needed: height is now fixed at 250px in CSS
             container.classList.add("loading");
 
             setTimeout(() => {
                 _activeRandomQuote = null;
+                localStorage.removeItem('sahib_active_quote');
+                
                 renderQuoteCard(container);
-                // Force reflow to ensure the transition from .loading (opacity 0) 
-                // to normal (opacity 1) is captured for the NEW content
+                
+                // Force reflow
                 void container.offsetWidth;
                 container.classList.remove("loading");
-            }, 600); // 600ms: Smooth fade-out/pause/fade-in rhythm
+            }, 600); 
         };
 
         function renderQuoteCard(container) {
@@ -1441,6 +1461,9 @@
                 // Sticky: Only roll a new one if we don't have an active session quote yet
                 if (!_activeRandomQuote) {
                     _activeRandomQuote = getNextQuote();
+                    if (_activeRandomQuote) {
+                        localStorage.setItem('sahib_active_quote', JSON.stringify(_activeRandomQuote));
+                    }
                 }
                 quoteData = _activeRandomQuote;
                 isRandom = true;
