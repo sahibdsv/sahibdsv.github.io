@@ -199,28 +199,26 @@
             renderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials and preserves highlight detail
             renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-            // CONTEXT LOSS HANDLER: Detect and recover from WebGL context loss
+            // CONTEXT LOSS HANDLER: Detect and gracefully try to recover or cleanup
             canvas.addEventListener('webglcontextlost', (e) => {
                 e.preventDefault();
                 console.warn('WebGL context lost for:', glbPath);
-                // Force entrance to prevent permanent "Loading 3D"
-                container.classList.add('loaded');
-                const overlay = container.querySelector('.loader-overlay');
-                if (overlay) overlay.remove();
+                // Allow the registry to clean this up naturally
             });
 
-            // UNIFIED LIGHTING: Fix for "Black Metals" and "Dullness on Navigation"
-            // We must generate a fresh environment map for EACH renderer because WebGL contexts cannot share textures.
-            if (!window._sharedRoomEnvScene) window._sharedRoomEnvScene = new RoomEnvironment();
+            // UNIFIED LIGHTING: Fix for "Black Metals" and "Dark Reloads"
+            // We create a FRESH RoomEnvironment for EACH viewer. Sharing a scene across different 
+            // WebGL contexts is risky and can lead to "Dark Viewers" if one context is suspended.
+            const roomEnvScene = new RoomEnvironment();
             const pmremGenerator = new THREE.PMREMGenerator(renderer);
             pmremGenerator.compileEquirectangularShader();
-            const envMap = pmremGenerator.fromScene(window._sharedRoomEnvScene).texture;
+            const envMap = pmremGenerator.fromScene(roomEnvScene).texture;
             pmremGenerator.dispose();
 
             scene.environment = envMap;
-            scene.environmentIntensity = 1.5; // Bump this up (was 1.0)
-            scene.backgroundBlurriness = 0.5; // Softens the background feel
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x111111, 0.35);
+            scene.environmentIntensity = 1.6; // Slight bump for better resilience
+            scene.backgroundBlurriness = 0.5;
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x222222, 0.45); // Improved fill
             scene.add(hemiLight);
 
             // JEWELRY STORE LIGHTING RIG: High-contrast specialized rig
