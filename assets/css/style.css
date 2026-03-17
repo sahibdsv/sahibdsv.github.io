@@ -1096,7 +1096,7 @@
             aspect-ratio: 4/3;
             width: 100%;
             border-radius: var(--card-radius) var(--card-radius) 0 0;
-            background: var(--surface-subtle);
+            background: transparent;
             margin-bottom: 0;
             position: relative;
             display: flex;
@@ -1106,6 +1106,7 @@
             clip-path: inset(0 round var(--card-radius) var(--card-radius) 0 0);
             isolation: isolate;
             overflow: hidden;
+            border: none;
         }
 
         .row-media.loaded {
@@ -1625,7 +1626,7 @@
             flex-wrap: wrap;
             gap: 12px;
             padding: 0;
-            margin: 12px 0; /* Reduced from 15px */
+            margin: 8px 0; /* Tightened from 12px */
             mask: none;
             -webkit-mask: none;
             opacity: 1;
@@ -1636,7 +1637,7 @@
         .article-body .btn-cta-wrapper,
         .layout-hero .btn-cta-wrapper,
         .layout-text .btn-cta-wrapper {
-            margin: 12px 0;
+            margin: 8px 0;
         }
         
         /* Ensure standalone inline buttons in articles are centered and on their own row */
@@ -1644,7 +1645,7 @@
             display: flex;
             justify-content: center;
             width: 100%;
-            margin: 15px 0;
+            margin: 8px 0;
             clear: both;
         }
 
@@ -1662,9 +1663,10 @@
             justify-content: center;
             vertical-align: middle;
             line-height: normal;
-            padding: 8px 24px; /* Reduced from 10px */
+            padding: 8px 24px;
             font-size: 17px;
-            font-weight: 400;
+            font-family: inherit !important;
+            font-weight: 500;
             color: var(--text-main);
             background: var(--surface-subtle);
             border: 1px solid var(--border-strong);
@@ -1757,7 +1759,7 @@
             background: #FC6100; /* Official Strava Orange */
             color: #ffffff !important;
             border-color: #E34402 !important;
-            font-weight: 700;
+            font-weight: 600;
         }
 
         .btn-cta.strava:hover {
