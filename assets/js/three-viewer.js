@@ -422,7 +422,7 @@
                     const distVertical = radius / Math.tan(vFOV / 2);
                     const distHorizontal = radius / Math.tan(hFOV / 2);
 
-                    const baseMultiplier = isCardMode ? 1.0 : 0.85; // 15% larger in articles
+                    const baseMultiplier = isCardMode ? 1.0 : 0.66; // ~1.5x larger in articles
                     const multiplier = baseMultiplier / (customScale || 1.0);
                     const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
 
