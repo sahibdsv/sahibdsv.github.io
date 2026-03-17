@@ -1032,14 +1032,6 @@
                     "Index": renderIndex,
                     "Professional/Resume": renderResume
                 };
-                // Analytics Opt-out: Secret route to ignore your own hits
-                if (cleanPath.toLowerCase() === 'ignore') {
-                    localStorage.setItem('gc_ignore', 'true');
-                    const app = document.getElementById("app");
-                    if (app) app.innerHTML = '<div class="section layout-hero"><h1>Analytics Disabled</h1><p>Your visits to this site will no longer be tracked in GoatCounter from this browser.</p><button onclick="localStorage.removeItem(\'gc_ignore\'); location.reload();" class="chip" style="margin-top:20px; cursor:pointer;">Re-enable Tracking</button></div>';
-                    return;
-                }
-
                 (route[cleanPath] ?? (cleanPath.startsWith("Filter:") ? () => renderFiltered(decodeURIComponent(
                     cleanPath.split(":")[1])) : () => renderPage(cleanPath)))();
 
