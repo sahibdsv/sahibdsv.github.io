@@ -1078,14 +1078,14 @@
         }
 
         .card-info {
-            padding: 8px 15px 15px 15px; /* Aggressive 8px top padding + ~2-4px lead = ~12-15px visual gap */
+            padding: 12px 15px; /* Symmetrical side padding, adjusted top/bottom for lead compensation */
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px; /* Unified gap for all card elements (title, text, metadata) */
             width: 100%;
             box-sizing: border-box;
             flex-grow: 1;
-            justify-content: flex-start;
+            justify-content: center; /* PERFECT CENTER: Distributes space evenly above and below the content block */
         }
 
         .meta-row {
@@ -1094,7 +1094,7 @@
             flex-wrap: wrap;
             align-items: center;
             padding: 0;
-            margin-top: auto;
+            margin-top: 0; /* Remove auto-push to keep metadata grouped with the title for centering */
         }
 
         .row-media {
