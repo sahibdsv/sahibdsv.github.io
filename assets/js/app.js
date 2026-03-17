@@ -6,15 +6,15 @@
         // Shared Media Entrance Handler
         window.mediaLoaded = function (el) {
             el.classList.add('loaded');
-            // Find the loader skeleton - either immediate sibling or as a child of the parent
-            const sk = el.previousElementSibling || el.parentElement?.querySelector('.loader-overlay');
-            if (sk && sk.classList.contains('loader-overlay')) {
+            // Look for loader specifically in the same media container
+            const container = el.closest('.row-media, .model-viewer-wrapper, .mapbox-container');
+            const sk = container ? container.querySelector('.loader-overlay') : (el.previousElementSibling?.classList.contains('loader-overlay') ? el.previousElementSibling : null);
+            
+            if (sk) {
                 sk.classList.add('finished');
                 setTimeout(() => {
-                    try {
-                        if (sk.parentNode) sk.remove();
-                    } catch (e) { }
-                }, 800);
+                    if (sk.parentNode) sk.remove();
+                }, 600);
             }
         };
 
@@ -1297,7 +1297,12 @@
 
         const SECTION_RENDERERS = {
             quote: (entry) =>
-                `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true"></div>`,
+                `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true">
+                    <div class="skeleton-visible">
+                        <div class="sk-line" style="width: 100%; height: 80px; margin-bottom: 15px;"></div>
+                        <div class="sk-line" style="width: 40%; height: 14px; margin: 0 auto;"></div>
+                    </div>
+                </div>`,
             hero: (entry) => {
                 let metaHTML = "";
                 if (entry.Timestamp) {
@@ -1574,7 +1579,7 @@
                 return `
                     <div class="layout-grid cat-music ${liveClass}" data-link="${link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
-                            ${thumb ? `<div class="sk-img loader-overlay"></div>` : ''}
+                            ${thumb ? `<div class="sk-img loader-overlay" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:0;"></div>` : ''}
                             <div class="music-card-fallback">${fallbackPlaceholder}</div>
                             ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
@@ -1612,7 +1617,7 @@
             const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
 
             // Show a tiny loading skeleton immediately to prevent layout jumps
-            container.innerHTML = `<div class="music-sections-container"><div class="sk-img loader-overlay" style="border-radius:12px; height:80px; width:100%;"></div></div>`;
+            container.innerHTML = `<div class="music-sections-container"><div class="sk-img loader-overlay" style="border-radius:var(--card-radius); height:120px; width:100%;"></div></div>`;
 
             // Fetch details for each independently 
             const cardsData = await Promise.all(urls.map(async (rawLink) => {
@@ -1674,7 +1679,7 @@
                 return `
                     <div class="layout-grid cat-music" data-link="${item.link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
-                            ${item.thumb ? `<div class="sk-img loader-overlay"></div>` : ''}
+                            ${item.thumb ? `<div class="sk-img loader-overlay" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:0;"></div>` : ''}
                             <div class="music-card-fallback">${fallbackPlaceholder}</div>
                             ${item.thumb ? `<img src="${item.thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>

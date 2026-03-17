@@ -2661,20 +2661,19 @@
             display: block;
         }
 
-        .layout-grid.cat-music .row-media .sk-img {
-            border-radius: var(--card-radius) var(--card-radius) 0 0;
-        }
-
+        .layout-grid.cat-music .row-media .sk-img,
         .layout-grid .row-media .sk-img {
-            border-radius: var(--card-radius) var(--card-radius) 0 0;
+            border-radius: inherit; /* Inherit from row-media */
         }
 
         .layout-grid.cat-music .row-media img.media-enter {
-            border-radius: 0 !important;
-            position: relative;
+            border-radius: inherit;
+            position: absolute;
+            top: 0;
+            left: 0;
             z-index: 1;
-            width: 100%;
-            height: 100%;
+            width: 100% !important;
+            height: 100% !important;
             object-fit: cover;
             opacity: 0;
             transition: opacity 0.5s var(--ease);
