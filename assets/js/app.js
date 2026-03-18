@@ -1189,8 +1189,10 @@
             t.forEach(e => {
                 const isFeatured = e.Tags && e.Tags.toLowerCase().includes("featured");
                 // Discovery logic for Recent Activity: only show content up to 1 level deep, 
-                // OR any page explicitly marked as 'featured'
-                if (e.Page.split("/").length <= 2 || isFeatured) {
+                // OR any page explicitly marked as 'featured',
+                // AND must have a valid timestamp OR be featured (to avoid showing static/structure-only pages)
+                const hasTimestamp = e.Timestamp && !isNaN(new Date(e.Timestamp).getTime());
+                if ((e.Page.split("/").length <= 2 || isFeatured) && (isFeatured || hasTimestamp)) {
                     n[e.Page] = e;
                 }
             });
