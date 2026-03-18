@@ -3068,6 +3068,9 @@
             let result = depth === 0 ? safeHTML(text) : text;
 
             if (depth === 0) {
+                // Cleanup: Always remove YouTube " - Topic" suffix (affects Music cards and anywhere else it appears)
+                result = result.replace(/\s*-\s*Topic\s*$/gi, "");
+
                 result = result.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
 
                 // A. SHORTHAND PIPE: [Label | URL] -> Buttons
