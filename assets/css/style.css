@@ -1634,8 +1634,11 @@
 
         .article-body .btn-cta-wrapper,
         .layout-hero .btn-cta-wrapper,
-        .layout-text .btn-cta-wrapper {
-            margin: 0 auto; /* No extra margin; relies on layout gap (16px) for spacing */
+        .layout-text .btn-cta-wrapper,
+        .article-body p:has(> .btn-cta),
+        .layout-hero p:has(> .btn-cta),
+        .layout-text p:has(> .btn-cta) {
+            margin: 0 auto !important; /* No extra margin; relies on layout gap (16px) for spacing */
         }
 
         .btn-cta {
@@ -2260,7 +2263,7 @@
         .article-body li,
         .layout-hero li,
         .layout-text li {
-            margin-bottom: 6px;
+            margin-bottom: 8px; /* Slightly more breathing room in lists */
             line-height: 1.6;
         }
 
