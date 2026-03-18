@@ -1526,11 +1526,7 @@
             const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
 
             const cardsHTML = latestItems.map((item, index) => {
-                let artistRaw = item.Artist || "Unknown Artist";
-                // Cleanup: Always remove " - Topic" from YT Music artist names
-                if (artistRaw) artistRaw = artistRaw.replace(/\s*-\s*Topic$/i, "");
-                
-                const artist = safeHTML(artistRaw);
+                const artist = safeHTML(item.Artist || "Unknown Artist");
                 const track = safeHTML(item.Song || item.Track || "Unknown Track");
 
                 // Aggressive home-page link detection for fallback to search
@@ -1648,13 +1644,11 @@
                         if (res.ok) {
                             const data = await res.json();
                             if (data.title && track === "Unknown Track") track = data.title;
-                            if (data.author_name && artist === "Unknown Artist") artist = data.author_name;
+                            if (data.author_name && artist === "Unknown Artist") artist = data.author_name.replace(" - Topic", "");
                         }
                     } catch (e) { }
                 }
 
-                // Final Cleanup: Always remove " - Topic" from YT Music artist names
-                if (artist) artist = artist.replace(/\s*-\s*Topic$/i, "");
 
 
                 return {
@@ -3068,9 +3062,6 @@
             let result = depth === 0 ? safeHTML(text) : text;
 
             if (depth === 0) {
-                // Cleanup: Always remove YouTube " - Topic" suffix (affects Music cards and anywhere else it appears)
-                result = result.replace(/\s*-\s*Topic\s*$/gi, "");
-
                 result = result.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
 
                 // A. SHORTHAND PIPE: [Label | URL] -> Buttons
