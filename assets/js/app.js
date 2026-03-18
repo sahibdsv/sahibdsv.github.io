@@ -906,23 +906,8 @@
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
 
-            // SYNC GLB: Update clear colors contextually based on Card vs Article mode
-            if (window._glbViewers) {
-                Object.values(window._glbViewers).forEach(viewer => {
-                    if (viewer.renderer) {
-                        const isCard = viewer.isCardMode;
-                        let clearColor;
-
-                        if (newTheme === 'light') {
-                            clearColor = isCard ? 0xf7f7f9 : 0xeeeef2;
-                        } else {
-                            clearColor = isCard ? 0x111111 : 0x050505;
-                        }
-
-                        viewer.renderer.setClearColor(clearColor, 1);
-                    }
-                });
-            }
+            // GLB Sync: With alpha transparency enabled, models will automatically
+            // match their container background via CSS variables.
         }
 
         function handleSearch(e) {

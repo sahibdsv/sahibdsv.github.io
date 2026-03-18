@@ -163,7 +163,7 @@
             const renderer = new THREE.WebGLRenderer({
                 canvas,
                 antialias: true,
-                alpha: false,
+                alpha: true,
                 powerPreference: "high-performance",
                 // Mobile GPUs strictly enforce mediump, which severely breaks PBR reflections (banding/voids). 
                 // Always use highp for accurate environment mapping.
@@ -184,16 +184,10 @@
             if (width * dpr > maxWidth) dpr = maxWidth / width;
 
             renderer.setPixelRatio(dpr);
-            // THEME-AWARE STABILITY: Contextual viewport colors
-            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-            let clearColor;
-
-            if (isCardMode) {
-                clearColor = isLight ? 0xf7f7f9 : 0x111111;
-            } else {
-                clearColor = isLight ? 0xeeeef2 : 0x050505;
-            }
-            renderer.setClearColor(clearColor, 1);
+            // ALPHA-TRANSPARENT RENDERER: Instead of hard-coding hex values, 
+            // we use transparency so the viewer inherits the --card-bg from CSS. 
+            // This makes theme-switching 100% seamless without script intervention.
+            renderer.setClearColor(0x000000, 0);
             canvas.style.backgroundColor = 'transparent';
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials and preserves highlight detail
@@ -521,6 +515,7 @@
                     scene.clear();
                 },
                 model: () => model,
+                isCardMode,
                 customScale, // Store parsed scale for fitStage
                 loaded: false,
                 hasRenderedState: false
