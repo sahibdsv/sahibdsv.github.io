@@ -494,11 +494,12 @@
                 requestAnimationFrame(() => {
                     const activeLink = row.querySelector(".active");
                     const isInteracting = (_activeNavControl === row) || (_gSwipe.active && _gSwipe.row === row);
+                    
                     if (!isInteracting) {
-                        row.style.scrollSnapType = activeLink ? 'x mandatory' : 'none';
+                        row.style.scrollSnapType = (activeLink && row.scrollWidth > row.clientWidth + 5) ? 'x mandatory' : 'none';
+                        // Only center if we're not touching/swiping the row
+                        centerNavRow(row, level > 1, forceSmoothNav ? "smooth" : "auto");
                     }
-                    // Centering inside the rAF batch ensures we don't thrash layout between levels
-                    centerNavRow(row, level > 1, forceSmoothNav ? "smooth" : "auto");
                 });
             }
 
@@ -655,8 +656,9 @@
 
             row.addEventListener("scroll", () => {
                 const now = Date.now();
-                // Determine if this is a user-initiated interaction or a programmatic shift
-                if (now - s.lastInputTime > 150 && now - s.lastScrollTime > 150) {
+                // Determine if this is a user-initiated interaction or a programmatic shift.
+                // We keep the interaction valid as long as we have recent touch input OR active scrolling.
+                if (now - s.lastInputTime > 500 && now - s.lastScrollTime > 150) {
                     s.isValidInteraction = false;
                 }
                 if (!s.isValidInteraction) {
@@ -724,7 +726,7 @@
                         s.isValidInteraction = false;
                         setNavSnapping(row, true);
                     }
-                }, 80);
+                }, 240);
             }, {
                 passive: true
             });
