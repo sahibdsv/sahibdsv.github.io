@@ -1221,7 +1221,7 @@
                     const p = processMediaUrl(src);
                     return `<div class="row-media">
                         <div class="sk-img loader-overlay"></div>
-                        <video class="media-enter lazy-video" 
+                        <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''}" 
                                data-src="${p.url}" 
                                ${p.autoplay ? 'data-autoplay="true" muted' : ''} 
                                ${p.loop ? 'loop' : ''} 
@@ -1231,7 +1231,8 @@
                     </div>`;
                 }
 
-                return `<div class="row-media"><div class="sk-img loader-overlay"></div><img class="media-enter" src="${processMediaUrl(src).url}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></div>`;
+                const p = processMediaUrl(src);
+                return `<div class="row-media"><div class="sk-img loader-overlay"></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></div>`;
             };
 
             const mediaSources = [
@@ -1815,22 +1816,23 @@
         }
 
         function processMediaUrl(url) {
-            if (!url) return { url: '', autoplay: false, loop: false, controls: true };
+            if (!url) return { url: '', autoplay: false, loop: false, controls: true, invert: false };
             const lower = url.toLowerCase();
             const autoplay = lower.includes('-autoplay');
             const loop = lower.includes('-loop');
+            const invert = lower.includes('-invert');
             // Behavior for controls: generally on, but off for autoplay unless specified
             const controls = !lower.includes('-nocontrols') && !autoplay;
 
             // Strip behavior markers.
             // SPECIAL CASE: Only strip '-thumb' from videos, as some images (like resume-thumb.jpg)
             // legitimately use it in their real filename.
-            let cleanUrl = url.replace(/-(?:autoplay|loop|noloop|nocontrols)/gi, '');
+            let cleanUrl = url.replace(/-(?:autoplay|loop|noloop|nocontrols|invert)/gi, '');
             if (lower.match(/\.(mp4|webm|mov|ogg)/i)) {
                 cleanUrl = cleanUrl.replace(/-thumb/gi, '');
             }
 
-            return { url: cleanUrl, autoplay, loop, controls };
+            return { url: cleanUrl, autoplay, loop, controls, invert };
         }
 
         function extractMediaFromContent(content) {
@@ -2709,7 +2711,7 @@
                 const p = processMediaUrl(item.url);
                 mediaHTML = `<div class="${embedClass}">
                         <div class="sk-img loader-overlay"></div>
-                        <video class="media-enter lazy-video"
+                        <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''}"
                                data-src="${p.url}"
                                ${p.autoplay ? 'data-autoplay="true" muted' : ''}
                                ${p.loop ? 'loop' : ''}
@@ -2720,7 +2722,8 @@
 
             } else if (item.type === 'image') {
                 const style = isGallery ? 'style="height:100%; width:100%; object-fit:cover;"' : '';
-                mediaHTML = `<div class="sk-img loader-overlay"></div><img class="media-enter" src="${processMediaUrl(item.url).url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">`;
+                const p = processMediaUrl(item.url);
+                mediaHTML = `<div class="sk-img loader-overlay"></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">`;
                 if (!isGallery) mediaHTML = `<div class="media-container">${mediaHTML}</div>`;
             } else if (item.type === 'youtube') {
                 const ytId = item.id || getYouTubeID(item.url);

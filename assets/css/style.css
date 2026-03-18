@@ -129,6 +129,20 @@
             transition: background-color var(--anim-quick) var(--ease), border-color var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease), box-shadow var(--anim-quick) var(--ease);
         }
 
+        /* Image Inversion Support for Theme Matching */
+        .theme-invert {
+            transition: filter var(--anim-quick) var(--ease);
+        }
+
+        /* By default, site is Dark. Invert only when the explicit Dark mode is active (on darkbg images) */
+        [data-theme="dark"] .theme-invert {
+            filter: invert(1);
+        }
+        
+        [data-theme="light"] .theme-invert {
+            filter: invert(0);
+        }
+
         .loader-overlay {
             position: absolute;
             top: 0;
