@@ -235,11 +235,6 @@
             -webkit-touch-callout: none
         }
 
-        .sk-box,
-        .sk-img,
-        .sk-line {
-            display: block;
-        }
 
         .fill-anim {
             background: linear-gradient(to top, var(--text-hover, var(--text-bright)) 50%, var(--text-base, var(--text-dim)) 50.5%);

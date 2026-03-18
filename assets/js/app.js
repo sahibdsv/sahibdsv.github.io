@@ -140,8 +140,23 @@
                 refillQuoteBag();
             }
 
-            _lastQuoteIndex = quoteBag.pop();
+            let nextIndex = quoteBag.pop();
+
+            // Safety: If the randomly picked quote has identical text as the last one, try to skip it
+            if (_activeRandomQuote && quotesDb[nextIndex].Quote === _activeRandomQuote.Quote && quotesDb.length > 1) {
+                if (quoteBag.length > 0) {
+                    const swap = quoteBag.pop();
+                    quoteBag.push(nextIndex);
+                    nextIndex = swap;
+                } else {
+                    refillQuoteBag();
+                    nextIndex = quoteBag.pop();
+                }
+            }
+
+            _lastQuoteIndex = nextIndex;
             const selected = quotesDb[_lastQuoteIndex];
+            _activeRandomQuote = selected;
             
             // Persist the bag and last index state
             localStorage.setItem('sahib_quote_bag', JSON.stringify(quoteBag));
@@ -1231,13 +1246,6 @@
         const SECTION_RENDERERS = {
             quote: (entry) =>
                 `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true">
-                    <div class="skeleton-visible quote-skeleton" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; position: relative;">
-                        <div class="sk-line" style="width: 70%; height: 20px; margin-bottom: 12px;"></div>
-                        <div class="sk-line" style="width: 85%; height: 20px; margin-bottom: 12px;"></div>
-                        <div class="sk-line" style="width: 40%; height: 20px; margin-bottom: 24px;"></div>
-                        <div class="sk-line" style="width: 30%; height: 12px; opacity: 0.6;"></div>
-                        <div class="sk-box" style="position: absolute; bottom: 20px; right: 20px; width: 24px; height: 24px; border-radius: 6px; opacity: 0.4;"></div>
-                    </div>
                 </div>`,
             hero: (entry) => {
                 let metaHTML = "";
@@ -1358,20 +1366,32 @@
         }
 
         window.rollQuote = function(btn) {
-            const container = btn.closest('.layout-quote');
-            if (!container || container.classList.contains("loading")) return;
+            // Find all quote containers that are currently showing the active random quote
+            const allQuotes = document.querySelectorAll('.layout-quote');
+            const randomQuotes = Array.from(allQuotes).filter(q => {
+                const title = (q.getAttribute('data-title') || '').toLowerCase();
+                return title === '{random quote}' || title === 'random quote';
+            });
 
-            container.classList.add("loading");
+            if (randomQuotes.some(q => q.classList.contains("loading"))) return;
+
+            randomQuotes.forEach(q => q.classList.add("loading"));
 
             setTimeout(() => {
                 _activeRandomQuote = null;
                 localStorage.removeItem('sahib_active_quote');
                 
-                renderQuoteCard(container);
-                
-                // Force reflow
-                void container.offsetWidth;
-                container.classList.remove("loading");
+                // Get one new quote once for all cards
+                const next = getNextQuote();
+                _activeRandomQuote = next; 
+                localStorage.setItem('sahib_active_quote', JSON.stringify(next));
+
+                randomQuotes.forEach(q => {
+                    renderQuoteCard(q);
+                    // Force reflow for a clean fade transition
+                    void q.offsetWidth; 
+                    q.classList.remove("loading");
+                });
             }, 600); 
         };
 
