@@ -129,18 +129,19 @@
             transition: background-color var(--anim-quick) var(--ease), border-color var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease), box-shadow var(--anim-quick) var(--ease);
         }
 
-        /* Image Inversion Support for Theme Matching */
+        /* Intelligent Image Inversion */
         .theme-invert {
             transition: filter var(--anim-quick) var(--ease);
         }
 
-        /* By default, site is Dark. Invert only when the explicit Dark mode is active (on darkbg images) */
-        [data-theme="dark"] .theme-invert {
+        /* If the image was detected as Bright (white background), invert it ONLY in Dark mode */
+        [data-theme="dark"] .theme-invert.is-bright {
             filter: invert(1);
         }
-        
-        [data-theme="light"] .theme-invert {
-            filter: invert(0);
+
+        /* If the image was detected as Dark (dark background), invert it ONLY in Light mode */
+        [data-theme="light"] .theme-invert.is-dark {
+            filter: invert(1);
         }
 
         .loader-overlay {

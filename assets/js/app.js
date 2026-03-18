@@ -6,6 +6,12 @@
         // Shared Media Entrance Handler
         window.mediaLoaded = function (el) {
             el.classList.add('loaded');
+
+            // Intelligent Theme Matching for tagged images
+            if (el.tagName === 'IMG' && el.classList.contains('theme-invert')) {
+                applySmartInversion(el);
+            }
+
             // Look for loader specifically in the same media container
             const container = el.closest('.row-media, .model-viewer-wrapper, .mapbox-container');
             const sk = container ? container.querySelector('.loader-overlay') : (el.previousElementSibling?.classList.contains('loader-overlay') ? el.previousElementSibling : null);
@@ -3223,6 +3229,41 @@
             }
         };
 
+
+        // Process content with block system - convenience function
+        function applySmartInversion(img) {
+            if (!img.complete) return;
+            
+            try {
+                // Use a tiny 1x1 canvas to calculate average brightness efficiently
+                const canvas = document.createElement('canvas');
+                canvas.width = 1;
+                canvas.height = 1;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                
+                // Set crossOrigin if it's an external URL to avoid tainted canvas
+                if (img.src.startsWith('http') && !img.src.includes(window.location.hostname)) {
+                    img.crossOrigin = "anonymous";
+                }
+
+                ctx.drawImage(img, 0, 0, 1, 1);
+                const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+                
+                // Perceptual brightness formula
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                
+                // Mark the image based on its natural state
+                if (brightness > 128) {
+                    img.classList.add('is-bright');
+                } else {
+                    img.classList.add('is-dark');
+                }
+            } catch (e) {
+                // Fallback: If CORS blocks us, assume it's a Light-themed image 
+                // (safe bet for most logos/diagrams)
+                img.classList.add('is-bright');
+            }
+        }
 
         // Process content with block system - convenience function
         function processContentWithBlocks(content) {
