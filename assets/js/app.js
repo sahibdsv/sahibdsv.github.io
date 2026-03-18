@@ -381,9 +381,9 @@
                     const n = chip.getAttribute("data-date");
 
                     if (n) {
-                        window.location.hash = "Filter:" + n;
+                        window.location.hash = "Filter:" + n.replace(/\s+/g, "_");
                     } else if (t) {
-                        window.location.hash = "Filter:" + t;
+                        window.location.hash = "Filter:" + t.replace(/\s+/g, "_");
                     }
                 }
             }, {
@@ -991,7 +991,7 @@
                     "Professional/Resume": renderResume
                 };
                 (route[cleanPath] ?? (cleanPath.startsWith("Filter:") ? () => renderFiltered(decodeURIComponent(
-                    cleanPath.split(":")[1])) : () => renderPage(cleanPath)))();
+                    cleanPath.split(":")[1].replace(/_/g, " "))) : () => renderPage(cleanPath)))();
 
                 // Clean up any stale 3D viewers from the old page
                 if (window.cleanupStale3DViewers) window.cleanupStale3DViewers();

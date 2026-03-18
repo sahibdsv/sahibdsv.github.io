@@ -58,7 +58,7 @@
             --radius-sm: 4px;
             --space-xs: 6px;
             --space-sm: 10px;
-            --space-md: 15px;
+            --space-md: 16px;
             --space-lg: 20px;
             --space-xl: 30px;
             --space-2xl: 40px;
@@ -776,7 +776,7 @@
         }
 
         .section {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             opacity: 0;
             animation: fadeIn .4s forwards;
             position: relative
@@ -791,7 +791,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 16px;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
 
         .layout-hero {
@@ -805,7 +805,7 @@
             gap: 12px;
             align-items: center;
             padding-top: 40px;
-            padding-bottom: 20px;
+            padding-bottom: 16px;
         }
 
         .layout-text {
@@ -878,7 +878,7 @@
         }
 
         .layout-quote {
-            margin: 0 auto 15px;
+            margin: 0 auto 16px;
             -webkit-tap-highlight-color: transparent;
             padding: 40px clamp(15px, 6%, 60px);
             height: 250px; /* FIXED HEIGHT: Never changes size, no page jumps */
@@ -944,7 +944,7 @@
             display: block;
             text-align: center;
             width: 100%;
-            margin-top: 15px
+            margin-top: 16px
         }
 
         .layout-quote .author {
@@ -1509,7 +1509,7 @@
 
             .layout-text,
             .layout-hero {
-                gap: 15px;
+                gap: 16px;
             }
 
             .media-gallery {
@@ -1650,7 +1650,7 @@
             justify-content: center;
             vertical-align: middle;
             line-height: normal;
-            padding: 10px 24px;
+            padding: 8px 24px;
             font-size: 17px;
             font-weight: 400;
             color: var(--text-main);
@@ -1670,7 +1670,7 @@
             display: flex;
             justify-content: center;
             width: 100%;
-            margin: 20px 0;
+            margin: 16px 0;
         }
 
         .btn-cta:hover {
@@ -2012,7 +2012,7 @@
         }
 
         .resume-skill-block {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
 
         .resume-skill-row {
@@ -2037,14 +2037,14 @@
             font-size: 16px;
             color: var(--text-dim);
             font-weight: 500;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
 
         .resume-contact {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
+            gap: 16px;
             flex-wrap: wrap;
             font-size: 14px;
             line-height: 1.4;
@@ -2259,7 +2259,7 @@
         .layout-hero ol,
         .layout-text ul,
         .layout-text ol {
-            margin: 15px 0;
+            margin: 16px 0;
             padding-left: 24px;
         }
 
