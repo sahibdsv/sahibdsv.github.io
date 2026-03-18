@@ -2544,9 +2544,15 @@
                 return { type: 'buttons', items: buttonItems };
             }
 
-            // 4. Music Tag Detection
-            if (lines.length === 1 && lines[0].trim().match(/^\{(Recent Music|Recently Played)\}$/i)) {
+            // 4. Dynamic Tag Detection (Expanded to allow flexible inclusion)
+            const musicTag = lines.some(l => l.trim().match(/\{(Recent Music|Recently Played)\}/i));
+            if (musicTag && combinedBlock.match(/^\{(Recent Music|Recently Played)\}$/i)) {
                 return { type: 'music' };
+            }
+
+            const quoteTag = lines.some(l => l.trim().match(/\{Random Quote\}/i));
+            if (quoteTag && combinedBlock.match(/^\{Random Quote\}$/i)) {
+                return { type: 'quote', title: '{random quote}' };
             }
 
             // Otherwise it's text content
@@ -2823,6 +2829,9 @@
                 case 'music':
                     return `<div class="music-embed-container" data-needs-init="true" data-type="recent-music"></div>`;
 
+                case 'quote':
+                    return `<div class="layout-quote" data-needs-init="true" data-title="${block.title || 'random quote'}"></div>`;
+
                 case 'music-cluster':
                     const clusterUrls = block.items.map(i => i.url).join(',');
                     return `<div class="music-embed-container" data-needs-init="true" data-type="music-cluster" data-urls="${clusterUrls}"></div>`;
@@ -3030,6 +3039,10 @@
                 result = result.replace(/\[\s*([^\]|]+?)\s*\|\s*([^\]]+?)\s*\]/gi, (match, btnText, btnUrl) => {
                     return renderButtonHTML(btnText.trim(), btnUrl.trim(), true);
                 });
+
+                // B. DYNAMIC TAGS: {Recently Played}, {Random Quote}
+                result = result.replace(/\{(Recent Music|Recently Played)\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="recent-music"></div>');
+                result = result.replace(/\{Random Quote\}/gi, '<div class="layout-quote" data-needs-init="true" data-title="random quote"></div>');
 
                 // B. LEGACY CTA: [button]: Label | URL
                 result = result.replace(/\[button\]:\s*(.+?)\s*\|\s*(\S+)/gi, (match, btnText, btnUrl) => {
