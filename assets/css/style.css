@@ -208,6 +208,8 @@
         h3,
         p {
             overflow-wrap: break-word;
+            margin: 0;
+            line-height: 1.6;
         }
 
         .no-transition * {
@@ -2145,19 +2147,15 @@
             font-size: 1.1rem;
             line-height: 1.6;
             color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         .article-body h2,
         .article-body h3,
         .article-body h4 {
-            margin-top: 1.2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .article-body h2:first-child,
-        .article-body h3:first-child,
-        .article-body h4:first-child {
-            margin-top: 0;
+            margin: 0;
         }
 
         .article-body h2 {
@@ -2171,17 +2169,13 @@
         }
 
         .article-body p {
-            margin-bottom: 0.9rem;
-        }
-
-        .article-body p:last-child {
-            margin-bottom: 0;
+            margin: 0;
         }
 
         /* Unified block spacing for media elements in articles */
         .article-body .unified-media-wrapper,
         .layout-hero .unified-media-wrapper {
-            margin-bottom: 16px;
+            margin: 0;
         }
 
         @media (max-width: 768px) {
@@ -2191,7 +2185,7 @@
 
             .article-body .unified-media-wrapper,
             .layout-hero .unified-media-wrapper {
-                margin-bottom: 12px;
+                margin: 0;
             }
         }
 
