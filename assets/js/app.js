@@ -2163,7 +2163,7 @@
                 }
             }
 
-            const fullTitle = cleanPath === "Home" ? `${baseTitle} | ${pageTitle}` : `${pageTitle} | ${baseTitle}`;
+            const fullTitle = (cleanPath === "Home" || !pageTitle) ? baseTitle : `${pageTitle} | ${baseTitle}`;
 
             // Strip markdown and HTML for meta-description
             const description = entry.Description || (entry.Content ? entry.Content.substring(0, 160).replace(/[#*`]/g, '').replace(/<[^>]*>/g, '').trim() : "Portfolio of Sahib Virdee, a Mechanical Engineering graduate specializing in detailed CAD design, manufacturing processes, and technical documentation.");
