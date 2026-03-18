@@ -957,6 +957,11 @@
 
 
 
+        @keyframes dice-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .dice-icon {
             position: absolute;
             bottom: 20px;
@@ -973,11 +978,16 @@
         }
 
         .dice-icon:hover,
-        .dice-icon:active,
+        .dice-icon:active {
+            opacity: 1;
+            transform: rotate(90deg); /* Slight tilt on hover/active to show interactivity */
+            color: var(--text-bright);
+        }
+
         .layout-quote.loading .dice-icon {
             opacity: 1;
-            transform: rotate(360deg);
             color: var(--text-bright);
+            animation: dice-spin 0.6s cubic-bezier(.175, .885, .32, 1.275);
         }
 
         @keyframes skeleton-shimmer {
