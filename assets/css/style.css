@@ -802,7 +802,7 @@
             grid-column: 1 / -1;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             align-items: center;
             padding-top: 40px;
             padding-bottom: 16px;
@@ -816,7 +816,7 @@
             grid-column: 1 / -1;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
 
         footer {
@@ -1620,9 +1620,9 @@
             align-items: center;
             text-align: center;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 16px;
             padding: 0;
-            margin: 20px 0;
+            margin: 16px 0;
             mask: none;
             -webkit-mask: none;
             opacity: 1;
@@ -1633,7 +1633,7 @@
         .article-body .btn-cta-wrapper,
         .layout-hero .btn-cta-wrapper,
         .layout-text .btn-cta-wrapper {
-            margin: 20px auto; /* Centered with even vertical breathing room */
+            margin: 0 auto; /* No extra margin; relies on layout gap (16px) for spacing */
         }
 
         .btn-cta {
