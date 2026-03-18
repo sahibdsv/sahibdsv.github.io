@@ -1375,6 +1375,15 @@
 
             if (randomQuotes.some(q => q.classList.contains("loading"))) return;
 
+            // Analytics: Track the refresh event
+            if (window.goatcounter && window.goatcounter.count) {
+                window.goatcounter.count({
+                    path: 'quote-refresh',
+                    title: 'User Rolled New Quote',
+                    event: true
+                });
+            }
+
             randomQuotes.forEach(q => q.classList.add("loading"));
 
             setTimeout(() => {
