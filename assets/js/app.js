@@ -1177,15 +1177,6 @@
         // Chip rendering helper
         function renderChip(tag) {
             if (!tag) return "";
-            const linkMatch = tag.match(/^\[(.*?)\]\(([^)]+)\)$/);
-            if (linkMatch) {
-                const label = linkMatch[1];
-                const url = linkMatch[2];
-                if (/maps\.app\.goo\.gl|google\.com\/maps/i.test(url)) {
-                    return `<a href="${url}" target="_blank" class="chip location">${'<svg class="chip-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'}${processInlineMarkdown(label)}</a>`;
-                }
-                return `<a href="${url}" target="_blank" class="chip location link">${'<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'}${processInlineMarkdown(label)}</a>`;
-            }
             return `<span class="chip" data-tag="${tag}">${processInlineMarkdown(tag)}</span>`;
         }
 
