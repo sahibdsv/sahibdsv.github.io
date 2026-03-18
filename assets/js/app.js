@@ -1526,7 +1526,11 @@
             const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
 
             const cardsHTML = latestItems.map((item, index) => {
-                const artist = safeHTML(item.Artist || "Unknown Artist");
+                let artistRaw = item.Artist || "Unknown Artist";
+                // Cleanup: Always remove " - Topic" from YT Music artist names
+                if (artistRaw) artistRaw = artistRaw.replace(/\s*-\s*Topic$/i, "");
+                
+                const artist = safeHTML(artistRaw);
                 const track = safeHTML(item.Song || item.Track || "Unknown Track");
 
                 // Aggressive home-page link detection for fallback to search
