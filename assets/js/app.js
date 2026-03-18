@@ -471,13 +471,13 @@
                             .map(e => e.Page.split("/")[0])
                             .filter(e => e),
                         quotesDb.length > 0 ? "Personal" : null
-                    ].filter(e => e))].sort();
+                    ].filter(e => e))];
                 } else {
                     items = [...new Set(
                         db.filter(e => e.Page && e.Page.startsWith(parentPath + "/"))
                             .map(e => e.Page.split("/")[level - 1])
                             .filter(e => e)
-                    )].sort();
+                    )];
                 }
 
                 if (items.length === 0) break;
@@ -1113,7 +1113,7 @@
             const childPaths = [...new Set(
                 db.filter(item => item.Page && item.Page.startsWith(e + "/") && item.Page !== e)
                     .map(item => item.Page.split("/").slice(0, currentDepth + 1).join("/"))
-            )].sort();
+            )];
 
             if (childPaths.length > 0) {
                 // Map the children pages back to their primary DB entries, or synthesize a collection card
@@ -1155,7 +1155,7 @@
             const listContainer = app.querySelector(".index-list");
             const allPages = [...new Set(
                 db.map(e => e.Page).filter(e => e && "Home" !== e && "Footer" !== e)
-            )].sort();
+            )];
 
             const groups = {};
             allPages.forEach(page => {
