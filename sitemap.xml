@@ -79,12 +79,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sahibvirdee.com/#Projects/Clubs/Rocketry</loc>
-    <lastmod>2026-03-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://sahibvirdee.com/#Projects/Clubs/Motorsports</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>weekly</changefreq>
@@ -97,7 +91,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://sahibvirdee.com/#Projects/Clubs/Rocketry</loc>
+    <lastmod>2026-03-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://sahibvirdee.com/#Projects/Design</loc>
+    <lastmod>2026-03-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sahibvirdee.com/#Projects/Design/</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -110,12 +116,6 @@
   </url>
   <url>
     <loc>https://sahibvirdee.com/#Projects/Design/Mini_Rover</loc>
-    <lastmod>2026-03-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://sahibvirdee.com/#Projects/Design/</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
