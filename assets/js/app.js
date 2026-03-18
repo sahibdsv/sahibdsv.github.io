@@ -1831,9 +1831,11 @@
             const controls = !lower.includes('-nocontrols') && !autoplay;
 
             // Strip behavior markers.
+            // These can be appended after the extension (e.g. .jpg-invert)
+            let cleanUrl = url.replace(/-(?:autoplay|loop|noloop|nocontrols|invert)/gi, '');
+            
             // SPECIAL CASE: Only strip '-thumb' from videos, as some images (like resume-thumb.jpg)
             // legitimately use it in their real filename.
-            let cleanUrl = url.replace(/-(?:autoplay|loop|noloop|nocontrols|invert)/gi, '');
             if (lower.match(/\.(mp4|webm|mov|ogg)/i)) {
                 cleanUrl = cleanUrl.replace(/-thumb/gi, '');
             }
@@ -1849,7 +1851,7 @@
             if (ytMatch) return { type: 'yt', id: ytMatch[1] };
 
             // 2. GLB
-            const glbMatch = content.match(/\S+\.glb/i);
+            const glbMatch = content.match(/\S+\.glb(?:-[a-zA-Z0-9_-]+)*/i);
             if (glbMatch) {
                 const path = glbMatch[0];
                 const url = (path.startsWith('assets/') || path.startsWith('http')) ? path : `assets/models/${path}`;
@@ -1857,11 +1859,11 @@
             }
 
             // 3. Image
-            const imgMatch = content.match(/\S+\.(?:jpg|jpeg|png|gif|webp|svg)/i);
+            const imgMatch = content.match(/\S+\.(?:jpg|jpeg|png|gif|webp|svg)(?:-[a-zA-Z0-9_-]+)*/i);
             if (imgMatch) return { type: 'img', url: imgMatch[0] };
 
             // 4. Video
-            const videoMatch = content.match(/\S+\.(?:mp4|webm|mov|ogg)/i);
+            const videoMatch = content.match(/\S+\.(?:mp4|webm|mov|ogg)(?:-[a-zA-Z0-9_-]+)*/i);
             if (videoMatch) return { type: 'video', url: videoMatch[0] };
 
             return null;
@@ -1870,7 +1872,7 @@
         function getThumbnail(media) {
             if (!media) return null;
             // Catch GLB/3D models - support new -scale and -z-up suffixes
-            if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols|scale\d+|z-up))*$/i)) return 'GLB_VIEWER';
+            if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols|scale\d+|z-up|invert))*$/i)) return 'GLB_VIEWER';
             // Catch GeoJSON maps
             if (media.match(/\.geojson(?:-[NSEW]{1,2})?(\?.*)?$/i)) return 'MAP_VIEWER';
             // Catch YouTube
