@@ -1639,16 +1639,19 @@
                 // 2. Fallback to scraping NoEmbed if it's a completely novel track we haven't logged
                 if (!fromDb || artist === "Unknown Artist" || track === "Unknown Track") {
                     try {
-                        // Grab high-fidelity metadata from public oembed wrapper without violating CORS
                         const noembedUrl = `https://noembed.com/embed?url=${encodeURIComponent(bareURL)}`;
                         const res = await fetch(noembedUrl);
                         if (res.ok) {
                             const data = await res.json();
                             if (data.title && track === "Unknown Track") track = data.title;
-                            if (data.author_name && artist === "Unknown Artist") artist = data.author_name.replace(" - Topic", "");
+                            if (data.author_name && artist === "Unknown Artist") artist = data.author_name;
                         }
                     } catch (e) { }
                 }
+
+                // Final Cleanup: Always remove " - Topic" from YT Music artist names
+                if (artist) artist = artist.replace(/\s*-\s*Topic$/i, "");
+
 
                 return {
                     link: bareURL,
