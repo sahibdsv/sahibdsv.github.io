@@ -1231,13 +1231,12 @@
         const SECTION_RENDERERS = {
             quote: (entry) =>
                 `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true">
-                    <div class="skeleton-visible quote-skeleton" style="padding: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
-                        <div class="sk-line" style="width: 80%; height: 28px; margin: 0 auto 10px; border-radius: 4px;"></div>
-                        <div class="sk-line" style="width: 50%; height: 28px; margin: 0 auto 20px; border-radius: 4px;"></div>
-                        <div class="quote-footer" style="margin-top: 10px; width: 100%; text-align: center;">
-                            <div class="sk-line" style="width: 30%; height: 14px; display: inline-block; vertical-align: middle; border-radius: 4px;"></div>
-                            <div class="sk-box" style="width: 24px; height: 24px; display: inline-block; margin-left:12px; vertical-align: middle; border-radius: 6px;"></div>
-                        </div>
+                    <div class="skeleton-visible quote-skeleton" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; position: relative;">
+                        <div class="sk-line" style="width: 70%; height: 20px; margin-bottom: 12px;"></div>
+                        <div class="sk-line" style="width: 85%; height: 20px; margin-bottom: 12px;"></div>
+                        <div class="sk-line" style="width: 40%; height: 20px; margin-bottom: 24px;"></div>
+                        <div class="sk-line" style="width: 30%; height: 12px; opacity: 0.6;"></div>
+                        <div class="sk-box" style="position: absolute; bottom: 20px; right: 20px; width: 24px; height: 24px; border-radius: 6px; opacity: 0.4;"></div>
                     </div>
                 </div>`,
             hero: (entry) => {
