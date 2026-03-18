@@ -136,12 +136,12 @@
 
         /* If the image was detected as Bright (white background), invert it ONLY in Dark mode */
         [data-theme="dark"] .theme-invert.is-bright {
-            filter: invert(1);
+            filter: invert(1) hue-rotate(180deg);
         }
 
         /* If the image was detected as Dark (dark background), invert it ONLY in Light mode */
         [data-theme="light"] .theme-invert.is-dark {
-            filter: invert(1);
+            filter: invert(1) hue-rotate(180deg);
         }
 
         .loader-overlay {
