@@ -99,9 +99,6 @@
         let isSearchActive = false;
         let _lastRenderedPath = null;
 
-        const CACHE_KEY = 'sahib_v1_cache';
-        localStorage.removeItem(CACHE_KEY); // Purge legacy cache once and for all
-
         const CONFIG = {
             main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
             quotes_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv',
@@ -157,15 +154,7 @@
             });
         };
 
-        const stripDrafts = arr => arr.filter(e => !e.Tags?.includes('Draft'));
-
-        const showDrafts = localStorage.getItem('preview_drafts') === 'true' || window.location.hostname === 'localhost';
-
         fetchDataAndCache().then(() => {
-            if (!showDrafts) {
-                db = stripDrafts(db);
-                quotesDb = stripDrafts(quotesDb);
-            }
             startApp();
         });
 
@@ -193,7 +182,6 @@
         }
 
         // Live Dashboard Polling
-        let musicStateHistory = []; // Tracks hashes of recently seen valid states to reject stale CDN edge nodes
 
         window.triggerAnalytics = function(cleanPath) {
             if (!window.goatcounter || !window.goatcounter.count) return;
@@ -239,30 +227,6 @@
                 try {
                     const freshMusicDb = await fetchCSV(CONFIG.music_sheet).catch(() => null);
                     if (freshMusicDb && freshMusicDb.length > 0) {
-                        // Google Sheets /pub URLs are distributed across edge nodes which cache independently.
-                        // This causes "cache bouncing" where consecutive fetches hit different nodes (new vs stale).
-                        // To fix this, we hash the last ~10 tracks. If we receive a state we've already seen, 
-                        // but it's NOT our current state, we are interacting with a stale ghost node.
-                        
-                        const stateHash = JSON.stringify(freshMusicDb.slice(-10));
-                        
-                        if (musicStateHistory.length > 0) {
-                            const currentStateHash = musicStateHistory[musicStateHistory.length - 1];
-                            
-                            if (stateHash !== currentStateHash) {
-                                if (musicStateHistory.includes(stateHash)) {
-                                    // Ghost node detected! We've seen this exact past state recently. Ignore it.
-                                    return;
-                                }
-                                // Completely novel state!
-                                musicStateHistory.push(stateHash);
-                                // Keep history window to the last 20 states (~max changes in a 5 min CDN TTL window)
-                                if (musicStateHistory.length > 20) musicStateHistory.shift();
-                            }
-                        } else {
-                            musicStateHistory.push(stateHash);
-                        }
-
                         musicDb = freshMusicDb;
                         // The renderRecentMusic fn handles diffing (via data-last-render hash) for the DOM,
                         document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
@@ -273,12 +237,7 @@
             }, 20000);
         }
 
-        // Cache Management
-        async function loadFromCache() {
-            // Disabled local caching per request to ensure real-time data accuracy
-            return null;
-        }
-
+        // fetchDataAndCache retrieves high-fidelity content across all sources
         async function fetchDataAndCache() {
             try {
                 const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal, variablesDbLocal] = await Promise.all([

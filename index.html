@@ -44,10 +44,9 @@
 
         (function () {
             const isLocal = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
-            const isDev = localStorage.getItem('preview_drafts') === 'true' || localStorage.getItem('gc_ignore') === 'true';
 
-            if (isLocal || isDev) {
-                console.info("Analytics: Opted out (Local or Dev mode)");
+            if (isLocal) {
+                console.info("Analytics: Opted out (Local)");
                 window.goatcounter.no_onload = true;
             } else {
                 const script = document.createElement('script');
@@ -60,7 +59,7 @@
     </script>
 
 
-    <link rel="stylesheet" href="assets/css/style.css?v=20260317-0604">
+    <link rel="stylesheet" href="assets/css/style.css">
 
     <!-- Three.js for 3D model rendering -->
     <script type="importmap">
