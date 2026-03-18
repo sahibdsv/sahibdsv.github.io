@@ -169,7 +169,6 @@
             showPageSkeleton();
 
             initApp();
-            startLiveMusicPolling();
             updateSEO();
             renderFooter();
 
@@ -225,22 +224,6 @@
                     }
                 }
             }, { capture: true });
-        }
-
-        function startLiveMusicPolling() {
-            // Check for new songs every 10 seconds (10000ms)
-            setInterval(async () => {
-                try {
-                    const freshMusicDb = await fetchCSV(CONFIG.music_sheet).catch(() => null);
-                    if (freshMusicDb && freshMusicDb.length > 0) {
-                        musicDb = freshMusicDb;
-                        // The renderRecentMusic fn handles diffing (via data-last-render hash) for the DOM,
-                        document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
-                    }
-                } catch (e) {
-                    // Fail silently to avoid console spam, will retry next interval
-                }
-            }, 20000);
         }
 
         // fetchDataAndCache retrieves high-fidelity content across all sources
