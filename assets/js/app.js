@@ -3148,3 +3148,33 @@ function showEasterEgg() {
     );
 }
 
+// --- Console Easter Egg Trigger Logic ---
+let hasShowedEasterEgg = false;
+function triggerEasterEgg() {
+    if (!hasShowedEasterEgg) {
+        showEasterEgg();
+        hasShowedEasterEgg = true;
+    }
+}
+
+// 1. Detect via Window Resize (Catches Inspect Element, F12, and Menu)
+const checkDevTools = () => {
+    const threshold = 160; // Standard threshold for docked sidebars
+    if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
+        triggerEasterEgg();
+    }
+};
+
+window.addEventListener('resize', checkDevTools);
+
+// 2. Initial Checks
+if (document.readyState === 'complete') {
+    checkDevTools();
+    setTimeout(triggerEasterEgg, 1500); // Fail-safe auto-log
+} else {
+    window.addEventListener('load', () => {
+        checkDevTools();
+        setTimeout(triggerEasterEgg, 1500);
+    });
+}
+
