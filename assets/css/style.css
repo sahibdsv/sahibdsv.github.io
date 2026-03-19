@@ -207,8 +207,6 @@
             width: 100%;
             position: relative;
             overflow-x: hidden;
-            /* Force emojis to render as monochrome text glyphs to match text color */
-            font-variant-emoji: text;
         }
 
         a,
