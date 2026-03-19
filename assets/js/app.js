@@ -3165,16 +3165,12 @@ const checkDevTools = () => {
     }
 };
 
+// 2. Event Listeners
 window.addEventListener('resize', checkDevTools);
+window.addEventListener('load', checkDevTools);
 
-// 2. Initial Checks
+// 3. Immediate check if already open at runtime
 if (document.readyState === 'complete') {
     checkDevTools();
-    setTimeout(triggerEasterEgg, 1500); // Fail-safe auto-log
-} else {
-    window.addEventListener('load', () => {
-        checkDevTools();
-        setTimeout(triggerEasterEgg, 1500);
-    });
 }
 
