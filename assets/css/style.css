@@ -162,12 +162,34 @@
         }
 
         .spinner {
-            width: 24px;
-            height: 24px;
-            border: 2px solid var(--border-subtle);
+            width: 32px;
+            height: 32px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Outer dashed ring */
+        .spinner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1.5px dashed var(--text-muted);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: spinner-rotate 4s linear infinite;
+        }
+
+        /* Inner solid 'active' arc */
+        .spinner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 2px solid transparent;
             border-top-color: var(--text-bright);
             border-radius: 50%;
-            animation: spinner-rotate 0.8s linear infinite;
+            animation: spinner-rotate 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
 
         @keyframes spinner-rotate {
