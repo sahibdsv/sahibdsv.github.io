@@ -344,6 +344,12 @@ function initApp() {
 
         // If click is NOT inside the active card
         if (!activePlayingCard.contains(e.target)) {
+            // Cancel any pending transitions to avoid blanking out the restored image
+            if (activePlayingCard._playTimer) {
+                clearTimeout(activePlayingCard._playTimer);
+                activePlayingCard._playTimer = null;
+            }
+
             const mediaRow = activePlayingCard.querySelector('.row-media');
             const originalHTML = activePlayingCard.getAttribute('data-original-media');
             if (mediaRow && originalHTML) {
@@ -1627,18 +1633,16 @@ function playMusicInCard(event) {
             iframe.style.opacity = '0'; // Hide initially
             
             iframe.onload = () => {
-                // Set to nearly invisible to force the browser to start rendering the video 
-                // frames while we wait for the player to fully initialize.
                 iframe.style.opacity = '0.01';
 
-                // Increased delay to 1.2s to ensure the heavy YouTube Music player 
-                // is actually ready to display its first frame.
-                setTimeout(() => {
+                // Store timer ID so we can cancel it if the user clicks away early
+                card._playTimer = setTimeout(() => {
                     iframe.style.opacity = '1';
                     const currentImg = mediaRow.querySelector('img.media-enter');
                     if (currentImg) currentImg.style.opacity = '0';
                     const fallback = mediaRow.querySelector('.music-card-fallback');
                     if (fallback) fallback.style.opacity = '0';
+                    card._playTimer = null;
                 }, 1200);
             };
 
