@@ -20,8 +20,8 @@
             --card-bg-hover: #1a1a1a;
             --code-bg: #1e1e1e;
             --text-bright: rgb(var(--bright-rgb));
-            --text-main: #d4d4d4;
-            --text-dim: #a3a3a3;
+            --text-main: #8c8c8c;
+            --text-dim: #8c8c8c;
             --text-muted: #8c8c8c;
             --text-inv: #000000;
             --code-fg: #e6cd69;
@@ -75,9 +75,10 @@
             --accent-strava: #FC6100;
             /* GLOBAL SPACING SYSTEM (8px Multiplier Rule) */
             --site-gap: 1rem;           /* 16px: Standard distance */
-            --site-gap-tight: 0.5rem;    /* 8px: Headings to content */
-            --site-gap-micro: 0.25rem;   /* 4px: Captions and fine details */
             --site-gap-nav: 0.375rem;    /* 6px: Header navigation */
+            --rhythm-gap: 1rem;          /* Master rhythm unit */
+            --rhythm-gap-tight: 0.125rem; /* 2px: Ultra-tight structural anchoring */
+            --rhythm-gap-wide: 1.5rem;   /* 24px: Clean section breaks */
         }
 
         @media (min-width: 1024px) {
@@ -95,8 +96,8 @@
             --card-bg-hover: #e8e8ed;
             --code-bg: #eaeaef;
             --text-bright: #000000;
-            --text-main: #1a1a1a;
-            --text-dim: #555555;
+            --text-main: #757575;
+            --text-dim: #757575;
             --text-muted: #757575;
             --text-inv: #ffffff;
             --code-fg: #bf8d00;
@@ -219,7 +220,7 @@
             margin: 0;
             padding: 0;
             background-color: var(--bg);
-            color: var(--text-main);
+            color: var(--text-muted);
             font-family: "Jost", sans-serif;
             line-height: 1.5;
             padding-top: 0;
@@ -308,7 +309,7 @@
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.4px;
-            color: var(--text-main);
+            color: var(--text-muted);
             border: 1px solid var(--border-subtle);
             border-radius: 50px;
             background: var(--surface-subtle);
@@ -344,7 +345,7 @@
         }
 
         a:not(.chip):not(.btn-cta):not(.fill-anim) {
-            color: var(--text-main);
+            color: var(--text-muted);
             text-decoration: underline;
             text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
             text-decoration-thickness: 1px;
@@ -1101,13 +1102,21 @@
             justify-content: center; /* PERFECT CENTER: Distributes space evenly above and below the content block */
         }
 
-        .meta-row {
+        .meta-row,
+        .article-meta-row {
             display: flex;
-            gap: 6px;
+            gap: 12px;
             flex-wrap: wrap;
             align-items: center;
             padding: 0;
-            margin-top: 0; /* Remove auto-push to keep metadata grouped with the title for centering */
+            margin: 0;
+        }
+
+        .article-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
         }
 
         .row-media {
@@ -1645,7 +1654,7 @@
             padding: 8px 24px;
             font-size: 17px;
             font-weight: 400;
-            color: var(--text-main);
+            color: var(--text-muted);
             background: var(--surface-subtle);
             border: 1px solid var(--border-strong);
             border-radius: 50px;
@@ -2062,36 +2071,98 @@
         }
 
         .article-title,
-        h1.header-fade-anim {
-            font-size: 35px;
-            color: var(--text-main);
-            margin-bottom: 2px;
+        h1.header-fade-anim,
+        .article-body h1,
+        .article-body h2,
+        .article-body h3,
+        .article-body h4 {
+            color: var(--text-muted);
             font-weight: 600;
-            line-height: 1.1;
-            margin-top: 0;
+            line-height: 1.05;
+            margin: 0; /* Stack system handles layout */
         }
 
-        .article-body h2 { font-size: 30px; font-weight: 600; line-height: 1.15; color: var(--text-main); margin: 0.5rem 0 0.25rem 0; }
-        .article-body h3 { font-size: 25px; font-weight: 600; line-height: 1.2; color: var(--text-main); margin: 0.4rem 0 0.2rem 0; }
-        .article-body h4 { font-size: 20px; font-weight: 600; line-height: 1.25; color: var(--text-main); margin: 0.3rem 0 0.15rem 0; }
+        .article-title,
+        h1.header-fade-anim { font-size: 35px; }
+        .article-body h1 { font-size: 34px; font-weight: 700; }
+        .article-body h2 { font-size: 30px; }
+        .article-body h3 { font-size: 25px; }
+        .article-body h4 { font-size: 20px; }
+
+        /* High-Visibility Hierarchy: 0-Based Baseline, 40px (2.5rem) steps */
+        /* Note: Using > child combinator to prevent indentation bleeding into nested components */
+        .article-view > h1, .article-view > h1 ~ *,
+        .article-body > h1, .article-body > h1 ~ * { margin-left: 0 !important; }
+
+        .article-view > h2, .article-view > h2 ~ *,
+        .article-body > h2, .article-body > h2 ~ * { margin-left: 40px !important; }
+
+        .article-view > h3, .article-view > h3 ~ *,
+        .article-body > h3, .article-body > h3 ~ * { margin-left: 80px !important; }
+
+        .article-view > h4, .article-view > h4 ~ *,
+        .article-body > h4, .article-body > h4 ~ * { margin-left: 120px !important; }
+
+        /* Container Reset: Prevent the article-body div from compounding the margin of its previous header */
+        .article-body { margin-left: 0 !important; }
 
         @media (max-width: 767px) {
             .article-title,
             h1.header-fade-anim { font-size: 28px; }
+            .article-body h1 { font-size: 28px; }
             .article-body h2 { font-size: 24px; }
             .article-body h3 { font-size: 21px; }
             .article-body h4 { font-size: 18px; }
+
+            /* Mobile: Steep 20px steps, 0-Based */
+            .article-view > h1, .article-view > h1 ~ *,
+            .article-body > h1, .article-body > h1 ~ * { margin-left: 0 !important; }
+
+            .article-view > h2, .article-view > h2 ~ *,
+            .article-body > h2, .article-body > h2 ~ * { margin-left: 20px !important; }
+
+            .article-view > h3, .article-view > h3 ~ *,
+            .article-body > h3, .article-body > h3 ~ * { margin-left: 40px !important; }
+
+            .article-view > h4, .article-view > h4 ~ *,
+            .article-body > h4, .article-body > h4 ~ * { margin-left: 60px !important; }
+        }
+
+        /* THE STACK SYSTEM: Declarative Vertical Rhythm */
+        /* 1. Reset ONLY vertical margins for internal elements to avoid stacking */
+        .article-view > *,
+        .article-body > * {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+
+        /* 2. Default gap (1x) between siblings */
+        .article-view > * + *,
+        .article-body > * + * {
+            margin-top: var(--rhythm-gap) !important;
+        }
+
+        /* 3. Tight gap (0.5x) below headings */
+        .article-view > :is(h1, h2, h3, h4) + *,
+        .article-body > :is(h1, h2, h3, h4) + * {
+            margin-top: var(--rhythm-gap-tight) !important;
+        }
+
+        /* 4. Wide gap (1.5x) before headings */
+        .article-body > :not(h1, h2, h3, h4) + :is(h1, h2, h3, h4) {
+            margin-top: var(--rhythm-gap-wide) !important;
+        }
+
+        /* 5. Start of container reset */
+        .article-view > :first-child,
+        .article-body > :first-child {
+            margin-top: 0 !important;
         }
 
         /* Logic: Standard gap is 1rem. Headings have tight local margins. */
-        .article-body > h2 + *,
-        .article-body > h3 + *,
-        .article-body > h4 + * {
-            margin-top: 0; 
-        }
+
 
         /* Clean resets */
-        .article-body > h2, .article-body > h3, .article-body > h4,
         .article-body > p, .article-body > ul, .article-body > ol,
         .article-body > blockquote, .article-body > .unified-media-wrapper,
         .article-body > .media-gallery, .article-body > .btn-cta-wrapper {
@@ -2125,11 +2196,11 @@
         .layout-hero ol,
         .layout-text ul,
         .layout-text ol {
-            margin: 8px 0;
+            margin: 0;
             padding-left: 24px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
         .article-body li,

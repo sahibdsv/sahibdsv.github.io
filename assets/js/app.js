@@ -2286,21 +2286,20 @@ function parseContentBlocks(text) {
             continue;
         }
 
-        // 1. Check for Buttons (Standalone lines or multi-button rows)
-        // This detects lines that are PURELY composed of one or more buttons in STRICT bracketed syntax: [text|link|color]
+        // 3. SPECIAL BLOCK DETECTION: Check for TOC or Buttons
+        const isTOC = line.match(/^\[\s*(?:[^\]|]+\s*\|\s*)?TOC\s*\]$/i);
         const isButtonRow = line.match(/^(\s*\[\s*[^\]|]+\s*\|\s*[^\]|]+\s*(?:\|\s*[^\]|]+\s*)?\]\s*(?:,\s*)?)+$/i);
 
-        // 2. Check for Media (Grouping consecutive media lines)
+        // 4. Check for Media (Grouping consecutive media lines)
         const parts = line.split(',').map(p => p.trim()).filter(p => p);
         const mediaItems = parts.map(p => detectMediaItem(p));
         const isPureMedia = mediaItems.length > 0 && mediaItems.every(m => m !== null);
 
-        // 3. BREAK-OUT LOGIC: If we hit a Button or Media, flush the preceding text buffer immediately.
-        // This allows [Button|URL] to work even if it's right under a paragraph without a blank line.
-        if (isButtonRow || isPureMedia) {
+        // 5. BREAK-OUT LOGIC: Ensure these blocks always start fresh
+        if (isTOC || isButtonRow || isPureMedia) {
             flushText();
 
-            if (isButtonRow) {
+            if (isTOC || isButtonRow) {
                 blocks.push(processBlock([lineRaw]));
             } else {
                 // Media Grouping logic: Collect consecutive media lines or a trailing caption
@@ -2312,13 +2311,14 @@ function parseContentBlocks(text) {
 
                     // Check for buttons first - they should NOT be grouped as media captions
                     const nextIsButton = nextLine.match(/^(\s*\[\s*[^\]|]+\s*\|\s*[^\]|]+\s*(?:\|\s*[^\]|]+\s*)?\]\s*(?:,\s*)?)+$/i);
-                    if (nextIsButton) break;
+                    const nextIsTOC = nextLine.match(/^\[\s*(?:[^\]|]+\s*\|\s*)?TOC\s*\]$/i);
+                    if (nextIsButton || nextIsTOC) break;
 
                     const nextParts = nextLine.split(',').map(p => p.trim()).filter(p => p);
                     const nextMedia = nextParts.map(p => detectMediaItem(p));
                     const isNextPureMedia = nextMedia.length > 0 && nextMedia.every(m => m !== null);
                     
-                    // Caption detection: [Text] but NO pipe |
+                    // Caption detection: [Text] but NO pipe | AND not TOC
                     const isNextCaption = nextLine.match(/^\[([^|]*?)\]$/s);
 
                     if (isNextPureMedia || isNextCaption) {
@@ -2342,10 +2342,15 @@ function parseContentBlocks(text) {
 // Process a single block of lines into typed content
 function processBlock(lines) {
     if (lines.length === 0) return null;
-
     const combinedBlock = lines.join(' ').trim();
 
-    // 1. Smart Caption Detection: [This is a caption]
+    // 1. HIGH-PRIORITY TAGS: Check for TOC first (Prevents it being stolen by caption logic)
+    const tocMatch = combinedBlock.match(/^\[\s*(?:([^\]|]+)\s*\|\s*)?TOC\s*\]$/i);
+    if (tocMatch) {
+        return { type: 'toc', title: (tocMatch[1] ? tocMatch[1].trim() : "Content") };
+    }
+
+    // 2. Smart Caption Detection: [This is a caption]
     // We check the last line for square brackets, but ensure it's NOT a button (no pipe | allowed in captions)
     let sharedCaption = null;
     const lastLine = lines[lines.length - 1].trim();
@@ -2357,7 +2362,7 @@ function processBlock(lines) {
         if (lines.length === 0) return { type: 'text', content: `[${sharedCaption}]` }; 
     }
 
-    // 2. Fluid Media Detection (Support for multi-line and comma-separated media)
+    // 3. Fluid Media Detection (Support for multi-line and comma-separated media)
     let allMediaMatches = [];
     let allTextMatches = true;
 
@@ -2402,7 +2407,7 @@ function processBlock(lines) {
         }
     }
 
-    // 3. Smart Button Detection (Extract all buttons from the block/line)
+    // 4. Smart Button Detection (Extract all buttons from the block/line)
     const buttonItems = [];
     // Regex to find all buttons: [text | link | color (optional)]
     const btnRegex = /\[\s*([^\]|]+?)\s*\|\s*([^\]|]+?)\s*(?:\|\s*([^\]|]+?)\s*)?\]/gi;
@@ -2423,7 +2428,7 @@ function processBlock(lines) {
         return { type: 'buttons', items: buttonItems };
     }
 
-    // 4. Dynamic Tag Detection (Expanded to allow flexible inclusion)
+    // 5. Dynamic Tag Detection (Expanded to allow flexible inclusion)
     const musicTag = lines.some(l => l.trim().match(/\{(Recent Music|Recently Played)\}/i));
     if (musicTag && combinedBlock.match(/^\{(Recent Music|Recently Played)\}$/i)) {
         return { type: 'music' };
@@ -2433,13 +2438,7 @@ function processBlock(lines) {
     if (quoteTag && combinedBlock.match(/^\{Random Quote\}$/i)) {
         return { type: 'quote', title: '{random quote}' };
     }
-
-    const tocTag = lines.some(l => l.trim().match(/^\{TOC\}$/i));
-    if (tocTag) {
-        return { type: 'toc' };
-    }
-
-    // Otherwise it's text content
+    // OTHERWISE: It's text content
     return {
         type: 'text',
         content: (sharedCaption ? [...lines, `[${sharedCaption}]`] : lines).join('\n')
@@ -3096,34 +3095,73 @@ function applySmartInversion(img) {
 
 function renderTOC(allBlocks, currentIndex) {
     const headings = [];
+    
+    // Find previous heading level to set TOC header height and its "scope"
+    let parentLevel = 1; // Default to 1 (H1 article title)
+    for (let i = currentIndex - 1; i >= 0; i--) {
+        const b = allBlocks[i];
+        if (b.type === 'text') {
+            const matches = b.content.match(/(?:^|\n)(#{1,4})\s+/g);
+            if (matches) {
+                const lastMatch = matches[matches.length - 1].trim();
+                parentLevel = lastMatch.length;
+                break;
+            }
+        }
+    }
+    const tocHeadingLevel = Math.min(5, parentLevel + 1);
+    const isGlobal = parentLevel === 1;
+
+    let stopScanning = false;
     for (let i = currentIndex + 1; i < allBlocks.length; i++) {
         const block = allBlocks[i];
         if (block.type === 'text') {
             const lines = block.content.split(/\n|\r\n/);
-            lines.forEach(line => {
+            for (let line of lines) {
                 const match = line.trim().match(/^(#{1,4})\s+(.*)$/);
                 if (match) {
                     const level = match[1].length;
-                    const text = match[2];
-                    const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-                    headings.push({ level, text, id });
+                    
+                    if (isGlobal) {
+                        // Global TOC shows everything up to H3
+                        if (level <= 3) {
+                            const text = match[2];
+                            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                            headings.push({ level, text, id });
+                        }
+                    } else {
+                        // Contextual TOC: Only show headings deeper than our current level
+                        if (level > parentLevel) {
+                            const text = match[2];
+                            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                            headings.push({ level, text, id });
+                        } else {
+                            // Hit a peer or parent heading: scope ends here
+                            stopScanning = true;
+                            break;
+                        }
+                    }
                 }
-            });
+            }
         }
+        if (stopScanning) break;
     }
 
     if (headings.length === 0) return '';
 
-    const tocLinks = headings.map(h => 
-        `<div class="toc-item depth-${h.level}" style="margin-left: ${(h.level - 1) * 12}px; margin-bottom: 4px;">
-            <a href="javascript:void(0)" onclick="document.getElementById('${h.id}')?.scrollIntoView({behavior:'smooth'})" style="font-size: 14px;">${h.text}</a>
-        </div>`
-    ).join('');
+    const tocLinks = headings.map(h => {
+        const size = Math.max(13, 16 - (h.level - 1) * 1);
+        const weight = 700 - (h.level - 1) * 100;
+        return `<div class="toc-item depth-${h.level}" style="margin-left: ${(h.level - 1) * 12}px;">
+            <a href="javascript:void(0)" onclick="document.getElementById('${h.id}')?.scrollIntoView({behavior:'smooth'})" style="font-size: ${size}px; font-weight: ${weight}; line-height: 1.2; display: block;">${h.text}</a>
+        </div>`;
+    }).join('');
 
+    const title = allBlocks[currentIndex].title || "Content";
     return `
-        <div class="toc-container" style="margin: 1rem 0; text-align: left;">
-            <h3 id="contents">Contents</h3>
-            <div class="toc-list" style="padding-left: 0; margin-top: 12px;">
+        <div class="toc-container" style="margin: 1.5rem 0; text-align: left;">
+            <h${tocHeadingLevel} id="contents" style="margin-bottom: 4px;">${title}</h${tocHeadingLevel}>
+            <div class="toc-list" style="padding-left: 0; display: flex; flex-direction: column; gap: 8px;">
                 ${tocLinks}
             </div>
         </div>
