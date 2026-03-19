@@ -219,25 +219,20 @@ async function fetchDataAndCache() {
 
         // Initialize Fuse.js for fuzzy search
         window.fuse = new Fuse(db, {
-            keys: ['Title', 'Content', 'Tags', 'Page'],
-            threshold: 0.35, 
+            keys: [
+                { name: 'Title', weight: 0.7 },
+                { name: 'Content', weight: 0.5 },
+                { name: 'Tags', weight: 0.5 },
+                { name: 'Page', weight: 0.3 }
+            ],
+            threshold: 0.4, 
             location: 0,
             distance: 100,
             minMatchCharLength: 2,
-            includeScore: true
+            includeScore: true,
+            useExtendedSearch: true,
+            ignoreLocation: true
         });
-
-        // Initialize Fuse.js for fuzzy search
-        window.fuse = new Fuse(db, {
-            keys: ['Title', 'Content', 'Tags', 'Page'],
-            threshold: 0.35, 
-            location: 0,
-            distance: 100,
-            minMatchCharLength: 2,
-            includeScore: true
-        });
-
-        // Caching disabled for direct fetching
 
         // Auto-refresh any dynamic components currently in the DOM
         document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
@@ -303,16 +298,17 @@ function initApp() {
         const results = document.getElementById("search-results");
 
         if (overlay.classList.contains("active")) {
-            const card = e.target.closest('.layout-grid');
             const isInsideSearch = overlay.contains(e.target) || controls.contains(e.target);
-            const isInsideResultsContent = results && results.contains(e.target);
+            const card = e.target.closest('.layout-grid');
+            const isCardClick = card && results.contains(card);
 
-            if (card && results.contains(card)) {
-                closeSearch();
-                return;
-            }
-
-            if (!isInsideSearch && !isInsideResultsContent) {
+            // Close if:
+            // 1. Clicked on a result card (navigation will happen, then search closes)
+            // 2. Clicked completely outside the search bar and results container
+            // 3. Clicked on the search results background (not on a card)
+            if (isCardClick || !isInsideSearch) {
+                // If it's a card click, navigateTo will handle the closeSearch() 
+                // but we add a safety timeout or direct call if it wasn't a link
                 closeSearch();
             }
         }
@@ -772,17 +768,22 @@ function handleSearch(e) {
         return;
     }
     const t = e.toLowerCase();
-    if (t === "clear cache") {
-        localStorage.removeItem(CACHE_KEY);
-        location.reload();
-        return;
-    }
     const matchesQuery = (entry, term) => entry?.Title?.toLowerCase().includes(term) || entry?.Content
         ?.toLowerCase().includes(term) || entry?.Tags?.toLowerCase().includes(term);
+    
+    // Fuzzy search using Fuse.js
+    let n = [];
+    if (window.fuse) {
+        n = window.fuse.search(e).map(result => result.item);
+    } else {
+        // Fallback to basic search if Fuse isn't ready
+        n = db.filter(entry => matchesQuery(entry, t));
+    }
 
-    const n = db.filter(e => matchesQuery(e, t));
-    if (resumeDb.some(e => matchesQuery(e, t)) && !n.find(e => "Professional/Resume" === e.Page)) {
-        n.push(db.find(e => "Professional/Resume" === e.Page));
+    // Special case for Resume content which lives in a separate sheet
+    if (resumeDb.some(entry => matchesQuery(entry, t)) && !n.find(entry => "Professional/Resume" === entry.Page)) {
+        const resumePage = db.find(entry => "Professional/Resume" === entry.Page);
+        if (resumePage) n.push(resumePage);
     }
 
     if (resultsContainer) {
