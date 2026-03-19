@@ -169,6 +169,8 @@ function startApp() {
         document.body.classList.remove('no-transition');
         document.getElementById('main-header').classList.remove('no-transition');
     });
+
+    showEasterEgg();
 }
 
 
@@ -3116,4 +3118,24 @@ function processContentWithBlocks(content) {
         .map((block, index) => renderContentBlock(block, index))
         .join('\n');
 };
+
+function showEasterEgg() {
+    const lines = [
+        " ██╗  ██╗ ███████╗ ██╗      ██╗       ██████╗          ██╗",
+        " ██║  ██║ ██╔════╝ ██║      ██║      ██╔═══██╗     ██╗ ╚██╗",
+        " ███████║ █████╗   ██║      ██║      ██║   ██║     ╚═╝  ██║",
+        " ██╔══██║ ██╔══╝   ██║      ██║      ██║   ██║     ██╗  ██║",
+        " ██║  ██║ ███████╗ ███████╗ ███████╗ ╚██████╔╝     ╚═╝ ██╔╝",
+        " ╚═╝  ╚═╝ ╚══════╝ ╚══════╝ ╚══════╝  ╚═════╝          ╚═╝"
+    ];
+    const colors = [
+        '#AF40FF', '#915FFA', '#737FF5', '#559FF0', '#37BFEC', '#19DFFF'
+    ];
+
+    console.log(
+        lines.map(l => `%c${l}`).join('\n') + "\n\n%cI'd love to know what you think! reach me @sahibdsv everywhere!",
+        ...colors.map(c => `color: ${c}; font-weight: bold; font-family: monospace;`),
+        "color: #19DFFF; font-style: italic; font-family: sans-serif;"
+    );
+}
 
