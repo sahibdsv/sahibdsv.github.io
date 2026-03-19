@@ -71,7 +71,6 @@ let db = [];
 let quotesDb = [];
 let resumeDb = [];
 let musicDb = []; // Music logging data
-let variablesDb = []; // Variables metadata
 let quoteBag = []; // Shuffled indices to pick from
 let _lastQuoteIndex = -1;
 
@@ -87,8 +86,7 @@ const CONFIG = {
     main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
     quotes_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv',
     resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv',
-    music_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1199341895&single=true&output=csv',
-    variables_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=554193488&single=true&output=csv'
+    music_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1199341895&single=true&output=csv'
 };
 
 // Quote Randomness Logic (Fisher-Yates Shuffle Bag)
@@ -176,7 +174,7 @@ function startApp() {
 // fetchDataAndCache retrieves high-fidelity content across all sources
 async function fetchDataAndCache() {
     try {
-        const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal, variablesDbLocal] = await Promise.all([
+        const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal] = await Promise.all([
             fetchCSV(CONFIG.main_sheet),
             fetchCSV(CONFIG.quotes_sheet).catch(e => {
                 console.warn('Quotes fetch failed', e);
@@ -189,10 +187,6 @@ async function fetchDataAndCache() {
             fetchCSV(CONFIG.music_sheet).catch(e => {
                 console.warn('Music fetch failed', e);
                 return [];
-            }),
-            fetchCSV(CONFIG.variables_sheet).catch(e => {
-                console.warn('Variables fetch failed', e);
-                return [];
             })
         ]);
 
@@ -203,7 +197,6 @@ async function fetchDataAndCache() {
         db = filtered;
         quotesDb = quotesDbLocal;
         musicDb = musicDbLocal;
-        variablesDb = variablesDbLocal;
         resumeDb = (resumeDbLocal || []).map(entry => {
             if (entry.Page && entry.Page.includes('#')) {
                 const [page, sectionType] = entry.Page.split('#');
@@ -283,12 +276,17 @@ function initApp() {
     window.addEventListener("resize", (() => {
         let resizeTimeout;
         return () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
+            if (resizeTimeout) cancelAnimationFrame(resizeTimeout);
+            resizeTimeout = requestAnimationFrame(() => {
+                const isDesktop = window.innerWidth > 768;
                 document.querySelectorAll(".nav-row").forEach(row => {
-                    centerNavRow(row, true);
+                    if (isDesktop) {
+                        row.scrollLeft = 0;
+                    } else {
+                        centerNavRow(row, true);
+                    }
                 });
-            }, 150);
+            });
         };
     })());
 
@@ -719,18 +717,6 @@ function setupHapticScroll(row) {
 }
 
 
-
-let resizeTimeout;
-let ticking = false;
-/* Scroll Listener Removed - Sticky Header handles this natively */
-window.addEventListener('resize', () => {
-    if (resizeTimeout) cancelAnimationFrame(resizeTimeout);
-    resizeTimeout = requestAnimationFrame(() => {
-        if (window.innerWidth > 768) {
-            document.querySelectorAll('.nav-row').forEach(e => e.scrollLeft = 0);
-        }
-    });
-});
 
 function resetToHome() {
     closeSearch();
@@ -2133,10 +2119,6 @@ function generateResumeJSONLD() {
 const formatSectionTitle = type => (!type || type.toLowerCase().replace(/^#/, '').replace(/_/g, '-') === 'header') ? null
     : type.replace(/^#/, '').replace(/_/g, '-').split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
 
-function renderButton(text, url) {
-    return `<div class="btn-cta-wrapper"><a href="${url}" target="_blank" rel="noopener" class="btn-cta">${text}</a></div>`;
-}
-
 
 function renderResume() {
     const app = document.getElementById("app");
@@ -2452,6 +2434,11 @@ function processBlock(lines) {
         return { type: 'quote', title: '{random quote}' };
     }
 
+    const tocTag = lines.some(l => l.trim().match(/^\{TOC\}$/i));
+    if (tocTag) {
+        return { type: 'toc' };
+    }
+
     // Otherwise it's text content
     return {
         type: 'text',
@@ -2694,7 +2681,7 @@ function renderUnifiedMediaItem(item, isGallery = false) {
     }
 }
 // Render a block as HTML
-function renderContentBlock(block, index) {
+function renderContentBlock(block, index, allBlocks) {
     if (!block) return '';
 
     // Detect current page category for inheritance
@@ -2716,9 +2703,6 @@ function renderContentBlock(block, index) {
             return renderUnifiedGallery(block.items, block.sharedCaption);
 
         case 'button':
-            return renderUnifiedGallery(block.items, block.sharedCaption);
-
-        case 'button':
             return renderButtonHTML(block.text, block.url, block.color);
 
         case 'buttons':
@@ -2727,6 +2711,9 @@ function renderContentBlock(block, index) {
 
         case 'music':
             return `<div class="music-embed-container" data-needs-init="true" data-type="recent-music"></div>`;
+
+        case 'toc':
+            return renderTOC(allBlocks, index);
 
         case 'quote':
             return `<div class="layout-quote" data-needs-init="true" data-title="${block.title || 'random quote'}"></div>`;
@@ -2821,7 +2808,8 @@ function processMarkdown(text) {
             }
             const level = headerMatch[1].length;
             const content = processInlineMarkdown(headerMatch[2]);
-            output.push(`<h${level} class="header-fade-anim">${content}</h${level}>`);
+            const id = headerMatch[2].toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+            output.push(`<h${level} id="${id}">${content}</h${level}>`);
             continue;
         }
 
@@ -3106,6 +3094,42 @@ function applySmartInversion(img) {
     }
 }
 
+function renderTOC(allBlocks, currentIndex) {
+    const headings = [];
+    for (let i = currentIndex + 1; i < allBlocks.length; i++) {
+        const block = allBlocks[i];
+        if (block.type === 'text') {
+            const lines = block.content.split(/\n|\r\n/);
+            lines.forEach(line => {
+                const match = line.trim().match(/^(#{1,4})\s+(.*)$/);
+                if (match) {
+                    const level = match[1].length;
+                    const text = match[2];
+                    const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                    headings.push({ level, text, id });
+                }
+            });
+        }
+    }
+
+    if (headings.length === 0) return '';
+
+    const tocLinks = headings.map(h => 
+        `<div class="toc-item depth-${h.level}" style="margin-left: ${(h.level - 1) * 12}px; margin-bottom: 4px;">
+            <a href="javascript:void(0)" onclick="document.getElementById('${h.id}')?.scrollIntoView({behavior:'smooth'})" style="font-size: 14px;">${h.text}</a>
+        </div>`
+    ).join('');
+
+    return `
+        <div class="toc-container" style="margin: 1rem 0; text-align: left;">
+            <h3 id="contents">Contents</h3>
+            <div class="toc-list" style="padding-left: 0; margin-top: 12px;">
+                ${tocLinks}
+            </div>
+        </div>
+    `;
+}
+
 // Process content with block system - convenience function
 function processContentWithBlocks(content) {
     if (!content) return '';
@@ -3113,7 +3137,7 @@ function processContentWithBlocks(content) {
     const blocks = parseContentBlocks(content);
     return blocks
         .filter(block => block !== null)
-        .map((block, index) => renderContentBlock(block, index))
+        .map((block, index, all) => renderContentBlock(block, index, all))
         .join('\n');
 };
 

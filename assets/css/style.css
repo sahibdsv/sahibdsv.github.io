@@ -422,12 +422,6 @@
             opacity: 1;
             transform: translateY(0);
             margin-bottom: 0;
-            background: linear-gradient(to top, var(--text-hover, var(--text-bright)) 50%, var(--text-base, var(--text-dim)) 50.5%);
-            background-size: 100% 205%;
-            background-position: 0 0;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
             --text-hover: var(--text-bright);
         }
 
@@ -1196,7 +1190,7 @@
 
             .layout-grid:hover .row-media.placeholder span {
                 opacity: 1;
-                color: var(--text-main);
+                color: var(--text-dim);
             }
 
             /* Crisp Accent Colors on Hover */
@@ -1494,7 +1488,7 @@
             margin: 0;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
 
             .layout-text,
             .layout-hero {
@@ -1785,7 +1779,7 @@
         }
 
         /* 1. Mobile & Interaction Logic */
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
 
             /* Disable internal canvas rotation on mobile to allow scrolling, 
                but keep pointer-events active so the fullscreen button works! */
@@ -2029,7 +2023,7 @@
         .resume-role {
             font-size: 16px;
             font-weight: 600;
-            color: var(--text-main);
+            color: var(--text-dim);
         }
 
         .resume-company {
@@ -2046,7 +2040,7 @@
             text-align: right;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
             .resume-grid {
                 display: flex !important;
                 flex-direction: column;
@@ -2067,70 +2061,33 @@
             padding: 0 40px 20px 40px;
         }
 
-        .article-title {
-            font-size: 32px;
+        .article-title,
+        h1.header-fade-anim {
+            font-size: 35px;
             color: var(--text-main);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             font-weight: 600;
-            line-height: 1.2;
+            line-height: 1.1;
             margin-top: 0;
         }
 
-        .article-meta {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-bottom: 0;
-            padding-bottom: 4px;
-            border-bottom: 1px solid var(--border-subtle);
+        .article-body h2 { font-size: 30px; font-weight: 600; line-height: 1.15; color: var(--text-main); margin: 0.5rem 0 0.25rem 0; }
+        .article-body h3 { font-size: 25px; font-weight: 600; line-height: 1.2; color: var(--text-main); margin: 0.4rem 0 0.2rem 0; }
+        .article-body h4 { font-size: 20px; font-weight: 600; line-height: 1.25; color: var(--text-main); margin: 0.3rem 0 0.15rem 0; }
+
+        @media (max-width: 767px) {
+            .article-title,
+            h1.header-fade-anim { font-size: 28px; }
+            .article-body h2 { font-size: 24px; }
+            .article-body h3 { font-size: 21px; }
+            .article-body h4 { font-size: 18px; }
         }
 
-        .article-meta-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-bottom: 0;
-        }
-
-        .article-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .author-link {
-            white-space: nowrap;
-        }
-
-        .article-link-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.6;
-            transition: opacity var(--anim-instant);
-        }
-
-        .article-link-btn:hover {
-            opacity: 1;
-        }
-
-        .article-body,
-        .layout-hero,
-        .layout-text {
-            display: flex;
-            flex-direction: column;
-            gap: var(--site-gap);
-            width: 100%;
-        }
-
-        /* Logic: Standard gap is 1rem. Headings pull next element up by 0.5rem to create 8px proximity */
+        /* Logic: Standard gap is 1rem. Headings have tight local margins. */
         .article-body > h2 + *,
         .article-body > h3 + *,
         .article-body > h4 + * {
-            margin-top: -0.5rem; 
+            margin-top: 0; 
         }
 
         /* Clean resets */
@@ -2151,7 +2108,7 @@
             margin: 0;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
             .article-view {
                 padding: 0 10px 20px 10px;
             }
@@ -2403,7 +2360,7 @@
             align-items: center;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
             .music-sections-container {
                 margin: 8px auto;
             }
@@ -2411,7 +2368,7 @@
 
         .music-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
             gap: 24px;
             width: 100%;
             max-width: 1200px;
@@ -2419,16 +2376,10 @@
             justify-items: center;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
             .music-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
                 gap: 12px;
-            }
-        }
-
-        /* Enforce a stable grid on desktop for side-by-side cards */
-        @media (min-width: 768px) {
-            .music-grid {
-                grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
             }
         }
 
@@ -2619,7 +2570,7 @@
             border-radius: var(--card-radius);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
             .mapbox-container {
                 aspect-ratio: 16 / 9;
                 min-height: auto;
@@ -2663,7 +2614,7 @@
             min-height: 300px; 
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
             .article-body .mapbox-container {
                 min-height: auto;
             }
