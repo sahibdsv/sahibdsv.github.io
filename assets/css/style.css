@@ -2420,18 +2420,21 @@
 
         .layout-grid.cat-music {
             position: relative;
-            overflow: hidden; /* Contain the aura */
+            /* overflow: hidden; Removed to allow outward box-shadow for is-playing state */
             width: 100%;
             max-width: 300px;
             margin: 0 auto;
             box-sizing: border-box;
             transition: all var(--anim-quick) var(--ease);
+            border-radius: var(--card-radius); /* Ensure radius is on the container */
         }
 
         .layout-grid.cat-music.is-playing {
             border-color: rgba(var(--bright-rgb), 0.8);
-            box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 0.8);
+            /* Outset shadow so it sits outside the iframe and doesn't get overlapped */
+            box-shadow: 0 0 0 1px rgba(var(--bright-rgb), 0.8);
             background: var(--card-bg-hover);
+            z-index: 10; /* Bring active card to the front */
         }
 
         .layout-grid.cat-music .row-media {
