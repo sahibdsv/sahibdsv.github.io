@@ -1048,8 +1048,6 @@ function renderCardHTML(entry, contextCategory = "") {
         () => entry.Thumbnail && thumbUrl?.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i) ?
             mediaBuilder('video', thumbUrl) : "",
         () => entry.Thumbnail && thumbUrl ? mediaBuilder('img', thumbUrl) : "",
-        () => !entry.Thumbnail && cEx ? mediaBuilder(cEx.type === 'yt' ? 'img' : cEx.type, cEx.type === 'yt' ?
-            `https://img.youtube.com/vi/${cEx.id}/mqdefault.jpg` : cEx.url) : "",
         () => !isTitleLink ?
             `<div class="row-media placeholder"><span>${(entry.Title || "").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1')}</span></div>` :
             ""
@@ -1121,7 +1119,7 @@ function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecent
         });
     }
     let htmlBuffer = title ?
-        `<div style="display:flex;justify-content:center;margin-bottom:20px;"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:var(--text-dim); --text-hover:var(--text-bright);">${title}</h2></div>` :
+        `<div class="section-title-wrapper"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:var(--text-dim); --text-hover:var(--text-bright);">${title}</h2></div>` :
         "";
     if (data.length === 0) {
         if (isHome) return;
@@ -1351,16 +1349,9 @@ function renderRecentMusic(container) {
         let atmosphereHTML = "";
         let liveClass = "";
 
-        // Because timestamps are gone, the latest entry (index 0) is ALWAYS considered actively playing
+        // The latest entry (index 0) is considered actively playing
         if (index === 0) {
-            liveClass = "is-live";
-            atmosphereHTML = `
-                        <div class="steel-waveform-aura">
-                            <div class="crisp-wave w1"></div>
-                            <div class="crisp-wave w2"></div>
-                            <div class="crisp-wave w3"></div>
-                        </div>
-                    `;
+            liveClass = "is-playing";
         }
 
         // Source icon mapping handling explicit 'YT Music' OPSEC update
@@ -1383,7 +1374,6 @@ function renderRecentMusic(container) {
                             ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
                         <div class="card-info">
-                            ${atmosphereHTML}
                             <div class="marquee-container track-marquee">
                                 <span class="marquee-content"><h3 class="fill-anim">${track}</h3></span>
                             </div>
@@ -1407,6 +1397,48 @@ function renderRecentMusic(container) {
     // Initialization for marquee
     setTimeout(() => initMusicMarquee(container), 100);
 }
+
+// --- PHOTOSWIPE V5 LIGHTBOX INITIALIZER ---
+(function() {
+    let lightbox = null;
+
+    function initPhotoSwipe() {
+        if (lightbox) lightbox.destroy();
+
+        lightbox = new PhotoSwipeLightbox({
+            gallery: '#app',
+            children: '.article-body img, .row-media img:not(.music-yt-overlay img), .media-container img, .gallery-item img',
+            pswpModule: PhotoSwipe,
+            imageClickAction: 'zoom',
+            tapAction: 'toggle-controls',
+            doubleTapAction: 'zoom',
+            bgOpacity: 0.95,
+            showHideAnimationType: 'zoom'
+        });
+
+        // Dynamic dimension detection (PhotoSwipe 5 requires w/h)
+        lightbox.addFilter('itemData', (itemData, index) => {
+            const img = itemData.element;
+            if (img) {
+                itemData.src = img.src;
+                itemData.w = img.naturalWidth || 1200; 
+                itemData.h = img.naturalHeight || 800;
+                itemData.msrc = img.src; 
+            }
+            return itemData;
+        });
+
+        lightbox.init();
+    }
+
+    window.__reinitLightbox = initPhotoSwipe;
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPhotoSwipe);
+    } else {
+        initPhotoSwipe();
+    }
+})();
 
 async function renderMusicCluster(container) {
     const urlsRaw = container.getAttribute('data-urls') || "";
@@ -1522,7 +1554,6 @@ function playMusicInCard(event) {
 
     const ytId = getYouTubeID(link);
 
-    // Critical for ensuring we don't redirect or do anything else
     if (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -1540,12 +1571,10 @@ function playMusicInCard(event) {
                 if (pMedia && originalHTML) {
                     pMedia.innerHTML = originalHTML;
                     pCard.classList.remove('is-playing');
-                    const pAura = pCard.querySelector('.steel-waveform-aura');
-                    if (pAura) pAura.style.display = '';
                 }
             });
 
-            // 2. Save current state if not already saved
+            // 2. Save current state
             if (!card.getAttribute('data-original-media')) {
                 card.setAttribute('data-original-media', mediaRow.innerHTML);
             }
@@ -1555,14 +1584,19 @@ function playMusicInCard(event) {
             iframe.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&origin=${encodeURIComponent(origin)}`;
             iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
             iframe.allowFullscreen = true;
-            // Note: CSS now handles width/height 100% natively in cat-music .row-media iframe rule
+            iframe.style.opacity = '0'; // Hide initially
+            
+            iframe.onload = () => {
+                // Cross-fade: Show video, hide thumbnail/placeholders
+                iframe.style.opacity = '1';
+                const currentImg = mediaRow.querySelector('img.media-enter');
+                if (currentImg) currentImg.style.opacity = '0';
+                const fallback = mediaRow.querySelector('.music-card-fallback');
+                if (fallback) fallback.style.opacity = '0';
+            };
 
-            mediaRow.innerHTML = '';
+            // Append on top of existing content
             mediaRow.appendChild(iframe);
-
-            const aura = card.querySelector('.steel-waveform-aura');
-            if (aura) aura.style.display = 'none';
-
             card.classList.add('is-playing');
         }
     } else if (link) {
@@ -1633,9 +1667,15 @@ function extractMediaFromContent(content) {
         const fullUrl = (url.startsWith('assets/') || url.startsWith('http')) ? url : `assets/GPX/${url}`;
         return { type: 'geojson', url: fullUrl };
     }
-    if (url.match(/\.(?:jpg|jpeg|png|gif|webp|svg)(?:-[a-zA-Z0-9_-]+)*/i)) return { type: 'img', url: url };
-    if (url.match(/\.(?:mp4|webm|mov|ogg)(?:-[a-zA-Z0-9_-]+)*/i)) return { type: 'video', url: url };
-    return null;
+    // Image detection: Match common extensions even if they have suffixes like -invert
+    if (url.match(/\.(?:jpg|jpeg|png|gif|webp|svg)(?:-[a-zA-Z0-9_-]+)*/i)) {
+        const fullUrl = (url.startsWith('assets/') || url.startsWith('http')) ? url : `assets/images/${url}`;
+        return { type: 'image', url: fullUrl };
+    }    // Video detection: Match common extensions even if they have suffixes
+    if (url.match(/\.(?:mp4|webm|mov|ogg)(?:-[a-zA-Z0-9_-]+)*/i)) {
+        const fullUrl = (url.startsWith('assets/') || url.startsWith('http')) ? url : `assets/videos/${url}`;
+        return { type: 'video', url: fullUrl };
+    }    return null;
 }
 function getThumbnail(media) {
     if (!media) return null;
