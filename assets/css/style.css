@@ -2622,6 +2622,12 @@
             min-height: 300px; 
         }
 
+        @media (max-width: 768px) {
+            .article-body .mapbox-container {
+                min-height: auto;
+            }
+        }
+
         /* Music Card Fallback Placeholder */
         .music-card-fallback {
             position: absolute;
