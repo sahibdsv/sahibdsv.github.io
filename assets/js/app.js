@@ -2988,11 +2988,11 @@ window.__initMapbox = async function (containerId, geojsonUrl, isInteractive = t
             attributionControl: false // Minimalist aesthetic
         });
 
-        // Prevent cursor trap where map intercepts all scroll events on touch devices
-        if (window.matchMedia('(hover: none)').matches) {
-            map.scrollZoom.disable();
-        } else {
+        // Use hover media query to reliably distinguish desktop from touch
+        if (window.matchMedia('(hover: hover)').matches) {
             map.scrollZoom.enable();
+        } else {
+            map.scrollZoom.disable();
         }
 
         const addMapboxArtLayers = () => {
@@ -3021,6 +3021,12 @@ window.__initMapbox = async function (containerId, geojsonUrl, isInteractive = t
         // every time the style physically finishes loading.
         map.on('style.load', () => {
             addMapboxArtLayers();
+            // Re-confirm scroll zoom settings after style load
+            if (window.matchMedia('(hover: hover)').matches) {
+                map.scrollZoom.enable();
+            } else {
+                map.scrollZoom.disable();
+            }
         });
 
         map.on('load', () => {
