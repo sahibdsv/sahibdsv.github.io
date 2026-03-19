@@ -188,13 +188,28 @@
 
         // Live Dashboard Polling
 
-        window.triggerAnalytics = function(cleanPath) {
+        let _analyticsTimer = null;
+        window.triggerAnalytics = function(cleanPath, isSwipe = false) {
             if (!window.goatcounter || !window.goatcounter.count) return;
 
             // Normalize path for cleaner reports (convert #Personal/About to /Personal/About)
             const p = cleanPath || url2path(window.location.hash.substring(1) || "Home");
             const virtualPath = '/' + p.replace(/^#/, '');
             
+            // DEBOUNCE FOR SWIPING: Avoid hitting GoatCounter 429 rate limits during rapid navigation.
+            // If we are swiping, wait for the user to linger for 2 seconds before counting it as a view.
+            if (isSwipe) {
+                clearTimeout(_analyticsTimer);
+                _analyticsTimer = setTimeout(() => {
+                    if (window.goatcounter && window.goatcounter.count) {
+                        goatcounter.count({ path: virtualPath, title: document.title });
+                    }
+                }, 2000); 
+                return;
+            }
+
+            // Clicks/Standard nav: Track immediately and cancel any pending swipe-timers
+            clearTimeout(_analyticsTimer);
             goatcounter.count({
                 path: virtualPath,
                 title: document.title
@@ -985,7 +1000,7 @@
                 updateSEO(cleanPath);
                 
                 // 4.5 Trigger Analytics AFTER title and URL are clean
-                if (window.triggerAnalytics) triggerAnalytics(cleanPath);
+                if (window.triggerAnalytics) triggerAnalytics(cleanPath, isSwipe);
 
                 // Mark this path as rendered so subsequent identical swipes don't trigger re-renders
                 _lastRenderedPath = cleanPath;
@@ -1790,7 +1805,12 @@
 
         function processMediaUrl(url) {
             if (!url) return { url: '', autoplay: false, loop: false, controls: true, invert: false };
-            const lower = url.toLowerCase();
+            
+            // SECURITY: Force HTTPS to avoid 'Not Secure' Mixed Content warnings for external images
+            // Apply this early to ensure all subsequent processing uses the secure URL
+            let processedUrl = url.replace(/^http:\/\//i, "https://");
+
+            const lower = processedUrl.toLowerCase(); // Use the potentially updated URL for flag detection
             const autoplay = lower.includes('-autoplay');
             const loop = lower.includes('-loop');
             const invert = lower.includes('-invert');
@@ -1799,7 +1819,7 @@
 
             // Strip behavior markers.
             // These can be appended after the extension (e.g. .jpg-invert)
-            let cleanUrl = url.replace(/-(?:autoplay|loop|noloop|nocontrols|invert)/gi, '');
+            let cleanUrl = processedUrl.replace(/-(?:autoplay|loop|noloop|nocontrols|invert)/gi, '');
             
             // SPECIAL CASE: Only strip '-thumb' from videos, as some images (like resume-thumb.jpg)
             // legitimately use it in their real filename.
