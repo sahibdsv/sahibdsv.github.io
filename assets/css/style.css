@@ -2090,18 +2090,18 @@
         .article-body h4 { font-size: 20px; }
 
         /* High-Visibility Hierarchy: 0-Based Baseline, 40px (2.5rem) steps */
-        /* Note: Using > child combinator to prevent indentation bleeding into nested components */
-        .article-view > h1, .article-view > h1 ~ *,
-        .article-body > h1, .article-body > h1 ~ * { margin-left: 0 !important; }
+        /* Note: Using positive opt-in child combinator to prevent indentation bleeding into nested components or embeds */
+        .article-view > h1, .article-view > h1 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+        .article-body > h1, .article-body > h1 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 0 !important; }
 
-        .article-view > h2, .article-view > h2 ~ *,
-        .article-body > h2, .article-body > h2 ~ * { margin-left: 40px !important; }
+        .article-view > h2, .article-view > h2 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+        .article-body > h2, .article-body > h2 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 40px !important; }
 
-        .article-view > h3, .article-view > h3 ~ *,
-        .article-body > h3, .article-body > h3 ~ * { margin-left: 80px !important; }
+        .article-view > h3, .article-view > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+        .article-body > h3, .article-body > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 80px !important; }
 
-        .article-view > h4, .article-view > h4 ~ *,
-        .article-body > h4, .article-body > h4 ~ * { margin-left: 120px !important; }
+        .article-view > h4, .article-view > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+        .article-body > h4, .article-body > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 120px !important; }
 
         /* Container Reset: Prevent the article-body div from compounding the margin of its previous header */
         .article-body { margin-left: 0 !important; }
@@ -2115,17 +2115,17 @@
             .article-body h4 { font-size: 18px; }
 
             /* Mobile: Steep 20px steps, 0-Based */
-            .article-view > h1, .article-view > h1 ~ *,
-            .article-body > h1, .article-body > h1 ~ * { margin-left: 0 !important; }
+            .article-view > h1, .article-view > h1 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+            .article-body > h1, .article-body > h1 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 0 !important; }
 
-            .article-view > h2, .article-view > h2 ~ *,
-            .article-body > h2, .article-body > h2 ~ * { margin-left: 20px !important; }
+            .article-view > h2, .article-view > h2 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+            .article-body > h2, .article-body > h2 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 20px !important; }
 
-            .article-view > h3, .article-view > h3 ~ *,
-            .article-body > h3, .article-body > h3 ~ * { margin-left: 40px !important; }
+            .article-view > h3, .article-view > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+            .article-body > h3, .article-body > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 40px !important; }
 
-            .article-view > h4, .article-view > h4 ~ *,
-            .article-body > h4, .article-body > h4 ~ * { margin-left: 60px !important; }
+            .article-view > h4, .article-view > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+            .article-body > h4, .article-body > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 60px !important; }
         }
 
         /* THE STACK SYSTEM: Declarative Vertical Rhythm */
