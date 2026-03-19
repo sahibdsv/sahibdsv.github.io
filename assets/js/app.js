@@ -3134,7 +3134,7 @@ function showEasterEgg() {
 
     console.log(
         lines.map(l => `%c${l}`).join('\n') + "\n\n%cI'd love to know what you think! reach me @sahibdsv everywhere!",
-        ...colors.map(c => `color: ${c}; font-weight: bold; font-family: monospace; font-size: 10px; line-height: 1;`),
+        ...colors.map(c => `color: ${c}; font-weight: 900; font-family: 'input-mono', 'menlo', 'monaco', 'courier new', monospace; font-size: 11px; line-height: 1;`),
         "color: #C6F8FF; font-style: italic; font-family: sans-serif; font-size: 11px;"
     );
 }
