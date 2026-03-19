@@ -2988,8 +2988,12 @@ window.__initMapbox = async function (containerId, geojsonUrl, isInteractive = t
             attributionControl: false // Minimalist aesthetic
         });
 
-        // Prevent cursor trap where map intercepts all scroll events
-        map.scrollZoom.disable();
+        // Prevent cursor trap where map intercepts all scroll events on touch devices
+        if (window.matchMedia('(hover: none)').matches) {
+            map.scrollZoom.disable();
+        } else {
+            map.scrollZoom.enable();
+        }
 
         const addMapboxArtLayers = () => {
             const currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent-personal').trim() || '#00e676';

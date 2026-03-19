@@ -2127,33 +2127,6 @@
             margin: 0;
         }
 
-        /* Music Card Animation: Soft Corner Aura (Option C Refined) */
-        .layout-grid.cat-music.is-playing::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            right: -15px;
-            width: 60px;
-            height: 60px;
-            background: var(--cat-accent, var(--text-bright));
-            filter: blur(25px);
-            border-radius: 50%;
-            animation: aura-breathe 4s ease-in-out infinite;
-            z-index: 1;
-            opacity: 0.4;
-            pointer-events: none;
-        }
-
-        @keyframes aura-breathe {
-            0%, 100% { transform: scale(1); opacity: 0.3; }
-            50% { transform: scale(1.4); opacity: 0.6; }
-        }
-
-        /* Ensure the YouTube overlay stays on top of the aura */
-        .music-yt-overlay {
-            z-index: 10;
-        }
-
         .article-body p {
             margin: 0;
         }
@@ -2479,28 +2452,6 @@
             transition: opacity 0.5s var(--ease);
         }
 
-        /* Music Card Animation: Soft Corner Aura (Option C Refined) */
-        .layout-grid.cat-music.is-playing::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            right: -20px;
-            width: 70px;
-            height: 70px;
-            background: var(--text-bright);
-            filter: blur(30px);
-            border-radius: 50%;
-            animation: aura-breathe 4s ease-in-out infinite;
-            z-index: 1; /* Sits behind text/icons but below album art? No, .row-media is z-index 1 */
-            opacity: 0.3;
-            pointer-events: none;
-        }
-
-        @keyframes aura-breathe {
-            0%, 100% { transform: scale(1); opacity: 0.2; }
-            50% { transform: scale(1.3); opacity: 0.4; }
-        }
-
         .music-yt-overlay {
             position: absolute;
             bottom: 12px;
@@ -2510,7 +2461,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10; /* Ensures icon is on top of aura */
+            z-index: 10;
             opacity: 1;
             transition: opacity 0.3s var(--ease), transform 0.2s var(--ease);
             pointer-events: auto;
@@ -2522,8 +2473,7 @@
             opacity: 1 !important;
         }
 
-        .layout-grid.cat-music:hover .music-yt-overlay,
-        .layout-grid.cat-music.is-playing .music-yt-overlay {
+        .layout-grid.cat-music:hover .music-yt-overlay {
             opacity: 1;
         }
 
@@ -2626,6 +2576,13 @@
             position: relative;
             overflow: hidden;
             border-radius: var(--card-radius);
+        }
+
+        @media (max-width: 768px) {
+            .mapbox-container {
+                aspect-ratio: 16 / 9;
+                min-height: auto;
+            }
         }
 
         .mapbox-container.card-preview {
