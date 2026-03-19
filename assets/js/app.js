@@ -337,6 +337,22 @@ function initApp() {
         passive: false
     });
 
+    // 4. Global Music Dismissal (Stop player when clicking outside)
+    document.addEventListener("click", e => {
+        const activePlayingCard = document.querySelector('.layout-grid.cat-music.is-playing');
+        if (!activePlayingCard) return;
+
+        // If click is NOT inside the active card
+        if (!activePlayingCard.contains(e.target)) {
+            const mediaRow = activePlayingCard.querySelector('.row-media');
+            const originalHTML = activePlayingCard.getAttribute('data-original-media');
+            if (mediaRow && originalHTML) {
+                mediaRow.innerHTML = originalHTML;
+                activePlayingCard.classList.remove('is-playing');
+            }
+        }
+    });
+
     document.addEventListener("keydown", e => {
         const isSearchFocused = "search-input" === (document.activeElement ? document.activeElement.id : "");
 
@@ -1374,14 +1390,8 @@ function renderRecentMusic(container) {
         const thumbRaw = item.Thumbnail || "";
         const thumb = thumbRaw.replace(/^http:\/\//i, "https://");
 
-        // Waveform Atmosphere logic for the absolute latest track
-        let atmosphereHTML = "";
+        // Waveform Atmosphere logic - User opted to remove default 'is-playing' marker
         let liveClass = "";
-
-        // The latest entry (index 0) is considered actively playing
-        if (index === 0) {
-            liveClass = "is-playing";
-        }
 
         // Source icon mapping handling explicit 'YT Music' OPSEC update
         let sourceIconHTML = "";
