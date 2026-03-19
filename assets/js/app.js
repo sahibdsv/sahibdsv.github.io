@@ -3121,19 +3121,18 @@ function processContentWithBlocks(content) {
 
 function showEasterEgg() {
     const lines = [
-        "  _  _ ___ _    _    ___  ",
-        " | || | __| |  | |  / _ \\ ",
-        " | __ | _|| |__| |_| (_) |",
-        " |_||_|___|____|____\\___/ "
+        "  _   _ _____ _     _     ___  ",
+        " | | | | ____| |   | |   / _ \\ ",
+        " | |_| |  _| | |   | |  | | | |",
+        " |  _  | |___| |___| |__| |_| |",
+        " |_| |_|_____|_____|_____\\___/ "
     ];
-    const colors = [
-        '#595CFF', '#7D90FF', '#A1C4FF', '#C6F8FF'
-    ];
+    const colors = Array(5).fill('#FFF');
 
     console.log(
         lines.map(l => `%c${l}`).join('\n') + "\n\n%cI'd love to know what you think! reach me @sahibdsv everywhere!",
         ...colors.map(c => `color: ${c}; font-weight: 900; font-family: 'Cascadia Mono', 'Consolas', monospace; font-size: 13px; line-height: 0.75;`),
-        "color: #C6F8FF; font-style: italic; font-family: sans-serif; font-size: 11px;"
+        "color: #FFF; font-style: italic; font-family: sans-serif; font-size: 11px;"
     );
 }
 
