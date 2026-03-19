@@ -2436,12 +2436,14 @@
         }
 
         /* Use pseudo-element for the 'bold' outline to ensure it perfectly follows radii 
-           and sits on top of all content (including iframe) without pixelation. */
+           and sits on top of all content (including iframe) without pixelation. 
+           We match the button hover 'bold' look: 1px border + 1px inset shadow. */
         .layout-grid.cat-music.is-playing::before {
             content: '';
             position: absolute;
-            inset: -1px; /* Sit exactly on/outside the border */
+            inset: 0; 
             border: 1px solid rgba(var(--bright-rgb), 0.8);
+            box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 0.8);
             border-radius: inherit;
             pointer-events: none;
             z-index: 20; /* Highest layer, above the iframe */
