@@ -274,16 +274,6 @@
                 controls.addEventListener('start', () => {
                     isInteracting = true;
                     if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
-
-                    // Track interaction with this specific model (Simplified event name)
-                    if (window.goatcounter && window.goatcounter.count) {
-                        const filename = glbPath.split('/').pop();
-                        goatcounter.count({
-                            path: '3d-' + filename,
-                            title: '3D Interaction: ' + filename,
-                            event: true
-                        });
-                    }
                 });
 
                 controls.addEventListener('end', () => resumeAutoRotate());
