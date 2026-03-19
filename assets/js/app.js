@@ -1604,7 +1604,12 @@ function playMusicInCard(event) {
     if (ytId) {
         const mediaRow = card.querySelector('.row-media');
         if (mediaRow) {
-            // 1. Stop any other currently playing cards
+            // 1. Capture original state IMMEDIATELY before we touch the DOM
+            if (!card.getAttribute('data-original-media')) {
+                card.setAttribute('data-original-media', mediaRow.innerHTML);
+            }
+
+            // 2. Stop any other currently playing cards
             document.querySelectorAll('.layout-grid.cat-music.is-playing').forEach(pCard => {
                 const pMedia = pCard.querySelector('.row-media');
                 const originalHTML = pCard.getAttribute('data-original-media');
@@ -1613,11 +1618,6 @@ function playMusicInCard(event) {
                     pCard.classList.remove('is-playing');
                 }
             });
-
-            // 2. Save current state
-            if (!card.getAttribute('data-original-media')) {
-                card.setAttribute('data-original-media', mediaRow.innerHTML);
-            }
 
             const iframe = document.createElement('iframe');
             const origin = window.location.origin;
