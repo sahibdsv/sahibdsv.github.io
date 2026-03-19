@@ -233,6 +233,9 @@
                 controls.dampingFactor = 0.15;
                 controls.enableZoom = false;
 
+                // JS-based cursor management to avoid CSS conflicts
+                canvas.style.cursor = 'grab';
+
                 // We employ a pure "Mobile Device Detection" (No Hover + Coarse Pointer)
                 // This ensures touch-capable laptops with trackpads STILL get desktop pan.
                 const isTrueMobile = window.matchMedia("(pointer: coarse) and (hover: none)").matches;
@@ -252,7 +255,8 @@
                     controls.enableRotate = false;
                     controls.enablePan = false;
                     controls.enabled = false; // Prevents generic event.preventDefault() hooks
-                    canvas.style.setProperty('touch-action', 'auto', 'important'); // Fixes pull-to-refresh
+                    canvas.style.setProperty('touch-action', 'auto'); // Fixes pull-to-refresh
+                    canvas.style.cursor = 'auto';
                 }
 
                 controls.autoRotate = false;
@@ -271,9 +275,13 @@
                 controls.addEventListener('start', () => {
                     isInteracting = true;
                     if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
+                    canvas.style.cursor = 'grabbing';
                 });
 
-                controls.addEventListener('end', () => resumeAutoRotate());
+                controls.addEventListener('end', () => {
+                    resumeAutoRotate();
+                    canvas.style.cursor = isTrueMobile ? 'auto' : 'grab';
+                });
             }
 
             // Load model using SHARED Singleton Loader

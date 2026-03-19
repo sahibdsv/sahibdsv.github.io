@@ -1807,11 +1807,11 @@
 
         @media (min-width: 769px) {
             .model-viewer-wrapper:not(.card-preview) canvas {
-                cursor: grab !important;
+                cursor: grab;
             }
 
             .model-viewer-wrapper:not(.card-preview) canvas:active {
-                cursor: grabbing !important;
+                cursor: grabbing;
             }
         }
 
