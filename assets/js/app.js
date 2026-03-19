@@ -1617,15 +1617,19 @@ function playMusicInCard(event) {
             iframe.style.opacity = '0'; // Hide initially
             
             iframe.onload = () => {
-                // Delay the fade slightly so the video has a chance to visually render 
-                // its first frame behind the thumbnail before the swap.
+                // Set to nearly invisible to force the browser to start rendering the video 
+                // frames while we wait for the player to fully initialize.
+                iframe.style.opacity = '0.01';
+
+                // Increased delay to 1.2s to ensure the heavy YouTube Music player 
+                // is actually ready to display its first frame.
                 setTimeout(() => {
                     iframe.style.opacity = '1';
                     const currentImg = mediaRow.querySelector('img.media-enter');
                     if (currentImg) currentImg.style.opacity = '0';
                     const fallback = mediaRow.querySelector('.music-card-fallback');
                     if (fallback) fallback.style.opacity = '0';
-                }, 300);
+                }, 1200);
             };
 
             // Append on top of existing content
