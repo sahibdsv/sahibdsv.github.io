@@ -1534,7 +1534,8 @@
                     const searchQuery = encodeURIComponent((item.Artist || "") + " " + (item.Song || item.Track || ""));
                     link = `https://music.youtube.com/search?q=${searchQuery}`;
                 }
-                const thumb = item.Thumbnail;
+                const thumbRaw = item.Thumbnail || "";
+                const thumb = thumbRaw.replace(/^http:\/\//i, "https://");
 
                 // Waveform Atmosphere logic for the absolute latest track
                 let atmosphereHTML = "";
@@ -1650,7 +1651,7 @@
                     ytId: ytId,
                     artist: safeHTML(artist),
                     track: safeHTML(track),
-                    thumb: thumb,
+                    thumb: thumb ? thumb.replace(/^http:\/\//i, "https://") : null,
                     source: "YT Music"
                 };
             }));
@@ -1807,10 +1808,9 @@
             if (!url) return { url: '', autoplay: false, loop: false, controls: true, invert: false };
             
             // SECURITY: Force HTTPS to avoid 'Not Secure' Mixed Content warnings for external images
-            // Apply this early to ensure all subsequent processing uses the secure URL
             let processedUrl = url.replace(/^http:\/\//i, "https://");
 
-            const lower = processedUrl.toLowerCase(); // Use the potentially updated URL for flag detection
+            const lower = processedUrl.toLowerCase();
             const autoplay = lower.includes('-autoplay');
             const loop = lower.includes('-loop');
             const invert = lower.includes('-invert');
