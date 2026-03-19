@@ -3129,13 +3129,13 @@ function showEasterEgg() {
         " ╚═╝  ╚═╝ ╚══════╝ ╚══════╝ ╚══════╝  ╚═════╝          ╚═╝"
     ];
     const colors = [
-        '#AF40FF', '#915FFA', '#737FF5', '#559FF0', '#37BFEC', '#19DFFF'
+        '#595CFF', '#6F7BFF', '#859AFF', '#9ABAFF', '#B0D9FF', '#C6F8FF'
     ];
 
     console.log(
         lines.map(l => `%c${l}`).join('\n') + "\n\n%cI'd love to know what you think! reach me @sahibdsv everywhere!",
         ...colors.map(c => `color: ${c}; font-weight: bold; font-family: monospace; font-size: 10px; line-height: 1;`),
-        "color: #19DFFF; font-style: italic; font-family: sans-serif; font-size: 11px;"
+        "color: #C6F8FF; font-style: italic; font-family: sans-serif; font-size: 11px;"
     );
 }
 
