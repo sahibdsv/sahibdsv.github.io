@@ -2431,10 +2431,20 @@
 
         .layout-grid.cat-music.is-playing {
             border-color: rgba(var(--bright-rgb), 0.8);
-            /* Outline is drawn ON TOP and outside, ensuring the iframe won't overlap it */
-            outline: 1px solid rgba(var(--bright-rgb), 0.8);
             background: var(--card-bg-hover);
             z-index: 10;
+        }
+
+        /* Use pseudo-element for the 'bold' outline to ensure it perfectly follows radii 
+           and sits on top of all content (including iframe) without pixelation. */
+        .layout-grid.cat-music.is-playing::before {
+            content: '';
+            position: absolute;
+            inset: -1px; /* Sit exactly on/outside the border */
+            border: 1px solid rgba(var(--bright-rgb), 0.8);
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 20; /* Highest layer, above the iframe */
         }
 
         .layout-grid.cat-music .row-media {
