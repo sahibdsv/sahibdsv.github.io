@@ -2420,21 +2420,21 @@
 
         .layout-grid.cat-music {
             position: relative;
-            /* overflow: hidden; Removed to allow outward box-shadow for is-playing state */
+            overflow: hidden;
             width: 100%;
             max-width: 300px;
             margin: 0 auto;
             box-sizing: border-box;
             transition: all var(--anim-quick) var(--ease);
-            border-radius: var(--card-radius); /* Ensure radius is on the container */
+            border-radius: var(--card-radius);
         }
 
         .layout-grid.cat-music.is-playing {
             border-color: rgba(var(--bright-rgb), 0.8);
-            /* Outset shadow so it sits outside the iframe and doesn't get overlapped */
-            box-shadow: 0 0 0 1px rgba(var(--bright-rgb), 0.8);
+            /* Outline is drawn ON TOP and outside, ensuring the iframe won't overlap it */
+            outline: 1px solid rgba(var(--bright-rgb), 0.8);
             background: var(--card-bg-hover);
-            z-index: 10; /* Bring active card to the front */
+            z-index: 10;
         }
 
         .layout-grid.cat-music .row-media {
