@@ -169,8 +169,6 @@ function startApp() {
         document.body.classList.remove('no-transition');
         document.getElementById('main-header').classList.remove('no-transition');
     });
-
-    showEasterEgg();
 }
 
 
