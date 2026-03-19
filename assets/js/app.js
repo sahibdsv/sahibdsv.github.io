@@ -1697,10 +1697,12 @@
 
         function renderFooter() {
             const footerEl = document.getElementById("footer-links");
-            let hasVisitorCounter = false;
 
             footerEl.innerHTML = db.filter(e => "Footer" === e.Page).map(entry => {
                 let title = (entry.Title || "").replace(/{year}/g, new Date().getFullYear());
+                
+                // Replace markdown links globally within the string
+                title = title.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
                 
                 return title ? `<span>${title}</span>` : "";
             }).join("");
