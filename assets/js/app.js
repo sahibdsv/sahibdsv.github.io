@@ -89,18 +89,7 @@
         let quoteBag = []; // Shuffled indices to pick from
         let _lastQuoteIndex = -1;
         
-        // Restore quote session state from localStorage if available
         let _activeRandomQuote = null;
-        try {
-            const savedQuote = localStorage.getItem('sahib_active_quote');
-            if (savedQuote) _activeRandomQuote = JSON.parse(savedQuote);
-            
-            const savedLastIndex = localStorage.getItem('sahib_last_quote_index');
-            if (savedLastIndex) _lastQuoteIndex = parseInt(savedLastIndex);
-            
-            const savedBag = localStorage.getItem('sahib_quote_bag');
-            if (savedBag) quoteBag = JSON.parse(savedBag);
-        } catch(e) { console.warn("Failed to restore quote session", e); }
 
         let isSearchActive = false;
         let _lastRenderedPath = null;
@@ -130,7 +119,6 @@
                 quoteBag.unshift(repeatIndex);
             }
             
-            localStorage.setItem('sahib_quote_bag', JSON.stringify(quoteBag));
         }
 
         function getNextQuote() {
@@ -158,9 +146,6 @@
             const selected = quotesDb[_lastQuoteIndex];
             _activeRandomQuote = selected;
             
-            // Persist the bag and last index state
-            localStorage.setItem('sahib_quote_bag', JSON.stringify(quoteBag));
-            localStorage.setItem('sahib_last_quote_index', _lastQuoteIndex.toString());
             
             return selected;
         }
@@ -1390,12 +1375,10 @@
 
             setTimeout(() => {
                 _activeRandomQuote = null;
-                localStorage.removeItem('sahib_active_quote');
                 
                 // Get one new quote once for all cards
                 const next = getNextQuote();
                 _activeRandomQuote = next; 
-                localStorage.setItem('sahib_active_quote', JSON.stringify(next));
 
                 randomQuotes.forEach(q => {
                     renderQuoteCard(q);
@@ -1416,13 +1399,7 @@
                     container.innerHTML = "Quote sheet empty.";
                     return;
                 }
-                // Sticky: Only roll a new one if we don't have an active session quote yet
-                if (!_activeRandomQuote) {
-                    _activeRandomQuote = getNextQuote();
-                    if (_activeRandomQuote) {
-                        localStorage.setItem('sahib_active_quote', JSON.stringify(_activeRandomQuote));
-                    }
-                }
+                if (!_activeRandomQuote) _activeRandomQuote = getNextQuote();
                 quoteData = _activeRandomQuote;
                 isRandom = true;
             } else {
