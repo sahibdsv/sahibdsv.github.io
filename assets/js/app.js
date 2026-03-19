@@ -223,7 +223,8 @@ async function fetchDataAndCache() {
                 { name: 'Title', weight: 0.7 },
                 { name: 'Content', weight: 0.5 },
                 { name: 'Tags', weight: 0.5 },
-                { name: 'Page', weight: 0.3 }
+                { name: 'Page', weight: 0.3 },
+                { name: 'Author', weight: 0.1 } // Very low weight for author to allow search without hijacking every result
             ],
             threshold: 0.4, 
             location: 0,
