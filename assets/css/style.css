@@ -2425,6 +2425,13 @@
             max-width: 300px;
             margin: 0 auto;
             box-sizing: border-box;
+            transition: all var(--anim-quick) var(--ease);
+        }
+
+        .layout-grid.cat-music.is-playing {
+            border-color: rgba(var(--bright-rgb), 0.8);
+            box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 0.8);
+            background: var(--card-bg-hover);
         }
 
         .layout-grid.cat-music .row-media {
