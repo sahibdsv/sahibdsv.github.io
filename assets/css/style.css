@@ -776,7 +776,7 @@
             max-width: 1000px;
             width: 100%;
             margin: 0 auto;
-            padding: 16px 20px 0;
+            padding: var(--site-gap) 20px 0;
             flex: 1;
             min-height: 80vh;
             position: relative;
@@ -785,12 +785,12 @@
 
         @media (max-width:768px) {
             .content-container {
-                padding: 10px 10px 0
+                padding: var(--site-gap) 10px 0
             }
         }
 
         .section {
-            margin-bottom: 16px;
+            margin-bottom: var(--site-gap);
             opacity: 0;
             animation: fadeIn .4s forwards;
             position: relative
