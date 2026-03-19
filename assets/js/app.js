@@ -3148,29 +3148,4 @@ function showEasterEgg() {
     );
 }
 
-// --- Console Easter Egg Trigger Logic ---
-let hasShowedEasterEgg = false;
-function triggerEasterEgg() {
-    if (!hasShowedEasterEgg) {
-        showEasterEgg();
-        hasShowedEasterEgg = true;
-    }
-}
-
-// 1. Detect via Window Resize (Catches Inspect Element, F12, and Menu)
-const checkDevTools = () => {
-    const threshold = 160; // Standard threshold for docked sidebars
-    if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
-        triggerEasterEgg();
-    }
-};
-
-// 2. Event Listeners
-window.addEventListener('resize', checkDevTools);
-window.addEventListener('load', checkDevTools);
-
-// 3. Immediate check if already open at runtime
-if (document.readyState === 'complete') {
-    checkDevTools();
-}
-
+showEasterEgg();
