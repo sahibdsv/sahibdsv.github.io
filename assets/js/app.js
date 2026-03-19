@@ -1100,7 +1100,7 @@ const SECTION_RENDERERS = {
             }
             if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
             const readTime = Math.ceil((entry.Content || "").trim().split(/\s+/).length / 200);
-            if (readTime > 0) metaHTML += `<span class="chip" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
+            if (readTime > 0) metaHTML += `<span class="chip no-hover" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
             metaHTML += `</div></div>`;
         }
         return `<div class="section layout-text">${entry.Title ? formatTitle(entry.Title, index === 0 ? "h1" : "h2") : ""}${metaHTML}<div class="article-body">${processContentWithBlocks(entry.Content || "")}</div></div>`;
@@ -2218,43 +2218,48 @@ function parseContentBlocks(text) {
         }
 
         // 1. Check for Buttons (Standalone lines or multi-button rows)
-        // This detects lines that are PURELY composed of one or more buttons in any supported syntax.
-        const isButtonRow = line.match(/^(\s*(?:\[\s*(?:button\]:)?\s*[^\]|]+?\s*\|\s*[^\]\s]+\s*\]|\[[^\]]+\]\((?:[^)]+-btn(?:-[a-z]+)?)\)|[^\[\]\s]+?\s*\|\s*(?:https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+))\s*)+$/i);
-
-        if (isButtonRow) {
-            flushText();
-            blocks.push(processBlock([lineRaw])); // Process exactly this one line as a centered button row
-            continue;
-        }
+        // This detects lines that are PURELY composed of one or more buttons in STRICT bracketed syntax: [text|link|color]
+        const isButtonRow = line.match(/^(\s*\[\s*[^\]|]+\s*\|\s*[^\]|]+\s*(?:\|\s*[^\]|]+\s*)?\]\s*(?:,\s*)?)+$/i);
 
         // 2. Check for Media (Grouping consecutive media lines)
         const parts = line.split(',').map(p => p.trim()).filter(p => p);
         const mediaItems = parts.map(p => detectMediaItem(p));
         const isPureMedia = mediaItems.length > 0 && mediaItems.every(m => m !== null);
 
-        if (isPureMedia) {
+        // 3. BREAK-OUT LOGIC: If we hit a Button or Media, flush the preceding text buffer immediately.
+        // This allows [Button|URL] to work even if it's right under a paragraph without a blank line.
+        if (isButtonRow || isPureMedia) {
             flushText();
-            let mediaLines = [lineRaw];
 
-            // Grouping: Look ahead for more media or a caption
-            while (i + 1 < rawLines.length) {
-                const nextRaw = rawLines[i + 1];
-                const nextLine = nextRaw.trim();
-                if (!nextLine) break;
+            if (isButtonRow) {
+                blocks.push(processBlock([lineRaw]));
+            } else {
+                // Media Grouping logic: Collect consecutive media lines or a trailing caption
+                let mediaLines = [lineRaw];
+                while (i + 1 < rawLines.length) {
+                    const nextRaw = rawLines[i + 1];
+                    const nextLine = nextRaw.trim();
+                    if (!nextLine) break;
 
-                const nextParts = nextLine.split(',').map(p => p.trim()).filter(p => p);
-                const nextMedia = nextParts.map(p => detectMediaItem(p));
-                const isNextPureMedia = nextMedia.length > 0 && nextMedia.every(m => m !== null);
-                const isNextCaption = nextLine.match(/^\[(.*)\]$/s);
+                    // Check for buttons first - they should NOT be grouped as media captions
+                    const nextIsButton = nextLine.match(/^(\s*\[\s*[^\]|]+\s*\|\s*[^\]|]+\s*(?:\|\s*[^\]|]+\s*)?\]\s*(?:,\s*)?)+$/i);
+                    if (nextIsButton) break;
 
-                if (isNextPureMedia || isNextCaption) {
-                    mediaLines.push(nextRaw.trimEnd());
-                    i++;
-                    if (isNextCaption) break; // Caption ends the block
-                } else break;
+                    const nextParts = nextLine.split(',').map(p => p.trim()).filter(p => p);
+                    const nextMedia = nextParts.map(p => detectMediaItem(p));
+                    const isNextPureMedia = nextMedia.length > 0 && nextMedia.every(m => m !== null);
+                    
+                    // Caption detection: [Text] but NO pipe |
+                    const isNextCaption = nextLine.match(/^\[([^|]*?)\]$/s);
+
+                    if (isNextPureMedia || isNextCaption) {
+                        mediaLines.push(nextRaw.trimEnd());
+                        i++;
+                        if (isNextCaption) break; // Caption ends the block
+                    } else break;
+                }
+                blocks.push(processBlock(mediaLines));
             }
-
-            blocks.push(processBlock(mediaLines));
             continue;
         }
 
@@ -2272,15 +2277,15 @@ function processBlock(lines) {
     const combinedBlock = lines.join(' ').trim();
 
     // 1. Smart Caption Detection: [This is a caption]
-    // We check the last line for square brackets.
+    // We check the last line for square brackets, but ensure it's NOT a button (no pipe | allowed in captions)
     let sharedCaption = null;
     const lastLine = lines[lines.length - 1].trim();
-    // Match [Caption] - must start with [ and end with ]
-    const captionMatch = lastLine.match(/^\[(.*)\]$/s);
+    // Match [Caption] - must start with [ and end with ] and NOT contain a pipe |
+    const captionMatch = lastLine.match(/^\[([^|]*?)\]$/s);
     if (captionMatch) {
         sharedCaption = captionMatch[1].trim();
         lines = lines.slice(0, -1); // Remove caption line from media processing
-        if (lines.length === 0) return { type: 'text', content: `[${sharedCaption}]` }; // Fallback for standalone bracketed text
+        if (lines.length === 0) return { type: 'text', content: `[${sharedCaption}]` }; 
     }
 
     // 2. Fluid Media Detection (Support for multi-line and comma-separated media)
@@ -2330,16 +2335,17 @@ function processBlock(lines) {
 
     // 3. Smart Button Detection (Extract all buttons from the block/line)
     const buttonItems = [];
-    // Regex to find all button-like patterns in the block
-    const btnRegex = /\[\s*(?:button\]:)?\s*([^\]|]+?)\s*\|\s*([^\]\s]+)\s*\]|\[([^\]]+)\]\(([^)]+-btn(?:-[a-z]+)?)\)|([^\[\]\s]+?)\s*\|\s*(https?:\/\/\S+|[a-zA-Z0-9.\/_#-]+\.[a-z]{2,4}[^\s]*|#\S+)/gi;
+    // Regex to find all buttons: [text | link | color (optional)]
+    const btnRegex = /\[\s*([^\]|]+?)\s*\|\s*([^\]|]+?)\s*(?:\|\s*([^\]|]+?)\s*)?\]/gi;
 
     for (let line of lines) {
         let match;
         while ((match = btnRegex.exec(line)) !== null) {
-            const text = match[1] || match[3] || match[5];
-            const url = match[2] || match[4] || match[6];
+            const text = match[1];
+            const url = match[2];
+            const color = match[3] || null;
             if (text && url) {
-                buttonItems.push({ text: text.trim(), url: url.trim() });
+                buttonItems.push({ text: text.trim(), url: url.trim(), color: color ? color.trim() : null });
             }
         }
     }
@@ -2369,7 +2375,7 @@ function processBlock(lines) {
 // Detect media type and caption from a string
 function detectMediaItem(text) {
     text = text.trim();
-    if (!text) return null;
+    if (!text || text.includes('|')) return null;
 
     // 1. Support inline Square-Bracket Captions: "path/to/media.jpg [This is my caption]"
     const inlineCaptionMatch = text.match(/^(.+?)\s*\[(.*)\]$/);
@@ -2623,10 +2629,10 @@ function renderContentBlock(block, index) {
             return renderUnifiedGallery(block.items, block.sharedCaption);
 
         case 'button':
-            return renderButtonHTML(block.text, block.url);
+            return renderButtonHTML(block.text, block.url, block.color);
 
         case 'buttons':
-            const btnsHTML = block.items.map(b => renderButtonHTML(b.text, b.url, true)).join('');
+            const btnsHTML = block.items.map(b => renderButtonHTML(b.text, b.url, b.color, true)).join('');
             return `<div class="btn-cta-wrapper">${btnsHTML}</div>`;
 
         case 'music':
@@ -2652,29 +2658,12 @@ function renderContentBlock(block, index) {
 }
 
 // Centralized Toolset for Markdown Elements
-function renderButtonHTML(text, url, isInline = false) {
-    const rawURL = (url || "").trim().replace(/^\(|\)$/g, "").trim(); // Remove outer ( ) if present
-    let colorClass = "";
+function renderButtonHTML(text, url, color = null, isInline = false) {
+    const finalURL = (url || "").trim().replace(/^\(|\)$/g, "").trim(); 
+    let colorClass = (color || "").toLowerCase().trim();
     let cleanText = (text || "").trim();
-    let finalURL = rawURL;
 
-    // 1. Identify Color from Text (Legacy Support: "Label-green")
-    const textColorMatch = cleanText.match(/-(green|red|blue|orange|purple|strava)$/i);
-    if (textColorMatch) {
-        colorClass = textColorMatch[1].toLowerCase();
-        cleanText = cleanText.replace(/-[a-z]+$/i, "");
-    }
-
-    // 2. Identify Color & Markers from URL (Marker Strategy: "url.pdf-btn-green")
-    const urlMarkerMatch = rawURL.match(/-btn(-green|-red|-blue|-orange|-purple|-strava)?(?:\?.*)?$/i);
-    if (urlMarkerMatch) {
-        if (!colorClass && urlMarkerMatch[1]) {
-            colorClass = urlMarkerMatch[1].substring(1).toLowerCase();
-        }
-        finalURL = rawURL.replace(/-btn(-green|-red|-blue|-orange|-purple|-strava)?(?:\?.*)?$/i, "");
-    }
-
-    // 3. Auto-Branding for Strava
+    // Auto-Branding for Strava (if no explicit color provided)
     if (!colorClass && (cleanText.toLowerCase().includes("strava") || finalURL.includes("strava.com"))) {
         colorClass = "strava";
     }
@@ -2803,15 +2792,6 @@ function processMarkdown(text) {
             continue;
         }
 
-        // Zero Syntax: Block-level Button Support (Label | URL or [Label | URL])
-        // We use a broader regex to catch his bracketed syntax as a centered block
-        const buttonBlockRegex = /^\[?\s*([^\]|]+?)\s*\|\s*([^\]]+?)\s*\]?$/i;
-        const buttonMatch = trimmed.match(buttonBlockRegex);
-        if (buttonMatch) {
-            output.push(renderButtonHTML(buttonMatch[1].trim(), buttonMatch[2].trim(), false));
-            continue;
-        }
-
         // Regular paragraph
         output.push(`<p>${processInlineMarkdown(trimmed)}</p>`);
     }
@@ -2835,19 +2815,9 @@ function processInlineMarkdown(text, depth = 0) {
     if (depth === 0) {
         result = result.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
 
-        // A. SHORTHAND PIPE: [Label | URL] -> Buttons
-        result = result.replace(/\[\s*([^\]|]+?)\s*\|\s*([^\]]+?)\s*\]/gi, (match, btnText, btnUrl) => {
-            return renderButtonHTML(btnText.trim(), btnUrl.trim(), true);
-        });
-
         // B. DYNAMIC TAGS: {Recently Played}, {Random Quote}
         result = result.replace(/\{(Recent Music|Recently Played)\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="recent-music"></div>');
         result = result.replace(/\{Random Quote\}/gi, '<div class="layout-quote" data-needs-init="true" data-title="random quote"></div>');
-
-        // B. LEGACY CTA: [button]: Label | URL
-        result = result.replace(/\[button\]:\s*(.+?)\s*\|\s*(\S+)/gi, (match, btnText, btnUrl) => {
-            return renderButtonHTML(btnText.trim(), btnUrl.trim(), true);
-        });
     }
 
     // Standard Markdown
@@ -2859,15 +2829,6 @@ function processInlineMarkdown(text, depth = 0) {
     // C. SMART LINKS & MARKDOWN LINKS
     result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
         const cleanURL = url.trim();
-        // If it has a -btn marker, render it as a button
-        if (cleanURL.match(/-btn(-[a-z]+)?$/i)) {
-            return renderButtonHTML(label, cleanURL, true);
-        }
-        // Process blockquotes as usual
-        if (label.startsWith('>')) {
-            // It's a blockquote that was parsed via standard markdown logic
-            return renderBlockquote(label);
-        }
         // Standard Link
         if (label.toLowerCase().includes('strava')) {
             return `<a href="${cleanURL}" target="_blank" rel="noopener" class="strava-link">${processInlineMarkdown(label, depth + 1)}</a>`;

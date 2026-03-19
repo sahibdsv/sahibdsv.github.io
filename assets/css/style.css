@@ -301,6 +301,16 @@
             background: var(--surface-strong);
         }
 
+        .chip.no-hover {
+            cursor: default;
+        }
+
+        .chip.no-hover:hover {
+            border-color: var(--border-subtle);
+            box-shadow: none;
+            background: var(--surface-subtle);
+        }
+
         a:not(.chip):not(.btn-cta):not(.fill-anim) {
             color: var(--text-main);
             text-decoration: underline;
@@ -1702,8 +1712,8 @@
 
         .btn-cta.strava:hover {
             background: #e65800;
-            border-color: #cc4e00 !important;
-            box-shadow: inset 0 0 0 1px #cc4e00;
+            border-color: rgba(var(--bright-rgb), 0.8) !important;
+            box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 0.8);
         }
 
         [data-theme="light"] .btn-cta.green {
