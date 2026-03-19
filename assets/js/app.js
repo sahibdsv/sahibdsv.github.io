@@ -3121,18 +3121,30 @@ function processContentWithBlocks(content) {
 
 function showEasterEgg() {
     const lines = [
-        "██  ██ ██████ ██     ██     ▄████▄ ",
-        "██████ ██▄▄   ██     ██     ██  ██ ",
-        "██  ██ ██▄▄▄▄ ██████ ██████ ▀████▀ "
+        "   ██████  ",
+        "██ ██   ██ ",
+        "   ██   ██ ",
+        "██ ██   ██ ",
+        "   ██████  "
     ];
     const colors = [
-        '#FFFFFF', '#80FFFF', '#00FFFF'
+        '#FF416C', '#FF4E59', '#FF5B46', '#FF6833', '#FF7520', '#FF820D', '#FF8C00'
     ];
 
     console.log(
-        lines.map(l => `%c${l}`).join('') + "\n%cI'd love to know what you think! reach me @sahibdsv everywhere!",
-        ...colors.map(c => `color: ${c}; font-weight: 900; font-family: 'Cascadia Mono', 'Consolas', monospace; font-size: 16px; line-height: 12px; letter-spacing: -1px; display: block;`),
-        "color: #00FFFF; font-style: italic; font-family: sans-serif; font-size: 11px; display: block; margin-top: 10px;"
+        lines.map(l => `%c${l}\n`).join('') +
+        `%cI'd love to know what you think!\n` +
+        `%creach me %c@sahibdsv%c everywhere!`,
+        // Logo (5 lines) - MUST remain Monospace for alignment
+        ...colors.slice(0, 5).map(c => `color: ${c}; white-space: pre-wrap; display: block; font-family: 'Roboto Mono', monospace; font-size: 24px; line-height: 20px; font-weight: 900;`),
+        // Note 1
+        `color: ${colors[5]}; display: block; font-family: 'Jost', 'Century Gothic', 'Futura', sans-serif; font-size: 14px; font-style: normal; margin-top: 10px; line-height: 18px;`,
+        // Note 2 Part 1
+        `color: ${colors[6]}; display: block; font-family: 'Jost', 'Century Gothic', 'Futura', sans-serif; font-size: 14px; font-style: normal; line-height: 18px; margin-top: 2px;`,
+        // Note 2 Part 2 (@sahibdsv Bold White)
+        `color: #FFFFFF; font-family: 'Jost', 'Century Gothic', 'Futura', sans-serif; font-size: 14px; font-weight: 900; font-style: normal;`,
+        // Note 2 Part 3
+        `color: ${colors[6]}; font-family: 'Jost', 'Century Gothic', 'Futura', sans-serif; font-size: 14px; font-style: normal;`
     );
 }
 
