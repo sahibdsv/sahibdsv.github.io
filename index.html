@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
@@ -30,9 +29,6 @@
         content="Portfolio of Sahib Virdee, a Mechanical Engineering graduate specializing in detailed CAD design, manufacturing processes, and technical documentation.">
     <meta name="twitter:image" content="https://sahibvirdee.com/assets/images/social.jpg">
     <meta name="twitter:site" content="@sahibdsv">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <link rel="icon" type="image/png" href="/assets/images/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg" />
     <link rel="shortcut icon" href="/assets/images/favicon.ico" />
@@ -76,48 +72,9 @@
         </div>
     </header>
     <div class="content-container" id="app">
-        <!-- Skeleton loaders matching homepage: Hero + Recent Activity cards -->
-        <div class="section layout-hero skeleton-visible" style="min-height: 200px;">
-            <div class="sk-line title" style="width: 60%; max-width: 600px; height: 56px; margin: 10px auto 26px;"></div>
-            <div class="sk-line text" style="width: 80%; max-width: 700px; height: 18px; margin: 0 auto 0;"></div>
+        <div class="loader-overlay" style="position: fixed; background: var(--bg); z-index: 1000;">
+            <div class="spinner" style="width: 40px; height: 40px; border-width: 3px;"></div>
         </div>
-        <div id="skeleton-grid" class="grid-container section skeleton-visible">
-            <!-- Initial set of skeleton cards for instant layout matching -->
-            <div class="layout-grid">
-                <div class="row-media"><div class="sk-img"></div></div>
-                <div class="card-info">
-                    <div class="sk-line title"></div>
-                    <div class="sk-line text"></div>
-                    <div class="sk-line text short"></div>
-                </div>
-            </div>
-            <div class="layout-grid">
-                <div class="row-media"><div class="sk-img"></div></div>
-                <div class="card-info">
-                    <div class="sk-line title"></div>
-                    <div class="sk-line text"></div>
-                    <div class="sk-line text short"></div>
-                </div>
-            </div>
-            <div class="layout-grid">
-                <div class="row-media"><div class="sk-img"></div></div>
-                <div class="card-info">
-                    <div class="sk-line title"></div>
-                    <div class="sk-line text"></div>
-                    <div class="sk-line text short"></div>
-                </div>
-            </div>
-        </div>
-        <template id="sk-card-tpl">
-            <div class="layout-grid">
-                <div class="row-media"><div class="sk-img"></div></div>
-                <div class="card-info">
-                    <div class="sk-line title"></div>
-                    <div class="sk-line text"></div>
-                    <div class="sk-line text short"></div>
-                </div>
-            </div>
-        </template>
     </div>
     <div id="search-results" class="content-container" style="display: none; margin-top: 20px;"></div>
     <footer>

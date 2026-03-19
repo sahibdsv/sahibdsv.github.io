@@ -49,7 +49,6 @@
         };
 
         // SCROLL THROTTLING REMOVED per user request
-        window._isGlbScrolling = false;
 
         let _glbCircularIndex = 0;
         function globalAnimate(now) {
@@ -58,7 +57,6 @@
             if (window._glbRegistry.length === 0) return;
 
             // Priority 1: User Navigation - Throttling Removed
-            // if (window._isGlbScrolling) return;
 
             // ADAPTIVE BUDGET: If frame took too long last time, tighten budget
             const frameTime = now - window._glbLastFrameTime;
@@ -238,7 +236,6 @@
                 // We employ a pure "Mobile Device Detection" (No Hover + Coarse Pointer)
                 // This ensures touch-capable laptops with trackpads STILL get desktop pan.
                 const isTrueMobile = window.matchMedia("(pointer: coarse) and (hover: none)").matches;
-
                 if (!isTrueMobile) {
                     controls.enableRotate = true;
                     controls.enablePan = true;

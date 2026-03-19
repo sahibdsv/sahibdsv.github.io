@@ -29,45 +29,31 @@
         let _renderRAF = null;
 
         // CSV Parser
-        function parseCSV(csvText) {
-            const rows = [];
-            let currentField = '';
+        function parseCSV(text) {
+            const p = [[]];
+            let cur = '';
             let inQuotes = false;
-            let currentRow = [];
-
-            for (let i = 0; i < csvText.length; i++) {
-                const char = csvText[i];
-
-                if (char === '"') {
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const next = text[i + 1];
+                if (char === '"' && inQuotes && next === '"') {
+                    cur += '"'; i++;
+                } else if (char === '"') {
                     inQuotes = !inQuotes;
                 } else if (char === ',' && !inQuotes) {
-                    currentRow.push(currentField.trim());
-                    currentField = '';
+                    p[p.length - 1].push(cur.trim()); cur = '';
                 } else if ((char === '\n' || char === '\r') && !inQuotes) {
-                    if (currentField.length || currentRow.length) {
-                        currentRow.push(currentField.trim());
-                        rows.push(currentRow);
-                    }
-                    currentField = '';
-                    currentRow = [];
-                    if (char === '\r' && csvText[i + 1] === '\n') {
-                        i++; // Skip \n in \r\n
-                    }
+                    if (char === '\r' && next === '\n') i++;
+                    p[p.length - 1].push(cur.trim()); cur = '';
+                    p.push([]);
                 } else {
-                    currentField += char;
+                    cur += char;
                 }
             }
-
-            // Handle last row if no trailing newline
-            if (currentField.length || currentRow.length) {
-                currentRow.push(currentField.trim());
-                rows.push(currentRow);
-            }
-
+            if (cur || p[p.length - 1].length) p[p.length - 1].push(cur.trim());
+            const rows = p.filter(r => r.length > 1);
             if (rows.length < 2) return [];
 
-            // Convert to object array
-            // Trim header keys to avoid whitespace issues from Google Sheets
             const header = (rows[0] || []).map(h => h.trim());
             return rows.slice(1)
                 .filter(row => row.some(cell => cell))
@@ -77,7 +63,7 @@
                         obj[key] = row[idx] || '';
                     });
                     return obj;
-                })
+                });
         }
 
         // Global State
@@ -93,6 +79,9 @@
 
         let isSearchActive = false;
         let _lastRenderedPath = null;
+        
+        // Unified Mobile Detection
+        const isTrueMobile = window.matchMedia("(pointer: coarse) and (hover: none)").matches;
 
         const CONFIG = {
             main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
@@ -166,7 +155,7 @@
 
         function startApp() {
             // Initial Skeleton setup
-            showPageSkeleton();
+            showPageLoader();
 
             initApp();
             updateSEO();
@@ -182,7 +171,6 @@
             });
         }
 
-        // Live Dashboard Polling
 
 
         // fetchDataAndCache retrieves high-fidelity content across all sources
@@ -229,7 +217,7 @@
                 });
                 window.db = db;
 
-                // Caching removed to enforce direct fetching
+                // Caching disabled for direct fetching
 
                 // Auto-refresh any dynamic components currently in the DOM
                 document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
@@ -399,7 +387,7 @@
                     row.id = rowId;
                     row.className = "nav-row level-" + (level > 1 ? "n" : "1");
                     // Only add slide animation if the user isn't actively swiping 
-                    if (!_gSwipe.active) row.classList.add("slide-in-right");
+                    row.classList.add("slide-in-right");
                     navStack.appendChild(row);
                     setupHapticScroll(row);
                 }
@@ -437,7 +425,7 @@
                 // Re-enable snapping and center after content is set
                 requestAnimationFrame(() => {
                     const activeLink = row.querySelector(".active");
-                    const isInteracting = (_activeNavControl === row) || (_gSwipe.active && _gSwipe.row === row);
+                    const isInteracting = (_activeNavControl === row);
                     
                     if (!isInteracting) {
                         row.style.scrollSnapType = (activeLink && row.scrollWidth > row.clientWidth + 5) ? 'x mandatory' : 'none';
@@ -683,109 +671,6 @@
             };
         }
 
-        /* 
-         * GLOBAL SWIPE ENGINE (v68.0) 
-         * Allows horizontal navigation from anywhere on the page.
-         */
-        let _gSwipe = {
-            sx: 0,
-            sy: 0,
-            sScroll: 0,
-            row: null,
-            active: false,
-            tracking: false
-        };
-
-        document.addEventListener('touchstart', (e) => {
-            if (e.touches.length !== 1 || window.innerWidth > 768) return;
-            const tgt = e.target;
-
-            // Interaction Protection: Don't hijack 3D models or existing horizontal containers
-            if (tgt.tagName === 'CANVAS' || tgt.closest('.model-viewer-wrapper')) return;
-
-            const local = tgt.closest('pre') || tgt.closest('.scrollable-x');
-            if (local && local.scrollWidth > local.clientWidth + 5) return;
-
-            // V69.0: PRIORITIZE HEADING ROW SWIPE & REDUCE ACCIDENTAL PAGE SWIPES
-            // We restrict the start of a swipe to the header region to avoid accidental triggers
-            const touchedHeader = tgt.closest('#main-header');
-            if (!touchedHeader) return;
-
-            const rows = Array.from(document.querySelectorAll('.nav-row.level-n:not(.hidden)')).filter(r => r
-                .scrollWidth > r.clientWidth + 5);
-            if (!rows.length) return;
-
-            // Intelligent Target Selection:
-            // 1. If we touched a row directly, that row is the absolute priority.
-            // 2. Fallback: find the deepest subnav row that HAS an active selection.
-            const touchedRow = tgt.closest('.nav-row');
-            let activeRow = touchedRow;
-
-            if (!activeRow) {
-                for (let i = rows.length - 1; i >= 0; i--) {
-                    if (rows[i].querySelector('.active')) {
-                        activeRow = rows[i];
-                        break;
-                    }
-                }
-            }
-
-            if (!activeRow) return;
-
-            _gSwipe = {
-                sx: e.touches[0].clientX,
-                sy: e.touches[0].clientY,
-                row: activeRow,
-                sScroll: activeRow.scrollLeft,
-                active: false,
-                tracking: true
-            };
-        }, {
-            passive: true
-        });
-
-        document.addEventListener('touchmove', (e) => {
-            if (!_gSwipe.tracking || !_gSwipe.row) return;
-
-            const dx = _gSwipe.sx - e.touches[0].clientX;
-            const dy = _gSwipe.sy - e.touches[0].clientY;
-
-            if (!_gSwipe.active) {
-                // Directional Lock: latch into horizontal mode if horizontal movement exceeds vertical
-                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
-                    _gSwipe.active = true;
-                    _gSwipe.row.style.scrollBehavior = 'auto'; // Instant response
-                    _gSwipe.row.style.scrollSnapType = 'none'; // Unlock for proxy swing
-                } else if (Math.abs(dy) > 10) {
-                    _gSwipe.tracking = false; // Vertical intent detected, bail
-                    return;
-                }
-            }
-
-            if (_gSwipe.active) {
-                // Lock the viewport: prevent page jitter and vertical scrolling once header swipe is active
-                if (e.cancelable) e.preventDefault(); 
-                
-                if (_gSwipe.row._markNavInput) _gSwipe.row._markNavInput();
-                // 1.25x speed multiplier for effortless proxy swiping (allows finger to move less than row)
-                _gSwipe.row.scrollLeft = Math.max(0, _gSwipe.sScroll + (dx * 1.25));
-            }
-        }, {
-            passive: false // CRITICAL: Must be false to allow e.preventDefault() for axis locking
-        });
-
-        document.addEventListener('touchend', () => {
-            if (_gSwipe.active && _gSwipe.row) {
-                if (_gSwipe.row._releaseNavInput) _gSwipe.row._releaseNavInput();
-                _gSwipe.row.style.scrollBehavior = '';
-                // Note: snapping is restored by the settle timer in setupHapticScroll
-            }
-            _gSwipe.tracking = false;
-            _gSwipe.active = false;
-            _gSwipe.row = null;
-        }, {
-            passive: true
-        });
 
 
         let resizeTimeout;
@@ -825,7 +710,6 @@
 
             if (isSearchActive) {
                 isSearchActive = false;
-                if (lastScrollPos > 0) window.scrollTo(0, lastScrollPos);
             }
         }
 
@@ -835,7 +719,6 @@
             document.body.classList.toggle("search-active");
 
             if (isActive) {
-                lastScrollPos = window.scrollY;
                 isSearchActive = true;
                 setTimeout(() => document.getElementById("search-input").focus(), 100);
             } else {
@@ -850,8 +733,8 @@
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
 
-            // GLB Sync: With alpha transparency enabled, models will automatically
-            // match their container background via CSS variables.
+            // Models match background via CSS variables.
+
         }
 
         function handleSearch(e) {
@@ -908,7 +791,7 @@
 
             const cleanPath = url2path(path || "Home");
             _activeRenderPath = cleanPath;
-            window._lastNavTime = Date.now(); // Mark navigation time for 3D scheduling
+            window._lastNavTime = Date.now();
 
             // 1. Immediately update navigation metadata (Header Fill + Active States)
             renderNavigation(cleanPath === "Home" ? null : cleanPath, forceSmoothNav);
@@ -923,7 +806,7 @@
 
             // Show skeleton for transitions to give immediate feedback
             if (!isSwipe && cleanPath !== _lastRenderedPath) {
-                showPageSkeleton();
+                showPageLoader();
             }
 
             _renderRAF = requestAnimationFrame(() => {
@@ -1106,10 +989,8 @@
         function formatTitle(e, t) {
             if (!e) return "";
             const processed = processInlineMarkdown(e);
-            // If the content is basically just a button, don't wrap it in H tags
-            if (processed.includes('btn-cta-wrapper')) {
-                return processed;
-            }
+            if (processed.includes('btn-cta-wrapper')) return processed;
+
             const n = e.match(/^(#{1,6})\s+(.*)$/);
             let o = t,
                 r = e;
@@ -1139,12 +1020,12 @@
                     const mapPath = (src.startsWith('assets/') || src.startsWith('http')) ? src : `assets/GPX/${src}`;
                     return `<div class="row-media">${renderMapBoxViewer(mapPath, true)}</div>`;
                 }
-                if (type === 'yt-embed') return `<div class="row-media"><div class="sk-img loader-overlay"></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
+                if (type === 'yt-embed') return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
 
                 if (type === 'video') {
                     const p = processMediaUrl(src);
                     return `<div class="row-media">
-                        <div class="sk-img loader-overlay"></div>
+                        <div class="loader-overlay"><div class="spinner"></div></div>
                         <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''}" 
                                data-src="${p.url}" 
                                ${p.autoplay ? 'data-autoplay="true" muted' : ''} 
@@ -1156,7 +1037,7 @@
                 }
 
                 const p = processMediaUrl(src);
-                return `<div class="row-media"><div class="sk-img loader-overlay"></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></div>`;
+                return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></div>`;
             };
 
             const mediaSources = [
@@ -1293,18 +1174,13 @@
             observeVideos(container);
         }
 
-        function showPageSkeleton() {
+        function showPageLoader() {
             const app = document.getElementById("app");
-            const skTpl = document.getElementById('sk-card-tpl');
-            if (!app || !skTpl) return;
+            if (!app) return;
             // Immediate partial clear for responsiveness
             app.innerHTML = `
-                <div class="section layout-hero skeleton-visible">
-                    <div class="sk-line title" style="width: 60%; max-width: 600px; height: 50px; margin: 10px auto 26px;"></div>
-                    <div class="sk-line text" style="width: 80%; max-width: 700px; height: 18px; margin: 0 auto;"></div>
-                </div>
-                <div class="grid-container section skeleton-visible">
-                    ${Array(6).fill(skTpl.innerHTML).join('')}
+                <div class="loader-overlay" style="position: fixed; background: var(--bg); z-index: 1000;">
+                    <div class="spinner" style="width: 40px; height: 40px; border-width: 3px;"></div>
                 </div>
             `;
         }
@@ -1412,7 +1288,7 @@
             }
         }
 
-        window.__initMusicMarquee = function(container) {
+        function initMusicMarquee(container) {
             const marqueeContents = container.querySelectorAll('.marquee-content');
             marqueeContents.forEach(el => {
                 if (el.classList.contains('marquee-processed')) return; // Avoid double processing
@@ -1494,7 +1370,7 @@
                 if (isYTMusic) {
                     sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
                 } else {
-                    sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open Track" style="cursor: pointer; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); color: white; border-radius: 4px; font-size: 10px; padding: 4px 6px; font-weight: 600;">${safeHTML(item.Source)}</div>`;
+                    sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open Track" style="cursor: pointer; background: #000; color: white; border-radius: 4px; font-size: 10px; padding: 4px 6px; font-weight: 600;">${safeHTML(item.Source)}</div>`;
                 }
 
                 const fallbackPlaceholder = isYTMusic ? `<img src="${ytLogo}" alt="YT Music">` : `<span>${safeHTML(item.Source || "Music")}</span>`;
@@ -1502,7 +1378,7 @@
                 return `
                     <div class="layout-grid cat-music ${liveClass}" data-link="${link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
-                            ${thumb ? `<div class="sk-img loader-overlay" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:0;"></div>` : ''}
+                            ${thumb ? `<div class="loader-overlay"><div class="spinner"></div></div>` : ''}
                             <div class="music-card-fallback">${fallbackPlaceholder}</div>
                             ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
@@ -1529,7 +1405,7 @@
             `;
 
             // Initialization for marquee
-            setTimeout(() => window.__initMusicMarquee(container), 100);
+            setTimeout(() => initMusicMarquee(container), 100);
         }
 
         async function renderMusicCluster(container) {
@@ -1540,7 +1416,7 @@
             const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
 
             // Show a tiny loading skeleton immediately to prevent layout jumps
-            container.innerHTML = `<div class="music-sections-container"><div class="sk-img loader-overlay" style="border-radius:var(--card-radius); height:120px; width:100%;"></div></div>`;
+            container.innerHTML = `<div class="music-sections-container"><div class="loader-overlay" style="border-radius:var(--card-radius); height:120px; width:100%;"><div class="spinner"></div></div></div>`;
 
             // Fetch details for each independently 
             const cardsData = await Promise.all(urls.map(async (rawLink) => {
@@ -1603,7 +1479,7 @@
                 return `
                     <div class="layout-grid cat-music" data-link="${item.link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
-                            ${item.thumb ? `<div class="sk-img loader-overlay" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:0;"></div>` : ''}
+                            ${item.thumb ? `<div class="loader-overlay"><div class="spinner"></div></div>` : ''}
                             <div class="music-card-fallback">${fallbackPlaceholder}</div>
                             ${item.thumb ? `<img src="${item.thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
@@ -1629,7 +1505,7 @@
             `;
 
             // Initialization for marquee
-            setTimeout(() => window.__initMusicMarquee(container), 100);
+            setTimeout(() => initMusicMarquee(container), 100);
         }
 
         function playMusicInCard(event) {
@@ -1746,27 +1622,15 @@
 
         function extractMediaFromContent(content) {
             if (!content) return null;
+            const url = content.trim();
 
-            // 1. YouTube
-            const ytMatch = content.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
-            if (ytMatch) return { type: 'yt', id: ytMatch[1] };
-
-            // 2. GLB
-            const glbMatch = content.match(/\S+\.glb(?:-[a-zA-Z0-9_-]+)*/i);
-            if (glbMatch) {
-                const path = glbMatch[0];
-                const url = (path.startsWith('assets/') || path.startsWith('http')) ? path : `assets/models/${path}`;
-                return { type: 'glb', url: url };
+            if (getYouTubeID(url)) return { type: 'yt', id: getYouTubeID(url) };
+            if (url.match(/\.glb(?:-[a-zA-Z0-9_-]+)*/i)) {
+                const fullUrl = (url.startsWith('assets/') || url.startsWith('http')) ? url : `assets/models/${url}`;
+                return { type: 'glb', url: fullUrl };
             }
-
-            // 3. Image
-            const imgMatch = content.match(/\S+\.(?:jpg|jpeg|png|gif|webp|svg)(?:-[a-zA-Z0-9_-]+)*/i);
-            if (imgMatch) return { type: 'img', url: imgMatch[0] };
-
-            // 4. Video
-            const videoMatch = content.match(/\S+\.(?:mp4|webm|mov|ogg)(?:-[a-zA-Z0-9_-]+)*/i);
-            if (videoMatch) return { type: 'video', url: videoMatch[0] };
-
+            if (url.match(/\.(?:jpg|jpeg|png|gif|webp|svg)(?:-[a-zA-Z0-9_-]+)*/i)) return { type: 'img', url: url };
+            if (url.match(/\.(?:mp4|webm|mov|ogg)(?:-[a-zA-Z0-9_-]+)*/i)) return { type: 'video', url: url };
             return null;
         }
 
@@ -1902,8 +1766,8 @@
                 <div class="model-viewer-wrapper ${isCardMode ? 'card-preview' : ''}" 
                      id="${uniqueId}" 
                      data-glb-path="${glbPath}">
-                    <div class="loader-overlay sk-img">
-                        <div class="glb-loader-text">Loading 3D</div>
+                    <div class="loader-overlay">
+                        <div class="spinner"></div>
                     </div>
                     <canvas></canvas>
                     ${!isCardMode ? `
@@ -1974,8 +1838,8 @@
             }, 0);
 
             return `<div class="mapbox-container ${isCardMode ? 'card-preview' : ''}" id="${mapId}" data-geojson-url="${geojsonUrl}" data-interactive="${!isCardMode}">
-                        <div class="loader-overlay sk-img">
-                            <div class="glb-loader-text">Loading Map</div>
+                        <div class="loader-overlay">
+                            <div class="spinner"></div>
                         </div>
                     </div>`;
         }
@@ -2156,12 +2020,7 @@
             }
         }
 
-        let _lastResumeLD = null;
         function generateResumeJSONLD() {
-            const currentLD = JSON.stringify(resumeDb);
-            if (_lastResumeLD === currentLD) return;
-            _lastResumeLD = currentLD;
-
             const e = document.getElementById("json-ld-resume");
             if (e) e.remove();
             const t = resumeDb;
@@ -2524,21 +2383,21 @@
             if (markdownImgMatch) {
                 const subUrl = markdownImgMatch[2].trim();
                 const subCaption = markdownImgMatch[1].trim();
-                const subType = detectBasicUrlType(subUrl);
+        // detectBasicUrlType replaced by unified extractMediaFromContent
                 return {
                     type: subType ? subType.type : 'image',
                     url: subUrl,
-                    id: subType ? subType.id : null,
+                    id: media ? media.id : null,
                     caption: caption || subCaption || null
                 };
             }
 
             // 3. Direct URL or Special Syntax
-            const basicType = detectBasicUrlType(url);
-            if (basicType) {
+            const media = extractMediaFromContent(url);
+            if (media) {
                 return {
-                    ...basicType,
-                    caption: caption || basicType.caption || null
+                    ...media,
+                    caption: caption || media.caption || null
                 };
             }
 
@@ -2625,7 +2484,7 @@
             if (item.type === 'video') {
                 const p = processMediaUrl(item.url);
                 mediaHTML = `<div class="${embedClass}">
-                        <div class="sk-img loader-overlay"></div>
+                        <div class="loader-overlay"><div class="spinner"></div></div>
                         <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''}"
                                data-src="${p.url}"
                                ${p.autoplay ? 'data-autoplay="true" muted' : ''}
@@ -2638,7 +2497,7 @@
             } else if (item.type === 'image') {
                 const style = isGallery ? 'style="height:100%; width:100%; object-fit:cover;"' : '';
                 const p = processMediaUrl(item.url);
-                mediaHTML = `<div class="sk-img loader-overlay"></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">`;
+                mediaHTML = `<div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">`;
                 if (!isGallery) mediaHTML = `<div class="media-container">${mediaHTML}</div>`;
             } else if (item.type === 'youtube') {
                 const ytId = item.id || getYouTubeID(item.url);
@@ -2650,7 +2509,7 @@
                     <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: transparent; cursor: pointer; z-index: 2;" 
                          onmouseover="const btn=this.querySelector('.yt-glass-btn'); btn.style.background='var(--card-bg-hover)'; btn.style.borderColor='var(--text-bright)'; btn.style.boxShadow='0 4px 12px rgba(0,0,0,0.2), inset 0 0 0 1px var(--text-bright)';" 
                          onmouseout="const btn=this.querySelector('.yt-glass-btn'); btn.style.background='var(--bg-trans)'; btn.style.borderColor='var(--border-header)'; btn.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';">
-                        <div class="yt-glass-btn" style="width: 72px; height: 72px; border-radius: 50%; background: var(--bg-trans); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-header); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                        <div class="yt-glass-btn" style="width: 72px; height: 72px; border-radius: 50%; background: var(--bg-trans); border: 1px solid var(--border-header); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                             <svg viewBox="0 0 24 24" fill="var(--text-bright)" style="width: 34px; height: 34px;"><path d="M8 5v14l11-7z"/></svg>
                         </div>
                     </div>`;
@@ -2687,7 +2546,6 @@
                     mediaHTML = `<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard" data-from-embed="false" style="width: 100%; min-height: 180px; border-radius: var(--card-radius); overflow: hidden; background: var(--card-bg-dark); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; border: 1px solid var(--border-subtle); box-sizing: border-box;">
                         <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: var(--accent-projects); margin-bottom: 12px; opacity: 0.8;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
                         <a href="${stravaUrl}" target="_blank" style="color: var(--text-bright); text-decoration: none; font-weight: 600; font-family: Jost, sans-serif; font-size: 16px; letter-spacing: 0.5px;">VIEW ON STRAVA</a>
-                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">Interactive Map Loading...</div>
                     </div>`;
                 } else {
                     // Fallback for links where we couldn't parse the ID (like short redirects)
@@ -2777,9 +2635,6 @@
                 case 'music-cluster':
                     const clusterUrls = block.items.map(i => i.url).join(',');
                     return `<div class="music-embed-container" data-needs-init="true" data-type="music-cluster" data-urls="${clusterUrls}"></div>`;
-
-                // GPS gimmicks removed in favor of standard card structure
-                case 'strava':
 
                 case 'card':
                     return `<div class="markdown-single-card" style="margin: 20px 0;">${renderCardHTML(block.data, contextCategory)}</div>`;
