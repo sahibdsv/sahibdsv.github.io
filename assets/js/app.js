@@ -172,10 +172,6 @@
             updateSEO();
             renderFooter();
 
-            // 1. Fire Analytics FIRST to capture referrals/UTMs
-            startAnalytics();
-
-            // 2. Clear URL parameters for aesthetics AFTER tracking
             if (window.location.search) {
                 history.replaceState(null, null, window.location.pathname + window.location.hash);
             }
@@ -188,58 +184,6 @@
 
         // Live Dashboard Polling
 
-        let _analyticsTimer = null;
-        window.triggerAnalytics = function(cleanPath, isSwipe = false) {
-            if (!window.goatcounter || !window.goatcounter.count) return;
-
-            // Normalize path for cleaner reports (convert #Personal/About to /Personal/About)
-            const p = cleanPath || url2path(window.location.hash.substring(1) || "Home");
-            const virtualPath = '/' + p.replace(/^#/, '');
-            
-            // DEBOUNCE FOR SWIPING: Avoid hitting GoatCounter 429 rate limits during rapid navigation.
-            // If we are swiping, wait for the user to linger for 2 seconds before counting it as a view.
-            if (isSwipe) {
-                clearTimeout(_analyticsTimer);
-                _analyticsTimer = setTimeout(() => {
-                    if (window.goatcounter && window.goatcounter.count) {
-                        goatcounter.count({ path: virtualPath, title: document.title });
-                    }
-                }, 2000); 
-                return;
-            }
-
-            // Clicks/Standard nav: Track immediately and cancel any pending swipe-timers
-            clearTimeout(_analyticsTimer);
-            goatcounter.count({
-                path: virtualPath,
-                title: document.title
-            });
-        };
-
-        function startAnalytics() {
-            if (!window.goatcounter) return;
-
-            // 1. Initial Pageview
-            triggerAnalytics();
-
-            // 2. CTA Tracking: Capture specific clicks as events
-            document.addEventListener('click', (e) => {
-                const link = e.target.closest('a');
-                if (link && link.href) {
-                    const url = link.href;
-                    const isInternal = url.includes(window.location.hostname) || url.startsWith('#');
-                    
-                    // Only track external exits as events (Internal is handled by hashchange/initial)
-                    if (!isInternal) {
-                        goatcounter.count({
-                            path:  'click-' + url,
-                            title: 'Exit: ' + (link.innerText.trim().substring(0, 30) || 'Link'),
-                            event: true
-                        });
-                    }
-                }
-            }, { capture: true });
-        }
 
         // fetchDataAndCache retrieves high-fidelity content across all sources
         async function fetchDataAndCache() {
@@ -999,8 +943,6 @@
                 // 4. Update SEO based on the newly rendered page
                 updateSEO(cleanPath);
                 
-                // 4.5 Trigger Analytics AFTER title and URL are clean
-                if (window.triggerAnalytics) triggerAnalytics(cleanPath, isSwipe);
 
                 // Mark this path as rendered so subsequent identical swipes don't trigger re-renders
                 _lastRenderedPath = cleanPath;
@@ -1377,14 +1319,6 @@
 
             if (randomQuotes.some(q => q.classList.contains("loading"))) return;
 
-            // Analytics: Track the refresh event
-            if (window.goatcounter && window.goatcounter.count) {
-                window.goatcounter.count({
-                    path: 'quote-refresh',
-                    title: 'User Rolled New Quote',
-                    event: true
-                });
-            }
 
             randomQuotes.forEach(q => q.classList.add("loading"));
 
@@ -1768,30 +1702,8 @@
             footerEl.innerHTML = db.filter(e => "Footer" === e.Page).map(entry => {
                 let title = (entry.Title || "").replace(/{year}/g, new Date().getFullYear());
                 
-                if (title.includes("{Visitor Counter}")) {
-                    hasVisitorCounter = true;
-                    title = title.replace("{Visitor Counter}", '<span id="gc-visit-count">...</span>');
-                }
-
-                // Replace markdown links globally within the string
-                title = title.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-                
                 return title ? `<span>${title}</span>` : "";
             }).join("");
-
-            // If we injected a counter, fetch raw JSON to display as plain text
-            if (hasVisitorCounter) {
-                fetch('https://analytics.sahibvirdee.com/counter/TOTAL.json?c=' + Date.now())
-                    .then(response => response.json())
-                    .then(data => {
-                        const el = document.getElementById('gc-visit-count');
-                        if (el) el.innerText = data.count;
-                    })
-                    .catch(() => {
-                        const el = document.getElementById('gc-visit-count');
-                        if (el) el.innerText = '0';
-                    });
-            }
         }
         // === MEDIA UTILITIES ===
         function getYouTubeID(url) {

@@ -35,28 +35,6 @@
     <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg" />
     <link rel="shortcut icon" href="/assets/images/favicon.ico" />
 
-    <!-- Analytics: GoatCounter (Privacy-First) -->
-    <script>
-        window.goatcounter = {
-            no_onload: true,
-            allow_local: false
-        };
-
-        (function () {
-            const isLocal = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
-
-            if (isLocal) {
-                console.info("Analytics: Opted out (Local)");
-                window.goatcounter.no_onload = true;
-            } else {
-                const script = document.createElement('script');
-                script.async = true;
-                script.src = "https://gc.zgo.at/count.js";
-                script.dataset.goatcounter = "https://analytics.sahibvirdee.com/count";
-                document.head.appendChild(script);
-            }
-        })();
-    </script>
 
 
     <link rel="stylesheet" href="assets/css/style.css?v=68.1">
