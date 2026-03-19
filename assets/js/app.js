@@ -217,6 +217,26 @@ async function fetchDataAndCache() {
         });
         window.db = db;
 
+        // Initialize Fuse.js for fuzzy search
+        window.fuse = new Fuse(db, {
+            keys: ['Title', 'Content', 'Tags', 'Page'],
+            threshold: 0.35, 
+            location: 0,
+            distance: 100,
+            minMatchCharLength: 2,
+            includeScore: true
+        });
+
+        // Initialize Fuse.js for fuzzy search
+        window.fuse = new Fuse(db, {
+            keys: ['Title', 'Content', 'Tags', 'Page'],
+            threshold: 0.35, 
+            location: 0,
+            distance: 100,
+            minMatchCharLength: 2,
+            includeScore: true
+        });
+
         // Caching disabled for direct fetching
 
         // Auto-refresh any dynamic components currently in the DOM
@@ -1407,7 +1427,8 @@ function renderRecentMusic(container) {
 
         lightbox = new PhotoSwipeLightbox({
             gallery: '#app',
-            children: '.article-body img, .row-media img:not(.music-yt-overlay img), .media-container img, .gallery-item img',
+            // ONLY target images in content, NOT project card thumbnails
+            children: '.article-body img, .media-container img, .gallery-item img',
             pswpModule: PhotoSwipe,
             imageClickAction: 'zoom',
             tapAction: 'toggle-controls',
@@ -2666,6 +2687,9 @@ function renderContentBlock(block, index) {
             return renderUnifiedMediaItem(block, false);
 
         case 'gallery':
+            return renderUnifiedGallery(block.items, block.sharedCaption);
+
+        case 'button':
             return renderUnifiedGallery(block.items, block.sharedCaption);
 
         case 'button':
