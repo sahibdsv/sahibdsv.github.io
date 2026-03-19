@@ -1633,17 +1633,12 @@ function playMusicInCard(event) {
             iframe.style.opacity = '0'; // Hide initially
             
             iframe.onload = () => {
-                iframe.style.opacity = '0.01';
-
-                // Store timer ID so we can cancel it if the user clicks away early
-                card._playTimer = setTimeout(() => {
-                    iframe.style.opacity = '1';
-                    const currentImg = mediaRow.querySelector('img.media-enter');
-                    if (currentImg) currentImg.style.opacity = '0';
-                    const fallback = mediaRow.querySelector('.music-card-fallback');
-                    if (fallback) fallback.style.opacity = '0';
-                    card._playTimer = null;
-                }, 1200);
+                // Instant switch: Show video, hide thumbnail/placeholders immediately
+                iframe.style.opacity = '1';
+                const currentImg = mediaRow.querySelector('img.media-enter');
+                if (currentImg) currentImg.style.opacity = '0';
+                const fallback = mediaRow.querySelector('.music-card-fallback');
+                if (fallback) fallback.style.opacity = '0';
             };
 
             // Append on top of existing content
