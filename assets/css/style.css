@@ -20,9 +20,9 @@
             --card-bg-hover: #1a1a1a;
             --code-bg: #1e1e1e;
             --text-bright: rgb(var(--bright-rgb));
-            --text-main: #8c8c8c;
-            --text-dim: #8c8c8c;
-            --text-muted: #8c8c8c;
+            --text-main: #adadad;
+            --text-dim: #adadad;
+            --text-muted: #adadad;
             --text-inv: #000000;
             --code-fg: #e6cd69;
             --border-subtle: rgba(var(--bright-rgb), 0.08);
@@ -43,7 +43,7 @@
             --main-row-h: 20px;
             --sub-row-h: 20px;
             --gap: 5px;
-            --header-pad-top: 5px;
+            --header-pad-top: 7px;
             --header-pad-bottom: 5px;
             --header-gap: 5px;
             --brand-font-size: 28px;
@@ -75,7 +75,7 @@
             --accent-strava: #FC6100;
             /* GLOBAL SPACING SYSTEM (8px Multiplier Rule) */
             --site-gap: 1rem;           /* 16px: Standard distance */
-            --site-gap-nav: 0.375rem;    /* 6px: Header navigation */
+            --site-gap-nav: 3px;        /* 3px: Header navigation */
             --rhythm-gap: 1rem;          /* Master rhythm unit */
             --rhythm-gap-tight: 0.125rem; /* 2px: Ultra-tight structural anchoring */
             --rhythm-gap-wide: 1.5rem;   /* 24px: Clean section breaks */
@@ -96,9 +96,9 @@
             --card-bg-hover: #e8e8ed;
             --code-bg: #eaeaef;
             --text-bright: #000000;
-            --text-main: #757575;
-            --text-dim: #757575;
-            --text-muted: #757575;
+            --text-main: #555555;
+            --text-dim: #555555;
+            --text-muted: #555555;
             --text-inv: #ffffff;
             --code-fg: #bf8d00;
             --border-subtle: rgba(0, 0, 0, 0.08);
