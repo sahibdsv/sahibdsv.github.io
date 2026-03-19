@@ -444,7 +444,7 @@ function renderNavigation(currentPath, forceSmoothNav = false) {
             const isInteracting = (_activeNavControl === row);
 
             if (!isInteracting) {
-                row.style.scrollSnapType = (activeLink && row.scrollWidth > row.clientWidth + 5) ? 'x mandatory' : 'none';
+                setNavSnapping(row, (activeLink && row.scrollWidth > row.clientWidth + 5) ? 'mandatory' : 'none');
                 // Only center if we're not touching/swiping the row
                 centerNavRow(row, level > 1, forceSmoothNav ? "smooth" : "auto");
             }
@@ -484,11 +484,17 @@ function haptic(tier) {
 
 let _activeNavControl = null; // Tracks the row currently being manually interacted with
 
-function setNavSnapping(row, enabled) {
+function setNavSnapping(row, mode = "none") {
     if (!row) return;
     // Snapping is only useful if there's an active item to lock onto
     const hasActive = row.querySelector(".active");
-    row.style.scrollSnapType = (enabled && hasActive) ? 'x mandatory' : 'none';
+    if (!hasActive || mode === "none") {
+        row.style.scrollSnapType = 'none';
+    } else if (mode === "mandatory") {
+        row.style.scrollSnapType = 'x mandatory';
+    } else if (mode === "proximity") {
+        row.style.scrollSnapType = 'x proximity';
+    }
 }
 
 function centerNavRow(row, isSubNav, behavior = "auto") {
@@ -498,15 +504,19 @@ function centerNavRow(row, isSubNav, behavior = "auto") {
     row._needsReset = false;
     // Only scroll if there is overflow
     if (row.scrollWidth <= row.clientWidth + 5) {
-        setNavSnapping(row, false);
+        setNavSnapping(row, "none");
         return;
     }
 
     const activeLink = row.querySelector(".active");
-    setNavSnapping(row, false); // Always disable during programmatic glide
+    setNavSnapping(row, "none"); // Always disable during programmatic glide
 
     const restoreSnap = () => {
-        if (row !== _activeNavControl) setNavSnapping(row, true);
+        // After a programmatic center, we can use mandatory to ensure it stays locked,
+        // OR proximity if we want to allow it to drift slightly. 
+        // User requested to stop forcing it after swipe, so for programmatic we still use mandatory
+        // to ensure the link they clicked ends up in the middle.
+        if (row !== _activeNavControl) setNavSnapping(row, "mandatory");
     };
 
     if (activeLink) {
@@ -672,7 +682,7 @@ function setupHapticScroll(row) {
             if (!s.fingerDown) {
                 _activeNavControl = null;
                 s.isValidInteraction = false;
-                setNavSnapping(row, true);
+                setNavSnapping(row, "proximity");
             }
         }, 240);
     }, {
