@@ -568,7 +568,7 @@ function setupHapticScroll(row) {
         s.isValidInteraction = true;
         s.fingerDown = true;
         _activeNavControl = row;
-        setNavSnapping(row, false);
+        setNavSnapping(row, "none");
     };
 
     const releaseInput = () => {
