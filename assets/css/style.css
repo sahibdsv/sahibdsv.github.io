@@ -1136,11 +1136,9 @@
             object-fit: cover;
             transition: filter 0.6s var(--ease), opacity 0.4s var(--ease);
             /* Keep on its own layer to prevent 'snapping' from soft to sharp on hover */
-            will-change: transform, opacity, filter;
+            will-change: opacity, filter;
             backface-visibility: hidden;
             -webkit-font-smoothing: subpixel-antialiased;
-            /* Extra stability for detail-heavy images */
-            transform: perspective(1000px) translate3d(0, 0, 0);
         }
 
         /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */
@@ -1312,8 +1310,7 @@
             height: 100% !important;
             display: block;
             opacity: 0;
-            transform: scale(0.95);
-            transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+            transition: opacity 0.4s var(--ease);
             background: transparent;
         }
 
@@ -1325,7 +1322,6 @@
 
         .model-viewer-wrapper.loaded canvas {
             opacity: 1;
-            transform: scale(1);
         }
 
         .row-media img,
@@ -1335,8 +1331,7 @@
         .embed-wrapper video,
         .embed-wrapper iframe {
             opacity: 0;
-            transform: scale(0.97);
-            transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+            transition: opacity 0.7s var(--ease);
         }
 
         .row-media img.loaded,
@@ -1346,7 +1341,6 @@
         .embed-wrapper video.loaded,
         .embed-wrapper iframe.loaded {
             opacity: 1;
-            transform: scale(1);
         }
 
         .embed-wrapper iframe {
