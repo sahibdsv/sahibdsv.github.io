@@ -492,8 +492,6 @@ function setNavSnapping(row, mode = "none") {
         row.style.scrollSnapType = 'none';
     } else if (mode === "mandatory") {
         row.style.scrollSnapType = 'x mandatory';
-    } else if (mode === "proximity") {
-        row.style.scrollSnapType = 'x proximity';
     }
 }
 
@@ -682,7 +680,7 @@ function setupHapticScroll(row) {
             if (!s.fingerDown) {
                 _activeNavControl = null;
                 s.isValidInteraction = false;
-                setNavSnapping(row, "proximity");
+                setNavSnapping(row, "none");
             }
         }, 240);
     }, {
