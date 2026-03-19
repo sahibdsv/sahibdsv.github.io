@@ -2459,6 +2459,11 @@
 
         .layout-grid.cat-music .row-media img.media-enter,
         .layout-grid.cat-music .row-media .music-card-fallback {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             transition: opacity 0.8s var(--ease);
         }
 
