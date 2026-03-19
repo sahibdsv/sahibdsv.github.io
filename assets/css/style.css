@@ -2444,12 +2444,12 @@
             position: absolute;
             inset: 0;
             z-index: 2;
-            transition: opacity 0.5s var(--ease);
+            transition: opacity 0.8s var(--ease);
         }
 
         .layout-grid.cat-music .row-media img.media-enter,
         .layout-grid.cat-music .row-media .music-card-fallback {
-            transition: opacity 0.5s var(--ease);
+            transition: opacity 0.8s var(--ease);
         }
 
         .music-yt-overlay {

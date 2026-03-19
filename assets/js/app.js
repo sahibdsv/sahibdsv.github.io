@@ -1617,12 +1617,15 @@ function playMusicInCard(event) {
             iframe.style.opacity = '0'; // Hide initially
             
             iframe.onload = () => {
-                // Cross-fade: Show video, hide thumbnail/placeholders
-                iframe.style.opacity = '1';
-                const currentImg = mediaRow.querySelector('img.media-enter');
-                if (currentImg) currentImg.style.opacity = '0';
-                const fallback = mediaRow.querySelector('.music-card-fallback');
-                if (fallback) fallback.style.opacity = '0';
+                // Delay the fade slightly so the video has a chance to visually render 
+                // its first frame behind the thumbnail before the swap.
+                setTimeout(() => {
+                    iframe.style.opacity = '1';
+                    const currentImg = mediaRow.querySelector('img.media-enter');
+                    if (currentImg) currentImg.style.opacity = '0';
+                    const fallback = mediaRow.querySelector('.music-card-fallback');
+                    if (fallback) fallback.style.opacity = '0';
+                }, 300);
             };
 
             // Append on top of existing content
