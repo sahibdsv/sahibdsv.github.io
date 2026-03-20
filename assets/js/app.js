@@ -219,15 +219,19 @@ async function fetchDataAndCache() {
             })
         ]);
 
-        // Comparison: Only re-render if data has actually changed from what's in cache
-        const currentMainRaw = localStorage.getItem('db_raw_cache');
-        const currentResumeRaw = localStorage.getItem('resume_raw_cache');
-        const dataChanged = mainRaw !== currentMainRaw || resumeRaw !== currentResumeRaw;
-
+        // COMPARISON & RECOVERY: Update DBs even if raw comparison is identical to ensure cache consistency
         const mainData = parseCSV(mainRaw);
         const resumeDbLocal = parseCSV(resumeRaw);
 
         const filtered = mainData.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
+        
+        // Cache Check for Quotes (Phase 0.5)
+        const cachedQuotes = localStorage.getItem('quotes_cache');
+        if (cachedQuotes) {
+            quotesDb = JSON.parse(cachedQuotes);
+            // Trigger an immediate re-render of any existing quote cards if we just got them from cache
+            document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
+        }
         db = filtered;
         resumeDb = (resumeDbLocal || []).map(entry => {
             if (entry.Page && entry.Page.includes('#')) {
@@ -259,6 +263,7 @@ async function fetchDataAndCache() {
         fetch(CONFIG.quotes_api).then(res => res.json()).then(res => {
             const quotesRaw = res.quotes || res.data || res.items || res.rows || res.content || res;
             quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
+            localStorage.setItem('quotes_cache', JSON.stringify(quotesDb));
             document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
         }).catch(e => console.warn('Background Quotes fetch failed', e));
 
@@ -1172,7 +1177,7 @@ function renderCardHTML(entry, contextCategory = "") {
 
 const SECTION_RENDERERS = {
     quote: (entry) =>
-        `<div class="layout-quote section" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true">
+        `<div class="layout-quote section loading" data-title="${entry.Title || ""}" data-static-quote="${entry.Content || entry.Quote || ""}" data-static-author="${entry.Content || entry.Quote ? (entry.Author || "Sahib Virdee") : ""}" data-needs-init="true">
                 </div>`,
     hero: (entry) => {
         let metaHTML = "";
@@ -1411,6 +1416,13 @@ function renderQuoteCard(container) {
                                     <div class="quote-footer"><span class="author"> &mdash; ${author}</span></div>
                                     ${refreshBtnHTML}`;
     }
+
+    // Smooth Entrance: Remove loading state after content is physically in the DOM
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            container.classList.remove('loading');
+        });
+    });
 }
 
 function initMusicMarquee(container) {
