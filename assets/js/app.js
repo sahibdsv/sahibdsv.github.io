@@ -3116,6 +3116,23 @@ function processInlineMarkdown(text, depth = 0) {
     result = result.replace(/\*(.*?)\*/g, (m, p1) => `<em>${processInlineMarkdown(p1, depth + 1)}</em>`);
     result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
 
+    // D. INTERNAL WIKI LINKS: [[Page Title]] or [[Page/Path]]
+    // This allows linking to any page in the database by its exact Title or Page path.
+    result = result.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
+        const target = p1.trim();
+        // Look for exact Page match or exact Title match
+        const entry = db.find(e => e.Page === target || (e.Title && e.Title.trim() === target));
+        if (entry) {
+            return `<a href="#${path2url(entry.Page)}" onclick="closeSearch()">${processInlineMarkdown(p1, depth + 1)}</a>`;
+        }
+        // Fallback: If not found, look for partial title match (last resort)
+        const partial = db.find(e => e.Title && e.Title.toLowerCase().includes(target.toLowerCase()));
+        if (partial) {
+            return `<a href="#${path2url(partial.Page)}" onclick="closeSearch()">${processInlineMarkdown(p1, depth + 1)}</a>`;
+        }
+        return `<span class="broken-link" title="Page not found in DB">${safeHTML(target)}</span>`;
+    });
+
     // C. SMART LINKS & MARKDOWN LINKS
     result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
         const cleanURL = url.trim();
@@ -3366,7 +3383,7 @@ function renderTOC(allBlocks, currentIndex) {
         const size = Math.max(13, 16 - (h.level - 1) * 1);
         const weight = 700 - (h.level - 1) * 100;
         return `<div class="toc-item depth-${h.level}" style="margin-left: ${(h.level - 1) * 12}px;">
-            <a href="javascript:void(0)" onclick="document.getElementById('${h.id}')?.scrollIntoView({behavior:'smooth'})" style="font-size: ${size}px; font-weight: ${weight}; line-height: 1.2; display: block;">${h.text}</a>
+            <a href="javascript:void(0)" onclick="document.getElementById('${h.id}')?.scrollIntoView({behavior:'smooth'})" style="font-size: ${size}px; font-weight: ${weight}; line-height: 1.2; display: inline-block;">${h.text}</a>
         </div>`;
     }).join('');
 
