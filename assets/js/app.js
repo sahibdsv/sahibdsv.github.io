@@ -1089,7 +1089,7 @@ function renderHome() {
     }).slice(0, 6);
 
     if (recentItems.length > 0) {
-        finalHTML += buildRowsHTML(recentItems, "Recent Activity", true, true, false, true);
+        finalHTML += buildRowsHTML(recentItems, "Recent Activity", true, false, true);
     }
 
     updateContainer(document.getElementById("app"), finalHTML);
