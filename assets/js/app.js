@@ -873,7 +873,7 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
 
     // Show skeleton for transitions to give immediate feedback
     if (!isSwipe && cleanPath !== _lastRenderedPath) {
-        showPageLoader();
+        // showPageLoader(); // DISABLING GLOBAL LOADERS FOR HIGHER PERFORMANCE
     }
 
     _renderRAF = requestAnimationFrame(() => {
@@ -1643,7 +1643,8 @@ async function renderMusicCluster(container) {
     const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
 
     // Show a tiny loading skeleton immediately to prevent layout jumps
-    container.innerHTML = `<div class="music-sections-container"><div class="loader-overlay" style="border-radius:var(--card-radius); height:120px; width:100%;"><div class="spinner"></div></div></div>`;
+    // Immediate placeholder shell to prevent layout collapse
+    // container.innerHTML = `<div class="music-sections-container" style="min-height:120px; opacity:0;"></div>`;
 
     // Fetch details for each independently 
     const cardsData = await Promise.all(urls.map(async (rawLink, index) => {
