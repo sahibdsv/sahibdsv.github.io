@@ -209,9 +209,10 @@ async function fetchDataAndCache() {
         }
 
         db = filtered;
-        quotesDb = quotesDbLocal;
-        musicDb = musicDbLocal.recent || [];
-        _rewindData = musicDbLocal.rewind;
+        // Ensure quotesDb is always an array (handle backend error objects)
+        quotesDb = Array.isArray(quotesDbLocal) ? quotesDbLocal : [];
+        musicDb = musicDbLocal && musicDbLocal.recent ? musicDbLocal.recent : [];
+        _rewindData = musicDbLocal && musicDbLocal.rewind ? musicDbLocal.rewind : null;
         resumeDb = (resumeDbLocal || []).map(entry => {
             if (entry.Page && entry.Page.includes('#')) {
                 const [page, sectionType] = entry.Page.split('#');
@@ -1467,7 +1468,8 @@ async function fetchRewindData() {
 
 // Resilient string normalization for cross-referencing stats with the main music database
 function fuzzyNorm_(str) {
-    return (str || "").toLowerCase().replace(/[^\w\d]/g, "");
+    if (typeof str !== 'string') str = String(str || "");
+    return str.toLowerCase().replace(/[^\w\d]/g, "");
 }
 
 async function renderRewindSection(container, type) {
