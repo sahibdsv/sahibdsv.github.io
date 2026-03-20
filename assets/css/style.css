@@ -2541,15 +2541,19 @@
             z-index: 2;
         }
 
-        /* Branding Guard: Force any stray Logo-as-Thumbnail into a centered 50% state */
-        .layout-grid.cat-music .row-media img[src*="Youtube_Music_icon.svg" i] {
+        /* Branding Lockout: Absolutely forces any Logo-as-Thumbnail into a centered 
+           50% neutral state ONLY when it's acting as a main media placeholder. */
+        .row-media img[src*="Youtube_Music_icon.svg" i] {
             width: 50% !important;
             height: auto !important;
+            aspect-ratio: 1/1 !important;
             object-fit: contain !important;
+            position: absolute !important;
             inset: 0 !important;
             margin: auto !important;
             opacity: 0.18 !important;
             filter: grayscale(100%) brightness(0.7) !important;
+            transition: opacity var(--anim-quick) var(--ease), filter var(--anim-quick) var(--ease) !important;
         }
 
         .music-yt-overlay {
