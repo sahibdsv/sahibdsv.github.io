@@ -31,9 +31,9 @@
             --search-bg: #111111;
             --search-glow: rgba(var(--bright-rgb), 0.1);
             --search-border: rgba(var(--bright-rgb), 0.3);
-            --accent-personal: #00e676;
-            --accent-prof: #00e5ff;
-            --accent-projects: #ffb300;
+            --accent-personal: #00ffa3;
+            --accent-prof: #00f2ff;
+            --accent-projects: #ff9100;
             --shadow-subtle: 0 0 15px rgba(0, 0, 0, 0.1);
             --shadow-medium: 0 0 30px rgba(0, 0, 0, 0.2);
             --shadow-heavy: 0 0 80px 20px rgba(0, 0, 0, 0.95);
@@ -107,9 +107,9 @@
             --search-bg: #f7f7f9;
             --search-glow: rgba(0, 0, 0, 0.06);
             --search-border: rgba(0, 0, 0, 0.15);
-            --accent-personal: #00aa55;
-            --accent-prof: #0090c0;
-            --accent-projects: #e67e00;
+            --accent-personal: #00d66b;
+            --accent-prof: #00b4d8;
+            --accent-projects: #ff8500;
             --shadow-subtle: 0 2px 12px rgba(0, 0, 0, 0.04);
             --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.06);
             --shadow-heavy: 0 0 60px rgba(0, 0, 0, 0.12);
