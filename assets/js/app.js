@@ -97,23 +97,23 @@ const CONFIG = {
     quotes_api: 'https://script.google.com/macros/s/AKfycby6WOq30gXuuswxkBvouOetN1v9_1NLyEgl5Qq-0zJWLHa-266zEEHMAECAtu2pOQUC/exec?type=quotes'
 };
 
-// Quote Randomness Logic (Fisher-Yates Shuffle Bag)
+// Quote Randomness Logic (Fisher-Yates / Durstenfeld Shuffle Bag)
 function refillQuoteBag() {
     // Create a fresh batch of indices
     quoteBag = quotesDb.map((_, index) => index);
 
-    // Fisher-Yates Shuffle
+    // Fisher-Yates (Durstenfeld) Shuffle: Truly uniform distribution
     for (let i = quoteBag.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [quoteBag[i], quoteBag[j]] = [quoteBag[j], quoteBag[i]];
     }
 
-    // Boundary Fix: Don't start a new bag with the same quote we just ended with
-    if (quotesDb.length > 1 && quoteBag[quoteBag.length - 1] === _lastQuoteIndex) {
-        const repeatIndex = quoteBag.pop();
-        quoteBag.unshift(repeatIndex);
+    // Boundary Fix: If the first quote in the NEW bag is the same as the LAST one from the old bag,
+    // swap it with another random item in the bag to prevent consecutive repeats.
+    if (quotesDb.length > 2 && quoteBag[quoteBag.length - 1] === _lastQuoteIndex) {
+        const randomIndex = Math.floor(Math.random() * (quoteBag.length - 1));
+        [quoteBag[quoteBag.length - 1], quoteBag[randomIndex]] = [quoteBag[randomIndex], quoteBag[quoteBag.length - 1]];
     }
-
 }
 
 function getNextQuote() {
@@ -126,7 +126,7 @@ function getNextQuote() {
     let nextIndex = quoteBag.pop();
 
     // Safety: If the randomly picked quote has identical text as the last one, try to skip it
-    if (_activeRandomQuote && quotesDb[nextIndex].Quote === _activeRandomQuote.Quote && quotesDb.length > 1) {
+    if (_lastQuoteIndex !== -1 && quotesDb[nextIndex].Quote === quotesDb[_lastQuoteIndex].Quote && quotesDb.length > 1) {
         if (quoteBag.length > 0) {
             const swap = quoteBag.pop();
             quoteBag.push(nextIndex);
@@ -140,15 +140,11 @@ function getNextQuote() {
     _lastQuoteIndex = nextIndex;
     const selected = quotesDb[_lastQuoteIndex];
 
-    // Support server-side JSON property names while maintaining legacy CSV compatibility
-    const normalized = {
+    return {
         Quote: selected.Quote || selected.quote || selected.content || "",
         Author: selected.Author || selected.author || "Unknown",
         Source: selected.Source || selected.source || null
     };
-
-    _activeRandomQuote = normalized;
-    return normalized;
 }
 
 // App Initialization
@@ -1380,8 +1376,16 @@ function renderQuoteCard(container) {
             container.innerHTML = renderEmptyStateHTML("", true);
             return;
         }
-        if (!_activeRandomQuote) _activeRandomQuote = getNextQuote();
-        quoteData = _activeRandomQuote;
+        
+        // Logic: On initial render (or page navigation), if no global quote is set, 
+        // give this specific card its own unique quote from the bag.
+        // If it's a "Roll", the rollQuote function will have already set _activeRandomQuote,
+        // so we use that to sync all cards.
+        if (!_activeRandomQuote) {
+            quoteData = getNextQuote();
+        } else {
+            quoteData = _activeRandomQuote;
+        }
         isRandom = true;
     } else {
         quoteData = {
