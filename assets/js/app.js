@@ -1459,6 +1459,11 @@ async function fetchRewindData() {
     return _rewindData;
 }
 
+// Resilient string normalization for cross-referencing stats with the main music database
+function fuzzyNorm_(str) {
+    return (str || "").toLowerCase().replace(/[^\w\d]/g, "");
+}
+
 async function renderRewindSection(container, type) {
     const data = await fetchRewindData();
     if (!data) {
@@ -1515,10 +1520,11 @@ async function renderRewindSection(container, type) {
         const subLabel = artist ? artist : count + " plays";
 
         return `
-            <div class="layout-grid cat-music" data-link="${link}" onclick="window.open('${link}', '_blank')">
+            <div class="layout-grid cat-music" data-link="${link}" onclick="return playMusicInCard(event)">
                 <div class="row-media">
+                    ${thumb ? `<div class="loader-overlay"><div class="spinner"></div></div>` : ''}
                     <div class="music-card-fallback"><img src="${ytLogo}" alt="YT Music"></div>
-                    <img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">
+                    ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                 </div>
                 <div class="card-info">
                     <div class="marquee-container track-marquee">
