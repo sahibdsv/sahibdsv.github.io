@@ -152,8 +152,6 @@ function getNextQuote() {
 }
 
 // App Initialization
-fetchDataAndCache();
-
 let _appInitialized = false;
 function startApp() {
     if (_appInitialized) {
@@ -1327,21 +1325,15 @@ function renderQuoteCard(container) {
 
     if (title === "{random quote}" || title === "random quote") {
         if (quotesDb.length === 0) {
-            container.innerHTML = renderEmptyStateHTML("Syncing Quotes...", true);
+            container.innerHTML = renderEmptyStateHTML("", true);
             return;
         }
         if (!_activeRandomQuote) _activeRandomQuote = getNextQuote();
         quoteData = _activeRandomQuote;
         isRandom = true;
     } else {
-        const staticQuote = container.getAttribute("data-static-quote");
-        if (!staticQuote) {
-            // If it's a static card but we have no content yet, it's likely waiting for background sync
-            container.innerHTML = renderEmptyStateHTML("Syncing Quotes...", true);
-            return;
-        }
         quoteData = {
-            Quote: staticQuote,
+            Quote: container.getAttribute("data-static-quote") || "No content.",
             Author: container.getAttribute("data-static-author") || "Unknown",
             Source: null
         };
@@ -1698,11 +1690,10 @@ async function renderMusicCluster(container) {
     const urls = urlsRaw.split(',').filter(Boolean);
     if (urls.length === 0) return;
 
-    const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
+    // Show a centered spinner while fetching metadata
+    container.innerHTML = renderEmptyStateHTML("", true);
 
-    // Show a tiny loading skeleton immediately to prevent layout jumps
-    // Immediate placeholder shell to prevent layout collapse
-    // container.innerHTML = `<div class="music-sections-container" style="min-height:120px; opacity:0;"></div>`;
+    const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
 
     // Fetch details for each independently 
     const cardsData = await Promise.all(urls.map(async (rawLink, index) => {
@@ -2843,6 +2834,7 @@ function renderUnifiedMediaItem(item, isGallery = false) {
 
         if (stravaId) {
             mediaHTML = `<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard" data-from-embed="false" style="width: 100%; min-height: 180px; border-radius: var(--card-radius); overflow: hidden; background: var(--card-bg-dark); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; border: 1px solid var(--border-subtle); box-sizing: border-box;">
+                        <div class="loader-overlay"><div class="spinner"></div></div>
                         <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: var(--accent-projects); margin-bottom: 12px; opacity: 0.8;"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"></path></svg>
                         <a href="${stravaUrl}" target="_blank" style="color: var(--text-bright); text-decoration: none; font-weight: 600; font-family: Jost, sans-serif; font-size: 16px; letter-spacing: 0.5px;">VIEW ON STRAVA</a>
                     </div>`;
