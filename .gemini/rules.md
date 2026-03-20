@@ -14,9 +14,9 @@
 - **Curly Brace Dynamic Blocks**: These specific tags trigger dynamic API-driven components:
   - `{Top Artists}`: Renders a 3-item grid of most-played artists.
   - `{Top Songs}`: Renders a 3-item grid of all-time most-played tracks.
-  - `{Fresh Favorites}`: Renders a 3-item grid of songs in "replay obsession" status.
-  - `{AllTimeTopArtist}`: Plain text name of the #1 most-played artist.
-  - `{AllTimeTopSong}`: Plain text title of the #1 most-played song.
+  - `{Fresh Favorites}`: Renders a 3-item grid of tracks currently in a "replay loop."
+  - `{AllTimeTopArtist}`: Renders a 3-item grid of the top 3 tracks by your #1 artist.
+  - `{AllTimeTopSong}`: Renders a 3-item grid containing your #1 song + related discovery tracks.
   - `{Recently Played}` or `{Recent Music}`: (Standard/Legacy) Renders the 3 most recently logged tracks.
   - `{Random Quote}`: Injects a randomized quote discovery card from the Quote API.
 - **Path Resolution**: The system automatically maps extensions to folders (e.g., `.geojson` files are looked for in `assets/GPX/`).

@@ -15,8 +15,8 @@ These tags fetch real-time data from your unified JSON API.
 - **`{Top Artists}`**: A 3-item grid of your most-played artists.
 - **`{Top Songs}`**: A 3-item grid of all-time most-played tracks.
 - **`{Fresh Favorites}`**: A 3-item grid of songs in "replay obsession" status.
-- **`{AllTimeTopArtist}`**: Plain-text name of your #1 all-time most-played artist.
-- **`{AllTimeTopSong}`**: Plain-text title of your #1 most-played song.
+- **`{AllTimeTopArtist}`**: A 3-item grid featuring the top tracks by your #1 most-played artist.
+- **`{AllTimeTopSong}`**: A 3-item grid featuring your #1 song + related discovery tracks.
 - **`{Random Quote}`**: Injects a randomized Quote Discovery Card from your Quote API. 
 
 ### 🧬 High-Fidelity Media (Extension-Based)

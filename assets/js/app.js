@@ -1477,25 +1477,29 @@ async function renderRewindSection(container, type) {
         return;
     }
 
+    // 1. Handle PLAIN TEXT INJECTIONS (Inline tags inside spans)
+    if (container.tagName.toLowerCase() === 'span') {
+        if (type === 'all-time-top-artist') {
+            container.innerHTML = `<strong>${safeHTML(data.allTimeTopArtist?.name || "None")}</strong>`;
+        } else if (type === 'all-time-top-song') {
+            container.innerHTML = `<strong>${safeHTML(data.allTimeTopSong?.name || "None")}</strong>`;
+        }
+        return;
+    }
+
     const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
 
-    if (type === 'all-time-top-artist') {
-        container.innerHTML = `<strong>${safeHTML(data.allTimeTopArtist?.name || "None")}</strong>`;
-        return;
-    }
-    if (type === 'all-time-top-song') {
-        container.innerHTML = `<strong>${safeHTML(data.allTimeTopSong?.name || "None")}</strong>`;
-        return;
-    }
-
+    // 2. Select Relevant Items for the 3-item Grid
     let items = [];
     let title = "";
     if (type === 'top-artists') { items = data.topArtists || []; title = "Top Artists"; }
     if (type === 'top-songs') { items = data.topSongs || []; title = "Top Songs"; }
     if (type === 'fresh-favorites') { items = data.freshFavorites || []; title = "Fresh Favorites"; }
+    if (type === 'all-time-top-artist') { items = data.allTimeTopArtist?.tracks || []; title = "Top tracks by " + (data.allTimeTopArtist?.name || ""); }
+    if (type === 'all-time-top-song') { items = data.allTimeTopSong?.related || []; title = "Top song & related"; }
 
     if (items.length === 0) {
-        container.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">No ${title.toLowerCase()} data found.</div>`;
+        container.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">No music data found.</div>`;
         return;
     }
 
@@ -1523,7 +1527,10 @@ async function renderRewindSection(container, type) {
             if (match && match.Link) link = match.Link;
         }
 
-        const subLabel = artist ? artist : count + " plays";
+        // Visual Enhancement: For Artists, show their #1 track if provided, otherwise show play count
+        const subLabel = (type === 'top-artists' && item.topTrack) 
+            ? `Top: ${safeHTML(item.topTrack)}` 
+            : (artist ? artist : count + " plays");
 
         return `
             <div class="layout-grid cat-music" data-link="${link}" onclick="return playMusicInCard(event)">
@@ -2554,13 +2561,15 @@ function processBlock(lines) {
     }
 
     // 5. Dynamic Tag Detection (Expanded to allow flexible inclusion)
-    const musicTag = lines.some(l => l.trim().match(/\{(Recent Music|Recently Played|Top Artists|Top Songs|Fresh Favorites)\}/i));
+    const musicTag = lines.some(l => l.trim().match(/\{(Recent Music|Recently Played|Top Artists|Top Songs|Fresh Favorites|AllTimeTopArtist|AllTimeTopSong)\}/i));
     if (musicTag) {
         const line = combinedBlock.trim();
         if (line.match(/^\{(Recent Music|Recently Played)\}$/i)) return { type: 'music' };
         if (line.match(/^\{Top Artists\}$/i)) return { type: 'top-artists' };
         if (line.match(/^\{Top Songs\}$/i)) return { type: 'top-songs' };
         if (line.match(/^\{Fresh Favorites\}$/i)) return { type: 'fresh-favorites' };
+        if (line.match(/^\{AllTimeTopArtist\}$/i)) return { type: 'all-time-top-artist' };
+        if (line.match(/^\{AllTimeTopSong\}$/i)) return { type: 'all-time-top-song' };
     }
 
     const quoteTag = lines.some(l => l.trim().match(/\{Random Quote\}/i));
@@ -2848,6 +2857,12 @@ function renderContentBlock(block, index, allBlocks) {
         
         case 'fresh-favorites':
             return `<div class="music-embed-container" data-needs-init="true" data-type="fresh-favorites"></div>`;
+
+        case 'all-time-top-artist':
+            return `<div class="music-embed-container" data-needs-init="true" data-type="all-time-top-artist"></div>`;
+
+        case 'all-time-top-song':
+            return `<div class="music-embed-container" data-needs-init="true" data-type="all-time-top-song"></div>`;
 
         case 'toc':
             return renderTOC(allBlocks, index);
