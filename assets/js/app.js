@@ -1375,7 +1375,49 @@ function initMusicMarquee(container) {
             el.style.alignItems = 'center';
         }
     });
-};
+};/**
+ * Unified high-fidelity music card template for all site components.
+ * Consolidates layout for Recently Played, Rewind Grids, and Indie Clusters.
+ */
+function renderMusicCardHTML(item) {
+    const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
+    const track = safeHTML(item.track || "Unknown Track");
+    const artist = safeHTML(item.artist || "Unknown Artist");
+    
+    // SVG Guard: Never use the YT Music SVG as a full-bleed thumbnail (Case-Insensitive & Fuzzy)
+    const isSVGLogo = item.thumb && (item.thumb.toLowerCase().includes("youtube_music_icon.svg") || item.thumb === ytLogo);
+    const thumb = (item.thumb && !isSVGLogo) ? item.thumb.replace(/^http:\/\//i, "https://") : null;
+    const isYTMusic = (!item.source || item.source === "YT Music" || item.source === "YouTube Music" || item.source === "Music (Desktop)");
+    
+    // Play Count Chip logic
+    const countHTML = item.count ? `<span class="music-stat-chip">${item.count} plays</span>` : "";
+
+    // Explicit branding icons / overlays
+    let sourceOverlay = "";
+    if (isYTMusic) {
+        sourceOverlay = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
+    } else {
+        sourceOverlay = `<div class="music-yt-overlay" data-tooltip="Open Track" style="cursor: pointer; background: #000; color: white; border-radius: 4px; font-size: 10px; padding: 4px 6px; font-weight: 600;">${safeHTML(item.source)}</div>`;
+    }
+
+    return `
+        <div class="layout-grid cat-music" data-link="${item.link}" onclick="return playMusicInCard(event)">
+            <div class="row-media">
+                <div class="music-card-fallback"><img src="${ytLogo}" alt="YT Music" class="yt-placeholder-icon"></div>
+                ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
+            </div>
+            <div class="card-info">
+                <div class="marquee-container track-marquee">
+                    <span class="marquee-content highlight-pulse"><h3 class="fill-anim">${track}</h3></span>
+                </div>
+                <div class="marquee-container artist-marquee">
+                    <span class="marquee-content"><div class="music-artist-label">${artist}${countHTML}</div></span>
+                </div>
+            </div>
+            ${sourceOverlay}
+        </div>
+    `;
+}
 
 function renderRecentMusic(container) {
     if (musicDb.length === 0) {
@@ -1392,60 +1434,24 @@ function renderRecentMusic(container) {
     if (container.getAttribute('data-last-render') === renderHash) return;
     container.setAttribute('data-last-render', renderHash);
 
-    const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
-    const cardsHTML = latestItems.map((item, index) => {
-        // Universal Case Resolver for properties
-        const artistVal = safeHTML(item.artist || item.Artist || "Unknown Artist");
-        const trackVal = safeHTML(item.track || item.Track || item.Song || item.track || "Unknown Track");
-        const linkVal = (item.link || item.Link || "").trim();
-        const thumbVal = (item.thumbnail || item.Thumbnail || "").trim();
-        const sourceVal = item.source || item.Source || "YT Music";
+    const cardsHTML = latestItems.map((item) => {
+        // Map to our unified structure
+        const artist = item.artist || item.Artist || "Unknown Artist";
+        const track = item.track || item.Track || item.Song || "Unknown Track";
+        let link = (item.link || item.Link || "").trim();
+        const thumb = (item.thumbnail || item.Thumbnail || "").trim();
+        const source = item.source || item.Source || "YT Music";
+        const count = item.playCount || item.count || 0;
 
-        // Aggressive home-page link detection for fallback to search
-        let link = linkVal;
+        // Fallback to search if link is missing or invalid
         const bareURL = link.toLowerCase();
-        // A valid track URL almost always contains 'watch?v=' or 'youtu.be'
         const isValidTrackLink = bareURL.includes('watch?v=') || bareURL.includes('youtu.be');
-
         if (!link || !isValidTrackLink) {
-            // Fallback to searching YT Music for the exact Artist + Track Name
-            const searchQuery = encodeURIComponent(artistVal + " " + trackVal);
+            const searchQuery = encodeURIComponent(artist + " " + track);
             link = `https://music.youtube.com/search?q=${searchQuery}`;
         }
-        const thumb = thumbVal ? thumbVal.replace(/^http:\/\//i, "https://") : null;
 
-        // Waveform Atmosphere logic - User opted to remove default 'is-playing' marker
-        let liveClass = "";
-
-        // Source icon mapping handling explicit 'YT Music' OPSEC update
-        let sourceIconHTML = "";
-        let isYTMusic = (!sourceVal || sourceVal === "YT Music" || sourceVal === "YouTube Music" || sourceVal === "Music (Desktop)");
-
-        if (isYTMusic) {
-            sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
-        } else {
-            sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open Track" style="cursor: pointer; background: #000; color: white; border-radius: 4px; font-size: 10px; padding: 4px 6px; font-weight: 600;">${safeHTML(item.Source)}</div>`;
-        }
-
-        const fallbackPlaceholder = isYTMusic ? `<img src="${ytLogo}" alt="YT Music">` : `<span>${safeHTML(item.Source || "Music")}</span>`;
-
-        return `
-                    <div class="layout-grid cat-music ${liveClass}" data-link="${link}" onclick="return playMusicInCard(event)">
-                        <div class="row-media">
-                            <div class="music-card-fallback"><img src="${ytLogo}" alt="YT Music"></div>
-                            <img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">
-                        </div>
-                        <div class="card-info">
-                            <div class="marquee-container track-marquee">
-                                <span class="marquee-content highlight-pulse"><h3 class="fill-anim">${trackVal}</h3></span>
-                            </div>
-                            <div class="marquee-container artist-marquee">
-                                <span class="marquee-content"><div class="music-artist-label">${artistVal}</div></span>
-                            </div>
-                        </div>
-                        ${sourceIconHTML}
-                    </div>
-                `;
+        return renderMusicCardHTML({ artist, track, link, thumb, source, count });
     }).join("");
 
     container.innerHTML = `
@@ -1490,50 +1496,78 @@ async function renderRewindSection(container, type) {
         container.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">No music data found.</div>`;
         return;
     }
+    const seenSongs = new Set();
+    const cardsHTML = items.slice(0, 3).map((item) => {
+        // Map to our unified structure with extreme resilience (Objects vs Strings)
+        let track = "Unknown Track";
+        let artistVal = "Unknown Artist";
+        let count = item.count || 0;
 
-    const cardsHTML = items.slice(0, 3).map((item, index) => {
-        // Universal Case Resolver
-        const trackVal = item.track || item.Track || item.Song || item.track || item.name || "Unknown Track";
-        const artistVal = item.artist || item.Artist || (item.name && !item.track ? null : "Unknown Artist");
-        const count = item.count || 0;
-        
-        // Try to get a thumbnail from musicDb for high-fidelity square art
-        let thumb = null; // Default
-        let link = `https://music.youtube.com/search?q=${encodeURIComponent(trackVal + (artistVal ? " " + artistVal : ""))}`;
+        if (typeof item === 'string') {
+            if (item.includes(" - ")) {
+                const parts = item.split(" - ");
+                artistVal = parts[0].trim();
+                track = parts[1].trim();
+            } else {
+                track = item.trim();
+                artistVal = (type === 'top-artists') ? item.trim() : "Unknown Artist";
+            }
+        } else if (item && typeof item === 'object') {
+            track = item.track || item.Track || item.Song || item.name || item.Name || item.title || "Unknown Track";
+            artistVal = item.artist || item.Artist || item.author || (item.name && !item.track ? item.name : "Unknown Artist");
 
-        if (typeof musicDb !== 'undefined') {
-            const match = musicDb.find(m => {
-                const fuzzyM = fuzzyNorm_(m.track || m.Track || m.Song || "");
-                const fuzzyL = fuzzyNorm_(trackVal);
-                if (artistVal) {
-                    return fuzzyM === fuzzyL && (m.artist || m.Artist || "").includes(artistVal);
-                } else {
-                    return fuzzyNorm_(m.artist || m.Artist || "") === fuzzyNorm_(trackVal);
-                }
-            });
-            if (match && (match.thumbnail || match.Thumbnail)) thumb = (match.thumbnail || match.Thumbnail).replace(/^http:\/\//i, "https://");
-            if (match && (match.link || match.Link)) link = (match.link || match.Link);
+            // Display Guard: If the backend returns "Unknown" for the track, lead with the artist
+            if (track === "Unknown" || track === "Unknown Track") {
+                track = artistVal;
+                artistVal = (type === 'top-artists') ? "" : "Recent Track"; 
+            }
         }
 
-        const subLabel = artistVal ? artistVal : count + " plays";
+        let thumb = item.thumbnail || item.Thumbnail || null;
+        let link = item.link || item.Link || `https://music.youtube.com/search?q=${encodeURIComponent(track + (artistVal && artistVal !== "Unknown Artist" ? " " + artistVal : ""))}`;
 
-        return `
-            <div class="layout-grid cat-music" data-link="${link}" onclick="window.open('${link}', '_blank')">
-                <div class="row-media">
-                    <div class="music-card-fallback"><img src="${ytLogo}" alt="YT Music"></div>
-                    <img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">
-                </div>
-                <div class="card-info">
-                    <div class="marquee-container track-marquee">
-                        <span class="marquee-content"><h3 class="fill-anim">${trackVal}</h3></span>
-                    </div>
-                    <div class="marquee-container artist-marquee">
-                        <span class="marquee-content"><div class="music-artist-label">${subLabel}</div></span>
-                    </div>
-                </div>
-                <div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>
-            </div>
-        `;
+        // Phase 3: Priority Branding (Backend provided Top Song / Thumbnail)
+        if (type === 'top-artists' && item.topTrack) {
+            artistVal = item.topTrack; 
+        }
+
+        if (!thumb && typeof musicDb !== 'undefined') {
+            const match = musicDb.find(m => {
+                const fuzzyTrack = fuzzyNorm_(track);
+                if (type === 'top-artists') {
+                    // For artists, find the ONLY match that HASN'T been displayed yet in this grid
+                    const potentialSong = m.track || m.Track || m.Song || m.title;
+                    const fuzzySong = fuzzyNorm_(potentialSong || "");
+                    return fuzzyNorm_(m.artist || m.Artist || "") === fuzzyTrack && !seenSongs.has(fuzzySong);
+                } else {
+                    return fuzzyNorm_(m.track || m.Track || m.Song || "") === fuzzyTrack;
+                }
+            });
+            if (match) {
+                if (!thumb) thumb = match.thumbnail || match.Thumbnail;
+                if (!item.link) link = match.link || match.Link;
+                
+                // Top Artist: Strictly show their #1 track as the sub-label
+                if (type === 'top-artists') {
+                    const topSong = match.track || match.Track || match.Song || match.title;
+                    if (topSong && fuzzyNorm_(topSong) !== fuzzyNorm_(track) && !item.topTrack) {
+                        artistVal = topSong;
+                    }
+                }
+            }
+        }
+
+        // Final Sanity Guard: Deduplicate titles and names across the grid
+        const lowTrack = fuzzyNorm_(track);
+        const lowArtistVal = fuzzyNorm_(artistVal);
+        if (lowTrack === lowArtistVal || artistVal === "Unknown Artist" || seenSongs.has(lowArtistVal)) {
+            artistVal = (type === 'top-artists') ? "" : "Recent Track"; 
+        }
+        
+        // Mark this song as "Seen" to prevent it being guessed for the next card
+        if (artistVal && artistVal !== "Recent Track") seenSongs.add(lowArtistVal);
+
+        return renderMusicCardHTML({ artist: artistVal, track, link, thumb, source: "YT Music", count });
     }).join("");
 
     container.innerHTML = `
@@ -1600,7 +1634,10 @@ async function renderMusicCluster(container) {
     container.innerHTML = `<div class="music-sections-container"><div class="loader-overlay" style="border-radius:var(--card-radius); height:120px; width:100%;"><div class="spinner"></div></div></div>`;
 
     // Fetch details for each independently 
-    const cardsData = await Promise.all(urls.map(async (rawLink) => {
+    const cardsData = await Promise.all(urls.map(async (rawLink, index) => {
+        // Stagger requests to NoEmbed to avoid 503 rate limiting (150ms intervals)
+        if (index > 0) await new Promise(r => setTimeout(r, index * 150));
+
         const bareURL = rawLink.trim();
         const ytId = getYouTubeID(bareURL);
 
@@ -1609,7 +1646,9 @@ async function renderMusicCluster(container) {
         let thumb = ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : null;
         let fromDb = false;
 
-        // 1. Cross-reference with our Music Logger DB for high-fidelity square album art
+        let count = null;
+
+        // 1. Cross-reference with our Music Logger DB for high-fidelity square album art & PLAY COUNTS
         if (typeof musicDb !== 'undefined') {
             const dbMatch = musicDb.find(item => item.Link && (item.Link.includes(ytId) || item.Link === bareURL));
             if (dbMatch) {
@@ -1619,11 +1658,17 @@ async function renderMusicCluster(container) {
                 }
                 if (dbMatch.Artist) artist = dbMatch.Artist;
                 if (dbMatch.Song || dbMatch.Track) track = dbMatch.Song || dbMatch.Track;
+
+                // QUANTIFIED SELF: If it's in our DB, find the real play count
+                // (Looking for any row that matches this Link or ID)
+                const allPlays = musicDb.filter(m => m.Link && (m.Link.includes(ytId) || m.Link === bareURL));
+                if (allPlays.length > 0) count = allPlays.length;
             }
         }
 
-        // 2. Fallback to scraping NoEmbed if it's a completely novel track we haven't logged
-        if (!fromDb || artist === "Unknown Artist" || track === "Unknown Track") {
+        // 2. Fallback to scraping NoEmbed ONLY if local DB is missing info or it's a completely novel track
+        const needsScrape = !fromDb || artist === "Unknown Artist" || track === "Unknown Track";
+        if (needsScrape) {
             try {
                 const noembedUrl = `https://noembed.com/embed?url=${encodeURIComponent(bareURL)}`;
                 const res = await fetch(noembedUrl);
@@ -1632,7 +1677,9 @@ async function renderMusicCluster(container) {
                     if (data.title && track === "Unknown Track") track = data.title;
                     if (data.author_name && artist === "Unknown Artist") artist = data.author_name.replace(" - Topic", "");
                 }
-            } catch (e) { }
+            } catch (e) {
+                // Silently fall back to DB/placeholders if service is down
+            }
         }
 
 
@@ -1643,7 +1690,8 @@ async function renderMusicCluster(container) {
             artist: safeHTML(artist),
             track: safeHTML(track),
             thumb: thumb ? thumb.replace(/^http:\/\//i, "https://") : null,
-            source: "YT Music"
+            source: "YT Music",
+            count: count
         };
     }));
 
@@ -1651,28 +1699,8 @@ async function renderMusicCluster(container) {
     const renderHash = JSON.stringify(cardsData);
     if (container.getAttribute('data-last-render') === renderHash) return;
     container.setAttribute('data-last-render', renderHash);
-
-    const cardsHTML = cardsData.map((item, index) => {
-        const sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
-
-        return `
-                    <div class="layout-grid cat-music" data-link="${item.link}" onclick="return playMusicInCard(event)">
-                        <div class="row-media">
-                            ${item.thumb ? `<div class="loader-overlay"><div class="spinner"></div></div>` : ''}
-                            <div class="music-card-fallback"><img src="${ytLogo}" alt="YT Music"></div>
-                            ${item.thumb ? `<img src="${item.thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
-                        </div>
-                        <div class="card-info">
-                            <div class="marquee-container track-marquee">
-                                <span class="marquee-content"><h3 class="fill-anim">${item.track}</h3></span>
-                            </div>
-                            <div class="marquee-container artist-marquee">
-                                <span class="marquee-content"><div class="music-artist-label">${item.artist}</div></span>
-                            </div>
-                        </div>
-                        ${sourceIconHTML}
-                    </div>
-                `;
+    const cardsHTML = cardsData.map((item) => {
+        return renderMusicCardHTML(item);
     }).join("");
 
     container.innerHTML = `
@@ -1805,7 +1833,10 @@ function extractMediaFromContent(content) {
     if (!content) return null;
     const url = content.trim();
 
-    if (getYouTubeID(url)) return { type: 'yt', id: getYouTubeID(url) };
+    if (getYouTubeID(url)) {
+        if (url.includes('music.youtube.com')) return { type: 'music-card', id: getYouTubeID(url), url };
+        return { type: 'yt', id: getYouTubeID(url), url };
+    }
     if (url.match(/\.glb(?:-[a-zA-Z0-9_-]+)*/i)) {
         const fullUrl = (url.startsWith('assets/') || url.startsWith('http')) ? url : `assets/models/${url}`;
         return { type: 'glb', url: fullUrl };
@@ -2818,6 +2849,10 @@ function renderContentBlock(block, index, allBlocks) {
 
         case 'gallery':
             return renderUnifiedGallery(block.items, block.sharedCaption);
+
+        case 'music-cluster':
+            const urls = block.items.map(i => i.url).join(',');
+            return `<div class="music-embed-container" data-needs-init="true" data-type="music-cluster" data-urls="${urls}"></div>`;
 
         case 'button':
             return renderButtonHTML(block.text, block.url, block.color);
