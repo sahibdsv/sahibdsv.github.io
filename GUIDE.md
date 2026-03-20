@@ -12,12 +12,10 @@ You can build complex pages by placing these specialized blocks on their own lin
 These tags fetch real-time data from your unified JSON API.
 
 - **`{Recently Played}`** or **`{Recent Music}`**: Renders a grid of your 3 most recently logged tracks.
-- **`{Top Artists}`**: A 3-item grid of your most-played artists.
-- **`{Top Songs}`**: A 3-item grid of all-time most-played tracks.
-- **`{Fresh Favorites}`**: A 3-item grid of songs in "replay obsession" status.
-- **`{AllTimeTopArtist}`**: A 3-item grid featuring the top tracks by your #1 most-played artist.
-- **`{AllTimeTopSong}`**: A 3-item grid featuring your #1 song + related discovery tracks.
-- **`{Random Quote}`**: Injects a randomized Quote Discovery Card from your Quote API. 
+- `{Top Artists}`: Renders a 3-item grid of most-played artists.
+- `{Top Songs}`: Renders a 3-item grid of all-time most-played tracks.
+- `{Fresh Favorites}`: Renders a 3-item grid of tracks currently in a "replay loop."
+- `{Random Quote}`: Injects a randomized Quote Discovery Card from your Quote API. 
 
 ### 🧬 High-Fidelity Media (Extension-Based)
 Simply write the filename on its own line. No prefix tags needed.

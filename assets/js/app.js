@@ -190,7 +190,7 @@ async function fetchDataAndCache() {
     try {
         const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal] = await Promise.all([
             fetchCSV(CONFIG.main_sheet),
-            fetch(CONFIG.quotes_api).then(res => res.json()).catch(e => {
+            fetch(CONFIG.quotes_api, { cache: 'no-store' }).then(res => res.json()).catch(e => {
                 console.warn('Quotes API fetch failed', e);
                 return [];
             }),
@@ -198,7 +198,7 @@ async function fetchDataAndCache() {
                 console.warn('Resume fetch failed', e);
                 return [];
             }),
-            fetch(CONFIG.music_api).then(res => res.json()).catch(e => {
+            fetch(CONFIG.music_api, { cache: 'no-store' }).then(res => res.json()).catch(e => {
                 console.warn('Music API fetch failed', e);
                 return { recent: [], rewind: null };
             })
@@ -249,8 +249,6 @@ async function fetchDataAndCache() {
         document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
         document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
         document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
-        document.querySelectorAll('[data-type="all-time-top-artist"]').forEach(el => renderRewindSection(el, 'all-time-top-artist'));
-        document.querySelectorAll('[data-type="all-time-top-song"]').forEach(el => renderRewindSection(el, 'all-time-top-song'));
         document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
 
         return [db, quotesDb, resumeDb, musicDb];
@@ -1433,7 +1431,7 @@ function renderRecentMusic(container) {
                     <div class="layout-grid cat-music ${liveClass}" data-link="${link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
                             ${thumb ? `<div class="loader-overlay"><div class="spinner"></div></div>` : ''}
-                            <div class="music-card-fallback">${fallbackPlaceholder}</div>
+                            <div class="music-card-fallback"><img src="${ytLogo}" alt="YT Music"></div>
                             ${thumb ? `<img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
                         <div class="card-info">
@@ -1479,26 +1477,14 @@ async function renderRewindSection(container, type) {
         return;
     }
 
-    // 1. Handle PLAIN TEXT INJECTIONS (Inline tags inside spans)
-    if (container.tagName.toLowerCase() === 'span') {
-        if (type === 'all-time-top-artist') {
-            container.innerHTML = `<strong>${safeHTML(data.allTimeTopArtist?.name || "None")}</strong>`;
-        } else if (type === 'all-time-top-song') {
-            container.innerHTML = `<strong>${safeHTML(data.allTimeTopSong?.name || "None")}</strong>`;
-        }
-        return;
-    }
-
     const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
 
-    // 2. Select Relevant Items for the 3-item Grid
+    // 1. Select Relevant Items for the 3-item Grid
     let items = [];
     let title = "";
     if (type === 'top-artists') { items = data.topArtists || []; title = "Top Artists"; }
     if (type === 'top-songs') { items = data.topSongs || []; title = "Top Songs"; }
     if (type === 'fresh-favorites') { items = data.freshFavorites || []; title = "Fresh Favorites"; }
-    if (type === 'all-time-top-artist') { items = data.allTimeTopArtist?.tracks || []; title = "Top tracks by " + (data.allTimeTopArtist?.name || ""); }
-    if (type === 'all-time-top-song') { items = data.allTimeTopSong?.related || []; title = "Top song & related"; }
 
     if (items.length === 0) {
         container.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">No music data found.</div>`;
@@ -1506,13 +1492,16 @@ async function renderRewindSection(container, type) {
     }
 
     const cardsHTML = items.slice(0, 3).map((item, index) => {
-        const isSong = !!(item.track || item.Song);
-        const label1 = safeHTML(item.track || item.Song || item.name || "Unknown");
+        // Robust property extraction handling multiple cases from Apps Script
+        const trackName = item.track || item.Song || item.Track || item.name || item.Name || "Unknown Track";
+        const artistName = item.artist || item.Artist || item.author || "Unknown Artist";
+        const isSong = !!(item.track || item.Song || item.Track);
+        const label1 = safeHTML(trackName);
         const count = item.count || 0;
-        const artist = item.artist ? safeHTML(item.artist) : (isSong ? "Unknown Artist" : null);
+        const artist = isSong ? safeHTML(artistName) : null;
         
         // Try to get a thumbnail from musicDb for high-fidelity square art
-        let thumb = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg"; // Default
+        let thumb = null; // Default
         let link = `https://music.youtube.com/search?q=${encodeURIComponent(label1 + (artist && !artist.includes("plays") ? " " + artist : ""))}`;
 
         if (typeof musicDb !== 'undefined') {
@@ -1673,13 +1662,11 @@ async function renderMusicCluster(container) {
     const cardsHTML = cardsData.map((item, index) => {
         const sourceIconHTML = `<div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>`;
 
-        const fallbackPlaceholder = `<img src="${ytLogo}" alt="YT Music">`;
-
         return `
                     <div class="layout-grid cat-music" data-link="${item.link}" onclick="return playMusicInCard(event)">
                         <div class="row-media">
                             ${item.thumb ? `<div class="loader-overlay"><div class="spinner"></div></div>` : ''}
-                            <div class="music-card-fallback">${fallbackPlaceholder}</div>
+                            <div class="music-card-fallback"><img src="${ytLogo}" alt="YT Music"></div>
                             ${item.thumb ? `<img src="${item.thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">` : ''}
                         </div>
                         <div class="card-info">
@@ -2563,15 +2550,13 @@ function processBlock(lines) {
     }
 
     // 5. Dynamic Tag Detection (Expanded to allow flexible inclusion)
-    const musicTag = lines.some(l => l.trim().match(/\{(Recent Music|Recently Played|Top Artists|Top Songs|Fresh Favorites|AllTimeTopArtist|AllTimeTopSong)\}/i));
+    const musicTag = lines.some(l => l.trim().match(/\{(Recent Music|Recently Played|Top Artists|Top Songs|Fresh Favorites)\}/i));
     if (musicTag) {
         const line = combinedBlock.trim();
         if (line.match(/^\{(Recent Music|Recently Played)\}$/i)) return { type: 'music' };
         if (line.match(/^\{Top Artists\}$/i)) return { type: 'top-artists' };
         if (line.match(/^\{Top Songs\}$/i)) return { type: 'top-songs' };
         if (line.match(/^\{Fresh Favorites\}$/i)) return { type: 'fresh-favorites' };
-        if (line.match(/^\{AllTimeTopArtist\}$/i)) return { type: 'all-time-top-artist' };
-        if (line.match(/^\{AllTimeTopSong\}$/i)) return { type: 'all-time-top-song' };
     }
 
     const quoteTag = lines.some(l => l.trim().match(/\{Random Quote\}/i));
@@ -2860,12 +2845,6 @@ function renderContentBlock(block, index, allBlocks) {
         case 'fresh-favorites':
             return `<div class="music-embed-container" data-needs-init="true" data-type="fresh-favorites"></div>`;
 
-        case 'all-time-top-artist':
-            return `<div class="music-embed-container" data-needs-init="true" data-type="all-time-top-artist"></div>`;
-
-        case 'all-time-top-song':
-            return `<div class="music-embed-container" data-needs-init="true" data-type="all-time-top-song"></div>`;
-
         case 'toc':
             return renderTOC(allBlocks, index);
 
@@ -3048,12 +3027,10 @@ function processInlineMarkdown(text, depth = 0) {
         result = result.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
 
         // B. DYNAMIC TAGS: {Recently Played}, {Random Quote}, Rewind Stats
-        result = result.replace(/\{(Recent Music|Recently Played)\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="recent-music"></div>');
-        result = result.replace(/\{Top Artists\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="top-artists"></div>');
-        result = result.replace(/\{Top Songs\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="top-songs"></div>');
-        result = result.replace(/\{Fresh Favorites\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="fresh-favorites"></div>');
-        result = result.replace(/\{AllTimeTopArtist\}/gi, '<span data-needs-init="true" data-type="all-time-top-artist"></span>');
-        result = result.replace(/\{AllTimeTopSong\}/gi, '<span data-needs-init="true" data-type="all-time-top-song"></span>');
+        result = result.replace(/\{(Recent Music|Recently Played)\}/gi, '<span data-needs-init="true" data-type="recent-music"></span>');
+        result = result.replace(/\{Top Artists\}/gi, '<span data-needs-init="true" data-type="top-artists"></span>');
+        result = result.replace(/\{Top Songs\}/gi, '<span data-needs-init="true" data-type="top-songs"></span>');
+        result = result.replace(/\{Fresh Favorites\}/gi, '<span data-needs-init="true" data-type="fresh-favorites"></span>');
         result = result.replace(/\{Random Quote\}/gi, '<div class="layout-quote" data-needs-init="true" data-title="random quote"></div>');
     }
 
