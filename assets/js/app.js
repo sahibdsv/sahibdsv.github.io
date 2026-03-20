@@ -152,6 +152,8 @@ function getNextQuote() {
 }
 
 // App Initialization
+fetchDataAndCache();
+
 let _appInitialized = false;
 function startApp() {
     if (_appInitialized) {
