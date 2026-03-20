@@ -192,6 +192,10 @@ async function fetchDataAndCache() {
         // Phase 0: Instant Cache Recovery
         const cachedDb = localStorage.getItem('db_cache');
         const cachedResume = localStorage.getItem('resume_cache');
+        const cachedQuotes = localStorage.getItem('quotes_cache');
+        const cachedMusic = localStorage.getItem('music_cache');
+        const cachedRewind = localStorage.getItem('rewind_cache');
+        
         let hasCache = false;
 
         if (cachedDb) {
@@ -204,34 +208,43 @@ async function fetchDataAndCache() {
             resumeDb = JSON.parse(cachedResume);
             hasCache = true;
         }
+        if (cachedQuotes) {
+            quotesDb = JSON.parse(cachedQuotes);
+        }
+        if (cachedMusic) {
+            musicDb = JSON.parse(cachedMusic);
+        }
+        if (cachedRewind) {
+            _rewindData = JSON.parse(cachedRewind);
+        }
 
         // If we have cache, trigger the first render immediately
         if (hasCache) {
             startApp();
         }
 
-        // Phase 1: Critical Path (Home Data & Resume)
-        const [mainRaw, resumeRaw] = await Promise.all([
+        // Phase 1: PARALLEL AGGREGATION (Minimize total wait time)
+        // We fetch ALL data in parallel to overlap the high cold-start latency of GAS.
+        const [mainRaw, resumeRaw, quotesRes, musicRes] = await Promise.all([
             fetch(CONFIG.main_sheet).then(res => res.text()),
             fetch(CONFIG.resume_sheet).then(res => res.text()).catch(e => {
                 console.warn('Resume fetch failed', e);
                 return "";
+            }),
+            fetch(CONFIG.quotes_api).then(res => res.json()).catch(e => {
+                console.warn('Quotes fetch failed', e);
+                return null;
+            }),
+            fetch(CONFIG.music_api).then(res => res.json()).catch(e => {
+                console.warn('Music fetch failed', e);
+                return null;
             })
         ]);
 
-        // COMPARISON & RECOVERY: Update DBs even if raw comparison is identical to ensure cache consistency
+        // Process Main DB & Resume
         const mainData = parseCSV(mainRaw);
         const resumeDbLocal = parseCSV(resumeRaw);
-
         const filtered = mainData.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
-        
-        // Cache Check for Quotes (Phase 0.5)
-        const cachedQuotes = localStorage.getItem('quotes_cache');
-        if (cachedQuotes) {
-            quotesDb = JSON.parse(cachedQuotes);
-            // Trigger an immediate re-render of any existing quote cards if we just got them from cache
-            document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
-        }
 
         const currentMainRaw = localStorage.getItem('db_raw_cache');
         const currentResumeRaw = localStorage.getItem('resume_raw_cache');
@@ -241,17 +254,28 @@ async function fetchDataAndCache() {
         resumeDb = (resumeDbLocal || []).map(entry => {
             if (entry.Page && entry.Page.includes('#')) {
                 const [page, sectionType] = entry.Page.split('#');
-                return {
-                    ...entry,
-                    Page: page,
-                    SectionType: sectionType
-                };
+                return { ...entry, Page: page, SectionType: sectionType };
             }
             return entry;
         });
         window.db = db;
 
-        // Persist fresh data and the raw strings for comparison next time
+        // Process Quotes
+        if (quotesRes) {
+            const quotesRaw = quotesRes.quotes || quotesRes.data || quotesRes.items || quotesRes.rows || quotesRes.content || quotesRes;
+            quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
+            localStorage.setItem('quotes_cache', JSON.stringify(quotesDb));
+        }
+
+        // Process Music
+        if (musicRes && !musicRes.error) {
+            musicDb = musicRes.recent || [];
+            _rewindData = musicRes.rewind || null;
+            localStorage.setItem('music_cache', JSON.stringify(musicDb));
+            if (_rewindData) localStorage.setItem('rewind_cache', JSON.stringify(_rewindData));
+        }
+
+        // Persist fresh critical data
         localStorage.setItem('db_cache', JSON.stringify(db));
         localStorage.setItem('resume_cache', JSON.stringify(resumeDb));
         localStorage.setItem('db_raw_cache', mainRaw);
@@ -259,34 +283,25 @@ async function fetchDataAndCache() {
 
         initFuse(db);
 
-        // Only trigger a second render if we didn't have cache OR if the network data is different
+        // Only trigger a second render if we didn't have cache OR if critical data changed
         if (!hasCache || dataChanged) {
             startApp();
         }
 
-        // Phase 2: Background Loading (Heavy APIs)
-        fetch(CONFIG.quotes_api).then(res => res.json()).then(res => {
-            const quotesRaw = res.quotes || res.data || res.items || res.rows || res.content || res;
-            quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
-            localStorage.setItem('quotes_cache', JSON.stringify(quotesDb));
+        // If background APIs updated, trigger surgical UI updates for dynamic elements
+        if (quotesRes) {
             document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
-        }).catch(e => console.warn('Background Quotes fetch failed', e));
-
-        fetch(CONFIG.music_api).then(res => res.json()).then(res => {
-            if (res && !res.error) {
-                musicDb = res.recent || [];
-                _rewindData = res.rewind || null;
-                document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
-                document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
-                document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
-                document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
-            }
-        }).catch(e => console.warn('Background Music fetch failed', e));
+        }
+        if (musicRes) {
+            document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
+            document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
+            document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
+            document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
+        }
 
         return [db, quotesDb, resumeDb, musicDb];
     } catch (e) {
         console.error('Fetch failed', e);
-        // Ensure app starts even on network failure if we have cache
         if (db.length > 0) startApp();
     }
 }
