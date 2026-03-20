@@ -1332,8 +1332,14 @@ function renderQuoteCard(container) {
         quoteData = _activeRandomQuote;
         isRandom = true;
     } else {
+        const staticQuote = container.getAttribute("data-static-quote");
+        if (!staticQuote) {
+            // If it's a static card but we have no content yet, it's likely waiting for background sync
+            container.innerHTML = renderEmptyStateHTML("Syncing Quotes...", true);
+            return;
+        }
         quoteData = {
-            Quote: container.getAttribute("data-static-quote") || "No content.",
+            Quote: staticQuote,
             Author: container.getAttribute("data-static-author") || "Unknown",
             Source: null
         };
