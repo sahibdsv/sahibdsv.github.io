@@ -928,7 +928,7 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
 
     const header = document.getElementById("main-header");
     if (header && !isSwipe) header.classList.remove("scrolled");
-    if (!isSwipe) window.scrollTo({
+    window.scrollTo({
         top: 0,
         behavior: 'instant'
     });
