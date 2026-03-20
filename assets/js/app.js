@@ -166,8 +166,8 @@ fetchDataAndCache().then(() => {
 });
 
 function startApp() {
-    // Initial Skeleton setup
-    showPageLoader();
+    // Initial Skeleton setup - Site already has a static loader in index.html, we don't need another!
+    // showPageLoader(); 
 
     initApp();
     updateSEO();
@@ -190,7 +190,7 @@ async function fetchDataAndCache() {
     try {
         const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal] = await Promise.all([
             fetchCSV(CONFIG.main_sheet),
-            fetch(CONFIG.quotes_api, { cache: 'no-store' }).then(res => res.json()).catch(e => {
+            fetch(CONFIG.quotes_api, { cache: 'no-store' }).then(res => res.json()).then(res => res.quotes || []).catch(e => {
                 console.warn('Quotes API fetch failed', e);
                 return [];
             }),
@@ -209,10 +209,29 @@ async function fetchDataAndCache() {
         }
 
         db = filtered;
-        // Ensure quotesDb is always an array (handle backend error objects)
-        quotesDb = Array.isArray(quotesDbLocal) ? quotesDbLocal : [];
-        musicDb = musicDbLocal && musicDbLocal.recent ? musicDbLocal.recent : [];
-        _rewindData = musicDbLocal && musicDbLocal.rewind ? musicDbLocal.rewind : null;
+        // Phase 3 Resilience: Handle backend returning {quotes: []}, {data: []}, or {rows: []}
+        let quotesRaw = quotesDbLocal;
+        if (quotesDbLocal && quotesDbLocal.error) {
+            console.error('Quotes API Exception Error:', quotesDbLocal.error);
+            console.warn('ACTION REQUIRED: Your Google Apps Script has an invalid Spreadsheet ID. Please verify the ID in your script editor.');
+            quotesRaw = [];
+        } else if (quotesDbLocal && !Array.isArray(quotesDbLocal)) {
+            quotesRaw = quotesDbLocal.quotes || quotesDbLocal.data || quotesDbLocal.items || quotesDbLocal.rows || quotesDbLocal.content || [];
+        }
+        
+        quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
+        if (quotesDb.length === 0) {
+            console.warn('Quotes Handshake Warning: API returned empty or invalid structure. Keys:', Object.keys(quotesDbLocal || {}), 'Full Data:', quotesDbLocal);
+        }
+        // Phase 3 Resilience: Handle backend returning {error: "..."} for Music
+        if (musicDbLocal && musicDbLocal.error) {
+            console.error('Music API Exception Error:', musicDbLocal.error);
+            musicDb = [];
+            _rewindData = null;
+        } else {
+            musicDb = musicDbLocal && musicDbLocal.recent ? musicDbLocal.recent : [];
+            _rewindData = musicDbLocal && musicDbLocal.rewind ? musicDbLocal.rewind : null;
+        }
         resumeDb = (resumeDbLocal || []).map(entry => {
             if (entry.Page && entry.Page.includes('#')) {
                 const [page, sectionType] = entry.Page.split('#');
@@ -1221,6 +1240,8 @@ function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecent
     });
 
     if (gridBuffer) htmlBuffer += `<div class="grid-container section">${gridBuffer}</div>`;
+    
+    // ATOMIC SWAP: Clears any loaders or stale content on first render, then appends subsequent home sections
     if (isHome) {
         container.innerHTML += htmlBuffer;
     } else {
@@ -1287,7 +1308,7 @@ function renderQuoteCard(container) {
 
     if (title === "{random quote}" || title === "random quote") {
         if (quotesDb.length === 0) {
-            container.innerHTML = "Quote sheet empty.";
+            container.innerHTML = renderEmptyStateHTML("Quote sheet empty.");
             return;
         }
         if (!_activeRandomQuote) _activeRandomQuote = getNextQuote();
@@ -1419,9 +1440,13 @@ function renderMusicCardHTML(item) {
     `;
 }
 
+function renderEmptyStateHTML(message) {
+    return `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">${message}</div>`;
+}
+
 function renderRecentMusic(container) {
     if (musicDb.length === 0) {
-        container.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">No music logged recently.</div>`;
+        container.innerHTML = renderEmptyStateHTML("No music logged recently.");
         return;
     }
 
@@ -1480,7 +1505,7 @@ function fuzzyNorm_(str) {
 async function renderRewindSection(container, type) {
     const data = await fetchRewindData();
     if (!data) {
-        container.innerHTML = `<div style="padding:20px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:12px;">Failed to load music stats.</div>`;
+        container.innerHTML = renderEmptyStateHTML("Failed to load music stats.");
         return;
     }
 
@@ -1493,7 +1518,7 @@ async function renderRewindSection(container, type) {
     if (type === 'fresh-favorites') { items = data.freshFavorites || []; title = "Fresh Favorites"; }
 
     if (items.length === 0) {
-        container.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">No music data found.</div>`;
+        container.innerHTML = renderEmptyStateHTML("No music data found.");
         return;
     }
     const seenSongs = new Set();

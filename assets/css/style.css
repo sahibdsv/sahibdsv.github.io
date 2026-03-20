@@ -2541,19 +2541,19 @@
             z-index: 2;
         }
 
-        /* Branding Lockout: Absolutely forces any Logo-as-Thumbnail into a centered 
-           50% neutral state ONLY when it's acting as a main media placeholder. */
-        .row-media img[src*="Youtube_Music_icon.svg" i] {
-            width: 50% !important;
-            height: auto !important;
-            aspect-ratio: 1/1 !important;
-            object-fit: contain !important;
-            position: absolute !important;
-            inset: 0 !important;
-            margin: auto !important;
-            opacity: 0.18 !important;
-            filter: grayscale(100%) brightness(0.7) !important;
-            transition: opacity var(--anim-quick) var(--ease), filter var(--anim-quick) var(--ease) !important;
+        /* Branding Lockout: No '!important' as per Rule #1. 
+           Uses parent specificity to force SVG Logo-as-Thumbnail into a centered 50% neutral state. */
+        .music-sections-container .row-media img[src*="Youtube_Music_icon.svg" i] {
+            width: 50%;
+            height: auto;
+            aspect-ratio: 1/1;
+            object-fit: contain;
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            opacity: 0.18;
+            filter: grayscale(100%) brightness(0.7);
+            transition: opacity var(--anim-quick) var(--ease), filter var(--anim-quick) var(--ease);
         }
 
         .music-yt-overlay {
