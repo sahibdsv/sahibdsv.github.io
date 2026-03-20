@@ -211,13 +211,21 @@ async function fetchDataAndCache() {
         }
 
         // Phase 1: Critical Path (Home Data & Resume)
-        const [mainData, resumeDbLocal] = await Promise.all([
-            fetchCSV(CONFIG.main_sheet),
-            fetchCSV(CONFIG.resume_sheet).catch(e => {
+        const [mainRaw, resumeRaw] = await Promise.all([
+            fetch(CONFIG.main_sheet).then(res => res.text()),
+            fetch(CONFIG.resume_sheet).then(res => res.text()).catch(e => {
                 console.warn('Resume fetch failed', e);
-                return [];
+                return "";
             })
         ]);
+
+        // Comparison: Only re-render if data has actually changed from what's in cache
+        const currentMainRaw = localStorage.getItem('db_raw_cache');
+        const currentResumeRaw = localStorage.getItem('resume_raw_cache');
+        const dataChanged = mainRaw !== currentMainRaw || resumeRaw !== currentResumeRaw;
+
+        const mainData = parseCSV(mainRaw);
+        const resumeDbLocal = parseCSV(resumeRaw);
 
         const filtered = mainData.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
         db = filtered;
@@ -234,15 +242,18 @@ async function fetchDataAndCache() {
         });
         window.db = db;
 
-        // Persist fresh data
+        // Persist fresh data and the raw strings for comparison next time
         localStorage.setItem('db_cache', JSON.stringify(db));
         localStorage.setItem('resume_cache', JSON.stringify(resumeDb));
+        localStorage.setItem('db_raw_cache', mainRaw);
+        localStorage.setItem('resume_raw_cache', resumeRaw);
 
         initFuse(db);
 
-        // If we didn't have cache, this is the first time we can start the app
-        // If we DID have cache, this triggers a "refresh" to show any new content
-        startApp();
+        // Only trigger a second render if we didn't have cache OR if the network data is different
+        if (!hasCache || dataChanged) {
+            startApp();
+        }
 
         // Phase 2: Background Loading (Heavy APIs)
         fetch(CONFIG.quotes_api).then(res => res.json()).then(res => {
