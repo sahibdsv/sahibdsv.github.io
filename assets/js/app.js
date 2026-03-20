@@ -92,9 +92,9 @@ const isTrueMobile = window.matchMedia("(pointer: coarse) and (hover: none)").ma
 
 const CONFIG = {
     main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
-    quotes_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv',
     resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv',
-    music_api: 'https://script.google.com/macros/s/AKfycbzckpVUwZeqC1aivD2x5XJr7aCsH-aVdb2nW18bO8jYG8rclZNyDVi-SElCR-XjNhOBfg/exec'
+    music_api: 'https://script.google.com/macros/s/AKfycbzckpVUwZeqC1aivD2x5XJr7aCsH-aVdb2nW18bO8jYG8rclZNyDVi-SElCR-XjNhOBfg/exec',
+    quotes_api: 'https://script.google.com/macros/s/AKfycbzckpVUwZeqC1aivD2x5XJr7aCsH-aVdb2nW18bO8jYG8rclZNyDVi-SElCR-XjNhOBfg/exec?type=quotes'
 };
 
 // Quote Randomness Logic (Fisher-Yates Shuffle Bag)
@@ -139,10 +139,16 @@ function getNextQuote() {
 
     _lastQuoteIndex = nextIndex;
     const selected = quotesDb[_lastQuoteIndex];
-    _activeRandomQuote = selected;
 
+    // Support server-side JSON property names while maintaining legacy CSV compatibility
+    const normalized = {
+        Quote: selected.Quote || selected.quote || selected.content || "",
+        Author: selected.Author || selected.author || "Unknown",
+        Source: selected.Source || selected.source || null
+    };
 
-    return selected;
+    _activeRandomQuote = normalized;
+    return normalized;
 }
 
 // App Initialization
@@ -184,8 +190,8 @@ async function fetchDataAndCache() {
     try {
         const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal] = await Promise.all([
             fetchCSV(CONFIG.main_sheet),
-            fetchCSV(CONFIG.quotes_sheet).catch(e => {
-                console.warn('Quotes fetch failed', e);
+            fetch(CONFIG.quotes_api).then(res => res.json()).catch(e => {
+                console.warn('Quotes API fetch failed', e);
                 return [];
             }),
             fetchCSV(CONFIG.resume_sheet).catch(e => {
