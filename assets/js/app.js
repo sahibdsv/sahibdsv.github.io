@@ -1412,7 +1412,7 @@ function renderRecentMusic(container) {
             const searchQuery = encodeURIComponent(artistVal + " " + trackVal);
             link = `https://music.youtube.com/search?q=${searchQuery}`;
         }
-        const thumb = thumbVal.replace(/^http:\/\//i, "https://");
+        const thumb = thumbVal ? thumbVal.replace(/^http:\/\//i, "https://") : null;
 
         // Waveform Atmosphere logic - User opted to remove default 'is-playing' marker
         let liveClass = "";
@@ -1498,7 +1498,7 @@ async function renderRewindSection(container, type) {
         const count = item.count || 0;
         
         // Try to get a thumbnail from musicDb for high-fidelity square art
-        let thumb = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg"; // Default
+        let thumb = null; // Default
         let link = `https://music.youtube.com/search?q=${encodeURIComponent(trackVal + (artistVal ? " " + artistVal : ""))}`;
 
         if (typeof musicDb !== 'undefined') {
