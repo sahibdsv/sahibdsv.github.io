@@ -232,6 +232,11 @@ async function fetchDataAndCache() {
             // Trigger an immediate re-render of any existing quote cards if we just got them from cache
             document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
         }
+
+        const currentMainRaw = localStorage.getItem('db_raw_cache');
+        const currentResumeRaw = localStorage.getItem('resume_raw_cache');
+        const dataChanged = mainRaw !== currentMainRaw || resumeRaw !== currentResumeRaw;
+
         db = filtered;
         resumeDb = (resumeDbLocal || []).map(entry => {
             if (entry.Page && entry.Page.includes('#')) {
@@ -1352,6 +1357,7 @@ function renderQuoteCard(container) {
     if (title === "{random quote}" || title === "random quote") {
         if (quotesDb.length === 0) {
             container.innerHTML = renderEmptyStateHTML("", true);
+            // DO NOT remove loading class yet, as we want it to stay in 'honest loader' state
             return;
         }
         if (!_activeRandomQuote) _activeRandomQuote = getNextQuote();
