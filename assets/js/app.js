@@ -1175,7 +1175,7 @@ function renderCardHTML(entry, contextCategory = "") {
         }
 
         const p = processMediaUrl(src);
-        return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></div>`;
+        return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" decoding="async" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></div>`;
     };
 
     const mediaSources = [
@@ -2006,7 +2006,12 @@ _videoObserver = new IntersectionObserver((entries) => {
                 video.src = video.dataset.src;
             }
             if (video.dataset.autoplay === "true") {
-                video.play().catch(e => { });
+                const startPlay = () => video.play().catch(e => { });
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(startPlay, { timeout: 1000 });
+                } else {
+                    setTimeout(startPlay, 50);
+                }
             }
         } else {
             if (!video.paused) {

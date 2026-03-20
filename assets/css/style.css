@@ -812,7 +812,10 @@
             margin-bottom: var(--site-gap);
             opacity: 0;
             animation: fadeIn .4s forwards;
-            position: relative
+            position: relative;
+            /* Performance: Skip rendering of off-screen sections */
+            content-visibility: auto;
+            contain-intrinsic-size: 1px 500px; /* Placeholder height while off-screen */
         }
 
         .skeleton-visible {
@@ -922,6 +925,10 @@
             justify-content: center;
             text-align: center;
             flex-direction: column;
+            /* Performance: Promote to layer and skip rendering if off-screen */
+            content-visibility: auto;
+            contain-intrinsic-size: 1px 250px;
+            will-change: transform;
             /* Transition colors, but height is now static */
             transition: background var(--anim-quick) var(--ease);
             border-radius: var(--card-radius);
