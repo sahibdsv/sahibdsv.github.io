@@ -152,22 +152,15 @@ function getNextQuote() {
 }
 
 // App Initialization
-const init = () => {
-    // Theme preference listener only (Theme apply handled in HEAD)
-    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
-        if (!localStorage.getItem('theme')) {
-            document.documentElement.setAttribute('data-theme', e.matches ? 'light' : 'dark');
-        }
-    });
-};
-
-fetchDataAndCache().then(() => {
-    startApp();
-});
-
+let _appInitialized = false;
 function startApp() {
-    // Initial Skeleton setup - Site already has a static loader in index.html, we don't need another!
-    // showPageLoader(); 
+    if (_appInitialized) {
+        // Refresh existing UI with new data
+        updateSEO();
+        renderFooter();
+        handleRouting();
+        return;
+    }
 
     initApp();
     updateSEO();
@@ -179,32 +172,43 @@ function startApp() {
 
     requestAnimationFrame(() => {
         document.body.classList.remove('no-transition');
-        document.getElementById('main-header').classList.remove('no-transition');
+        document.getElementById('main-header')?.classList.remove('no-transition');
+        // If we have cache, the loader might already be gone via inline script, 
+        // but we ensure it's removed here once we have ANY data to show.
+        const sk = document.querySelector('.loader-overlay');
+        if (sk && (db.length > 0 || _appInitialized)) {
+            sk.classList.add('finished');
+            setTimeout(() => sk.remove(), 600);
+        }
     });
+    _appInitialized = true;
 }
-
-
 
 // fetchDataAndCache retrieves high-fidelity content across all sources
 async function fetchDataAndCache() {
     try {
         // Phase 0: Instant Cache Recovery
-        // We attempt to restore the last known database state from localStorage 
-        // to allow an "instant" render before the network even responds.
         const cachedDb = localStorage.getItem('db_cache');
         const cachedResume = localStorage.getItem('resume_cache');
+        let hasCache = false;
+
         if (cachedDb) {
             db = JSON.parse(cachedDb);
             window.db = db;
-            // Initialize Fuse with cached data so search works instantly
             initFuse(db);
+            hasCache = true;
         }
         if (cachedResume) {
             resumeDb = JSON.parse(cachedResume);
+            hasCache = true;
+        }
+
+        // If we have cache, trigger the first render immediately
+        if (hasCache) {
+            startApp();
         }
 
         // Phase 1: Critical Path (Home Data & Resume)
-        // We use cache: 'default' to allow browser caching, significantly speeding up repeat visits.
         const [mainData, resumeDbLocal] = await Promise.all([
             fetchCSV(CONFIG.main_sheet),
             fetchCSV(CONFIG.resume_sheet).catch(e => {
@@ -228,15 +232,17 @@ async function fetchDataAndCache() {
         });
         window.db = db;
 
-        // Persist to localStorage for Phase 0 next time
+        // Persist fresh data
         localStorage.setItem('db_cache', JSON.stringify(db));
         localStorage.setItem('resume_cache', JSON.stringify(resumeDb));
 
-        // Initialize Fuse.js (re-init with fresh data)
         initFuse(db);
 
+        // If we didn't have cache, this is the first time we can start the app
+        // If we DID have cache, this triggers a "refresh" to show any new content
+        startApp();
+
         // Phase 2: Background Loading (Heavy APIs)
-        // These are launched without 'await' to allow startApp() to proceed immediately.
         fetch(CONFIG.quotes_api).then(res => res.json()).then(res => {
             const quotesRaw = res.quotes || res.data || res.items || res.rows || res.content || res;
             quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
@@ -247,7 +253,6 @@ async function fetchDataAndCache() {
             if (res && !res.error) {
                 musicDb = res.recent || [];
                 _rewindData = res.rewind || null;
-                // Auto-refresh any dynamic music components currently in the DOM
                 document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
                 document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
                 document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
@@ -258,6 +263,8 @@ async function fetchDataAndCache() {
         return [db, quotesDb, resumeDb, musicDb];
     } catch (e) {
         console.error('Fetch failed', e);
+        // Ensure app starts even on network failure if we have cache
+        if (db.length > 0) startApp();
     }
 }
 
@@ -1318,7 +1325,7 @@ function renderQuoteCard(container) {
 
     if (title === "{random quote}" || title === "random quote") {
         if (quotesDb.length === 0) {
-            container.innerHTML = renderEmptyStateHTML("Quote sheet empty.");
+            container.innerHTML = renderEmptyStateHTML("Syncing Quotes...", true);
             return;
         }
         if (!_activeRandomQuote) _activeRandomQuote = getNextQuote();
@@ -3115,10 +3122,10 @@ function processInlineMarkdown(text, depth = 0) {
         result = result.replace(/\{Random Quote\}/gi, '<div class="layout-quote" data-needs-init="true" data-title="random quote"></div>');
     }
 
-    // Standard Markdown
-    result = result.replace(/\*\*(.*?)\*\*/g, (m, p1) => `<strong>${processInlineMarkdown(p1, depth + 1)}</strong>`);
-    result = result.replace(/__(.*?)__/g, (m, p1) => `<u>${processInlineMarkdown(p1, depth + 1)}</u>`);
-    result = result.replace(/\*(.*?)\*/g, (m, p1) => `<em>${processInlineMarkdown(p1, depth + 1)}</em>`);
+    // Standard Markdown (Multi-line support with [\s\S])
+    result = result.replace(/\*\*((?:[\s\S])*?)\*\*/g, (m, p1) => `<strong>${processInlineMarkdown(p1, depth + 1)}</strong>`);
+    result = result.replace(/__((?:[\s\S])*?)__/g, (m, p1) => `<u>${processInlineMarkdown(p1, depth + 1)}</u>`);
+    result = result.replace(/\*((?:[\s\S])*?)\*/g, (m, p1) => `<em>${processInlineMarkdown(p1, depth + 1)}</em>`);
     result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
 
     // D. INTERNAL WIKI LINKS: [[Page Title]] or [[Page/Path]]
