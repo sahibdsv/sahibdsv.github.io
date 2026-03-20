@@ -266,24 +266,30 @@ async function fetchDataAndCache() {
         }
 
         // Phase 2: BACKGROUND AGGREGATION (Music & Quotes)
-        // These are non-critical and can finish whenever they finish.
+        // Importance 'low' ensures these don't compete with images/assets for the current page.
         const [quotesRes, musicRes] = await Promise.all([
-            fetch(CONFIG.quotes_api).then(res => res.json()).catch(e => {
+            fetch(CONFIG.quotes_api, { priority: 'low' }).then(res => res.json()).catch(e => {
                 console.warn('Quotes fetch failed', e);
                 return null;
             }),
-            fetch(CONFIG.music_api).then(res => res.json()).catch(e => {
+            fetch(CONFIG.music_api, { priority: 'low' }).then(res => res.json()).catch(e => {
                 console.warn('Music fetch failed', e);
                 return null;
             })
         ]);
+
+        const currentPath = window.location.hash.substring(1) || "Home";
 
         // Process Quotes
         if (quotesRes) {
             const quotesRaw = quotesRes.quotes || quotesRes.data || quotesRes.items || quotesRes.rows || quotesRes.content || quotesRes;
             quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
             localStorage.setItem('quotes_cache', JSON.stringify(quotesDb));
-            document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
+            
+            // Only re-render UI if we are on a page that actually shows quotes (Personal or Home)
+            if (currentPath === "Home" || currentPath.startsWith("Personal")) {
+                document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
+            }
         }
 
         // Process Music
@@ -293,10 +299,13 @@ async function fetchDataAndCache() {
             localStorage.setItem('music_cache', JSON.stringify(musicDb));
             if (_rewindData) localStorage.setItem('rewind_cache', JSON.stringify(_rewindData));
             
-            document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
-            document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
-            document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
-            document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
+            // Only re-render UI if we are on the Home page or Personal/Music subpages
+            if (currentPath === "Home" || currentPath.startsWith("Personal")) {
+                document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
+                document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
+                document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
+                document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
+            }
         }
 
         return [db, quotesDb, resumeDb, musicDb];
