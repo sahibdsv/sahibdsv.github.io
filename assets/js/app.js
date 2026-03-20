@@ -3463,3 +3463,4 @@ function showEasterEgg() {
 }
 
 showEasterEgg();
+fetchDataAndCache();
