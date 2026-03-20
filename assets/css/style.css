@@ -1121,7 +1121,7 @@
         }
 
         .row-media {
-            aspect-ratio: 16/9;
+            aspect-ratio: 4/3;
             width: 100%;
             overflow: hidden;
             border-radius: var(--card-radius) var(--card-radius) 0 0;
@@ -1131,6 +1131,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        /* Square Guard: Music Album Art must remain 1/1 to prevent distortion */
+        .cat-music .row-media {
+            aspect-ratio: 1/1;
         }
 
         .row-media img,
@@ -1278,7 +1283,7 @@
 
         .model-viewer-wrapper {
             position: relative;
-            aspect-ratio: 16/9;
+            aspect-ratio: 4/3;
             width: 100%;
             border-radius: var(--card-radius);
             overflow: hidden;
