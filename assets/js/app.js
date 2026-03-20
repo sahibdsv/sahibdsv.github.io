@@ -94,7 +94,7 @@ const CONFIG = {
     main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
     quotes_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=540861260&single=true&output=csv',
     resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv',
-    music_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1199341895&single=true&output=csv'
+    music_api: 'https://script.google.com/macros/s/AKfycbzckpVUwZeqC1aivD2x5XJr7aCsH-aVdb2nW18bO8jYG8rclZNyDVi-SElCR-XjNhOBfg/exec'
 };
 
 // Quote Randomness Logic (Fisher-Yates Shuffle Bag)
@@ -192,9 +192,9 @@ async function fetchDataAndCache() {
                 console.warn('Resume fetch failed', e);
                 return [];
             }),
-            fetchCSV(CONFIG.music_sheet).catch(e => {
-                console.warn('Music fetch failed', e);
-                return [];
+            fetch(CONFIG.music_api).then(res => res.json()).catch(e => {
+                console.warn('Music API fetch failed', e);
+                return { recent: [], rewind: null };
             })
         ]);
 
@@ -204,7 +204,8 @@ async function fetchDataAndCache() {
 
         db = filtered;
         quotesDb = quotesDbLocal;
-        musicDb = musicDbLocal;
+        musicDb = musicDbLocal.recent || [];
+        _rewindData = musicDbLocal.rewind;
         resumeDb = (resumeDbLocal || []).map(entry => {
             if (entry.Page && entry.Page.includes('#')) {
                 const [page, sectionType] = entry.Page.split('#');
@@ -238,6 +239,11 @@ async function fetchDataAndCache() {
 
         // Auto-refresh any dynamic components currently in the DOM
         document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
+        document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
+        document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
+        document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
+        document.querySelectorAll('[data-type="all-time-top-artist"]').forEach(el => renderRewindSection(el, 'all-time-top-artist'));
+        document.querySelectorAll('[data-type="all-time-top-song"]').forEach(el => renderRewindSection(el, 'all-time-top-song'));
         document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
 
         return [db, quotesDb, resumeDb, musicDb];
@@ -1220,6 +1226,7 @@ function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecent
     container.querySelectorAll('[data-needs-init="true"]').forEach(el => {
         if (el.classList.contains("layout-quote")) renderQuoteCard(el);
         if (el.getAttribute('data-type') === 'recent-music') renderRecentMusic(el);
+        if (['top-artists', 'top-songs', 'fresh-favorites', 'all-time-top-artist', 'all-time-top-song'].includes(el.getAttribute('data-type'))) renderRewindSection(el, el.getAttribute('data-type'));
         if (el.getAttribute('data-type') === 'music-cluster') renderMusicCluster(el);
         el.removeAttribute('data-needs-init');
     });
@@ -1371,10 +1378,9 @@ function renderRecentMusic(container) {
         return;
     }
 
-    // The backend no longer tracks Timestamps. 
-    // The absolute bottom of the sheet represents the newest items.
-    // Slice the last 3 rows and reverse them so index 0 is the newest.
-    const latestItems = [...musicDb].slice(-3).reverse();
+    // The music API returns tracks in newest-first order.
+    // We take the first 3 for the display.
+    const latestItems = musicDb.slice(0, 3);
 
     // Prevent double-render stutter if local cache matches remote data perfectly
     const renderHash = JSON.stringify(latestItems);
@@ -1445,6 +1451,95 @@ function renderRecentMusic(container) {
             `;
 
     // Initialization for marquee
+    setTimeout(() => initMusicMarquee(container), 100);
+}
+
+let _rewindData = null;
+async function fetchRewindData() {
+    return _rewindData;
+}
+
+async function renderRewindSection(container, type) {
+    const data = await fetchRewindData();
+    if (!data) {
+        container.innerHTML = `<div style="padding:20px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:12px;">Failed to load music stats.</div>`;
+        return;
+    }
+
+    const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
+
+    if (type === 'all-time-top-artist') {
+        container.innerHTML = `<strong>${safeHTML(data.allTimeTopArtist?.name || "None")}</strong>`;
+        return;
+    }
+    if (type === 'all-time-top-song') {
+        container.innerHTML = `<strong>${safeHTML(data.allTimeTopSong?.name || "None")}</strong>`;
+        return;
+    }
+
+    let items = [];
+    let title = "";
+    if (type === 'top-artists') { items = data.topArtists || []; title = "Top Artists"; }
+    if (type === 'top-songs') { items = data.topSongs || []; title = "Top Songs"; }
+    if (type === 'fresh-favorites') { items = data.freshFavorites || []; title = "Fresh Favorites"; }
+
+    if (items.length === 0) {
+        container.innerHTML = `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">No ${title.toLowerCase()} data found.</div>`;
+        return;
+    }
+
+    const cardsHTML = items.slice(0, 3).map((item, index) => {
+        const isSong = !!(item.track || item.Song);
+        const label1 = safeHTML(item.track || item.Song || item.name || "Unknown");
+        const count = item.count || 0;
+        const artist = item.artist ? safeHTML(item.artist) : (isSong ? "Unknown Artist" : null);
+        
+        // Try to get a thumbnail from musicDb for high-fidelity square art
+        let thumb = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg"; // Default
+        let link = `https://music.youtube.com/search?q=${encodeURIComponent(label1 + (artist && !artist.includes("plays") ? " " + artist : ""))}`;
+
+        if (typeof musicDb !== 'undefined') {
+            const match = musicDb.find(m => {
+                const fuzzyM = fuzzyNorm_(m.Song || m.Track || "");
+                const fuzzyL = fuzzyNorm_(label1);
+                if (isSong) {
+                    return fuzzyM === fuzzyL && m.Artist && m.Artist.includes(artist);
+                } else {
+                    return fuzzyNorm_(m.Artist || "") === fuzzyNorm_(label1);
+                }
+            });
+            if (match && match.Thumbnail) thumb = match.Thumbnail.replace(/^http:\/\//i, "https://");
+            if (match && match.Link) link = match.Link;
+        }
+
+        const subLabel = artist ? artist : count + " plays";
+
+        return `
+            <div class="layout-grid cat-music" data-link="${link}" onclick="window.open('${link}', '_blank')">
+                <div class="row-media">
+                    <div class="music-card-fallback"><img src="${ytLogo}" alt="YT Music"></div>
+                    <img src="${thumb}" class="media-enter" onload="mediaLoaded(this)" onerror="this.style.display='none'; mediaLoaded(this)">
+                </div>
+                <div class="card-info">
+                    <div class="marquee-container track-marquee">
+                        <span class="marquee-content"><h3 class="fill-anim">${label1}</h3></span>
+                    </div>
+                    <div class="marquee-container artist-marquee">
+                        <span class="marquee-content"><div class="music-artist-label">${subLabel}</div></span>
+                    </div>
+                </div>
+                <div class="music-yt-overlay" data-tooltip="Open in YouTube Music" style="cursor: pointer;"><img src="${ytLogo}" alt="YT Music"></div>
+            </div>
+        `;
+    }).join("");
+
+    container.innerHTML = `
+        <div class="music-sections-container">
+            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 3)}">
+                ${cardsHTML}
+            </div>
+        </div>
+    `;
     setTimeout(() => initMusicMarquee(container), 100);
 }
 
@@ -2447,9 +2542,13 @@ function processBlock(lines) {
     }
 
     // 5. Dynamic Tag Detection (Expanded to allow flexible inclusion)
-    const musicTag = lines.some(l => l.trim().match(/\{(Recent Music|Recently Played)\}/i));
-    if (musicTag && combinedBlock.match(/^\{(Recent Music|Recently Played)\}$/i)) {
-        return { type: 'music' };
+    const musicTag = lines.some(l => l.trim().match(/\{(Recent Music|Recently Played|Top Artists|Top Songs|Fresh Favorites)\}/i));
+    if (musicTag) {
+        const line = combinedBlock.trim();
+        if (line.match(/^\{(Recent Music|Recently Played)\}$/i)) return { type: 'music' };
+        if (line.match(/^\{Top Artists\}$/i)) return { type: 'top-artists' };
+        if (line.match(/^\{Top Songs\}$/i)) return { type: 'top-songs' };
+        if (line.match(/^\{Fresh Favorites\}$/i)) return { type: 'fresh-favorites' };
     }
 
     const quoteTag = lines.some(l => l.trim().match(/\{Random Quote\}/i));
@@ -2728,6 +2827,15 @@ function renderContentBlock(block, index, allBlocks) {
 
         case 'music':
             return `<div class="music-embed-container" data-needs-init="true" data-type="recent-music"></div>`;
+        
+        case 'top-artists':
+            return `<div class="music-embed-container" data-needs-init="true" data-type="top-artists"></div>`;
+        
+        case 'top-songs':
+            return `<div class="music-embed-container" data-needs-init="true" data-type="top-songs"></div>`;
+        
+        case 'fresh-favorites':
+            return `<div class="music-embed-container" data-needs-init="true" data-type="fresh-favorites"></div>`;
 
         case 'toc':
             return renderTOC(allBlocks, index);
@@ -2910,8 +3018,13 @@ function processInlineMarkdown(text, depth = 0) {
     if (depth === 0) {
         result = result.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
 
-        // B. DYNAMIC TAGS: {Recently Played}, {Random Quote}
+        // B. DYNAMIC TAGS: {Recently Played}, {Random Quote}, Rewind Stats
         result = result.replace(/\{(Recent Music|Recently Played)\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="recent-music"></div>');
+        result = result.replace(/\{Top Artists\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="top-artists"></div>');
+        result = result.replace(/\{Top Songs\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="top-songs"></div>');
+        result = result.replace(/\{Fresh Favorites\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="fresh-favorites"></div>');
+        result = result.replace(/\{AllTimeTopArtist\}/gi, '<span data-needs-init="true" data-type="all-time-top-artist"></span>');
+        result = result.replace(/\{AllTimeTopSong\}/gi, '<span data-needs-init="true" data-type="all-time-top-song"></span>');
         result = result.replace(/\{Random Quote\}/gi, '<div class="layout-quote" data-needs-init="true" data-title="random quote"></div>');
     }
 
