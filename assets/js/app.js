@@ -161,6 +161,7 @@ function startApp() {
         handleRouting();
         return;
     }
+    _appInitialized = true;
 
     initApp();
     updateSEO();
@@ -173,15 +174,16 @@ function startApp() {
     requestAnimationFrame(() => {
         document.body.classList.remove('no-transition');
         document.getElementById('main-header')?.classList.remove('no-transition');
-        // If we have cache, the loader might already be gone via inline script, 
-        // but we ensure it's removed here once we have ANY data to show.
+        
+        // Ensure the loader is removed if we have any data to show
         const sk = document.querySelector('.loader-overlay');
-        if (sk && (db.length > 0 || _appInitialized)) {
+        if (sk) {
             sk.classList.add('finished');
-            setTimeout(() => sk.remove(), 600);
+            setTimeout(() => {
+                if (sk.parentNode) sk.remove();
+            }, 600);
         }
     });
-    _appInitialized = true;
 }
 
 // fetchDataAndCache retrieves high-fidelity content across all sources
