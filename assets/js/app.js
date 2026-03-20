@@ -1,6 +1,14 @@
-// Set scroll restoration to manual to prevent browser jumps
 if (history.scrollRestoration) {
     history.scrollRestoration = 'manual';
+}
+
+// Global Debounce Utility
+function debounce(fn, delay) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+    };
 }
 
 // Shared Media Entrance Handler
@@ -382,7 +390,14 @@ function initApp() {
                 resetToHome();
             }
         }
-    })
+    });
+
+    // 5. Debounced Search Listener
+    const searchInput = document.getElementById("search-input");
+    if (searchInput) {
+        const debouncedSearch = debounce((val) => handleSearch(val), 250);
+        searchInput.addEventListener("input", (e) => debouncedSearch(e.target.value));
+    }
 }
 
 function renderNavigation(currentPath, forceSmoothNav = false) {
@@ -805,11 +820,14 @@ function handleSearch(e) {
 
     if (resultsContainer) {
         resultsContainer.innerHTML = '';
-        // safeHTML output is sanitized DOM text, safe for innerHTML
-        renderRows(n, `Search results for "${safeHTML(e)}"`, false, true, false, true, resultsContainer);
-        resultsContainer.style.display = "block";
+        // Use requestAnimationFrame to ensure the clearing of the container 
+        // and the rendering of results happens smoothly without blocking input
+        requestAnimationFrame(() => {
+            renderRows(n, `Search results for "${safeHTML(e)}"`, false, true, false, true, resultsContainer);
+            resultsContainer.style.display = "block";
+            if (app) app.style.display = "none";
+        });
     }
-    if (app) app.style.display = "none";
 }
 
 const path2url = p => p?.replace(/ /g, '_') ?? '';
