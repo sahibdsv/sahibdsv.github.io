@@ -1380,15 +1380,11 @@ function renderQuoteCard(container) {
             return;
         }
         
-        // Logic: On initial render (or page navigation), if no global quote is set, 
-        // give this specific card its own unique quote from the bag.
-        // If it's a "Roll", the rollQuote function will have already set _activeRandomQuote,
-        // so we use that to sync all cards.
+        // Logic: On initial render or page navigation, ensure we have a persistent global quote.
         if (!_activeRandomQuote) {
-            quoteData = getNextQuote();
-        } else {
-            quoteData = _activeRandomQuote;
+            _activeRandomQuote = getNextQuote();
         }
+        quoteData = _activeRandomQuote;
         isRandom = true;
     } else {
         quoteData = {
