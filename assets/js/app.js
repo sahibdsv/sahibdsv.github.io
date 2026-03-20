@@ -1830,14 +1830,12 @@ function playMusicInCard(event) {
 
 function renderFooter() {
     const footerEl = document.getElementById("footer-links");
-
-    footerEl.innerHTML = db.filter(e => "Footer" === e.Page).map(entry => {
-        let title = (entry.Title || "").replace(/{year}/g, new Date().getFullYear());
-
-        // Replace markdown links globally within the string
-        title = title.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-
-        return title ? `<span>${title}</span>` : "";
+    const footerEntries = db.filter(e => "Footer" === e.Page);
+    
+    footerEl.innerHTML = footerEntries.map(entry => {
+        let text = (entry.Title || "").replace(/{year}/g, new Date().getFullYear());
+        // Use the global inline processor to handle links, bold, and wiki-links [[...]]
+        return text ? `<span>${processInlineMarkdown(text)}</span>` : "";
     }).join("");
 }
 // === MEDIA UTILITIES ===
@@ -2386,12 +2384,14 @@ function RenderResumeEntry(entry) {
     // Natural Language Parsing for Title: "Role @ Company" or "Role at Company"
     const companyMatch = role.match(/^(.*?)\s+(@|at)\s+(.*)$/i);
     if (companyMatch) {
-        role = companyMatch[1].trim();
-        company = companyMatch[3].trim();
+        role = processInlineMarkdown(companyMatch[1].trim());
+        company = processInlineMarkdown(companyMatch[3].trim());
     } else if (role.includes("|")) {
         const parts = role.split("|");
-        role = parts[0].trim();
-        company = parts[1].trim();
+        role = processInlineMarkdown(parts[0].trim());
+        company = processInlineMarkdown(parts[1].trim());
+    } else {
+        role = processInlineMarkdown(role);
     }
 
     const processedContent = processContentWithBlocks(entry.Content || "");
@@ -2400,10 +2400,10 @@ function RenderResumeEntry(entry) {
     let metaHTML = "";
 
     if (entry.Tags) {
-        const chipLink = (label, url, iconHtml) => `<a href="${url}" target="_blank" style="text-decoration:none; display:flex; align-items:center;">${iconHtml}${safeHTML(label)}</a>`;
+        const chipLink = (label, url, iconHtml) => `<a href="${url}" target="_blank" style="text-decoration:none; display:flex; align-items:center;">${iconHtml}${processInlineMarkdown(label)}</a>`;
         const processTag = (tag) => {
             tag = tag.trim();
-            if (tag.match(/[A-Za-z]{3,}\s+\d{4}/) || tag.toLowerCase().includes("present")) return { type: "date", html: safeHTML(tag) };
+            if (tag.match(/[A-Za-z]{3,}\s+\d{4}/) || tag.toLowerCase().includes("present")) return { type: "date", html: processInlineMarkdown(tag) };
 
             const locMatch = tag.match(/^@\s*(.*)$/);
             if (locMatch) {
@@ -2417,7 +2417,7 @@ function RenderResumeEntry(entry) {
                 const icon = isMap ? '<svg class="chip-icon" viewBox="0 0 24 24" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' : '<svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px; margin-right:4px; vertical-align:middle; display:inline-block;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
                 return { type: "loc", html: chipLink(linkMatchRaw[1], linkMatchRaw[2], icon) };
             }
-            return { type: "other", html: safeHTML(tag) };
+            return { type: "other", html: processInlineMarkdown(tag) };
         };
 
         const delimiter = entry.Tags.includes(";") ? /(?:;|\u2022)\s*/ : /(?:;|,|\u2022)\s*/;
@@ -3117,15 +3117,27 @@ function processInlineMarkdown(text, depth = 0) {
     result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
 
     // D. INTERNAL WIKI LINKS: [[Page Title]] or [[Page/Path]]
-    // This allows linking to any page in the database by its exact Title or Page path.
+    // This allows linking to any page in the database or resume by its exact Title or Page path.
     result = result.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
         const target = p1.trim();
-        // Look for exact Page match or exact Title match
-        const entry = db.find(e => e.Page === target || (e.Title && e.Title.trim() === target));
-        if (entry) {
-            return `<a href="#${path2url(entry.Page)}" onclick="closeSearch()">${processInlineMarkdown(p1, depth + 1)}</a>`;
+        const searchDBs = [db, resumeDb];
+        let entry = null;
+
+        for (const currentDB of searchDBs) {
+            entry = currentDB.find(e => 
+                (e.Page && e.Page === target) || 
+                (e.Title && e.Title.trim() === target) ||
+                (e.ID && e.ID === target)
+            );
+            if (entry) break;
         }
-        // Fallback: If not found, look for partial title match (last resort)
+
+        if (entry) {
+            const url = entry.Page ? `#${path2url(entry.Page)}` : (entry.ID ? `#Professional/Resume` : '#');
+            return `<a href="${url}" onclick="closeSearch()">${processInlineMarkdown(p1, depth + 1)}</a>`;
+        }
+        
+        // Fallback: Partial title match in main DB
         const partial = db.find(e => e.Title && e.Title.toLowerCase().includes(target.toLowerCase()));
         if (partial) {
             return `<a href="#${path2url(partial.Page)}" onclick="closeSearch()">${processInlineMarkdown(p1, depth + 1)}</a>`;
