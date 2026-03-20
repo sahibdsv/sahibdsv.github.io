@@ -360,6 +360,11 @@ function initApp() {
     document.getElementById("app").addEventListener("click", e => {
         const chip = e.target.closest(".chip");
         if (chip) {
+            // If the user clicked a link INSIDE the chip, let the link handle it.
+            // We do NOT stop propagation here so the link's own click/bubble can happen,
+            // and we DO NOT trigger the filter logic.
+            if (e.target.closest("a")) return;
+
             // Prevent navigation of parent card
             e.stopPropagation();
 
@@ -1332,14 +1337,14 @@ function renderQuoteCard(container) {
     let author = quoteData.Author || "Unknown";
     if (quoteData.Source) {
         if (quoteData.Source.startsWith("http")) {
-            author = `<a href="${quoteData.Source}" target="_blank">${safeHTML(author)}</a>`;
+            author = `<a href="${quoteData.Source}" target="_blank" onclick="event.stopPropagation();">${safeHTML(author)}</a>`;
         } else {
             author += ` — ${safeHTML(quoteData.Source)}`;
         }
     }
 
     const rawQuote = (quoteData.Quote || "").trim().replace(/^"|"$/g, "");
-    const safeQuote = safeHTML(rawQuote);
+    const processedQuote = processInlineMarkdown(rawQuote);
     const len = rawQuote.length;
 
     // Flexible scaling for a FIXED 250px container
@@ -1357,7 +1362,7 @@ function renderQuoteCard(container) {
     if (bq && footer) {
         // Surgical update: preserves the dice icon element (and its hover state)
         bq.className = sizeClass;
-        bq.innerHTML = `"${safeQuote}"`;
+        bq.innerHTML = `"${processedQuote}"`;
         footer.innerHTML = `<span class="author"> &mdash; ${author}</span>`;
     } else {
         // Standard refresh button HTML
@@ -1374,7 +1379,7 @@ function renderQuoteCard(container) {
                     </svg>`;
         }
 
-        container.innerHTML = `<blockquote class="${sizeClass}">"${safeQuote}"</blockquote>
+        container.innerHTML = `<blockquote class="${sizeClass}">"${processedQuote}"</blockquote>
                                     <div class="quote-footer"><span class="author"> &mdash; ${author}</span></div>
                                     ${refreshBtnHTML}`;
     }
@@ -3134,13 +3139,13 @@ function processInlineMarkdown(text, depth = 0) {
 
         if (entry) {
             const url = entry.Page ? `#${path2url(entry.Page)}` : (entry.ID ? `#Professional/Resume` : '#');
-            return `<a href="${url}" onclick="closeSearch()">${processInlineMarkdown(p1, depth + 1)}</a>`;
+            return `<a href="${url}" onclick="event.stopPropagation(); closeSearch();">${processInlineMarkdown(p1, depth + 1)}</a>`;
         }
         
         // Fallback: Partial title match in main DB
         const partial = db.find(e => e.Title && e.Title.toLowerCase().includes(target.toLowerCase()));
         if (partial) {
-            return `<a href="#${path2url(partial.Page)}" onclick="closeSearch()">${processInlineMarkdown(p1, depth + 1)}</a>`;
+            return `<a href="#${path2url(partial.Page)}" onclick="event.stopPropagation(); closeSearch();">${processInlineMarkdown(p1, depth + 1)}</a>`;
         }
         return `<span class="broken-link" title="Page not found in DB">${safeHTML(target)}</span>`;
     });
@@ -3150,9 +3155,9 @@ function processInlineMarkdown(text, depth = 0) {
         const cleanURL = url.trim();
         // Standard Link
         if (label.toLowerCase().includes('strava')) {
-            return `<a href="${cleanURL}" target="_blank" rel="noopener" class="strava-link">${processInlineMarkdown(label, depth + 1)}</a>`;
+            return `<a href="${cleanURL}" target="_blank" rel="noopener" class="strava-link" onclick="event.stopPropagation();">${processInlineMarkdown(label, depth + 1)}</a>`;
         }
-        return `<a href="${cleanURL}" target="_blank" rel="noopener">${processInlineMarkdown(label, depth + 1)}</a>`;
+        return `<a href="${cleanURL}" target="_blank" rel="noopener" onclick="event.stopPropagation();">${processInlineMarkdown(label, depth + 1)}</a>`;
     });
 
     if (depth === 0) {
