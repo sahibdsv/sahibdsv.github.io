@@ -188,6 +188,21 @@ function startApp() {
 // fetchDataAndCache retrieves high-fidelity content across all sources
 async function fetchDataAndCache() {
     try {
+        // Phase 0: Instant Cache Recovery
+        // We attempt to restore the last known database state from localStorage 
+        // to allow an "instant" render before the network even responds.
+        const cachedDb = localStorage.getItem('db_cache');
+        const cachedResume = localStorage.getItem('resume_cache');
+        if (cachedDb) {
+            db = JSON.parse(cachedDb);
+            window.db = db;
+            // Initialize Fuse with cached data so search works instantly
+            initFuse(db);
+        }
+        if (cachedResume) {
+            resumeDb = JSON.parse(cachedResume);
+        }
+
         // Phase 1: Critical Path (Home Data & Resume)
         // We use cache: 'default' to allow browser caching, significantly speeding up repeat visits.
         const [mainData, resumeDbLocal] = await Promise.all([
@@ -213,23 +228,12 @@ async function fetchDataAndCache() {
         });
         window.db = db;
 
-        // Initialize Fuse.js for fuzzy search immediately with available data
-        window.fuse = new Fuse(db, {
-            keys: [
-                { name: 'Title', weight: 0.7 },
-                { name: 'Content', weight: 0.5 },
-                { name: 'Tags', weight: 0.5 },
-                { name: 'Page', weight: 0.3 },
-                { name: 'Author', weight: 0.1 }
-            ],
-            threshold: 0.4, 
-            location: 0,
-            distance: 100,
-            minMatchCharLength: 2,
-            includeScore: true,
-            useExtendedSearch: true,
-            ignoreLocation: true
-        });
+        // Persist to localStorage for Phase 0 next time
+        localStorage.setItem('db_cache', JSON.stringify(db));
+        localStorage.setItem('resume_cache', JSON.stringify(resumeDb));
+
+        // Initialize Fuse.js (re-init with fresh data)
+        initFuse(db);
 
         // Phase 2: Background Loading (Heavy APIs)
         // These are launched without 'await' to allow startApp() to proceed immediately.
@@ -255,6 +259,25 @@ async function fetchDataAndCache() {
     } catch (e) {
         console.error('Fetch failed', e);
     }
+}
+
+function initFuse(data) {
+    window.fuse = new Fuse(data, {
+        keys: [
+            { name: 'Title', weight: 0.7 },
+            { name: 'Content', weight: 0.5 },
+            { name: 'Tags', weight: 0.5 },
+            { name: 'Page', weight: 0.3 },
+            { name: 'Author', weight: 0.1 }
+        ],
+        threshold: 0.4, 
+        location: 0,
+        distance: 100,
+        minMatchCharLength: 2,
+        includeScore: true,
+        useExtendedSearch: true,
+        ignoreLocation: true
+    });
 }
 
 function fetchCSV(url) {
@@ -1166,7 +1189,7 @@ const SECTION_RENDERERS = {
             }
             if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
             const readTime = Math.ceil((entry.Content || "").trim().split(/\s+/).length / 200);
-            if (readTime > 0) metaHTML += `<span class="chip no-hover" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
+            if (readTime > 1) metaHTML += `<span class="chip no-hover" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
             metaHTML += `</div></div>`;
         }
         return `<div class="section layout-text">${entry.Title ? formatTitle(entry.Title, index === 0 ? "h1" : "h2") : ""}${metaHTML}<div class="article-body">${processContentWithBlocks(entry.Content || "")}</div></div>`;
@@ -1422,13 +1445,19 @@ function renderMusicCardHTML(item) {
     `;
 }
 
-function renderEmptyStateHTML(message) {
+function renderEmptyStateHTML(message, showSpinner = false) {
+    if (showSpinner) {
+        return `<div style="padding:40px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;">
+                    <div class="spinner" style="width: 30px; height: 30px; border-width: 2px; border-color: var(--border-subtle); border-top-color: var(--accent-personal); position:relative; left:0; top:0;"></div>
+                    <span style="opacity:0.5; font-size:13px; font-weight:500; letter-spacing:0.5px;">${message}</span>
+                </div>`;
+    }
     return `<div style="padding:40px; text-align:center; opacity:0.3; border: 1px dashed var(--border-subtle); border-radius:12px; font-size:14px;">${message}</div>`;
 }
 
 function renderRecentMusic(container) {
     if (musicDb.length === 0) {
-        container.innerHTML = renderEmptyStateHTML("No music logged recently.");
+        container.innerHTML = renderEmptyStateHTML("Syncing Music...", true);
         return;
     }
 
@@ -1487,7 +1516,7 @@ function fuzzyNorm_(str) {
 async function renderRewindSection(container, type) {
     const data = await fetchRewindData();
     if (!data) {
-        container.innerHTML = renderEmptyStateHTML("Failed to load music stats.");
+        container.innerHTML = renderEmptyStateHTML("Syncing Stats...", true);
         return;
     }
 
