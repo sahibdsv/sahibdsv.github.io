@@ -1220,20 +1220,23 @@ const SECTION_RENDERERS = {
     article: (entry, index) => {
         let metaHTML = "";
         if (index === 0) {
-            metaHTML = `<div class="article-meta-row"><a href="#Personal/About" class="author-link">Sahib Virdee</a>`;
-            if (entry.LinkURL) metaHTML +=
-                `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`;
-            metaHTML += `<div class="article-tags">`;
-            if (entry.Timestamp) {
-                const dateStr = formatDate(entry.Timestamp),
-                    monthKey = entry.Timestamp.substring(0, 7);
-                metaHTML +=
-                    `<span class="chip date" data-val="${dateStr}" data-date="${monthKey}">${dateStr}</span>`;
-            }
-            if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
+            const hasLink = !!entry.LinkURL;
+            const dateStr = entry.Timestamp ? formatDate(entry.Timestamp) : "";
+            const monthKey = entry.Timestamp ? entry.Timestamp.substring(0, 7) : "";
+            const tags = entry.Tags ? entry.Tags.split(",").map(t => t.trim()) : [];
             const readTime = Math.ceil((entry.Content || "").trim().split(/\s+/).length / 200);
-            if (readTime > 1) metaHTML += `<span class="chip no-hover" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
-            metaHTML += `</div></div>`;
+
+            if (hasLink || dateStr || tags.length > 0 || readTime > 1) {
+                metaHTML = `<div class="article-meta-row">`;
+                if (hasLink) metaHTML +=
+                    `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`;
+                
+                metaHTML += `<div class="article-tags">`;
+                if (dateStr) metaHTML += `<span class="chip date" data-val="${dateStr}" data-date="${monthKey}">${dateStr}</span>`;
+                tags.forEach(t => metaHTML += renderChip(t));
+                if (readTime > 1) metaHTML += `<span class="chip no-hover" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
+                metaHTML += `</div></div>`;
+            }
         }
         return `<div class="section layout-text">${entry.Title ? formatTitle(entry.Title, index === 0 ? "h1" : "h2") : ""}${metaHTML}<div class="article-body">${processContentWithBlocks(entry.Content || "")}</div></div>`;
     }
