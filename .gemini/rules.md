@@ -11,9 +11,14 @@
   - `.geojson` (and suffixes like `-NW`) → Renders in the Mapbox Viewer.
   - `.mp4`, `.webm`, etc. → Renders as a Lazy-Loaded Video.
 - **No Colon Tags**: Tags in the form `[Tag]: value` (e.g., `[GLB Model]:` or `[Map]:`) are **deprecated/removed**. Do not generate content using this syntax.
-- **Curly Brace Dynamic Blocks**: Only specific dynamic blocks use delimiters:
-  - `{Random Quote}`: Injects the random quote card.
-  - `{Recent Music}`: Injects the music logger section.
+- **Curly Brace Dynamic Blocks**: These specific tags trigger dynamic API-driven components:
+  - `{Top Artists}`: Renders a 3-item grid of most-played artists.
+  - `{Top Songs}`: Renders a 3-item grid of all-time most-played tracks.
+  - `{Fresh Favorites}`: Renders a 3-item grid of songs in "replay obsession" status.
+  - `{AllTimeTopArtist}`: Plain text name of the #1 most-played artist.
+  - `{AllTimeTopSong}`: Plain text title of the #1 most-played song.
+  - `{Recently Played}` or `{Recent Music}`: (Standard/Legacy) Renders the 3 most recently logged tracks.
+  - `{Random Quote}`: Injects a randomized quote discovery card from the Quote API.
 - **Path Resolution**: The system automatically maps extensions to folders (e.g., `.geojson` files are looked for in `assets/GPX/`).
 
 ---
