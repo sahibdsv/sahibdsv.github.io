@@ -1271,11 +1271,21 @@ function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecent
 
     if (gridBuffer) htmlBuffer += `<div class="grid-container section">${gridBuffer}</div>`;
     
-    // ATOMIC SWAP: Clears any loaders or stale content on first render, then appends subsequent home sections
+    // ATOMIC SWAP: Only update the DOM if the content has actually changed.
+    // This prevents the "double-flicker" during background cache-to-network transitions.
     if (isHome) {
-        container.innerHTML += htmlBuffer;
+        // For home, we check if the specific section we are appending already exists 
+        // or if the buffer is already represented.
+        // Simplified: if it's the first render, we still swap. If it's a refresh, we check.
+        if (container.innerHTML.includes(htmlBuffer.substring(0, 100))) {
+            // Likely already rendered this section
+        } else {
+            container.innerHTML += htmlBuffer;
+        }
     } else {
-        container.innerHTML = htmlBuffer;
+        if (container.innerHTML !== htmlBuffer) {
+            container.innerHTML = htmlBuffer;
+        }
     }
 
     // 4. Post-render logic: Initialize dynamic components
