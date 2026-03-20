@@ -1345,7 +1345,6 @@ function showPageLoader() {
 }
 
 window.rollQuote = function (btn) {
-    // Find all quote containers that are currently showing the active random quote
     const allQuotes = document.querySelectorAll('.layout-quote');
     const randomQuotes = Array.from(allQuotes).filter(q => {
         const title = (q.getAttribute('data-title') || '').toLowerCase();
@@ -1354,23 +1353,21 @@ window.rollQuote = function (btn) {
 
     if (randomQuotes.some(q => q.classList.contains("loading"))) return;
 
-
+    // 1. Enter Loading State (Invisible)
     randomQuotes.forEach(q => q.classList.add("loading"));
 
+    // 2. Wait for the exit animation, then swap content
     setTimeout(() => {
-        _activeRandomQuote = null;
-
-        // Get one new quote once for all cards
+        // Keep the OLD _activeRandomQuote until getNextQuote is done so it can perform identity checks
         const next = getNextQuote();
         _activeRandomQuote = next;
 
         randomQuotes.forEach(q => {
             renderQuoteCard(q);
-            // Force reflow for a clean fade transition
-            void q.offsetWidth;
-            q.classList.remove("loading");
+            // We don't remove "loading" here; renderQuoteCard handles it via rAF to ensure
+            // the new quote is in the DOM before it fades back in.
         });
-    }, 600);
+    }, 400); // Shorter timeout for snappier feel while still allowing exit anim
 };
 
 function renderQuoteCard(container) {
@@ -1381,7 +1378,6 @@ function renderQuoteCard(container) {
     if (title === "{random quote}" || title === "random quote") {
         if (quotesDb.length === 0) {
             container.innerHTML = renderEmptyStateHTML("", true);
-            // DO NOT remove loading class yet, as we want it to stay in 'honest loader' state
             return;
         }
         if (!_activeRandomQuote) _activeRandomQuote = getNextQuote();
@@ -1410,25 +1406,21 @@ function renderQuoteCard(container) {
     const processedQuote = processInlineMarkdown(rawQuote);
     const len = rawQuote.length;
 
-    // Flexible scaling for a FIXED 250px container
     const sizeClass = [
-        [350, 'xxl'], // Extremely long quotes fit gracefully
+        [350, 'xxl'],
         [250, 'xl'],
         [150, 'long'],
         [80, 'medium']
-    ]
-        .find(([n]) => len > n)?.[1] || 'short';
+    ].find(([n]) => len > n)?.[1] || 'short';
 
     let bq = container.querySelector('blockquote');
     let footer = container.querySelector('.quote-footer');
 
     if (bq && footer) {
-        // Surgical update: preserves the dice icon element (and its hover state)
         bq.className = sizeClass;
         bq.innerHTML = `"${processedQuote}"`;
         footer.innerHTML = `<span class="author"> &mdash; ${author}</span>`;
     } else {
-        // Standard refresh button HTML
         let refreshBtnHTML = "";
         if (isRandom) {
             refreshBtnHTML = `
@@ -1441,19 +1433,19 @@ function renderQuoteCard(container) {
                         <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
                     </svg>`;
         }
-
         container.innerHTML = `<blockquote class="${sizeClass}">"${processedQuote}"</blockquote>
                                     <div class="quote-footer"><span class="author"> &mdash; ${author}</span></div>
                                     ${refreshBtnHTML}`;
     }
 
-    // Smooth Entrance: Remove loading state after content is physically in the DOM
+    // Surgical Fade-In: Remove loading only after DOM is ready
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             container.classList.remove('loading');
         });
     });
 }
+
 
 function initMusicMarquee(container) {
     const marqueeContents = container.querySelectorAll('.marquee-content');
