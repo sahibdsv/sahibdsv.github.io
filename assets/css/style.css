@@ -2512,7 +2512,21 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* Instant switch - no transition */
+        }
+
+        .layout-grid.cat-music .row-media .music-card-fallback {
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: var(--card-bg-dark);
+            opacity: 0.1; /* High-Fidelity ghost look */
+            box-sizing: border-box;
+        }
+
+        .layout-grid.cat-music .row-media .music-card-fallback img {
+            width: 40%;
+            height: auto;
+            object-fit: contain;
         }
 
         .music-yt-overlay {
