@@ -1559,13 +1559,15 @@ async function renderRewindSection(container, type) {
         if (!thumb && typeof musicDb !== 'undefined') {
             const match = musicDb.find(m => {
                 const fuzzyTrack = fuzzyNorm_(track);
+                const potentialSong = m.track || m.Track || m.Song || m.title || "";
+                const fuzzyHistory = fuzzyNorm_(potentialSong);
+
                 if (type === 'top-artists') {
-                    // For artists, find the ONLY match that HASN'T been displayed yet in this grid
-                    const potentialSong = m.track || m.Track || m.Song || m.title;
-                    const fuzzySong = fuzzyNorm_(potentialSong || "");
-                    return fuzzyNorm_(m.artist || m.Artist || "") === fuzzyTrack && !seenSongs.has(fuzzySong);
+                    // For artists, find a match for the artist name that hasn't been displayed yet
+                    return fuzzyNorm_(m.artist || m.Artist || "") === fuzzyTrack && !seenSongs.has(fuzzyHistory);
                 } else {
-                    return fuzzyNorm_(m.track || m.Track || m.Song || "") === fuzzyTrack;
+                    // For Top Songs / Favorites: resilient partial matching (e.g., 'Teardrop' matches 'Teardrop - Massive Attack')
+                    return fuzzyHistory.includes(fuzzyTrack) || fuzzyTrack.includes(fuzzyHistory);
                 }
             });
             if (match) {
