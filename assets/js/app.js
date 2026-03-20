@@ -223,21 +223,13 @@ async function fetchDataAndCache() {
             startApp();
         }
 
-        // Phase 1: PARALLEL AGGREGATION (Minimize total wait time)
-        // We fetch ALL data in parallel to overlap the high cold-start latency of GAS.
-        const [mainRaw, resumeRaw, quotesRes, musicRes] = await Promise.all([
+        // Phase 1: CRITICAL PATH AGGREGATION (Main Data & Resume)
+        // We only wait for the core database to show the first-time user the site.
+        const [mainRaw, resumeRaw] = await Promise.all([
             fetch(CONFIG.main_sheet).then(res => res.text()),
             fetch(CONFIG.resume_sheet).then(res => res.text()).catch(e => {
                 console.warn('Resume fetch failed', e);
                 return "";
-            }),
-            fetch(CONFIG.quotes_api).then(res => res.json()).catch(e => {
-                console.warn('Quotes fetch failed', e);
-                return null;
-            }),
-            fetch(CONFIG.music_api).then(res => res.json()).catch(e => {
-                console.warn('Music fetch failed', e);
-                return null;
             })
         ]);
 
@@ -260,21 +252,6 @@ async function fetchDataAndCache() {
         });
         window.db = db;
 
-        // Process Quotes
-        if (quotesRes) {
-            const quotesRaw = quotesRes.quotes || quotesRes.data || quotesRes.items || quotesRes.rows || quotesRes.content || quotesRes;
-            quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
-            localStorage.setItem('quotes_cache', JSON.stringify(quotesDb));
-        }
-
-        // Process Music
-        if (musicRes && !musicRes.error) {
-            musicDb = musicRes.recent || [];
-            _rewindData = musicRes.rewind || null;
-            localStorage.setItem('music_cache', JSON.stringify(musicDb));
-            if (_rewindData) localStorage.setItem('rewind_cache', JSON.stringify(_rewindData));
-        }
-
         // Persist fresh critical data
         localStorage.setItem('db_cache', JSON.stringify(db));
         localStorage.setItem('resume_cache', JSON.stringify(resumeDb));
@@ -283,16 +260,39 @@ async function fetchDataAndCache() {
 
         initFuse(db);
 
-        // Only trigger a second render if we didn't have cache OR if critical data changed
+        // WAVE 1 COMPLETE: If first-time user, they see the site NOW.
         if (!hasCache || dataChanged) {
             startApp();
         }
 
-        // If background APIs updated, trigger surgical UI updates for dynamic elements
+        // Phase 2: BACKGROUND AGGREGATION (Music & Quotes)
+        // These are non-critical and can finish whenever they finish.
+        const [quotesRes, musicRes] = await Promise.all([
+            fetch(CONFIG.quotes_api).then(res => res.json()).catch(e => {
+                console.warn('Quotes fetch failed', e);
+                return null;
+            }),
+            fetch(CONFIG.music_api).then(res => res.json()).catch(e => {
+                console.warn('Music fetch failed', e);
+                return null;
+            })
+        ]);
+
+        // Process Quotes
         if (quotesRes) {
+            const quotesRaw = quotesRes.quotes || quotesRes.data || quotesRes.items || quotesRes.rows || quotesRes.content || quotesRes;
+            quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
+            localStorage.setItem('quotes_cache', JSON.stringify(quotesDb));
             document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
         }
-        if (musicRes) {
+
+        // Process Music
+        if (musicRes && !musicRes.error) {
+            musicDb = musicRes.recent || [];
+            _rewindData = musicRes.rewind || null;
+            localStorage.setItem('music_cache', JSON.stringify(musicDb));
+            if (_rewindData) localStorage.setItem('rewind_cache', JSON.stringify(_rewindData));
+            
             document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
             document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
             document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
@@ -2089,7 +2089,7 @@ _glbObserver = new IntersectionObserver((entries) => {
             _glbObserver.unobserve(entry.target);
         }
     });
-}, { rootMargin: '200px' }); // Smaller margin to reduce initial burst
+}, { rootMargin: '800px' }); // Aggressive pre-loading to start models before they are scrolled to
 
 // GLB Viewer Renderer
 function renderGLBViewer(glbPath, isCardMode) {
