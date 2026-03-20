@@ -188,50 +188,18 @@ function startApp() {
 // fetchDataAndCache retrieves high-fidelity content across all sources
 async function fetchDataAndCache() {
     try {
-        const [mainData, quotesDbLocal, resumeDbLocal, musicDbLocal] = await Promise.all([
+        // Phase 1: Critical Path (Home Data & Resume)
+        // We use cache: 'default' to allow browser caching, significantly speeding up repeat visits.
+        const [mainData, resumeDbLocal] = await Promise.all([
             fetchCSV(CONFIG.main_sheet),
-            fetch(CONFIG.quotes_api, { cache: 'no-store' }).then(res => res.json()).then(res => res.quotes || []).catch(e => {
-                console.warn('Quotes API fetch failed', e);
-                return [];
-            }),
             fetchCSV(CONFIG.resume_sheet).catch(e => {
                 console.warn('Resume fetch failed', e);
                 return [];
-            }),
-            fetch(CONFIG.music_api, { cache: 'no-store' }).then(res => res.json()).catch(e => {
-                console.warn('Music API fetch failed', e);
-                return { recent: [], rewind: null };
             })
         ]);
 
         const filtered = mainData.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
-        if (!filtered.find(e => e.Page === 'Professional/Resume')) {
-        }
-
         db = filtered;
-        // Phase 3 Resilience: Handle backend returning {quotes: []}, {data: []}, or {rows: []}
-        let quotesRaw = quotesDbLocal;
-        if (quotesDbLocal && quotesDbLocal.error) {
-            console.error('Quotes API Exception Error:', quotesDbLocal.error);
-            console.warn('ACTION REQUIRED: Your Google Apps Script has an invalid Spreadsheet ID. Please verify the ID in your script editor.');
-            quotesRaw = [];
-        } else if (quotesDbLocal && !Array.isArray(quotesDbLocal)) {
-            quotesRaw = quotesDbLocal.quotes || quotesDbLocal.data || quotesDbLocal.items || quotesDbLocal.rows || quotesDbLocal.content || [];
-        }
-        
-        quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
-        if (quotesDb.length === 0) {
-            console.warn('Quotes Handshake Warning: API returned empty or invalid structure. Keys:', Object.keys(quotesDbLocal || {}), 'Full Data:', quotesDbLocal);
-        }
-        // Phase 3 Resilience: Handle backend returning {error: "..."} for Music
-        if (musicDbLocal && musicDbLocal.error) {
-            console.error('Music API Exception Error:', musicDbLocal.error);
-            musicDb = [];
-            _rewindData = null;
-        } else {
-            musicDb = musicDbLocal && musicDbLocal.recent ? musicDbLocal.recent : [];
-            _rewindData = musicDbLocal && musicDbLocal.rewind ? musicDbLocal.rewind : null;
-        }
         resumeDb = (resumeDbLocal || []).map(entry => {
             if (entry.Page && entry.Page.includes('#')) {
                 const [page, sectionType] = entry.Page.split('#');
@@ -245,14 +213,14 @@ async function fetchDataAndCache() {
         });
         window.db = db;
 
-        // Initialize Fuse.js for fuzzy search
+        // Initialize Fuse.js for fuzzy search immediately with available data
         window.fuse = new Fuse(db, {
             keys: [
                 { name: 'Title', weight: 0.7 },
                 { name: 'Content', weight: 0.5 },
                 { name: 'Tags', weight: 0.5 },
                 { name: 'Page', weight: 0.3 },
-                { name: 'Author', weight: 0.1 } // Very low weight for author to allow search without hijacking every result
+                { name: 'Author', weight: 0.1 }
             ],
             threshold: 0.4, 
             location: 0,
@@ -263,12 +231,25 @@ async function fetchDataAndCache() {
             ignoreLocation: true
         });
 
-        // Auto-refresh any dynamic components currently in the DOM
-        document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
-        document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
-        document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
-        document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
-        document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
+        // Phase 2: Background Loading (Heavy APIs)
+        // These are launched without 'await' to allow startApp() to proceed immediately.
+        fetch(CONFIG.quotes_api).then(res => res.json()).then(res => {
+            const quotesRaw = res.quotes || res.data || res.items || res.rows || res.content || res;
+            quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
+            document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
+        }).catch(e => console.warn('Background Quotes fetch failed', e));
+
+        fetch(CONFIG.music_api).then(res => res.json()).then(res => {
+            if (res && !res.error) {
+                musicDb = res.recent || [];
+                _rewindData = res.rewind || null;
+                // Auto-refresh any dynamic music components currently in the DOM
+                document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
+                document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
+                document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
+                document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
+            }
+        }).catch(e => console.warn('Background Music fetch failed', e));
 
         return [db, quotesDb, resumeDb, musicDb];
     } catch (e) {
@@ -277,9 +258,10 @@ async function fetchDataAndCache() {
 }
 
 function fetchCSV(url) {
-    // Use browser directive to skip local cache, but DO NOT modify the URL with timestamps.
-    // Bypassing Google's CDN with dynamic query parameters triggers 429 Rate Limits from the origin server.
-    return fetch(url, { cache: 'no-store' })
+    // Enabled browser caching for CSV data. 
+    // This allows the site to feel "instant" on repeat visits while the background 
+    // update logic (SEO sync or manual refresh) ensures data stays fresh eventually.
+    return fetch(url)
         .then(res => res.text())
         .then(text => parseCSV(text));
 }
@@ -1675,9 +1657,6 @@ async function renderMusicCluster(container) {
 
     // Fetch details for each independently 
     const cardsData = await Promise.all(urls.map(async (rawLink, index) => {
-        // Stagger requests to NoEmbed to avoid 503 rate limiting (150ms intervals)
-        if (index > 0) await new Promise(r => setTimeout(r, index * 150));
-
         const bareURL = rawLink.trim();
         const ytId = getYouTubeID(bareURL);
 
