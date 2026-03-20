@@ -986,39 +986,28 @@ function renderPage(e) {
     const isTopLevel = !e.includes("/");
     const hasChildren = childrenPagesCheck(e);
 
-    // 404 Logic: If no content AND no children AND not personal/quotes -> 404
     if (t.length === 0 && !hasChildren && !("Personal" === e && quotesDb.length > 0)) {
-        document.getElementById("app").innerHTML =
-            `<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn't exist in the database yet.</p></div>`;
+        updateContainer(document.getElementById("app"), 
+            `<div class="section layout-hero"><h1 class="header-fade-anim">404</h1><p style="color:var(--text-dim); font-size:16px;">This page doesn't exist in the database yet.</p></div>`);
         return;
     }
 
-    // ATOMIC RENDER: Always call renderRows first to clear the container
-    renderRows(t, null, false, false, !isTopLevel);
+    // Build complete HTML for the page to update DOM only once
+    let finalHTML = buildRowsHTML(t, null, false, !isTopLevel);
 
-    // Natural Hierarchy: Show immediate children for automated navigation
     const pathParts = e.split("/");
     const currentDepth = pathParts.length;
-
-    // Find all unique immediate child sub-paths (even implicit ones)
     const childPaths = [...new Set(
         db.filter(item => item.Page && item.Page.startsWith(e + "/") && item.Page !== e)
             .map(item => item.Page.split("/").slice(0, currentDepth + 1).join("/"))
     )];
 
     if (childPaths.length > 0) {
-        // Map the children pages back to their primary DB entries, or synthesize a collection card
         const childEntries = childPaths.map(childPath => {
             const exactMatch = db.find(entry => entry.Page === childPath);
             if (exactMatch) return exactMatch;
-
-            // Synthesize a virtual DB entry for the implicitly defined category
             const folderName = childPath.split("/").pop().replace(/_/g, ' ');
-
-            // Attempt to borrow a cover image from the first descendant in the DB
-            const descendant = db.find(entry => entry.Page && entry.Page.startsWith(childPath + "/") && entry
-                .CoverImage);
-
+            const descendant = db.find(entry => entry.Page && entry.Page.startsWith(childPath + "/") && entry.CoverImage);
             return {
                 Page: childPath,
                 Title: folderName,
@@ -1029,9 +1018,10 @@ function renderPage(e) {
                 Timestamp: descendant ? descendant.Timestamp : ""
             };
         });
-
-        renderRows(childEntries, null, true, true);
+        finalHTML += buildRowsHTML(childEntries, null, true);
     }
+
+    updateContainer(document.getElementById("app"), finalHTML);
 }
 
 function childrenPagesCheck(e) {
@@ -1040,10 +1030,6 @@ function childrenPagesCheck(e) {
 }
 
 function renderIndex() {
-    const app = document.getElementById("app");
-    app.innerHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list"></div>';
-
-    const listContainer = app.querySelector(".index-list");
     const allPages = [...new Set(
         db.map(e => e.Page).filter(e => e && "Home" !== e && "Footer" !== e)
     )];
@@ -1055,46 +1041,48 @@ function renderIndex() {
         groups[category].push(page);
     });
 
+    let finalHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list">';
     for (const [category, pages] of Object.entries(groups)) {
         const catClass = getCategoryClass(category);
-
-        let html = `<div class="index-group ${catClass}"><h3>${category}</h3>`;
+        finalHTML += `<div class="index-group ${catClass}"><h3>${category}</h3>`;
         pages.forEach(page => {
             const entry = db.find(e => e.Page === page);
             const title = entry ? entry.Title : page.split("/").pop();
             const depth = page.split("/").length;
-            html +=
-                `<a href="#${path2url(page)}" class="index-link fill-anim ${depth > 1 ? `depth-${depth}` : ""}">\n${title} \n</a>`;
+            finalHTML += `<a href="#${path2url(page)}" class="index-link fill-anim ${depth > 1 ? `depth-${depth}` : ""}">${title}</a>`;
         });
-        html += "</div>";
-        listContainer.innerHTML += html;
+        finalHTML += "</div>";
     }
+    finalHTML += '</div>';
+    updateContainer(document.getElementById("app"), finalHTML);
 }
 
 function renderHome() {
-    const e = db.filter(e => "Home" === e.Page);
-    renderRows(e, null, false);
+    const heroEntries = db.filter(e => "Home" === e.Page);
+    let finalHTML = buildRowsHTML(heroEntries, null, false);
 
-    const t = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page);
-    const n = {};
-    t.forEach(e => {
+    const otherEntries = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page);
+    const activityMap = {};
+    otherEntries.forEach(e => {
         const isFeatured = e.Tags && e.Tags.toLowerCase().includes("featured");
-        // Discovery logic for Recent Activity: only show content up to 1 level deep, 
-        // OR any page explicitly marked as 'featured',
-        // AND must have a valid timestamp OR be featured (to avoid showing static/structure-only pages)
         const hasTimestamp = e.Timestamp && !isNaN(new Date(e.Timestamp).getTime());
         if ((e.Page.split("/").length <= 2 || isFeatured) && (isFeatured || hasTimestamp)) {
-            n[e.Page] = e;
+            activityMap[e.Page] = e;
         }
     });
-    const o = Object.values(n).sort((a, b) => {
+
+    const recentItems = Object.values(activityMap).sort((a, b) => {
         const featA = a.Tags?.toLowerCase().includes("featured") ? 1 : 0;
         const featB = b.Tags?.toLowerCase().includes("featured") ? 1 : 0;
         if (featA !== featB) return featB - featA;
         return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
     }).slice(0, 6);
-    // Append Recent Activity (isHome=true)
-    o.length > 0 && renderRows(o, "Recent Activity", true, true, false, true);
+
+    if (recentItems.length > 0) {
+        finalHTML += buildRowsHTML(recentItems, "Recent Activity", true, true, false, true);
+    }
+
+    updateContainer(document.getElementById("app"), finalHTML);
 }
 
 function processSingleLine(e) {
@@ -1222,10 +1210,7 @@ const SECTION_RENDERERS = {
 
 };
 
-function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecentActivity = false,
-    targetElement = null) {
-    const container = targetElement || document.getElementById("app");
-    if (!container) return;
+function buildRowsHTML(data, title, isSubPage, isHeroOnly = false, isRecentActivity = false) {
     if (isRecentActivity) {
         data.sort((a, b) => {
             const featA = a.Tags?.toLowerCase().includes("featured") ? 1 : 0;
@@ -1234,19 +1219,18 @@ function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecent
             return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
         });
     }
+
     let htmlBuffer = title ?
         `<div class="section-title-wrapper"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:var(--text-dim); --text-hover:var(--text-bright);">${title}</h2></div>` :
         "";
+
     if (data.length === 0) {
-        if (isHome) return;
         if (title) htmlBuffer +=
             `<div class="section layout-hero"><h2 class="header-fade-anim">Nothing Found</h2><p style="color:var(--text-dim); font-size:16px;">No entries match your query.</p></div>`;
-        container.innerHTML = htmlBuffer;
-        return;
+        return htmlBuffer;
     }
 
     let gridBuffer = "";
-    const activePage = (window.location.hash.substring(1) || "Home").toLowerCase();
     const topLevelPages = ["home", "personal", "professional", "projects"];
 
     data.forEach((entry, index) => {
@@ -1270,25 +1254,41 @@ function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecent
     });
 
     if (gridBuffer) htmlBuffer += `<div class="grid-container section">${gridBuffer}</div>`;
-    
-    // ATOMIC SWAP: Only update the DOM if the content has actually changed.
-    // This prevents the "double-flicker" during background cache-to-network transitions.
-    if (isHome) {
-        // For home, we check if the specific section we are appending already exists 
-        // or if the buffer is already represented.
-        // Simplified: if it's the first render, we still swap. If it's a refresh, we check.
-        if (container.innerHTML.includes(htmlBuffer.substring(0, 100))) {
-            // Likely already rendered this section
-        } else {
-            container.innerHTML += htmlBuffer;
+    return htmlBuffer;
+}
+
+function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecentActivity = false,
+    targetElement = null) {
+    const html = buildRowsHTML(data, title, isSubPage, isHeroOnly, isRecentActivity);
+    updateContainer(targetElement || document.getElementById("app"), html, isHome);
+}
+
+function updateContainer(container, html, append = false) {
+    if (!container) return;
+
+    if (append) {
+        // For appending (e.g. adding Recent Activity to Home), we check if the section is already there
+        // This is a bit loose but prevents double-appending on re-renders
+        const sectionCheck = html.substring(0, 100);
+        if (!container.innerHTML.includes(sectionCheck)) {
+            container.innerHTML += html;
+            postRender(container);
         }
     } else {
-        if (container.innerHTML !== htmlBuffer) {
-            container.innerHTML = htmlBuffer;
+        // ATOMIC SOFT UPDATE
+        // We use a temporary element to normalize the HTML for a reliable comparison
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        const normalizedHTML = temp.innerHTML;
+
+        if (container.innerHTML !== normalizedHTML) {
+            container.innerHTML = normalizedHTML;
+            postRender(container);
         }
     }
+}
 
-    // 4. Post-render logic: Initialize dynamic components
+function postRender(container) {
     container.querySelectorAll('[data-needs-init="true"]').forEach(el => {
         if (el.classList.contains("layout-quote")) renderQuoteCard(el);
         if (el.getAttribute('data-type') === 'recent-music') renderRecentMusic(el);
@@ -1296,8 +1296,6 @@ function renderRows(data, title, isHome, isSubPage, isHeroOnly = false, isRecent
         if (el.getAttribute('data-type') === 'music-cluster') renderMusicCluster(el);
         el.removeAttribute('data-needs-init');
     });
-
-    // Observe lazy videos
     observeVideos(container);
 }
 
@@ -2346,9 +2344,7 @@ const formatSectionTitle = type => (!type || type.toLowerCase().replace(/^#/, ''
 
 
 function renderResume() {
-    const app = document.getElementById("app");
     const data = resumeDb;
-
     let buffer = '<div id="resume-view" class="resume-container">';
 
     // 1. Render Header
@@ -2366,17 +2362,13 @@ function renderResume() {
         buffer += `
                 <div class="resume-header section" style="position:relative;">
                     <h1 class="header-fade-anim" style="margin-top:0;">${name}</h1>
-                    
                     <div class="resume-sub-row header-fade-anim" style="animation-delay:0.1s; margin-bottom: 6px;">
                         <div class="resume-sub" style="margin-bottom: 0;">${sub}</div>
                     </div>
-                    
                     <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; column-gap: 24px; row-gap: 16px;">
-                        
                         <div class="resume-contact" style="align-items: center; column-gap: 24px; row-gap: 6px; margin: 0;">
                             ${contacts}
                         </div>
-                        
                         ${pdfLink ? `<a href="${pdfLink}" target="_blank" rel="noopener" class="btn-cta" style="font-size: 13px; padding: 4px 12px; margin: 0;">Download PDF</a>` : ''}
                     </div>
                 </div>`;
@@ -2384,7 +2376,6 @@ function renderResume() {
 
     // 2. Group Sections
     const leftSections = ['education', 'skills', 'awards', 'languages', 'certifications', 'interests'];
-
     let leftColBuffer = "";
     let rightColBuffer = "";
 
@@ -2404,12 +2395,9 @@ function renderResume() {
             <div class="resume-grid section">
                 <div class="resume-left">${leftColBuffer}</div>
                 <div class="resume-right">${rightColBuffer}</div>
-            </div>`;
+            </div></div>`;
 
-    buffer += '</div>';
-
-    // 3. ATOMIC SWAP
-    app.innerHTML = buffer;
+    updateContainer(document.getElementById("app"), buffer);
 }
 function RenderResumeEntry(entry) {
     let role = entry.Title || "";
