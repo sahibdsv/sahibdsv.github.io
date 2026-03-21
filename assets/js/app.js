@@ -1121,22 +1121,17 @@ async function renderSnapshots() {
     const SPREE_GAP_MS = 4 * 60 * 60 * 1000; // 4 hours
 
     sortedHistory.forEach((item, index) => {
-        const isMilestone = /\[v\d+\.\d+\]/i.test(item.message);
-        if (isMilestone) {
+        // First commit is always the start of its spree
+        if (index === 0) {
             distilledHistory.push(item);
         } else {
-            // First v0 is always the start of its spree
-            if (index === 0) {
+            const prevTime = new Date(sortedHistory[index - 1].date).getTime();
+            const currTime = new Date(item.date).getTime();
+            const gap = Math.abs(prevTime - currTime);
+            
+            // If the gap between THIS and the PREVIOUS (newer) commit is > 4h, this is a new spree
+            if (gap > SPREE_GAP_MS) {
                 distilledHistory.push(item);
-            } else {
-                const prevTime = new Date(sortedHistory[index - 1].date).getTime();
-                const currTime = new Date(item.date).getTime();
-                const gap = Math.abs(prevTime - currTime);
-                
-                // If the gap between THIS and the PREVIOUS (newer) commit is > 4h, this is a new spree
-                if (gap > SPREE_GAP_MS) {
-                    distilledHistory.push(item);
-                }
             }
         }
     });

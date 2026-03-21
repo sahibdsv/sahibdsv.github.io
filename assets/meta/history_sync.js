@@ -8,15 +8,15 @@ const CONFIG = {
 
 function getGitHistory() {
     try {
-        // Get all commits with hash, date, and message
-        const log = execSync('git log --pretty=format:"%H|%ad|%s" --date=short').toString();
+        // Get all commits with hash, date, and message (using :::: as a safe separator)
+        const log = execSync('git log "--pretty=format:%H::::%ad::::%s" --date=short').toString();
         const lines = log.split('\n');
         
         const history = [];
         const seenMessages = new Set();
 
         for (const line of lines) {
-            const [hash, date, message] = line.split('|');
+            const [hash, date, message] = line.split('::::');
             
             // Filter out noise
             if (message.startsWith('chore: auto-sync')) continue;
