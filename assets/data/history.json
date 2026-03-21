@@ -1,5 +1,10 @@
 [
   {
+    "hash": "f2de665bee2770932f1476707d8638984f8d91e7",
+    "date": "2026-03-21",
+    "message": "feat: Include formatted timestamp in feedback payload"
+  },
+  {
     "hash": "7057a2e8ae58b7b9bd777a2d7e0105fd06a6c609",
     "date": "2026-03-21",
     "message": "fix: Revert to original working Apps Script URL"
