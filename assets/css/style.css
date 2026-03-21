@@ -1434,6 +1434,11 @@
             width: 100%;
         }
 
+        .gallery-item-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
         .gallery-item {
             overflow: hidden;
             border-radius: var(--card-radius);
@@ -1442,8 +1447,6 @@
             flex-direction: column;
             width: 100%;
             position: relative;
-            transform: translateZ(0);
-            /* Force clipping on desktop */
         }
 
         .gallery-item img,
@@ -1498,16 +1501,21 @@
             display: flex;
             flex-wrap: wrap;
             gap: var(--space-sm);
-            align-items: stretch;
+            align-items: flex-start; /* Respect individual image/caption heights */
             padding: 0;
         }
 
-        .media-gallery.uniform-height .gallery-item {
+        .media-gallery.uniform-height .gallery-item-wrapper {
             display: flex;
             flex-direction: column;
-            flex: 1 1 200px;
+            flex: 1 1 300px;
             height: auto;
             margin: 0;
+            min-width: 0;
+        }
+        .media-gallery.uniform-height .gallery-item {
+            height: auto; 
+            flex: 0 0 auto;
         }
 
         @media (max-width: 767px) {
@@ -1522,23 +1530,17 @@
                 margin-top: 25px;
             }
 
-            .media-gallery.uniform-height .gallery-item {
+            .media-gallery.uniform-height .gallery-item-wrapper {
                 flex: 0 0 calc(50% - 8px);
                 max-width: calc(50% - 8px);
                 min-width: 0;
-                height: auto;
             }
-
-            .media-gallery.uniform-height .gallery-item .unified-media-wrapper,
-            .media-gallery.uniform-height .gallery-item .embed-wrapper,
-            .media-gallery.uniform-height .gallery-item .model-viewer-wrapper {
-                height: 100%;
-                aspect-ratio: auto;
+            .media-gallery.uniform-height .gallery-item {
+                height: auto; 
             }
-
             .media-gallery.uniform-height .gallery-item img {
-                height: 100%;
-                object-fit: cover;
+                height: auto;
+                object-fit: contain;
                 aspect-ratio: auto;
             }
 

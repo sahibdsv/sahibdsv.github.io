@@ -2931,9 +2931,12 @@ function renderUnifiedMediaItem(item, isGallery = false) {
 
     // 3. Assembly
     if (isGallery) {
-        // In gallery, the gallery-item handles the rounding and clipping
-        return `<div class="gallery-item">
-                    ${mediaHTML}
+        // Multi-item Gallery: Uses a wrapper to isolate media framing from captions.
+        // This ensures uniform media scaling without distortion from varying caption lengths.
+        return `<div class="gallery-item-wrapper">
+                    <div class="gallery-item">
+                        ${mediaHTML}
+                    </div>
                     ${captionHTML}
                 </div>`;
     } else {
