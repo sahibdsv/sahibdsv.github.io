@@ -1142,11 +1142,9 @@ async function renderSnapshots() {
         .filter(m => m)
         .map(m => parseFloat(m[1]));
     
-    const latestVersion = allVersions.length > 0 ? `v${Math.max(...allVersions).toFixed(1)}` : 'v0';
-
     let finalHTML = `<div class="section layout-hero">
         <h1 class="fill-anim">Snapshots</h1>
-        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through <b>${history.length} commits</b> starting from <b>${latestVersion}</b>.</p>
+        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through <b>${history.length} commits</b>.</p>
         
         <div class="toc-container" style="margin: 1.5rem 0; text-align: center;">
             <h2 id="contents" style="margin-bottom: 8px; font-size: 18px; font-weight: 700; font-family:'Jost', sans-serif;">Chronology</h2>
