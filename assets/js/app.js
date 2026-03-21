@@ -928,12 +928,9 @@ window.submitFeedback = async function(type, text) {
     const resultsContainer = document.getElementById("search-results");
     
     if (searchInput) {
-        searchInput.style.color = "var(--text-dim)";
         searchInput.disabled = true;
     }
-    if (resultsContainer) {
-        resultsContainer.innerHTML = `<div class="section layout-hero"><h2 class="header-fade-anim" style="color:var(--text-dim); font-size: 14px;">Sending...</h2></div>`;
-    }
+
     
     const payload = new URLSearchParams();
     payload.append("type", "feedback");
@@ -1000,18 +997,18 @@ function handleSearch(e) {
     
     if (cmdMatch) {
          if (searchInput) {
-              // Highlight the input to show it's in Command Mode
-              searchInput.style.color = "var(--accent-projects)"; 
+              // Highlight the input green to show it's detected a command
+              searchInput.style.color = "#00ffa3"; 
          }
          if (resultsContainer) {
-              // User specified this text is redundant, so we keep it blank and clean
-              resultsContainer.innerHTML = '';
+              resultsContainer.innerHTML = ''; // Keep it clean
          }
          if (app) app.style.display = "none";
          return; // Stop normal search execution
     } else {
          if (searchInput && !searchInput.disabled) searchInput.style.color = ""; // Restore normal color
     }
+
 
 
 
