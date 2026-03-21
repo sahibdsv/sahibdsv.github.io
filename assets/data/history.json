@@ -1,5 +1,10 @@
 [
   {
+    "hash": "64d36216afe6e4ab3734ca97c61c6d402a4976ed",
+    "date": "2026-03-21",
+    "message": "fix: Update Apps Script API to Version 39 (CORS Fix)"
+  },
+  {
     "hash": "eebc93e67fdfe5ee9f263bf15b1adcba620ce482",
     "date": "2026-03-21",
     "message": "fix: Resolve merge conflicts and update to Apps Script Version 38"
