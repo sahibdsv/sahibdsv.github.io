@@ -1,5 +1,15 @@
 [
   {
+    "hash": "ff4e3f2002bcd09ae72ab3e7aad65130e55d53a2",
+    "date": "2026-03-20",
+    "message": "[v1.0] feat: Official launch of Snapshots engine with distilled history"
+  },
+  {
+    "hash": "01d9af3f3f1d3c8abb99094cc025a5b586374b64",
+    "date": "2026-03-20",
+    "message": "[v1.5] refactor: Simplify Snapshots header copy"
+  },
+  {
     "hash": "7822220811905a33b1297a670a09da0cebea8c08",
     "date": "2026-03-20",
     "message": "[v1.5] feat: Complete Snapshots engine with dynamic v0 labeling and TOC Chronology"

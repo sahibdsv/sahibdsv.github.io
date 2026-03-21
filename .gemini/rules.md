@@ -48,9 +48,9 @@
 - **Branding Guard**: Never use YouTube Music SVG logos as full-bleed thumbnails. Always use them as centered, dimmed placeholders (50% size).
 
 ## 🏷️ Versioning & Commit Standards
-- **Commit Format**: All code-related commits must start with a version tag in square brackets (e.g., `[v1.5] feat: description`).
+- **Commit Format**: All code-related commits must start with a version tag in square brackets (e.g., `[v1.0] feat: description`).
 - **Version Logic**:
-  - **Major [vX.0]**: Large-scale architectural shifts or full-site logic changes.
+  - **Major [vX.0]**: Large-scale architectural shifts or full-site logic changes. (e.g., v1.0 is the official launch of the Snapshots feature).
   - **Minor [vX.Y]**: New feature pages (like Snapshots), new major components (3D/Maps), or significant UI refinements.
 - **Maintenance**: Content-only updates (Sheet entries) or trivial bugfixes do not require a version bump.
 - **Starting Point**: All history prior to the implementation of the Snapshots feature is collectively categorized as **v0**.

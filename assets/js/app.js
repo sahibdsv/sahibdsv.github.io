@@ -1111,23 +1111,53 @@ async function renderSnapshots() {
     if (!history) history = [];
 
     // Apply sorting (default newest first)
-    const sortedHistory = [...history].sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return _archiveSortAsc ? dateA - dateB : dateB - dateA;
+    const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Distill v0 history: only show the final commit of each week for the legacy era.
+    // v1+ Milestones are always shown.
+    const weeklyV0s = new Map();
+    const milestones = [];
+
+    sortedHistory.forEach(item => { // Use sortedHistory for distillation
+        const isMilestone = /\[v\d+\.\d+\]/i.test(item.message);
+        if (isMilestone) {
+            milestones.push(item);
+        } else {
+            // Get week key (e.g. 2024-W12)
+            const date = new Date(item.date);
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            const weekKey = `${d.getUTCFullYear()}-W${weekNo}`;
+            
+            // Keep the latest one encountered (since history is sorted newest to oldest, we keep the first one seen per week)
+            if (!weeklyV0s.has(weekKey)) {
+                weeklyV0s.set(weekKey, item);
+            }
+        }
     });
 
-    // Group by month
+    const distilledHistory = [...milestones, ...Array.from(weeklyV0s.values())].sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return _archiveSortAsc ? dateA - dateB : dateB - dateA; // Apply user sort preference
+    });
+
+    // Grouping logic (Distilled)
     const groups = {};
-    sortedHistory.forEach(item => {
-        const date = new Date(item.date);
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    distilledHistory.forEach(item => {
+        const monthKey = item.date.substring(0, 7);
         if (!groups[monthKey]) groups[monthKey] = [];
         groups[monthKey].push(item);
     });
 
     const monthKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
-
+    
+    // Total commits mentioned in hero will be the count before distillation?
+    // User: "evolution of this site through 808 commits"... I'll show the total history.length
+    
     const tocLinks = monthKeys.map(key => {
         const [y, m] = key.split('-');
         const name = new Date(y, parseInt(m)-1).toLocaleString('default', {month:'long'});
@@ -1136,15 +1166,9 @@ async function renderSnapshots() {
         </div>`;
     }).join('');
 
-    // Determine the current version/era dynamically
-    const allVersions = history
-        .map(h => h.message.match(/\[v(\d+\.\d+)\]/i))
-        .filter(m => m)
-        .map(m => parseFloat(m[1]));
-    
     let finalHTML = `<div class="section layout-hero">
         <h1 class="fill-anim">Snapshots</h1>
-        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through <b>${history.length} commits</b>.</p>
+        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through <b>${history.length} commits</b> across <b>${distilledHistory.length}</b> weekly snapshots.</p>
         
         <div class="toc-container" style="margin: 1.5rem 0; text-align: center;">
             <h2 id="contents" style="margin-bottom: 8px; font-size: 18px; font-weight: 700; font-family:'Jost', sans-serif;">Chronology</h2>
