@@ -902,26 +902,38 @@ function toggleTheme() {
 
 }
 
-window.submitFeedback = function(type, text) {
+window.submitFeedback = async function(type, text) {
     const btn = document.getElementById("feedback-submit-btn");
     if (btn) btn.innerText = "Sending...";
     
-    // We send a POST request to your existing Apps Script endpoint
-    // It passes type=feedback, the category (!bug/!idea), the message, and your current page location
-    const url = `${CONFIG.music_api}?type=feedback&category=${encodeURIComponent(type)}&message=${encodeURIComponent(text)}&path=${encodeURIComponent(window.location.hash || '#Home')}`;
+    const payload = new URLSearchParams();
+    payload.append("type", "feedback");
+    payload.append("category", type);
+    payload.append("message", text);
+    payload.append("path", window.location.hash || '#Home');
     
-    fetch(url, { method: "POST", mode: "no-cors" }).then(() => {
-        if (btn) {
-            btn.innerText = "Sent! Thanks.";
-            btn.style.background = "#00ffa3"; // Turn personal green on success
-            setTimeout(() => {
-                closeSearch();
-            }, 1500);
+    try {
+        const response = await fetch(CONFIG.music_api, {
+            method: "POST",
+            body: payload
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            if (btn) {
+                btn.innerText = "Sent! Thanks.";
+                btn.style.background = "#00ffa3";
+                setTimeout(() => closeSearch(), 1500);
+            }
+        } else {
+            if (btn) btn.innerText = "Failed";
+            console.error("Failed to submit feedback:", result);
         }
-    }).catch(e => {
+    } catch (err) {
         if (btn) btn.innerText = "Error (check console)";
-        console.error("Feedback error", e);
-    });
+        console.error("Error during feedback submission:", err);
+    }
 };
 
 function handleSearch(e) {
