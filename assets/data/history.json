@@ -1,5 +1,10 @@
 [
   {
+    "hash": "411900386165aefb975e9ec522f0c077fb6c35aa",
+    "date": "2026-03-21",
+    "message": "fix: Final Apps Script endpoint update (Version 41)"
+  },
+  {
     "hash": "af4fb9b83523f3f1772a52d461cce04beeff6519",
     "date": "2026-03-21",
     "message": "fix: Update Apps Script to Version 40 with Robust Error Handling"
