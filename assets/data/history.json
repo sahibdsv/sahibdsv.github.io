@@ -1,5 +1,10 @@
 [
   {
+    "hash": "8494fc95dd56e9367b9cfddc0663bf1bf0a635ec",
+    "date": "2026-03-21",
+    "message": "fix: resolve navigation centering on mobile and restore passive scrolling behavior"
+  },
+  {
     "hash": "1c784533a0b6a7fd9563f2ac847151ebd41cfff8",
     "date": "2026-03-21",
     "message": "[v1.1]"
