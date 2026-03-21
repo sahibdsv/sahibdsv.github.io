@@ -1,7 +1,7 @@
 [
   {
-    "hash": "1b39936e5331258d2a7e34bbdafc3a270df773d5",
+    "hash": "205abc38ace3e74fe7ea0daf0ca0e492b9e43e1d",
     "date": "2026-03-20",
-    "message": "[v1.0] feat: Official launch of Snapshots engine with distilled history"
+    "message": "[v1.0] feat: Upgrade Snapshot distillation to intelligent 'Spree Detection'"
   }
 ]
