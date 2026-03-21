@@ -1188,16 +1188,32 @@ async function renderSnapshots() {
             </div>`;
             
             finalHTML += '<div class="section archive-list-grid" style="padding-top: 0; padding-bottom: 20px;">';
+            // Assign stable, distinct colors to version tags
+            const getVersionColor = (tag) => {
+                if (tag === 'v0') return { bg: 'var(--border-subtle)', text: 'var(--text-dim)', border: 'none' };
+                let hash = 0;
+                for (let i = 0; i < tag.length; i++) {
+                    hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const h = Math.abs(hash % 360);
+                return { 
+                    bg: `hsla(${h}, 70%, 45%, 0.15)`, 
+                    text: `hsl(${h}, 80%, 75%)`,
+                    border: `1px solid hsla(${h}, 70%, 45%, 0.3)`
+                };
+            };
+
             groups[monthKey].forEach(item => {
                 const visitUrl = `https://raw.githack.com/sahibdsv/sahibdsv.github.io/${item.hash}/index.html`;
                 const versionMatch = item.message.match(/\[v(\d+\.\d+)\]/i);
                 const versionTag = versionMatch ? `v${versionMatch[1]}` : 'v0';
+                const vColor = getVersionColor(versionTag);
 
                 finalHTML += `
                     <div class="archive-item-card" onclick="window.open('${visitUrl}', '_blank'); haptic('pulse');">
                         <div class="archive-card-header">
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <span class="chip stat version-chip" style="margin:0; pointer-events:none; cursor:default; background:var(--border-subtle); color:var(--text-dim); font-size:9px; height:auto; padding:3px 6px; border:none; opacity:0.8;">${versionTag}</span>
+                                <span class="chip stat version-chip" style="margin:0; pointer-events:none; cursor:default; background:${vColor.bg}; color:${vColor.text}; border:${vColor.border}; font-size:9px; height:auto; padding:3px 6px; opacity:1;">${versionTag}</span>
                                 <span class="date">${item.date}</span>
                             </div>
                             <span class="hash" style="color:var(--accent-projects);">${item.hash.substring(0, 7)}</span>

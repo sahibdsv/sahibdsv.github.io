@@ -1,5 +1,10 @@
 [
   {
+    "hash": "241812f307e9b12d83b94ac218e401e48a1a6bf5",
+    "date": "2026-03-20",
+    "message": "[v1.0] fix: Resolve PowerShell pipe issue in history sync"
+  },
+  {
     "hash": "205abc38ace3e74fe7ea0daf0ca0e492b9e43e1d",
     "date": "2026-03-20",
     "message": "[v1.0] feat: Upgrade Snapshot distillation to intelligent 'Spree Detection'"
