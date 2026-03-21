@@ -1,5 +1,10 @@
 [
   {
+    "hash": "cd68af975b5191cbf6d2261fe4bac9ea5a01320c",
+    "date": "2026-03-21",
+    "message": "feat: Seamless search-command feedback with Enter submission and live color detection"
+  },
+  {
     "hash": "b838013d5c8d56b1b2840336af0c7d52e24a4252",
     "date": "2026-03-21",
     "message": "feat: Implement formal URLSearchParams payload for feedback"
