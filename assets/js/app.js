@@ -1221,7 +1221,7 @@ async function renderSnapshots() {
                     <div class="archive-item-card" onclick="window.open('${visitUrl}', '_blank')">
                         <div class="archive-card-header">
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <span class="chip stat version-chip" style="margin:0; pointer-events:none; cursor:default; background:${vColor.bg}; color:${vColor.text}; border:${vColor.border}; font-size:9px; height:auto; padding:3px 6px; opacity:1;">${versionTag}</span>
+                                ${versionMatch ? `<span class="chip stat version-chip" style="margin:0; pointer-events:none; cursor:default; background:${vColor.bg}; color:${vColor.text}; border:${vColor.border}; font-size:9px; height:auto; padding:3px 6px; opacity:1;">${versionTag}</span>` : ''}
                                 <span class="date">${item.date}</span>
                             </div>
                             <span class="hash" style="color:var(--accent-projects);">${item.hash.substring(0, 7)}</span>
