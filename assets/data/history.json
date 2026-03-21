@@ -1,5 +1,10 @@
 [
   {
+    "hash": "f316dec9f75d700287ac6ff7213b342eec008bf0",
+    "date": "2026-03-20",
+    "message": "[v1.0] meta: Refine versioning rules to be per-session"
+  },
+  {
     "hash": "f527fab0a180f8b107acd67d77efe9811f816af0",
     "date": "2026-03-20",
     "message": "feat: add GPS art thumbnail image."
