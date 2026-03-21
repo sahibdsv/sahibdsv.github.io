@@ -688,6 +688,7 @@ function centerNavRow(row, isSubNav, behavior = "auto") {
     const activeLink = row.querySelector(".active");
     setNavSnapping(row, "none"); // Always disable during programmatic glide
 
+    const restoreSnap = () => {
         // After a programmatic center, we use proximity to allow some manual drift 
         // while still encouraging the active link to stay in view.
         if (row !== _activeNavControl) setNavSnapping(row, "proximity");
