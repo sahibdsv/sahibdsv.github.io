@@ -1,5 +1,10 @@
 [
   {
+    "hash": "a751efceba86a456f3ed32b535ab51b1c2752728",
+    "date": "2026-03-21",
+    "message": "feat: Add FRONTIER_CubeSat_v1.4 3D model."
+  },
+  {
     "hash": "37ed65d50b7ee7ba92856c8b436b0975ab964874",
     "date": "2026-03-21",
     "message": "feat: Add new 3D model for FRONTIER CubeSat."
