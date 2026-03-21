@@ -932,11 +932,16 @@ window.submitFeedback = async function(type, text) {
     }
 
     
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const formattedTimestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    
     const payload = new URLSearchParams();
     payload.append("type", "feedback");
     payload.append("category", type);
     payload.append("message", text);
     payload.append("path", window.location.hash || '#Home');
+    payload.append("timestamp", formattedTimestamp);
     
     try {
         const response = await fetch(CONFIG.music_api, {

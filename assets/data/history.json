@@ -1,5 +1,10 @@
 [
   {
+    "hash": "7057a2e8ae58b7b9bd777a2d7e0105fd06a6c609",
+    "date": "2026-03-21",
+    "message": "fix: Revert to original working Apps Script URL"
+  },
+  {
     "hash": "58b8a9b291ab8ec6183c7146ac8d23fc7e2ea387",
     "date": "2026-03-21",
     "message": "fix: Revert to original working Apps Script deployment with feedback handler"
