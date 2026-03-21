@@ -43,9 +43,9 @@
             --main-row-h: 20px;
             --sub-row-h: 20px;
             --gap: 5px;
-            --header-pad-top: 10px;
-            --header-pad-bottom: 10px;
-            --header-gap: 10px;
+            --header-pad-top: 7px;
+            --header-pad-bottom: 5px;
+            --header-gap: 5px;
             --brand-font-size: 28px;
             --brand-letter-spacing: 1.5px;
             --nav-font-size: 15px;
@@ -213,6 +213,7 @@
         html {
             /* Smooth scroll disabled for reliability across mobile engines */
             width: 100%;
+            height: 100%;
             margin: 0;
             padding: 0;
         }
@@ -379,7 +380,7 @@
 
         #main-header {
             position: sticky;
-            top: -40px; /* Flat integer value to prevent sub-pixel oscillation */
+            top: calc(-1 * (var(--brand-row-h) + var(--header-gap)));
             left: 0;
             width: 100%;
             background: var(--bg-trans);
@@ -392,7 +393,6 @@
             gap: var(--header-gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
-            contain: layout; /* Isolate internal row shifts from affecting parent scroll */
         }
 
         #brand-name,
@@ -736,15 +736,10 @@
                 --main-row-h: 20px;
                 --sub-row-h: 20px;
                 --gap: 1px;
-                --header-pad-top: 3px;
+                --header-pad-top: 3.5px;
                 --header-pad-bottom: 3px;
-                --header-gap: 3px;
+                --header-gap: 0px;
                 --nav-font-size: 16px;
-            }
-
-            #main-header {
-                top: -37px; /* Integer offset to stop mobile oscillation */
-                contain: layout;
             }
 
             #brand-name {
