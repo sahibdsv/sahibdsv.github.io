@@ -1,5 +1,10 @@
 [
   {
+    "hash": "d563637ec9b36868d44990cbafb0c180e144b1d0",
+    "date": "2026-03-21",
+    "message": "fix: Update Apps Script API endpoint to newest deployment"
+  },
+  {
     "hash": "9973e20a7d030bf645b97fc880c94047948ba546",
     "date": "2026-03-21",
     "message": "fix: Streamline feedback submission - remove status text and adjust detection color to green"
