@@ -1,5 +1,10 @@
 [
   {
+    "hash": "5311c3bb032235c6234069e3be50a0dbe685dd34",
+    "date": "2026-03-21",
+    "message": "fix: gallery ratio respect and nav row overscroll cleanup"
+  },
+  {
     "hash": "f44a1d2ddde2da46c5c994ef69d01775d20f1d4f",
     "date": "2026-03-21",
     "message": "feat: Resolved merge conflicts and included formatted timestamp in feedback"
