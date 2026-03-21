@@ -380,7 +380,7 @@
 
         #main-header {
             position: sticky;
-            top: calc(-1 * (var(--header-pad-top) + var(--brand-row-h)));
+            top: -40px; /* Flat integer value to prevent sub-pixel oscillation */
             left: 0;
             width: 100%;
             background: var(--bg-trans);
@@ -393,10 +393,7 @@
             gap: var(--header-gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
-            /* Stabilization: Hardware acceleration to prevent scroll-vibrating/jittering */
-            transform: translateZ(0); 
-            will-change: transform;
-            backface-visibility: hidden;
+            contain: layout; /* Isolate internal row shifts from affecting parent scroll */
         }
 
         #brand-name,
@@ -744,6 +741,11 @@
                 --header-pad-bottom: 3px;
                 --header-gap: 3px;
                 --nav-font-size: 16px;
+            }
+
+            #main-header {
+                top: -37px; /* Integer offset to stop mobile oscillation */
+                contain: layout;
             }
 
             #brand-name {
