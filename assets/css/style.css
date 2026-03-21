@@ -219,6 +219,7 @@
             padding: 0;
             /* Prevents page shift when search is engaged and scrollbar disappears */
             scrollbar-gutter: stable;
+            overscroll-behavior-y: none;
         }
 
         body {
@@ -234,6 +235,7 @@
             position: relative;
             /* clip ensures position: sticky works while preventing horizontal overshoot */
             overflow-x: clip; 
+            overscroll-behavior-y: none;
         }
 
         a,
