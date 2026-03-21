@@ -1,5 +1,10 @@
 [
   {
+    "hash": "77e7504e83e0ac0926928863a066a967ac269779",
+    "date": "2026-03-21",
+    "message": "fix: Bump app.js version to v68.5 to force cache bust for Version 41"
+  },
+  {
     "hash": "deedd9ecb85b50adcf421c28b713d9af884ca7ee",
     "date": "2026-03-21",
     "message": "fix: Final Apps Script update and resolve conflicts"
