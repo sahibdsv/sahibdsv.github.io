@@ -1,5 +1,10 @@
 [
   {
+    "hash": "f44a719b50f60966218bfd4e9610b52015f295ff",
+    "date": "2026-03-21",
+    "message": "feat: add FRONTIER CubeSat v1.4.1 GLB model."
+  },
+  {
     "hash": "a751efceba86a456f3ed32b535ab51b1c2752728",
     "date": "2026-03-21",
     "message": "feat: Add FRONTIER_CubeSat_v1.4 3D model."
