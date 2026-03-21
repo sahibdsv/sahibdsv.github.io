@@ -364,10 +364,10 @@ function initApp() {
     // 1. Central Haptic Engine: Intercepts taps in CAPTURE phase
     document.addEventListener("click", e => {
         const interactive = e.target.closest(
-            "#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip, .article-link-btn, .author-link, .music-yt-overlay"
+            "#brand-name, #search-controls, .nav-link, .sub-link, button, [onclick], [role=\"button\"], .layout-grid, .archive-item-card, .clickable-block, .hero-link, .refresh-btn, .dice-icon, a, .chip, .article-link-btn, .author-link, .music-yt-overlay"
         );
         if (interactive && navigator.vibrate) {
-            const isMajor = interactive.closest("#brand-name, #search-controls, #theme-toggle, .nav-row.level-1 .nav-link");
+            const isMajor = interactive.closest("#brand-name, #search-controls, #theme-toggle, .nav-row.level-1 .nav-link, .archive-item-card");
             haptic(isMajor ? 'pulse' : 'tap');
         }
     }, {
@@ -1205,7 +1205,7 @@ async function renderSnapshots() {
                 const vColor = getVersionColor(versionTag);
 
                 finalHTML += `
-                    <div class="archive-item-card" onclick="window.open('${visitUrl}', '_blank'); haptic('pulse');">
+                    <div class="archive-item-card" onclick="window.open('${visitUrl}', '_blank')">
                         <div class="archive-card-header">
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <span class="chip stat version-chip" style="margin:0; pointer-events:none; cursor:default; background:${vColor.bg}; color:${vColor.text}; border:${vColor.border}; font-size:9px; height:auto; padding:3px 6px; opacity:1;">${versionTag}</span>

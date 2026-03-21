@@ -1,5 +1,10 @@
 [
   {
+    "hash": "285822fb758fcc5cfe5091ef0effb3fd135be8c8",
+    "date": "2026-03-20",
+    "message": "[v1.0] fix: Resolve PowerShell pipe issue in history sync"
+  },
+  {
     "hash": "5add2932bb2332b6c88d90aa56e163deeb8d997c",
     "date": "2026-03-20",
     "message": "[v1.0] feat: Add stable distinct colors to version chips"
