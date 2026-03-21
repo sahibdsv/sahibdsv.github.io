@@ -93,8 +93,8 @@ const isTrueMobile = window.matchMedia("(pointer: coarse) and (hover: none)").ma
 const CONFIG = {
     main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
     resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv',
-    music_api: 'https://script.google.com/macros/s/AKfycbyUSzmQt-WssJyjkc_xe-G_RLQQ4j_lcMiZ5ici3bzQhXId7FmYGGDYd6rKO7tG40kcZw/exec',
-    quotes_api: 'https://script.google.com/macros/s/AKfycbyUSzmQt-WssJyjkc_xe-G_RLQQ4j_lcMiZ5ici3bzQhXId7FmYGGDYd6rKO7tG40kcZw/exec?type=quotes'
+    music_api: 'https://script.google.com/macros/s/AKfycbxNDIixvOtWzEGDX8ZculUMA620cpd8YwzD70hiXNR0nHfPvtB3gLB2b2XvZM_kG-D7Nw/exec',
+    quotes_api: 'https://script.google.com/macros/s/AKfycbxNDIixvOtWzEGDX8ZculUMA620cpd8YwzD70hiXNR0nHfPvtB3gLB2b2XvZM_kG-D7Nw/exec?type=quotes'
 };
 
 // Quote Randomness Logic (Fisher-Yates / Durstenfeld Shuffle Bag)
