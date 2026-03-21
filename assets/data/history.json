@@ -1,5 +1,10 @@
 [
   {
+    "hash": "2b1309582c6f6586d77c5ec9d7ab32b8935c8076",
+    "date": "2026-03-21",
+    "message": "fix: Intelligent overscroll prevention to preserve pull-to-refresh but fix bottom bounce"
+  },
+  {
     "hash": "5c6d7ab05d3b2d967c00488540310b5d9e93c48c",
     "date": "2026-03-21",
     "message": "fix: prevent scroll overscroll-behavior-y bounce causing header glitches"
