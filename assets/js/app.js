@@ -902,6 +902,28 @@ function toggleTheme() {
 
 }
 
+window.submitFeedback = function(type, text) {
+    const btn = document.getElementById("feedback-submit-btn");
+    if (btn) btn.innerText = "Sending...";
+    
+    // We send a POST request to your existing Apps Script endpoint
+    // It passes type=feedback, the category (!bug/!idea), the message, and your current page location
+    const url = `${CONFIG.music_api}?type=feedback&category=${encodeURIComponent(type)}&message=${encodeURIComponent(text)}&path=${encodeURIComponent(window.location.hash || '#Home')}`;
+    
+    fetch(url, { method: "POST", mode: "no-cors" }).then(() => {
+        if (btn) {
+            btn.innerText = "Sent! Thanks.";
+            btn.style.background = "#00ffa3"; // Turn personal green on success
+            setTimeout(() => {
+                closeSearch();
+            }, 1500);
+        }
+    }).catch(e => {
+        if (btn) btn.innerText = "Error (check console)";
+        console.error("Feedback error", e);
+    });
+};
+
 function handleSearch(e) {
     if (!document.getElementById("search-overlay").classList.contains("active")) return;
     const resultsContainer = document.getElementById("search-results");
@@ -917,6 +939,32 @@ function handleSearch(e) {
         return;
     }
     const t = e.toLowerCase();
+
+    // ⚡ COMMAND INTERCEPT LOGIC
+    const cmdMatch = ['!bug', '!idea', '!feedback'].find(w => t.startsWith(w));
+    if (cmdMatch) {
+         if (resultsContainer) {
+              const msg = e.substring(cmdMatch.length).trim();
+              const actionLabel = cmdMatch.replace('!', '').toUpperCase();
+              
+              if (msg.length < 3) {
+                   resultsContainer.innerHTML = `<div class="section layout-hero"><h2 class="header-fade-anim" style="color:var(--accent-projects)">${actionLabel} Mode</h2><p style="color:var(--text-dim); font-size:16px;">Keep typing your ${actionLabel.toLowerCase()}...</p></div>`;
+              } else {
+                   // Clean string for HTML onclick attribute
+                   const safeMsg = msg.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                   resultsContainer.innerHTML = `
+                   <div class="section layout-hero">
+                        <h2 class="header-fade-anim" style="color:var(--accent-projects)">Submit ${actionLabel}?</h2>
+                        <p style="color:var(--text-dim); font-size:16px; margin-bottom: 20px;">"${safeHTML(msg)}"</p>
+                        <button class="chip stat" id="feedback-submit-btn" onclick="submitFeedback('${actionLabel}', '${safeMsg}')" style="cursor:pointer; background:var(--accent-projects); color:black; font-weight:bold; font-size:14px; padding:10px 20px; text-transform:uppercase;">Send to System</button>
+                   </div>`;
+              }
+              resultsContainer.style.display = "block";
+         }
+         if (app) app.style.display = "none";
+         return; // Stop normal search execution
+    }
+
     const matchesQuery = (entry, term) => entry?.Title?.toLowerCase().includes(term) || entry?.Content
         ?.toLowerCase().includes(term) || entry?.Tags?.toLowerCase().includes(term);
     
