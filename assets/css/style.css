@@ -1001,16 +1001,16 @@
 
 
         @keyframes dice-spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% { transform: scale(1.15) rotate(0deg); }
+            100% { transform: scale(1.15) rotate(360deg); }
         }
 
         .dice-icon {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 24px;
-            height: 24px;
+            bottom: 18px;
+            right: 18px;
+            width: 28px;
+            height: 28px;
             cursor: pointer;
             color: var(--text-bright);
             opacity: 0.5;
@@ -1023,13 +1023,14 @@
         .dice-icon:hover,
         .dice-icon:active {
             opacity: 1;
-            transform: rotate(90deg); /* Slight tilt on hover/active to show interactivity */
+            transform: scale(1.15);
             color: var(--text-bright);
         }
 
         .layout-quote.loading .dice-icon {
             opacity: 1;
             color: var(--text-bright);
+            transform: scale(1.15); /* Keep the scale during loading */
             animation: dice-spin 0.6s cubic-bezier(.175, .885, .32, 1.275);
         }
 

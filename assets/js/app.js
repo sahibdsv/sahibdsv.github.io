@@ -1366,7 +1366,7 @@ window.rollQuote = function (btn) {
             // We don't remove "loading" here; renderQuoteCard handles it via rAF to ensure
             // the new quote is in the DOM before it fades back in.
         });
-    }, 400); // Shorter timeout for snappier feel while still allowing exit anim
+    }, 650); // Matches the 0.6s CSS animation + bounceback overhead
 };
 
 function renderQuoteCard(container) {
