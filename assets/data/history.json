@@ -1,5 +1,10 @@
 [
   {
+    "hash": "3504353fff6efb5e49efa40b3458241aa5bf6fcc",
+    "date": "2026-03-21",
+    "message": "feat: Add FRONTIER_CubeSat_v1.4 GLB 3D model asset."
+  },
+  {
     "hash": "6788185afdc85c685cebb9e4d30cf7831e370173",
     "date": "2026-03-21",
     "message": "fix: resolve SyntaxError in centerNavRow"
