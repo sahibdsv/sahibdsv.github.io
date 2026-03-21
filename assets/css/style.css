@@ -534,8 +534,9 @@
         .nav-row.level-n::before {
             content: "";
             display: block;
-            width: 0;
+            width: 50%;
             flex-shrink: 0;
+            cursor: pointer;
         }
 
         .nav-row.level-n::before {
