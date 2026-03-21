@@ -377,7 +377,7 @@ function initApp() {
                 if (e.cancelable) e.preventDefault();
             }
         }
-    }, { passive: false });
+    }, { passive: true });
 
     // 1. Central Haptic Engine: Intercepts taps in CAPTURE phase
     document.addEventListener("click", e => {
@@ -393,12 +393,17 @@ function initApp() {
         capture: true
     });
 
+    let _lastWidth = window.innerWidth;
     window.addEventListener("resize", (() => {
         let resizeTimeout;
         return () => {
             if (resizeTimeout) cancelAnimationFrame(resizeTimeout);
             resizeTimeout = requestAnimationFrame(() => {
-                const isDesktop = window.innerWidth > 768;
+                const currentWidth = window.innerWidth;
+                if (currentWidth === _lastWidth) return;
+                _lastWidth = currentWidth;
+
+                const isDesktop = currentWidth > 768;
                 document.querySelectorAll(".nav-row").forEach(row => {
                     if (isDesktop) {
                         row.scrollLeft = 0;
@@ -616,7 +621,7 @@ function renderNavigation(currentPath, forceSmoothNav = false) {
             const isInteracting = (_activeNavControl === row);
 
             if (!isInteracting) {
-                setNavSnapping(row, (activeLink && row.scrollWidth > row.clientWidth + 5) ? 'mandatory' : 'none');
+                setNavSnapping(row, (activeLink && row.scrollWidth > row.clientWidth + 5) ? 'proximity' : 'none');
                 // Only center if we're not touching/swiping the row
                 centerNavRow(row, level > 1, forceSmoothNav ? "smooth" : "auto");
             }
@@ -664,6 +669,8 @@ function setNavSnapping(row, mode = "none") {
         row.style.scrollSnapType = 'none';
     } else if (mode === "mandatory") {
         row.style.scrollSnapType = 'x mandatory';
+    } else if (mode === "proximity") {
+        row.style.scrollSnapType = 'x proximity';
     }
 }
 
@@ -681,12 +688,9 @@ function centerNavRow(row, isSubNav, behavior = "auto") {
     const activeLink = row.querySelector(".active");
     setNavSnapping(row, "none"); // Always disable during programmatic glide
 
-    const restoreSnap = () => {
-        // After a programmatic center, we can use mandatory to ensure it stays locked,
-        // OR proximity if we want to allow it to drift slightly. 
-        // User requested to stop forcing it after swipe, so for programmatic we still use mandatory
-        // to ensure the link they clicked ends up in the middle.
-        if (row !== _activeNavControl) setNavSnapping(row, "mandatory");
+        // After a programmatic center, we use proximity to allow some manual drift 
+        // while still encouraging the active link to stay in view.
+        if (row !== _activeNavControl) setNavSnapping(row, "proximity");
     };
 
     if (activeLink) {
