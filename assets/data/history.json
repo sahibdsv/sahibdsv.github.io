@@ -1,5 +1,10 @@
 [
   {
+    "hash": "5c6d7ab05d3b2d967c00488540310b5d9e93c48c",
+    "date": "2026-03-21",
+    "message": "fix: prevent scroll overscroll-behavior-y bounce causing header glitches"
+  },
+  {
     "hash": "46960aa59a7996958c488942c926b05e05e71cc4",
     "date": "2026-03-20",
     "message": "[v1.0] ui: Only show version chips for tagged commits"

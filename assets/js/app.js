@@ -357,9 +357,27 @@ function safeHTML(str) {
 function initApp() {
     handleRouting();
     window.addEventListener("hashchange", handleRouting);
-    window.addEventListener("touchmove", () => {
-        document.getElementById("main-header").classList.add("scrolling");
+    // Intelligent touch listener to prevent only BOTTOM overscroll bounce
+    window.addEventListener("touchstart", (e) => {
+        if (e.touches.length === 1) window._startY = e.touches[0].clientY;
     }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+        document.getElementById("main-header").classList.add("scrolling");
+        
+        if (!window._startY) return;
+        const y = e.touches[0].clientY;
+        const isScrollingDown = window._startY > y;
+        
+        // If we are at the bottom and pulling up (scrolling down), prevent bounce
+        if (isScrollingDown) {
+            const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (window.scrollY >= scrollableHeight - 2) {
+                // Prevent bottom bounce (which causes Chrome browser bar glitches)
+                if (e.cancelable) e.preventDefault();
+            }
+        }
+    }, { passive: false });
 
     // 1. Central Haptic Engine: Intercepts taps in CAPTURE phase
     document.addEventListener("click", e => {
