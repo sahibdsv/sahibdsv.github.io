@@ -997,6 +997,9 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
         _lastRenderedPath = cleanPath;
         _renderRAF = null;
 
+        // Force scroll to top after rendering to prevent "scroll leakage" from search results or previous pages
+        window.scrollTo(0, 0);
+
         // STRAVA: Re-trigger embed bootstrap if content was added
         if (typeof window.__STRAVA_EMBED_BOOTSTRAP__ === 'function') {
             window.__STRAVA_EMBED_BOOTSTRAP__();
