@@ -1,5 +1,10 @@
 [
   {
+    "hash": "fc1134c533d3cfa22b4a1513559a3cb25512138f",
+    "date": "2026-03-20",
+    "message": "[v1.0] fix: Resolve 'scroll leakage' when navigating from search results"
+  },
+  {
     "hash": "7ccc1ddd7078b43f10b17222f9d2b2b53ff5a4dc",
     "date": "2026-03-20",
     "message": "[v1.0] fix: Update GitHub Action to fetch-depth: 0 for full history"
