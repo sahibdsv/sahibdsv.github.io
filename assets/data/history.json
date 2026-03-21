@@ -1,5 +1,10 @@
 [
   {
+    "hash": "46653edba1fe5d8bc70c3fe49a1bdbfeb997a0be",
+    "date": "2026-03-21",
+    "message": "feat: Add hidden search command intercept for bugs and ideas"
+  },
+  {
     "hash": "2b1309582c6f6586d77c5ec9d7ab32b8935c8076",
     "date": "2026-03-21",
     "message": "fix: Intelligent overscroll prevention to preserve pull-to-refresh but fix bottom bounce"
