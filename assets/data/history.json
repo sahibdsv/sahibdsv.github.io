@@ -1,5 +1,10 @@
 [
   {
+    "hash": "1ca930d42ee62b5648e057b17a9b60f8b4d86c0c",
+    "date": "2026-03-21",
+    "message": "fix: Wrap feedback submit in native .btn-cta-wrapper anchor to perfectly match global styling"
+  },
+  {
     "hash": "92c802cc78bd74bfb7f70babc2995c00ff1b77e5",
     "date": "2026-03-21",
     "message": "fix: Revert to native .btn-cta styling and add global text wrapping support"
