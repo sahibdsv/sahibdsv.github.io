@@ -882,6 +882,8 @@ function closeSearch() {
     document.body.classList.remove("search-active");
     const e = document.getElementById("search-input");
     e.value = "";
+    e.style.color = "";
+    e.disabled = false;
     e.blur();
 
     const resultsContainer = document.getElementById("search-results");
@@ -1002,24 +1004,15 @@ function handleSearch(e) {
               searchInput.style.color = "var(--accent-projects)"; 
          }
          if (resultsContainer) {
-              const msg = e.substring(cmdMatch.length).trim();
-              const actionLabel = cmdMatch.replace('!', '').toUpperCase();
-              
-              resultsContainer.innerHTML = `
-              <div class="section layout-hero">
-                   <h2 class="header-fade-anim" style="color:var(--accent-projects)">${actionLabel} Mode</h2>
-                   <p style="color:var(--text-dim); font-size:16px; margin-bottom: 30px;">
-                        ${msg.length < 3 ? `Type your ${actionLabel.toLowerCase()}...` : `Press <strong>Enter</strong> to submit your ${actionLabel.toLowerCase()}.`}
-                   </p>
-                   ${msg.length >= 3 ? `<p style="font-style:italic; font-size:14px; opacity:0.8;">"${safeHTML(msg)}"</p>` : ''}
-              </div>`;
-              resultsContainer.style.display = "block";
+              // User specified this text is redundant, so we keep it blank and clean
+              resultsContainer.innerHTML = '';
          }
          if (app) app.style.display = "none";
          return; // Stop normal search execution
     } else {
          if (searchInput && !searchInput.disabled) searchInput.style.color = ""; // Restore normal color
     }
+
 
 
     const matchesQuery = (entry, term) => entry?.Title?.toLowerCase().includes(term) || entry?.Content
