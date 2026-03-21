@@ -32,11 +32,14 @@ jobs:
       - name: Sync SEO Metadata & Sitemap
         run: node assets/meta/seo_sync.js
 
+      - name: Sync Website History Snapshot
+        run: node assets/meta/history_sync.js
+
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
             commit_message: "chore: auto-sync SEO"
-            file_pattern: "index.html sitemap.xml robots.txt"
+            file_pattern: "index.html sitemap.xml robots.txt assets/data/history.json"
             push_options: '--force'
             branch: main
             skip_fetch: true

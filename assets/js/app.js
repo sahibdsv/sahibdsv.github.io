@@ -234,6 +234,15 @@ async function fetchDataAndCache() {
         const resumeDbLocal = parseCSV(resumeRaw);
         const filtered = mainData.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
 
+        // Inject hidden snapshots page for search discoverability
+        filtered.push({
+            Page: "Snapshots",
+            Title: "Snapshots",
+            Content: "Explore the development history and version snapshots of this website.",
+            Tags: "",
+            Thumbnail: ""
+        });
+
         const currentMainRaw = localStorage.getItem('db_raw_cache');
         const currentResumeRaw = localStorage.getItem('resume_raw_cache');
         const dataChanged = mainRaw !== currentMainRaw || resumeRaw !== currentResumeRaw;
@@ -504,7 +513,7 @@ function renderNavigation(currentPath, forceSmoothNav = false) {
         let items = [];
         if (level === 1) {
             items = [...new Set([
-                ...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page)
+                ...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page && "Snapshots" !== e.Page)
                     .map(e => e.Page.split("/")[0])
                     .filter(e => e),
                 quotesDb.length > 0 ? "Personal" : null
@@ -961,6 +970,7 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
 
         const route = {
             "Index": renderIndex,
+            "Snapshots": renderSnapshots,
             "Professional/Resume": renderResume
         };
         (route[cleanPath] ?? (cleanPath.startsWith("Filter:") ? () => renderFiltered(decodeURIComponent(
@@ -1085,6 +1095,87 @@ function renderIndex() {
         finalHTML += "</div>";
     }
     finalHTML += '</div>';
+    updateContainer(document.getElementById("app"), finalHTML);
+}
+
+let _archiveSortAsc = false;
+async function renderSnapshots() {
+    let history = [];
+    try {
+        const res = await fetch('assets/data/history.json');
+        history = await res.json();
+    } catch (e) {
+        console.error('Failed to load history', e);
+    }
+
+    if (!history) history = [];
+
+    // Apply sorting (default newest first)
+    const sortedHistory = [...history].sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return _archiveSortAsc ? dateA - dateB : dateB - dateA;
+    });
+
+    // Group by month
+    const groups = {};
+    sortedHistory.forEach(item => {
+        const date = new Date(item.date);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        if (!groups[monthKey]) groups[monthKey] = [];
+        groups[monthKey].push(item);
+    });
+
+    const monthKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+    const tocLinks = monthKeys.map(key => {
+        const [y, m] = key.split('-');
+        const name = new Date(y, parseInt(m)-1).toLocaleString('default', {month:'long'});
+        return `<div class="toc-item depth-2">
+            <a href="javascript:void(0)" onclick="document.getElementById('month-${key}')?.scrollIntoView({behavior:'smooth'}); haptic('tick');" style="font-size: 15px; font-weight: 600; line-height: 1.2; display: inline-block; font-family:'Jost', sans-serif;">${name} ${y}</a>
+        </div>`;
+    }).join('');
+
+    let finalHTML = `<div class="section layout-hero">
+        <h1 class="fill-anim">Snapshots</h1>
+        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through ${history.length} versions.</p>
+        
+        <div class="toc-container" style="margin: 1rem 0; text-align: center;">
+            <h2 id="contents" style="margin-bottom: 8px; font-size: 18px; font-weight: 700; font-family:'Jost', sans-serif;">Chronology</h2>
+            <div class="toc-list" style="padding-left: 0; display: flex; flex-direction: column; gap: 8px; align-items: center;">
+                ${tocLinks}
+            </div>
+        </div>
+    </div>`;
+
+    if (history.length === 0) {
+        finalHTML += `<div class="section layout-text"><p>No version history available yet.</p></div>`;
+    } else {
+        monthKeys.forEach(monthKey => {
+            const [year, month] = monthKey.split('-');
+            const monthName = new Date(year, parseInt(month) - 1).toLocaleString('default', { month: 'long' });
+            
+            finalHTML += `<div id="month-${monthKey}" class="section-title-wrapper" style="margin-top: 40px; margin-bottom: 20px;">
+                <h2 class="header-fade-anim" style="font-size: 18px; font-weight: 600; opacity: 0.9; font-family:'Jost', sans-serif;">${monthName} ${year}</h2>
+            </div>`;
+            
+            finalHTML += '<div class="section archive-list-grid" style="padding-top: 0; padding-bottom: 20px;">';
+            groups[monthKey].forEach(item => {
+                const visitUrl = `https://raw.githack.com/sahibdsv/sahibdsv.github.io/${item.hash}/index.html`;
+                finalHTML += `
+                    <div class="archive-item-card" onclick="window.open('${visitUrl}', '_blank'); haptic('pulse');">
+                        <div class="archive-card-header">
+                            <span class="hash" style="color:var(--accent-projects);">${item.hash.substring(0, 7)}</span>
+                            <span class="date">${item.date}</span>
+                        </div>
+                        <h3 class="message" style="font-family:'Jost', sans-serif;">${safeHTML(item.message)}</h3>
+                    </div>
+                `;
+            });
+            finalHTML += '</div>';
+        });
+    }
+
     updateContainer(document.getElementById("app"), finalHTML);
 }
 
@@ -1265,7 +1356,7 @@ function buildRowsHTML(data, title, isSubPage, isHeroOnly = false, isRecentActiv
     }
 
     let gridBuffer = "";
-    const topLevelPages = ["home", "personal", "professional", "projects"];
+    const topLevelPages = ["home", "personal", "professional", "projects", "snapshots"];
 
     data.forEach((entry, index) => {
         if (!entry.Page || entry.Page === "Footer") return;

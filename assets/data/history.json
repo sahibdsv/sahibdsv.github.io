@@ -1,0 +1,4032 @@
+[
+  {
+    "hash": "3b84f2fb5973a3348c330d67142ac488fdbe8c3b",
+    "date": "2026-03-20",
+    "message": "feat: Add initial `style.css` to define base website styling."
+  },
+  {
+    "hash": "a2cfce51283cbe932df73e5cc1ac766d20468e9d",
+    "date": "2026-03-20",
+    "message": "feat: Implement core client-side application logic for data fetching, caching, and dynamic content rendering."
+  },
+  {
+    "hash": "4f7f5930393eb0dedde87d937d4d4bffbcd25bb2",
+    "date": "2026-03-20",
+    "message": "feat: add comprehensive base styling, dark/light theme support, and animations."
+  },
+  {
+    "hash": "1e267ef61e97559a9bcb8ba18d5c8c02ee872031",
+    "date": "2026-03-20",
+    "message": "feat: Add base styling for the website including dark/light themes, animations, and global component styles."
+  },
+  {
+    "hash": "7a8964825c95add14892d75c3215575dc3dc9085",
+    "date": "2026-03-20",
+    "message": "feat: add initial `style.css` for global styling and theme management."
+  },
+  {
+    "hash": "87564fea8cd3d126b63b0fa74ce899c754db0d26",
+    "date": "2026-03-20",
+    "message": "feat: Add initial global styles, theme variables, and base element styling."
+  },
+  {
+    "hash": "bdc24698658a3750ced6c658ee7d2a006e923d31",
+    "date": "2026-03-20",
+    "message": "feat: Introduce core site styling with `style.css` and application logic with `app.js`."
+  },
+  {
+    "hash": "03f8fdc502c4fe48f342be3d25aa62bf24b15825",
+    "date": "2026-03-20",
+    "message": "feat: Add initial `style.css` for website styling and `app.js`."
+  },
+  {
+    "hash": "0c611c4655451a4590f76299b90ba6f46d9129de",
+    "date": "2026-03-20",
+    "message": "feat: add base stylesheet with global styles, theme variables, and animations."
+  },
+  {
+    "hash": "9e621604b1208d0f761c001c3a448b1011c03bde",
+    "date": "2026-03-20",
+    "message": "feat: Add core client-side application logic for data fetching, routing, and dynamic content rendering."
+  },
+  {
+    "hash": "e562f5875176ba845ea6e91386b3c6782c3b93d7",
+    "date": "2026-03-20",
+    "message": "feat: Add base styling, theme variables, and global CSS rules for the website."
+  },
+  {
+    "hash": "ca45f44d429f3dd56595051a95edd4f57c71e303",
+    "date": "2026-03-20",
+    "message": "fix: restore stable header and implement persistent quotes + smooth navigation"
+  },
+  {
+    "hash": "626777693f1f1a09dc42f86778dd77ab0cd1c48c",
+    "date": "2026-03-20",
+    "message": "ui: remove redundant author name from article meta row"
+  },
+  {
+    "hash": "595186edc7697e9e636f211076fd9448ec7346e0",
+    "date": "2026-03-20",
+    "message": "perf: improve quote randomness distribution and multi-card uniqueness"
+  },
+  {
+    "hash": "fed79d55e656a08aa44a3e878dc9ac411a4de384",
+    "date": "2026-03-20",
+    "message": "fix: resolve quote flickering and repetition in dice roll animation"
+  },
+  {
+    "hash": "8742088dca2a38ba60298894f0cd6d97c99e0c85",
+    "date": "2026-03-20",
+    "message": "perf: optimize scroll performance via content-visibility and async image decoding"
+  },
+  {
+    "hash": "f5ba92753c3e77e15f83b5f27527f449d221f384",
+    "date": "2026-03-20",
+    "message": "perf: add fetch prioritization and context-aware UI updates for background tasks"
+  },
+  {
+    "hash": "b65fb9270fdf1c291ce38af2b1d7b0607151fbae",
+    "date": "2026-03-20",
+    "message": "perf: prioritize critical content fetch and enable aggressive model pre-loading"
+  },
+  {
+    "hash": "be6df58e3e5b672660bbcc59466bb67edaeb76ed",
+    "date": "2026-03-20",
+    "message": "perf: parallelize background fetches and implement full music/quote caching"
+  },
+  {
+    "hash": "3b654cfcb14f933dc954bc40cb5742ab8e40e95b",
+    "date": "2026-03-20",
+    "message": "fix: correct Recent Activity rendering to cards on home page"
+  },
+  {
+    "hash": "fdb734a9af33f261d50a6622c50f82eb80a5be14",
+    "date": "2026-03-20",
+    "message": "fix: restore missing render logic and stabilize background re-renders"
+  },
+  {
+    "hash": "4c4c4731dd53d48ed9437482b1f50bdfb573f11d",
+    "date": "2026-03-20",
+    "message": "perf: implement instant quote cache recovery and smooth fade-in transitions"
+  },
+  {
+    "hash": "c1c05bde714d8a64bffaab27a8b789ad01cf231f",
+    "date": "2026-03-20",
+    "message": "perf: unify atomic soft-updates across all page renderers to eliminate flickering"
+  },
+  {
+    "hash": "d98bff953cba3b5d36eb13eb7c2c08dbf7103a48",
+    "date": "2026-03-20",
+    "message": "perf: resolve double-flicker by implementing soft-updates in renderRows"
+  },
+  {
+    "hash": "e7479e5dd0b517db4d244917bf9915a7e4bba13d",
+    "date": "2026-03-20",
+    "message": "perf: eliminate double-flicker by only re-rendering when data changes"
+  },
+  {
+    "hash": "82713b2d7b14e6ce1b63dc907382db4358be7b47",
+    "date": "2026-03-20",
+    "message": "fix: resolve infinite loading spinner by improving initialization logic"
+  },
+  {
+    "hash": "42901d4eb5bd1d80043e4f282f9e7a33c4569ee3",
+    "date": "2026-03-20",
+    "message": "fix: restore app entry point call to fix blank site"
+  },
+  {
+    "hash": "47212e57164f1b04455674aa4e4e849cad055ea0",
+    "date": "2026-03-20",
+    "message": "feat: add honest loading spinners to music clusters and strava embeds"
+  },
+  {
+    "hash": "350536056b842ed6e9a586f9ed06792ff070103f",
+    "date": "2026-03-20",
+    "message": "fix: restore top-level app initialization"
+  },
+  {
+    "hash": "0d7e2dad0c0c467a4a196e6d9972c8f00768a921",
+    "date": "2026-03-20",
+    "message": "fix: ensure quote spinner shows for static cards and bump version"
+  },
+  {
+    "hash": "fa78d29f0e8797ecb5c40648735434e2df3fdfe1",
+    "date": "2026-03-20",
+    "message": "perf: implement instant cache-first load and fix multi-line markdown"
+  },
+  {
+    "hash": "b7de081acafbdb9da76703fc6429c8acf1c4d7e3",
+    "date": "2026-03-20",
+    "message": "feat: enable markdown in quotes and improve link/chip event handling"
+  },
+  {
+    "hash": "5dd594aed225145aa265eb553cc9120f45b4610c",
+    "date": "2026-03-20",
+    "message": "feat: unify markdown engine and enable global internal linking for resume and footer"
+  },
+  {
+    "hash": "e09abcea25a1322f901c7706f12a047c52e9fe30",
+    "date": "2026-03-20",
+    "message": "feat: add global internal linking with [[WikiSyntax]] and fix TOC hitboxes"
+  },
+  {
+    "hash": "835b570b3de579ac1e91558c8c14272f270eb9e1",
+    "date": "2026-03-20",
+    "message": "perf: implement stale-while-revalidate and music loading spinners"
+  },
+  {
+    "hash": "dc1c3a90ffb59bbe6161907bff0e319180cf948d",
+    "date": "2026-03-20",
+    "message": "perf: optimize initial load by splitting critical path and enabling caching"
+  },
+  {
+    "hash": "e99e95cffbf3bb3e3359c810b668dae99d6382b7",
+    "date": "2026-03-20",
+    "message": "docs: Add comprehensive AI agent rules and update asset cache busting versions in index.html."
+  },
+  {
+    "hash": "a8bc0125b43ef85b2aafeaf7e1ac4acde42597b1",
+    "date": "2026-03-20",
+    "message": "feat: Add initial comprehensive styling for the website."
+  },
+  {
+    "hash": "184708d8a90f9ac9b3695dc30f8d008bcbe0e73e",
+    "date": "2026-03-20",
+    "message": "feat: Add core application JavaScript including data fetching, routing, and dynamic content rendering."
+  },
+  {
+    "hash": "21b69c0e529d4d32bf96c3d259e8afdf9baad09d",
+    "date": "2026-03-20",
+    "message": "feat: introduce initial project structure, core styling, application logic, and development rules."
+  },
+  {
+    "hash": "0156fd8dbb0581c18b940ece4dffec257cdcb224",
+    "date": "2026-03-20",
+    "message": "feat: implement core application logic, data fetching, routing, and interactive UI components."
+  },
+  {
+    "hash": "bc68d90e95590cc615efe49657a8b7a87708fb2d",
+    "date": "2026-03-20",
+    "message": "feat: add core client-side application logic including data fetching, routing, and dynamic rendering."
+  },
+  {
+    "hash": "fc602c6c363099704ce3e2e7a63ddc92285f1c27",
+    "date": "2026-03-20",
+    "message": "feat: Create `style.css` to establish base styling with dark/light theme support and responsive design."
+  },
+  {
+    "hash": "065e8044abcefb5898c169442f09174996472ea6",
+    "date": "2026-03-20",
+    "message": "feat: Implement initial website styling and core functionality."
+  },
+  {
+    "hash": "d505d9776c682a55e668bc1ba72bd8dc4948ed0a",
+    "date": "2026-03-20",
+    "message": "feat: Add comprehensive client-side application logic for data fetching, search, routing, and interactive UI components."
+  },
+  {
+    "hash": "097c3c8e01c27ad9d0a142e90d391a2a00863fe9",
+    "date": "2026-03-20",
+    "message": "feat: Implement the core JavaScript application for data fetching, routing, and dynamic content rendering."
+  },
+  {
+    "hash": "fd5f5a6a4942964992a55d3f441f5461dc6f8ca5",
+    "date": "2026-03-20",
+    "message": "feat: Add initial global styling for the website."
+  },
+  {
+    "hash": "4dc27b536dbeb08cf3029bf293b2b201654eeaa8",
+    "date": "2026-03-20",
+    "message": "feat: Add initial global CSS styles and dark/light theme support."
+  },
+  {
+    "hash": "cdfa16202fb0680f77a333f141502c0d9fe68a31",
+    "date": "2026-03-20",
+    "message": "feat: introduce core application logic for data fetching, routing, search, and dynamic content rendering."
+  },
+  {
+    "hash": "b69a21a5e5b468d7d92f781863331f5a5c17fcfb",
+    "date": "2026-03-20",
+    "message": "feat: Implement dynamic content rendering for music and quotes, update guide descriptions, and add Gemini rules."
+  },
+  {
+    "hash": "67f5c4e11a1001c03c5a77f59922e43e37ca33e6",
+    "date": "2026-03-20",
+    "message": "feat: Add core client-side application logic including data fetching, routing, search, and dynamic UI rendering."
+  },
+  {
+    "hash": "5ee895d4997cedb37cdb3c50aec1e9303108eb84",
+    "date": "2026-03-20",
+    "message": "docs: Add a master feature guide and Antigravity user rules for the portfolio."
+  },
+  {
+    "hash": "22b17b4f8db932c09f96ee1e7d027d2400e5184a",
+    "date": "2026-03-20",
+    "message": "feat: introduce core client-side application logic including data fetching, routing, search, and dynamic UI components."
+  },
+  {
+    "hash": "bd20980bd4e0a204accc74f4630ea5ebe803ec21",
+    "date": "2026-03-20",
+    "message": "feat: Implement core application logic including data fetching, routing, search, and dynamic content rendering."
+  },
+  {
+    "hash": "e9e2904d4b6ce26e92a5dc3db30caf097511b651",
+    "date": "2026-03-20",
+    "message": "docs: Add Antigravity User Rules to guide agent behavior and content patterns."
+  },
+  {
+    "hash": "cf7e3dcfb3493d09a8f166cfb9cbed9f446226aa",
+    "date": "2026-03-20",
+    "message": "fix: debounced search input to resolve performance lag"
+  },
+  {
+    "hash": "50cdacd6d0890f01dc0387090b6689f926c6b4a8",
+    "date": "2026-03-20",
+    "message": "style: enhance accent color vibrancy in both themes"
+  },
+  {
+    "hash": "bd9c104aef33efb64ae53a21c0d0eb5632b381f9",
+    "date": "2026-03-20",
+    "message": "style: lighten light mode secondary text for better active nav contrast"
+  },
+  {
+    "hash": "d84c05668615cfaa205ceea01e80a49f701c3dee",
+    "date": "2026-03-19",
+    "message": "Fix: Refactor heading indentation to opt-in selectors"
+  },
+  {
+    "hash": "d9791cfc4496e1400b6b83a241141d8b357cf58d",
+    "date": "2026-03-19",
+    "message": "Fix text contrast, active header colors, and header spacing"
+  },
+  {
+    "hash": "c3903b72e81152f8c41588337f61b0f9df692481",
+    "date": "2026-03-19",
+    "message": "feat: introduce core styling with dark/light theme support and global variables."
+  },
+  {
+    "hash": "a3ea24d69a6a126356017ac219e784777b14f020",
+    "date": "2026-03-19",
+    "message": "UI: Dramatic Hierarchical Indentation and TOC Scoping Upgrades. (40px increments, 0-based H1, [Title "
+  },
+  {
+    "hash": "d29a6059e0e92acae81167f09bb30bfd793e896e",
+    "date": "2026-03-19",
+    "message": "Optimize typography scale, fix TOC links, and perform codebase cleanup"
+  },
+  {
+    "hash": "7b37e163840a914f4940dafffe336d35b05a0944",
+    "date": "2026-03-19",
+    "message": "Remove duplicate showEasterEgg call at line 173 to fix doubling issue"
+  },
+  {
+    "hash": "01574bd11b64bff6700c300c6668ae51f3dd31a0",
+    "date": "2026-03-19",
+    "message": "Strip away overkill trigger logic: back to simple direct console log"
+  },
+  {
+    "hash": "07cb71f05a2b51c729a62198560f4a6108aab115",
+    "date": "2026-03-19",
+    "message": "Refine Easter egg triggers: remove auto-timeout and rely strictly on DevTools detection"
+  },
+  {
+    "hash": "143d746359913743df6b59d8aa9848e4cf35bb71",
+    "date": "2026-03-19",
+    "message": "Implement universal DevTools detection via window resize triggers"
+  },
+  {
+    "hash": "379bc7220e8091b2c48e1eb5aff196ab53ddcc0a",
+    "date": "2026-03-19",
+    "message": "Remove italics from Easter egg note for cleaner typography"
+  },
+  {
+    "hash": "2cf094bfb84831738c649cfd8e7811bc66b0fa12",
+    "date": "2026-03-19",
+    "message": "Revise console logo (16px/12px) for taller characters with zero vertical gap"
+  },
+  {
+    "hash": "28992b0e0a36e1903bf95691a328cbbe75c5aa43",
+    "date": "2026-03-19",
+    "message": "Radical console logo compression (8px/4px) for literal zero-gap appearance"
+  },
+  {
+    "hash": "2410938d2cbee3c97e5f4b3063c4bd2d2a09ed03",
+    "date": "2026-03-19",
+    "message": "Eliminate all console line spacing using display:block and pixel-based character overlap"
+  },
+  {
+    "hash": "d842caac78c917f957740c6d861cb84072ca0eae",
+    "date": "2026-03-19",
+    "message": "Force zero space in console logo with aggressive font-size and line-height overlap"
+  },
+  {
+    "hash": "53c0019781144ccbe87748b50b8d2d7745d40b1e",
+    "date": "2026-03-19",
+    "message": "Compacting console Easter egg to 3-line block logo with white-to-cyan gradient"
+  },
+  {
+    "hash": "a2efc7e1ab8dc228aeccf69b9077faeefc4bdbae",
+    "date": "2026-03-19",
+    "message": "Update console Easter egg with new block glyph logo and white-to-cyan gradient"
+  },
+  {
+    "hash": "b0eba9ff5bceb44e45633131091b1ceaa232801f",
+    "date": "2026-03-19",
+    "message": "Update console Easter egg to 6-line block logo with cyan-to-white gradient"
+  },
+  {
+    "hash": "e94a935e31e0188e86f7f6e5fcb0ef7cb300d022",
+    "date": "2026-03-19",
+    "message": "Update console Easter egg to all-white 5-line slanted logo"
+  },
+  {
+    "hash": "8ec09b2253e46a344a7aae115d22d83fd1408eef",
+    "date": "2026-03-19",
+    "message": "Update console Easter egg with new slanted ASCII style"
+  },
+  {
+    "hash": "f61de17f1fba1223a01079b4e022d8c6a9848c3a",
+    "date": "2026-03-19",
+    "message": "Replace complex ASCII logo with new solid block style"
+  },
+  {
+    "hash": "7eaeb3d46b152b00cb2158c34367f99a00ae5672",
+    "date": "2026-03-19",
+    "message": "Aggressively reduce line-height to eliminate gaps in ASCII logo"
+  },
+  {
+    "hash": "5a5a734d09c5778e03cecac5b396ddb47f2ac927",
+    "date": "2026-03-19",
+    "message": "Switch console font stack to Windows native fonts for authentic CLI look"
+  },
+  {
+    "hash": "674a1dc5f1e57e33f311c659f12f5e279ea8aaeb",
+    "date": "2026-03-19",
+    "message": "Tighten ASCII vertical spacing in console with font stack and weight updates"
+  },
+  {
+    "hash": "f59411c52908e896e85107b52ebac1cc4a743669",
+    "date": "2026-03-19",
+    "message": "Update Easter egg to Electric Shore gradient (#595CFF to #C6F8FF)"
+  },
+  {
+    "hash": "7ab1a208256cdffc686c212d52a4968dbafeac8c",
+    "date": "2026-03-19",
+    "message": "Optimize Easter egg for narrow console widths with font-size and line-height fixes"
+  },
+  {
+    "hash": "9106bc60787bf4f8e37581e752207d1bd9727400",
+    "date": "2026-03-19",
+    "message": "Add Gemini-themed console Easter egg with purple-to-blue gradient"
+  },
+  {
+    "hash": "658065060b8c1314fe802fc8d43e4b0baa2dfd8d",
+    "date": "2026-03-19",
+    "message": "style: remove 'drop-in' scaling animation from card thumbnails"
+  },
+  {
+    "hash": "28cd8fdd76399509bd243dc00fc5a17bc881bca7",
+    "date": "2026-03-19",
+    "message": "refactor: manage 3D viewer cursor via JS and remove all !important tags"
+  },
+  {
+    "hash": "2a8a61e2f9488939e8fa9787384bc91269dabd6d",
+    "date": "2026-03-19",
+    "message": "style: prioritize grabbing cursor on 3D models for better interaction clarity"
+  },
+  {
+    "hash": "342817cf05e512df18f28d31b813a456eb6b813e",
+    "date": "2026-03-19",
+    "message": "fix: improve search relevance by reducing author name weight"
+  },
+  {
+    "hash": "948411e76f86e4a677796ccca7483d4cd46b7bb7",
+    "date": "2026-03-19",
+    "message": "style: upgrade basic spinner to 'Precision CAD' nested-ring design"
+  },
+  {
+    "hash": "cd2de86e470cb3f83f233cf0453460b5b1d4a205",
+    "date": "2026-03-19",
+    "message": "feat: make music card player switch instant and remove fade transitions"
+  },
+  {
+    "hash": "b882b01586101ed8f6f521099325b0cbeb34b8ab",
+    "date": "2026-03-19",
+    "message": "style: restore natural emojis and refine active music card highlight"
+  },
+  {
+    "hash": "3489123025dd4a6f70b4b324795fbb1a74c99744",
+    "date": "2026-03-19",
+    "message": "style: match active music card highlight to 2px bold button style"
+  },
+  {
+    "hash": "8282669bd08aa43ce708c184c616ff9287ab687e",
+    "date": "2026-03-19",
+    "message": "style: fix pixelated music card highlight using pseudo-element with inherited radius"
+  },
+  {
+    "hash": "5dc3b79465ef0787c16df695d550d003105b9c23",
+    "date": "2026-03-19",
+    "message": "fix: resolve music card misalignment and iframe highlight overlap"
+  },
+  {
+    "hash": "c833c152e8c3acb0a043313fda782473dec6ff37",
+    "date": "2026-03-19",
+    "message": "fix: cancel music play timers on dismissal to prevent blank cards"
+  },
+  {
+    "hash": "db4e7c9823770daf5d2feb470dec158359559f3a",
+    "date": "2026-03-19",
+    "message": "style: eliminate visual shift in music cards with absolute alignment"
+  },
+  {
+    "hash": "ab021bfe5930b2c4c26fe4192be15522f18be5c7",
+    "date": "2026-03-19",
+    "message": "fix: robust music card dismissal state capture and restoration"
+  },
+  {
+    "hash": "f2c05b3e4cd79a8250bd25d529f6571393570006",
+    "date": "2026-03-19",
+    "message": "feat: remove default music highlight and add global click-to-stop for players"
+  },
+  {
+    "hash": "e53d34b0e59ed902ef6c08b3d48477b56023389f",
+    "date": "2026-03-19",
+    "message": "style: move active music card highlight to outset shadow to prevent iframe overlap"
+  },
+  {
+    "hash": "906bc48fd43cdfa166bf4e63741855bc1e365d94",
+    "date": "2026-03-19",
+    "message": "style: highlight active music card with bold outline and hover background"
+  },
+  {
+    "hash": "0a3285dd6ff73957a940d5672b03c7f2e8b32274",
+    "date": "2026-03-19",
+    "message": "style: perfect music card cross-fade with 1.2s rendering delay"
+  },
+  {
+    "hash": "101f9ce0e177c325fb0c0cf988471b342bdd6af1",
+    "date": "2026-03-19",
+    "message": "style: achieve seamless music card transition with delayed cross-fade"
+  },
+  {
+    "hash": "63f29f8c28bdd3f1fc9741f60f4fd2f0016d4118",
+    "date": "2026-03-19",
+    "message": "fix: ensure mapbox scroll-zoom persists on desktop across style loads"
+  },
+  {
+    "hash": "e2ec94f7811c9cb6ec035aa9d0e4eafac44c28cb",
+    "date": "2026-03-19",
+    "message": "fix: ensure mapbox article view is 16:9 on all mobile screens"
+  },
+  {
+    "hash": "58877745edfc3f84e48df42fc5f333a0e093a9fb",
+    "date": "2026-03-19",
+    "message": "feat: enable mapbox desktop zoom and fix mobile aspect ratio"
+  },
+  {
+    "hash": "815a8f12271b573a196799c1964ffbec0f2469bd",
+    "date": "2026-03-19",
+    "message": "fix: prevent vertical stretching of nav rows with overflow-y and min-height"
+  },
+  {
+    "hash": "7c990d3211a320c58bbf0c29afd7cb2ef254a296",
+    "date": "2026-03-19",
+    "message": "refactor: remove proximity snapping for purely free-scrolling navigation"
+  },
+  {
+    "hash": "c88b0d647e126ea321ec7aa624c1c08ddda87351",
+    "date": "2026-03-19",
+    "message": "fix: correctly disable nav snapping during manual interaction"
+  },
+  {
+    "hash": "ce75cdb9609f0b24e8d3efd0d7f0a8f87eb51e45",
+    "date": "2026-03-19",
+    "message": "refactor: use proximity snapping for natural navigation feel"
+  },
+  {
+    "hash": "2850c37cd5dbcef241eb5f9db71c9fdef667d8d2",
+    "date": "2026-03-19",
+    "message": "style: unify header-to-content spacing using --site-gap"
+  },
+  {
+    "hash": "68cfa009554a430298e48e869880c2be9af5ce9e",
+    "date": "2026-03-19",
+    "message": "fix: enable fuzzy search with Fuse.js and improve search dismissal"
+  },
+  {
+    "hash": "980b88a57dd10b269150aa2be6de0e50cb3622a2",
+    "date": "2026-03-19",
+    "message": "feat: definitive infrastructure upgrade with PhotoSwipe v5 and rhythmic spacing"
+  },
+  {
+    "hash": "4ee8b3529600ec26571d5c541420d6c0f9a8b55e",
+    "date": "2026-03-19",
+    "message": "feat: Integrate PhotoSwipe v5 and refine design system spacing"
+  },
+  {
+    "hash": "dcc4bae7e9066c4bcc66076cc89805290397d123",
+    "date": "2026-03-19",
+    "message": "feat: Modernized button syntax and improved UI consistency"
+  },
+  {
+    "hash": "e5a24ccfe3de9f1e4d6e070b68a721b3ec2cd8a9",
+    "date": "2026-03-18",
+    "message": "fix: Robust Mapbox initialization and GeoJSON media recognition"
+  },
+  {
+    "hash": "f6c000c4b467871fa07450858e1d273e2576141c",
+    "date": "2026-03-18",
+    "message": "feat: Add initial website styling, core JavaScript, and 3D viewer components."
+  },
+  {
+    "hash": "d01d604f3e0d07f769828a00a3b4bc5ea1a3313e",
+    "date": "2026-03-18",
+    "message": "feat: Add meta tags for Content-Security-Policy and referrer policy."
+  },
+  {
+    "hash": "e397924cd5899162d552a26bce13b5843a5d2403",
+    "date": "2026-03-18",
+    "message": "Final cleanup: Remove analytics tracking from 3D model viewer"
+  },
+  {
+    "hash": "5d88d3cc4dd5500645cd014ff1811765321c8fb4",
+    "date": "2026-03-18",
+    "message": "Restore footer markdown link functionality while maintaining analytics removal"
+  },
+  {
+    "hash": "1a8bfc6a0e0a244e532d093993c7c7fd1de7bab6",
+    "date": "2026-03-18",
+    "message": "Completely remove all analytics, tracking scripts, and visitor counter logic to resolve security and connection errors"
+  },
+  {
+    "hash": "b9b96c6127061890cdfda9f7727c07d17b68f80b",
+    "date": "2026-03-18",
+    "message": "Aggressive cache-invalidation (v68.1): Force-refresh application assets to clear legacy mixed-content warnings from user browser cache"
+  },
+  {
+    "hash": "d33e5724256802a5662af3d38fde0d4468cd92fd",
+    "date": "2026-03-18",
+    "message": "Exhaustive HTTPS upgrade for all music thumbnails and grid cards to eliminate 'Not Secure' warnings"
+  },
+  {
+    "hash": "993d08084356b3db616dde0548b931b4b805c949",
+    "date": "2026-03-18",
+    "message": "Security & Performance: Force HTTPS for media/analytics to fix 'Not Secure' warning, and implement debounced analytics to fix 429 rate-limit errors during swiping"
+  },
+  {
+    "hash": "bf8d6f3ccbabd74674fab018d2d1bce154ff85e7",
+    "date": "2026-03-18",
+    "message": "Completely remove quote persistence: bag and active quote now refresh from scratch on reload"
+  },
+  {
+    "hash": "ccf3bccf236487b3c415c9abe5b0a499b1fd0a4d",
+    "date": "2026-03-18",
+    "message": "Robustness fix for horizontal nav: Unified interaction guards to prioritize swipes over programmatic centering, increased settle buffers for mobile fluid interaction"
+  },
+  {
+    "hash": "ae2e1bb8e9ebc1d85b8903cf043b57331ce507ce",
+    "date": "2026-03-18",
+    "message": "Surgically revert all ' - Topic' cleanup attempts to restore default YouTube Music presentation"
+  },
+  {
+    "hash": "99ae3feb48dcbe84dca547c1cda5052fe20b8c82",
+    "date": "2026-03-18",
+    "message": "Exterminate ' - Topic' from all music titles and card texts globally"
+  },
+  {
+    "hash": "8ed810ea8578dcc3c7aac8a259bf76c4d06c1278",
+    "date": "2026-03-18",
+    "message": "Exterminate ' - Topic' from homepage music cards"
+  },
+  {
+    "hash": "40b76393f50117482a4d04b38490b1d953878d0c",
+    "date": "2026-03-18",
+    "message": "Restore music metadata fallback and re-implement ' - Topic' cleanup globally for artist names"
+  },
+  {
+    "hash": "2f9d3b4fecf1d6ae7561eea7630a079dd096006a",
+    "date": "2026-03-18",
+    "message": "Add analytics tracking for quote refresh events via GoatCounter"
+  },
+  {
+    "hash": "56a51813233e053bc40b55ba2bed7d10ce73f13c",
+    "date": "2026-03-18",
+    "message": "Switch to keyframe animation for better dice spin reliability on mobile"
+  },
+  {
+    "hash": "376ce6da774a500435d08dde937cabd5d15dc5e2",
+    "date": "2026-03-18",
+    "message": "Refine quote logic: fix duplicates with text-check swap, unify global roll refresh, and remove legacy skeletons"
+  },
+  {
+    "hash": "ea937af064950e28cdff1922e942df4a947aacbd",
+    "date": "2026-03-18",
+    "message": "Update quote card loading skeleton to match new style and dice positioning"
+  },
+  {
+    "hash": "88aa268bd6a58ce7335a6c44b5bfd3909ff2879c",
+    "date": "2026-03-18",
+    "message": "feat: add GPS art thumbnail image"
+  },
+  {
+    "hash": "01a72efd4f89df2d0fe8b6808057cdca50cb869d",
+    "date": "2026-03-18",
+    "message": "Fix redundant margins for paragraph-wrapped buttons and refine list spacing"
+  },
+  {
+    "hash": "c5c11b8658f54a14c6307747c4408f82d4f49b05",
+    "date": "2026-03-18",
+    "message": "Allow {Recently Played} and {Random Quote} tags to work in-line with other text"
+  },
+  {
+    "hash": "9162273b8588e37e729977d81dd459650d4da218",
+    "date": "2026-03-18",
+    "message": "Standardize vertical rhythm: unify article body to 16px flex gap, zero out child margins, and standardize body line-heights"
+  },
+  {
+    "hash": "d867ed35bde17523833345e1d5b18de400e91d0c",
+    "date": "2026-03-18",
+    "message": "Fix button spacing: remove additive margins inside hero/text areas to maintain uniform 16px spacing"
+  },
+  {
+    "hash": "e97b6e120842f0404ccfdf560be98e7088da3695",
+    "date": "2026-03-18",
+    "message": "Remove 10-second music polling/refresh logic"
+  },
+  {
+    "hash": "8b2cfec1c2ab6edbc9d27be367c5330dcc7e1f14",
+    "date": "2026-03-18",
+    "message": "Standardize site-wide spacing to 16px, reduce button padding, and use underscores in filter URLs"
+  },
+  {
+    "hash": "f18247951195db954366f267879fd2cb763b1ad1",
+    "date": "2026-03-18",
+    "message": "Removed special treatment for location tag chips and eliminated versioning strings from script tags"
+  },
+  {
+    "hash": "96ca2f41c26fd9905fea48db137ae35bf0d8b915",
+    "date": "2026-03-18",
+    "message": "Update home page title to 'Sahib Virdee' only"
+  },
+  {
+    "hash": "61904ef00d399a7644fd8baeb8b8ab95938c6ae3",
+    "date": "2026-03-18",
+    "message": "Update content container top padding to match grid gap (16px) for more balanced spacing"
+  },
+  {
+    "hash": "6daa3c5d97c4aee40f997dc5a1cf19ae0c7e2be7",
+    "date": "2026-03-17",
+    "message": "Fix: Enable alpha transparency in 3D viewer for seamless theme transitions"
+  },
+  {
+    "hash": "6b0c98e3f076583d391d054effd7e97b7a176cd3",
+    "date": "2026-03-17",
+    "message": "Enhance image inversion: add hue-rotate to preserve original colors while inverting contrast"
+  },
+  {
+    "hash": "730792c5a62222a3449ae78996a2bb0093c44df8",
+    "date": "2026-03-17",
+    "message": "feat: Add resume and music thumbnail images."
+  },
+  {
+    "hash": "08baf0f30680f2065804b8ac970de95eb240cc12",
+    "date": "2026-03-17",
+    "message": "Support '-invert' and behavior tags at the end of filenames (e.g. .jpg-invert)"
+  },
+  {
+    "hash": "28eb8006bd3ca637db8ccaa7f47980dc2b9c7c25",
+    "date": "2026-03-17",
+    "message": "Automate Intelligent Theme-Aware Image Inversion: uses pixel analysis to decide when to invert"
+  },
+  {
+    "hash": "4f68c8c1dfd6358848604bd2317be4aca4fbbbee",
+    "date": "2026-03-17",
+    "message": "Add '-invert' suffix support for theme-aware image inversion in Dark mode"
+  },
+  {
+    "hash": "0563d476d3297dc59985b031ed18e583bad44bac",
+    "date": "2026-03-17",
+    "message": "Cleanup: Remove legacy caching, drafting flags, music history logic, and versioning strings"
+  },
+  {
+    "hash": "9735e63781f9128cde40ce4e45cb2352f528ae64",
+    "date": "2026-03-17",
+    "message": "Refine Recent Activity: Exclude entries without timestamps or 'featured' tag to filter out static structural elements"
+  },
+  {
+    "hash": "617598d6926a970919984504a527139f3f775095",
+    "date": "2026-03-17",
+    "message": "Remove alphabetical sorting from navigation and page lists to respect Google Sheets row order"
+  },
+  {
+    "hash": "b34b6c0996fffbb70314e23eb5d78ebb4264aa10",
+    "date": "2026-03-17",
+    "message": "Tightened caption spacing: Removed redundant Mapbox margins and reduced caption top padding for a tasteful visual connection to media."
+  },
+  {
+    "hash": "775c52483c2b6aaebc4456e7a6aea3e57aebc2d7",
+    "date": "2026-03-17",
+    "message": "Unified card symmetry: Implemented true vertical centering for titles and chips to ensure equal gutters across all card states."
+  },
+  {
+    "hash": "929a2818537ba3b940bca6cd6f41acfc203d40e3",
+    "date": "2026-03-17",
+    "message": "Aggressively reduced card-info top padding and line-height to fix visual spacing imbalance."
+  },
+  {
+    "hash": "bedbc199ec22b33b3ded5c601935fb3cd021a694",
+    "date": "2026-03-17",
+    "message": "Refined card title spacing: implemented visually balanced top-gutter of 15px (12px padding + 3px title line-height) and disabled center-alignment to prevent spacing drift on tall cards."
+  },
+  {
+    "hash": "5111cae796434b635b54970c233182e18d5eb47f",
+    "date": "2026-03-17",
+    "message": "Bumped asset versions to v0553 to ensure latest app.js is served."
+  },
+  {
+    "hash": "82e360e10606533dc2611a263ed9bfc3a18da353",
+    "date": "2026-03-17",
+    "message": "Fixed ReferenceError: Restored missing _lastRenderedPath variable accidentally removed during refactor."
+  },
+  {
+    "hash": "006281a5a45f37fca301a55e54a9032acb7375dd",
+    "date": "2026-03-17",
+    "message": "Full Quote Persistence: Implemented session-persistent bag and sticky quotes via localStorage to prevent repeats across refreshes. Refined dice icon stability and transition smoothness."
+  },
+  {
+    "hash": "64d451cc5d16380b5778a8e8e439e81626bc7a35",
+    "date": "2026-03-17",
+    "message": "Fixed quote repeat edge case: added strict boundary check to ensure no repeats across bag refills."
+  },
+  {
+    "hash": "8161d06e10a160c4b0b2c9ae1c52b356cfd8f5f9",
+    "date": "2026-03-17",
+    "message": "Fixed quote font jumping: removed font-size from transition properties to ensure clean fade-in only."
+  },
+  {
+    "hash": "d11014239aa1c7184f7ebdbaaea202ef4de8a611",
+    "date": "2026-03-17",
+    "message": "Fixed quote transitions and dice snapping: implemented surgical DOM updates to preserve elements and forced reflow for smooth fades."
+  },
+  {
+    "hash": "cdacf7f47d754fbce5e0529f652aeda118e7e28c",
+    "date": "2026-03-17",
+    "message": "Fixed mapbox aspect ratio in mobile article view to 16:9 and refined desktop min-height."
+  },
+  {
+    "hash": "d4a738e7c5628ef4b737ba6bf30bc799cb09f8ef",
+    "date": "2026-03-17",
+    "message": "Softened quote reload transition: implemented smooth fade-out and fade-in with 600ms delay while keeping the dice icon visible."
+  },
+  {
+    "hash": "69b9432c76d48e57145fc25bc9f3219a8703f75c",
+    "date": "2026-03-17",
+    "message": "Removed all quote reload skeletons and shimmers. Switched to snappy 300ms transition."
+  },
+  {
+    "hash": "4124d20675e8a99f4ae24c5ca8dad83b82d8313b",
+    "date": "2026-03-17",
+    "message": "Definitive quote skeleton visibility: implemented pseudo-element shimmer to override all background conflicts and updated keyframes for better coverage."
+  },
+  {
+    "hash": "6260ea5519302bf8cd27886afb27ce91837ecd0a",
+    "date": "2026-03-17",
+    "message": "Maximized quote skeleton visibility: switched to high-contrast white shimmer, solid border, and instant pop. Increased delay to 800ms for better visibility."
+  },
+  {
+    "hash": "78fea982b352909b527497bbf9c113732e5719f2",
+    "date": "2026-03-17",
+    "message": "Bumped asset versions to 20260317-0511 to ensure cache refresh."
+  },
+  {
+    "hash": "4159692fddc43e7ef8948551656221b9ef7fb8d0",
+    "date": "2026-03-17",
+    "message": "Fixed tag chip filtering: switched to central capture-phase delegate to isolate clicks from cards. Cleaned up redundant inline onclick logic and app initialization syntax."
+  },
+  {
+    "hash": "09b68d0f6eb16182f8a4fa3a4a9650ae3d6ce786",
+    "date": "2026-03-17",
+    "message": "Cleanup quote card: matched exact site-wide skeleton shimmer, removed redundant pseudo-elements, removed dead sk-box code, and fixed dice hover to spin only."
+  },
+  {
+    "hash": "7312e8868cb2eb617308044a32e1a19ffc732733",
+    "date": "2026-03-17",
+    "message": "Fixed quote container height to 250px and pinned dice icon to bottom-right. Responsive font scaling ensures zero layout jumps during refresh."
+  },
+  {
+    "hash": "6a25c5222266af375f06e2c04477dd9518fdf4cd",
+    "date": "2026-03-17",
+    "message": "Robust quote skeleton visibility: switched to pseudo-element shimmer and stronger !important background. Ensured definitive visibility on refresh."
+  },
+  {
+    "hash": "eaac3ddb0f513e0d51057b787fc4065ca5d426ca",
+    "date": "2026-03-17",
+    "message": "Fix quote skeleton visibility: removed background transition and matched exact site shimmer. Cleanup duplicated styles."
+  },
+  {
+    "hash": "610e7ab864380a83ae72f6894f8b0a007bfaee18",
+    "date": "2026-03-17",
+    "message": "Refactor quote loading: card skeleton exists ONLY during load. Symmetrical 15px card padding for perfect title balance."
+  },
+  {
+    "hash": "bf211dabf1156cb3becb221c9366c785747ea5da",
+    "date": "2026-03-17",
+    "message": "Reinstate quote card base CSS and switch to non-destructive height-locked reload. Equalize grid card padding with vertical centering."
+  },
+  {
+    "hash": "b46d3f60574bab3d5bc555747a37c74d2710d445",
+    "date": "2026-03-17",
+    "message": "Convert quote section to a proper card with sitewide radii and background."
+  },
+  {
+    "hash": "17613d31b38ace65eb0c2dd94d7a30405466722e",
+    "date": "2026-03-17",
+    "message": "Refine quote card refresh and card spacing. Fix layout jumps and equalize title padding."
+  },
+  {
+    "hash": "e45f74e47a11610377241c81470d0f0f31b034ec",
+    "date": "2026-03-17",
+    "message": "Enhancement: Added high-fidelity quote skeletons, tightened card inner spacing, and isolated chip clicks"
+  },
+  {
+    "hash": "3b140d7db05cb70448c117111c423f0a4efa2f49",
+    "date": "2026-03-17",
+    "message": "UX: added artificial skeleton delay to manual quote refresh"
+  },
+  {
+    "hash": "efed07f689dc14fc74b165bb2e412bb07e61b143",
+    "date": "2026-03-17",
+    "message": "Enhancement: Boosted article 3D model scale to 1.5x"
+  },
+  {
+    "hash": "a61338b0d04b88e68807cfa151f592ecd86e0e52",
+    "date": "2026-03-17",
+    "message": "Design: Nested tag chips in card radii for better visual balance"
+  },
+  {
+    "hash": "72cb5adb2caf50d98225ffb445caee7a8b5b6b7a",
+    "date": "2026-03-17",
+    "message": "Enhancement: Unified 16:9 model viewers and boosted article model scale"
+  },
+  {
+    "hash": "fe8f78fd26340ffd1c9869cef4759e0d7a4aa7d4",
+    "date": "2026-03-17",
+    "message": "Fix: Restored quote skeletons, resolved music card loader z-index, and fixed radii bleed"
+  },
+  {
+    "hash": "eae25c1c6ab37e01054ae88a4e66b5ae80d442cc",
+    "date": "2026-03-17",
+    "message": "Refactor: 16:9 card thumbnails and fixed interactive dice icon logic"
+  },
+  {
+    "hash": "4de38b96b5484e80684221f24793daedbe55705f",
+    "date": "2026-03-17",
+    "message": "Enhancement: Sticky random quotes and high-visibility dice icon"
+  },
+  {
+    "hash": "291cc34cefee5250cdaad62b2fcf6b15a23c8067",
+    "date": "2026-03-17",
+    "message": "Fix: Reverted 3D scaling to stable 1:1 perfect fit for long models"
+  },
+  {
+    "hash": "a05fac06105a645c4b1765df8aee1e9ed47a051b",
+    "date": "2026-03-17",
+    "message": "Enhancement: Unified 3D scaling for mobile/web and removed Strava icons"
+  },
+  {
+    "hash": "61167269573ac532eb0ad02f0c13aa5566da375b",
+    "date": "2026-03-16",
+    "message": "Polish: Refined button centering, block-level syntax support, and normalized spacing"
+  },
+  {
+    "hash": "8dd2d8f1acb9c93756860ad9ace3ee7a4856f767",
+    "date": "2026-03-16",
+    "message": "Polish: Fix card spacing, model aspect ratios (16:9/4:3), and theme-responsive icons v0389"
+  },
+  {
+    "hash": "ad13e192a56e2916df65e89cff1b3e41681310cd",
+    "date": "2026-03-16",
+    "message": "Icons: Use standalone white SVG files for Strava and Dice, increase dice size v0388"
+  },
+  {
+    "hash": "99fed0b87c85eadc4325a10cdd94870273243134",
+    "date": "2026-03-16",
+    "message": "Performance: Implement lazy WebGL context management for Mapbox and GLB, fix model sizing v0387"
+  },
+  {
+    "hash": "db295c262d3d6cef4bc6fec8f6af4964c2fa1100",
+    "date": "2026-03-16",
+    "message": "Polish: Enforce content-hugging button flexbox and clean SVG scaling v0386"
+  },
+  {
+    "hash": "007428e1f42020f86469eaaf2da19298cd23397b",
+    "date": "2026-03-16",
+    "message": "Polish: Bulletproof Flexbox centering for Strava buttons v0385"
+  },
+  {
+    "hash": "6599276381a628bb7a164ae10f6d05683cfc30e8",
+    "date": "2026-03-16",
+    "message": "Polish: Return to stable Box3 model fitting, fix button centering and spacing v0384"
+  },
+  {
+    "hash": "68d5ece64cb7271f37baef13a9019f7688d78861",
+    "date": "2026-03-16",
+    "message": "Polish: Refine Strava wordmark, tighten button spacing, and fix model scaling v0383"
+  },
+  {
+    "hash": "6d9fb16f5d4fe576f58fc59455815527eb6d70bd",
+    "date": "2026-03-16",
+    "message": "Polish: Fix tiny 3D models, remove thumbnail frames, and ensure music card visibility v0382"
+  },
+  {
+    "hash": "2ca6be16a8e240c947c5350752a75ee3da3d3994",
+    "date": "2026-03-16",
+    "message": "Polish: Force button centering, refine Strava brand height, and fix music card visibility v0381"
+  },
+  {
+    "hash": "e8fcf318148eea71c6ef3dbc540552e1aca2374a",
+    "date": "2026-03-16",
+    "message": "Polish: Fix music card skeletons, quote persistence, radii bleed, and official Strava branding"
+  },
+  {
+    "hash": "6cc4a34c93c3357960b3e4282e9e0b8710fb81de",
+    "date": "2026-03-16",
+    "message": "Fix: Center buttons, resolve WebGL context loss with lazy-loading, and fix radii bleed"
+  },
+  {
+    "hash": "87c2e08d2b52d4d3196be8d8e842990b071cca66",
+    "date": "2026-03-16",
+    "message": "Enhancement: Flexible button syntax with Strava branding and icon support"
+  },
+  {
+    "hash": "af8cbdf3747055f84d53ed3f268f12cc4ba12e0c",
+    "date": "2026-03-16",
+    "message": "Refactor: Unified GPS Art cards with Mapbox thumbnails and Strava branding"
+  },
+  {
+    "hash": "0763c425e23f7d5ff1b4263ea56734d7c4254c4a",
+    "date": "2026-03-16",
+    "message": "Analytics: Add cache-buster to visitor counter fetch"
+  },
+  {
+    "hash": "767f4c2bcf84a49a619d98788a80e5a3b66187c7",
+    "date": "2026-03-16",
+    "message": "Aesthetics: Revert global grayscale and force text-style emojis"
+  },
+  {
+    "hash": "96333ad174eabf3fe5303f135e6d1544c9322617",
+    "date": "2026-03-16",
+    "message": "Aesthetics: Humble emojis and normalize article headings"
+  },
+  {
+    "hash": "91b16ff7a08a09cb46e9219bb11e5cd0149a3d64",
+    "date": "2026-03-16",
+    "message": "Analytics: Fix referral tracking by delaying URL cleanup"
+  },
+  {
+    "hash": "236dbf62c71c77d7ca55b577913af1f3b1943f1c",
+    "date": "2026-03-16",
+    "message": "Analytics: Simplify 3D interaction event names to 3d-filename"
+  },
+  {
+    "hash": "d68d274f5eafc7698dbf77607eb8c70c75c48517",
+    "date": "2026-03-16",
+    "message": "Cleanup: Remove custom /#ignore route"
+  },
+  {
+    "hash": "77bbef7fcafa232cc8ec15062d23603684270275",
+    "date": "2026-03-16",
+    "message": "Analytics: Add secret /#ignore route to exclude personal traffic"
+  },
+  {
+    "hash": "dbc7b9600762cc9d110b27a5574f380f3aafe9b2",
+    "date": "2026-03-16",
+    "message": "Analytics: Cleanup and final version bump"
+  },
+  {
+    "hash": "9c48a035326adbf08014c0d018f08b26fab82c70",
+    "date": "2026-03-16",
+    "message": "Fix: Resolve search navigation and dismissal bugs"
+  },
+  {
+    "hash": "2280907cb9e5395fd3b18bd6f41d42e9604a6fd5",
+    "date": "2026-03-16",
+    "message": "Fix: Resolve 'Dark 3D Viewer' bug by isolating environment map generation"
+  },
+  {
+    "hash": "d90882008ac68cdba4dae414a9f5b2afc4a206ba",
+    "date": "2026-03-16",
+    "message": "UI: Support mixed links and visitor counter in footer"
+  },
+  {
+    "hash": "1d9d7ad2156aa895a08301f94e27522e65d958ab",
+    "date": "2026-03-16",
+    "message": "Analytics: Synchronize GoatCounter events and clean virtual paths"
+  },
+  {
+    "hash": "b25fadc6e36b07af3541a8eb9224803ace39f839",
+    "date": "2026-03-16",
+    "message": "Analytics: Switch to vanity domain analytics.sahibvirdee.com"
+  },
+  {
+    "hash": "585b287318d4f2cddd19be53e3d8ce1d180016b7",
+    "date": "2026-03-16",
+    "message": "UI: Convert visitor counter to plain-text fetch"
+  },
+  {
+    "hash": "286a76b42679d841001a34dba8a89211c8d24bbb",
+    "date": "2026-03-16",
+    "message": "UI: Support {Visitor Counter} tag in footer with GoatCounter"
+  },
+  {
+    "hash": "d2731efde5ff6d3a9a652bee24cdc4b46a884d68",
+    "date": "2026-03-16",
+    "message": "Analytics: Transition to professional GoatCounter implementation v0360"
+  },
+  {
+    "hash": "a27bd439e962cece55610392f4eca2f5b5746922",
+    "date": "2026-03-16",
+    "message": "Analytics: Increase heartbeat frequency to 5s for high-resolution timing"
+  },
+  {
+    "hash": "cd29dbbeeb45ce3deb1f0ef8a25cd1055c99854f",
+    "date": "2026-03-16",
+    "message": "Analytics: Intentional PostHog integration with dev-filters and custom event tracking"
+  },
+  {
+    "hash": "9e99e01b4f6eea4de02652bbfd4e81ca2ba6b4cb",
+    "date": "2026-03-16",
+    "message": "UI: Add -z-up to GLB regex and resolve relative paths in cards"
+  },
+  {
+    "hash": "deb7881bf2ddb50fd6ef409332ce029c35a3a7fc",
+    "date": "2026-03-16",
+    "message": "UX: Force global cache bust v0330"
+  },
+  {
+    "hash": "eaf179e9311beef9ed8f5553174518f06cc4ce37",
+    "date": "2026-03-16",
+    "message": "UI: Refine 3D scaling logic and variable scoping"
+  },
+  {
+    "hash": "3a9c331c9b329aaf88d31622c3cf05d1c35afa80",
+    "date": "2026-03-16",
+    "message": "Fix: Strip -scale parameters from GLB fetch path"
+  },
+  {
+    "hash": "bc8d1c549a30b8e11ef5479ba4c12ef2020dd8c5",
+    "date": "2026-03-16",
+    "message": "UI: Re-center 3D models and enforce -scale syntax"
+  },
+  {
+    "hash": "6846617b0b229d6b9b168e7bc6a8b80c8fd0f527",
+    "date": "2026-03-16",
+    "message": "UI: Add dynamic 3D model scaling support via URL parameters"
+  },
+  {
+    "hash": "61cf2571d7f2d48ea199d601af2b1fed217b4b91",
+    "date": "2026-03-16",
+    "message": "UX: Subtler, premium haptic timings"
+  },
+  {
+    "hash": "a75e56bf6e17d9f009f01ebf5c3d859de7ab1466",
+    "date": "2026-03-15",
+    "message": "Fix: Implement cache busting and purge legacy storage"
+  },
+  {
+    "hash": "4f4626dff394c988ad4573a541e7915241b91e6e",
+    "date": "2026-03-15",
+    "message": "UX: Refine haptic patterns and move to capturing click phase"
+  },
+  {
+    "hash": "af5148020efbd6e542c3acc81174cf9a11912ac6",
+    "date": "2026-03-15",
+    "message": "UX: Implement robust global haptics on pointerdown"
+  },
+  {
+    "hash": "e37f90e2235035d7a85fbeab61708b2391ad68e2",
+    "date": "2026-03-15",
+    "message": "UI: Reverse shimmer animation direction to left-to-right"
+  },
+  {
+    "hash": "93bef238c6e8f216a647cc2bd97a6716caa8acdf",
+    "date": "2026-03-15",
+    "message": "UI: Refine text spacing and tighten article/resume layouts"
+  },
+  {
+    "hash": "6705ea988fdf4d217bcd81cbf4a75ffe679fa327",
+    "date": "2026-03-15",
+    "message": "UI: Improve skeleton loaders with shimmer and card-representative layouts"
+  },
+  {
+    "hash": "8febe6898a09fbcf8fcabc5527b3f8a81fa77308",
+    "date": "2026-03-15",
+    "message": "Refactor: Modularize index.html by extracting CSS and JS into separate files"
+  },
+  {
+    "hash": "877b6bc4a41b38c2afde5573e5d7cd6131e90f7e",
+    "date": "2026-03-15",
+    "message": "feat: Enhance global swipe gesture by restricting activation to the header and improving target selection and axis locking."
+  },
+  {
+    "hash": "8b3efb246ad87dfd5087ddd52b4ceea70df4e081",
+    "date": "2026-03-11",
+    "message": "UI: Centered music and GPS cards on mobile when they wrap to single column."
+  },
+  {
+    "hash": "5387ec9ae1c74376a6f6699ef4831503584851fc",
+    "date": "2026-03-11",
+    "message": "Fix: Sub-sub pages can now be featured on the homepage. Added Featured tag bypass to depth filtering."
+  },
+  {
+    "hash": "e6b9aa7efba7f9d164e32e55c090380d79926901",
+    "date": "2026-03-11",
+    "message": "chore: Add `strava-thumbnail.png` to assets and remove an unspecified file."
+  },
+  {
+    "hash": "4e69dda9ba90372f54dc7b9f6e10c13d9919fc04",
+    "date": "2026-03-11",
+    "message": "Perf/UX: Tightened GPS/Music card spacing on mobile from 24px to 12px gap. Reduced grid margins to prevent padding stack feel."
+  },
+  {
+    "hash": "0d67cb45ef0528d740a53a651fa01cb4484fc679",
+    "date": "2026-03-11",
+    "message": "Perf: Removed Pace Pulse animation to eliminate main-thread lag in 3D viewers."
+  },
+  {
+    "hash": "182c46b28b43eebd08209dc24cc421fc41aff406",
+    "date": "2026-03-10",
+    "message": "Fix: Resolved whitespace-stripping bug in Markdown processing. Switched safeHTML to regex-based encoder and moved layout to inline-block."
+  },
+  {
+    "hash": "27029b0c89770912b1dac3305847706e592f9d3c",
+    "date": "2026-03-10",
+    "message": "Merge: Resolved SEO content conflict and re-applied Strava icon fix."
+  },
+  {
+    "hash": "470a26f765b396dc60c5d1f6cd8ca37d99988f4c",
+    "date": "2026-03-10",
+    "message": "Fix: Perfectly mirrored Strava icon scaling to YTM cards using <img> tag architecture and Base64 SVG."
+  },
+  {
+    "hash": "f54543bd326e310ae0bc3c46710adabf16b796b5",
+    "date": "2026-03-10",
+    "message": "Fix: Perfectly mirrored Strava icon hover/scale to YTM cards. Switched to div-based architecture and managed propagation."
+  },
+  {
+    "hash": "17de9affe3e394cddf5688d372c32ba4d56f794b",
+    "date": "2026-03-10",
+    "message": "Fix: Strava icon scaling bug. Moved icon out of overflow:hidden card-info and restored global CSS scaling."
+  },
+  {
+    "hash": "47cd18d615eae045dbb8019c6fb56ce2508aca3d",
+    "date": "2026-03-10",
+    "message": "Feature: Added Pace Pulse animation to GPS Art. The route now features a traveling glow that follows the literal pace of the original activity."
+  },
+  {
+    "hash": "727d18f0f96abcd12fe28e051a4cd4ae55928aca",
+    "date": "2026-03-10",
+    "message": "Fix: Hardened GPS Grid layout with CSS Grid and line-agnostic parsing. Enforced 300px min-width harmony for side-by-side card consistency."
+  },
+  {
+    "hash": "be62e5c3db91d1ba6f4b870d66d6b807e31690a1",
+    "date": "2026-03-10",
+    "message": "Refactor: Final GPS Card polishing. Removed interaction shield, synchronized architecture with music cards, and enhanced clickable Strava branding Assets."
+  },
+  {
+    "hash": "afd88686d943e79e2ed96207d52d96584445acb6",
+    "date": "2026-03-10",
+    "message": "Fix: GPS art cards hijacked by live music pooling. Decoupled data-type and consolidated marquee initialization logic."
+  },
+  {
+    "hash": "1c2421e39f0e2e8efc40af83adf40bf700ad85b3",
+    "date": "2026-03-10",
+    "message": "Feature: Refactor GPS card parsing to pure pipeline formatting and implement "
+  },
+  {
+    "hash": "301609c1fd032813de8d6b97b070301d77783c25",
+    "date": "2026-03-10",
+    "message": "Feature: Implement high-fidelity 'Music Style' GPS Cards with 16:9 dynamic map routing and interactive Mapbox pointer interception"
+  },
+  {
+    "hash": "0d471ea552d06874cb0f6ac6cfd5f73ae5eb3ee6",
+    "date": "2026-03-10",
+    "message": "Feature: Mapbox GPS Visualizer enhancements - Dynamic bearing URL parsing, scroll-zoom trapping fix, and live theme observer integration"
+  },
+  {
+    "hash": "db6ae7504d4ad3e8b3954b56588fa0ef146bca5a",
+    "date": "2026-03-10",
+    "message": "Fix: Provide explicit width/height metrics to Mapbox embedding frame to prevent zero-height flex collapse"
+  },
+  {
+    "hash": "8f6b3eaf89dd0fac94cbc0e14302f4184154cf67",
+    "date": "2026-03-10",
+    "message": "Content: Add run00.geojson GPS visualizer data"
+  },
+  {
+    "hash": "a98926c68e56d66cbf917df1351eb928b0c8e1f8",
+    "date": "2026-03-10",
+    "message": "Config: Inject valid Mapbox Public Access Token and implement implicit /assets/GPX/ path resolution for bare .geojson references"
+  },
+  {
+    "hash": "c13b4c8bd3c66f5012b3e3e45a8c471bcca1cc65",
+    "date": "2026-03-10",
+    "message": "Feature: Implement minimalist GPS Route Visualizer using Mapbox GL JS for dynamically rendering line-art from GeoJSON paths"
+  },
+  {
+    "hash": "bf5b4f1c88abedd422d64baadf460dee9a2bd963",
+    "date": "2026-03-10",
+    "message": "Fix: Resolve 'frozen dashboard' issue by removing the absolute ?t= cache-buster which triggered Google Origin 429 Rate Limits, and relaxed polling interval to 20s to balance sheet sync with CDN health"
+  },
+  {
+    "hash": "0b1dac43355666a0116e0bf2785deca4fa2f8af7",
+    "date": "2026-03-10",
+    "message": "Fix: Resolve music dashboard oscillating 'ghost states' caused by Google Sheets CDN edge-caching by implementing a state-history rejection pool"
+  },
+  {
+    "hash": "8bf540a5052ce908d5d90e2467a0a374eab8824e",
+    "date": "2026-03-10",
+    "message": "Feature: Implement high-frequency live dashboard polling for recently played music (10-second intervals)"
+  },
+  {
+    "hash": "cb62a30196eff5e149def47d0b59dde05f5ba0fc",
+    "date": "2026-03-10",
+    "message": "Perf: Remove client-side caching mechanisms (localStorage and fetch cache-busting) to enforce real-time data sync across all dashboard views, particularly Recently Played Music"
+  },
+  {
+    "hash": "b79063825e0f54dd286f407d2328f679c68f3b61",
+    "date": "2026-03-10",
+    "message": "Fix: Ensure tab titles properly fall back to the section name (e.g. 'Personal') when dynamic placeholders like {Random Quote} are stripped away"
+  },
+  {
+    "hash": "e6ace892cbd6d500a2d340d65a033b2d176c705f",
+    "date": "2026-03-09",
+    "message": "Design: Restore full opacity to YouTube Music corner overlay icon for better visibility"
+  },
+  {
+    "hash": "7cd7c062d3809d41bfb97f4049f95b2b3e72ab17",
+    "date": "2026-03-09",
+    "message": "Fix: Re-implement stop-others music logic lost during rebase, and fix aspect ratio at root"
+  },
+  {
+    "hash": "09582198ef555f83e402643b8f4a9d283cb0f1ac",
+    "date": "2026-03-09",
+    "message": "Fix: Normalize music card aspect ratios at the root by removing all !important overrides and adding dedicated iframe constraints for square 1/1 playback"
+  },
+  {
+    "hash": "f8db6b3019c0d9a6871b3103202ee39e1c7bdd08",
+    "date": "2026-03-09",
+    "message": "Fix: Lock music card playback iframes into the 1/1 square aspect ratio consistently with album art"
+  },
+  {
+    "hash": "2d7935f8da402ac28ed87bf50d7fac692cbac865",
+    "date": "2026-03-09",
+    "message": "Fix: Resolve 'too much spacing' on music cards by reducing the vertical margin of .music-sections-container to 12px"
+  },
+  {
+    "hash": "0dbb319f04b36dfe327f8bcbdef98948f47dcbcf",
+    "date": "2026-03-09",
+    "message": "Design: Make music card image background transparent for a flat, cohesive monolithic look when no album art is present"
+  },
+  {
+    "hash": "6d779a5a6cc2ba33795db7c8720615147f9bd49c",
+    "date": "2026-03-09",
+    "message": "Fix: Resolve subpixel aliasing artifacts (thin lines) on card radii by removing redundant child border-radius and using theme-aware background color"
+  },
+  {
+    "hash": "bc8bd16074104ce3aabdc0fc211f042301732db7",
+    "date": "2026-03-09",
+    "message": "Fix: Restore YouTube Music logo interior detail by using non-destructive grayscale filter, and bump size to 110px for a more confident presença"
+  },
+  {
+    "hash": "77842deccbf1f09ac83bc59c5014e6e7d8d5b065",
+    "date": "2026-03-09",
+    "message": "Fix: Resolve invisible music fallback logo by correctly disposing of skeleton loaders for tracks without thumbnails, and boosting logo visibility centered at 64px"
+  },
+  {
+    "hash": "d47f457bb786d1124fff7ca7881f2d2c9b1d3d9e",
+    "date": "2026-03-09",
+    "message": "Fix: Add position relative to row-media so fallback logo doesn't misalign, and clear loading skeleton when image fallback is triggered"
+  },
+  {
+    "hash": "055e857d2b92e926d9204f3804db3b9cebb91f74",
+    "date": "2026-03-09",
+    "message": "Fix: Add class specificity to music card image CSS to prevent hiding the fallback logo Placeholder"
+  },
+  {
+    "hash": "4f3baeda6df30e8428a03bef125b8e3577221f37",
+    "date": "2026-03-09",
+    "message": "Fix: Resolve title overflow stutter by blocking double-renders on page load, and swap to cool dark aesthetic square image for placeholders"
+  },
+  {
+    "hash": "59a844865cc32a1551b128d20199387de6f73ca6",
+    "date": "2026-03-09",
+    "message": "Fix: Remove undefined placeholderThumb reference in unused fallbackChain causing console ReferenceError"
+  },
+  {
+    "hash": "40a500180c77e22ca47a28437185afac2b6696f5",
+    "date": "2026-03-09",
+    "message": "Fix: Restore visibility of music card album art and placeholders by correcting Z-index stacking and opacity states"
+  },
+  {
+    "hash": "945b656a9377fdf1f30d66bb20a6bd421af25154",
+    "date": "2026-03-09",
+    "message": "Design: Replace static placeholder with subtly dynamic CSS Void Plasma placeholder for music cards"
+  },
+  {
+    "hash": "162fce710c9732acc234d92f32cc75933a67048b",
+    "date": "2026-03-09",
+    "message": "Feat: Pull high-fidelity square thumbnails from Music Logger DB for pasted YouTube Music links to prevent 16:9 padded thumbs"
+  },
+  {
+    "hash": "87f78c4ec739fac1c862d88cc126b3bf820f288c",
+    "date": "2026-03-09",
+    "message": "Design: Center align music cards dynamically using flex-wrap regardless of count"
+  },
+  {
+    "hash": "94bc07ea61db0ea55f58a8f067248bb0f6da46c8",
+    "date": "2026-03-09",
+    "message": "Feat: Add support for inline pasted YouTube Music URLs parsing into dynamic music-cards via noembed metadata"
+  },
+  {
+    "hash": "6f095698486045d8765686cd177f309d0574659a",
+    "date": "2026-03-09",
+    "message": "Design: Refine YT Music icon hover to scale from bottom right origin gently"
+  },
+  {
+    "hash": "8c5e0888cf42780b1b300ac59928023a217d661a",
+    "date": "2026-03-09",
+    "message": "Fix: Re-route outward YT Music link through main click handler to bypass bubble blocking & enlarge hover state"
+  },
+  {
+    "hash": "8709edbf22012b247411ebdf0ed1bd086242e858",
+    "date": "2026-03-09",
+    "message": "Fix: Enable pointer-events on YT Music icon so it properly intercepts link clicks"
+  },
+  {
+    "hash": "c5849f6014a5ce9a09b4a8e1547df03dcbd52d3d",
+    "date": "2026-03-09",
+    "message": "Feat: Add direct outward link to YouTube Music via corner icon click"
+  },
+  {
+    "hash": "408c33622e9bf90d294edde3f5e456803d495591",
+    "date": "2026-03-09",
+    "message": "Refactor: Update music fetch logic to handle OPSEC timestamp removal and strict YT Music source map"
+  },
+  {
+    "hash": "87c23e503511cb6355f938fd09b1903a36474a46",
+    "date": "2026-03-09",
+    "message": "Syncing latest changes"
+  },
+  {
+    "hash": "dae7b0202408115f63b22b717a883b063dac4e7d",
+    "date": "2026-03-09",
+    "message": "Fix: Route broken music URLs to generic YouTube search"
+  },
+  {
+    "hash": "d3c976bbe1391384fc40965915a1c945cf603690",
+    "date": "2026-03-09",
+    "message": "Fix: Fallback to YouTube Music search on non-song URLs like /library in music cards"
+  },
+  {
+    "hash": "17da2b666d7e90032b68317c271c036d34136d87",
+    "date": "2026-03-09",
+    "message": "Design: Switch blend mode to lighten to eliminate overlapping balls and smooth out aura"
+  },
+  {
+    "hash": "fcbc8a4a84298a7cc42795bad4f2f5c026da8a8f",
+    "date": "2026-03-09",
+    "message": "Design: Shift flame to bottom right and use strictly adjacent hot titanium spectrum"
+  },
+  {
+    "hash": "5305ae4d37b60a061a2e70bcd17f799e223528e7",
+    "date": "2026-03-09",
+    "message": "Merge remote changes and smooth out waveform"
+  },
+  {
+    "hash": "7eec14ccb4754fc6cea5628f50df04d682409b27",
+    "date": "2026-03-09",
+    "message": "Design: Replace flashy bounce with slow, mathematically blending fluid wave breathing"
+  },
+  {
+    "hash": "4fff9862cc7fc6bc0774d992011f446b1b7c9f3b",
+    "date": "2026-03-09",
+    "message": "Design: Blur the Spiderman-bounce titanium heat wave for a seamless flame fade"
+  },
+  {
+    "hash": "5ce32ee07822377d4045013c8ae2a46792e7f4f2",
+    "date": "2026-03-09",
+    "message": "Design: Implement Spiderman-bounce titanium heat SVG waveform visualizer"
+  },
+  {
+    "hash": "893b02c7494abddd64aa6fd51c0f26af09528a24",
+    "date": "2026-03-09",
+    "message": "Design: Restrained, novel, non-repeating fluid aura with right-to-left titanium gradient mapping"
+  },
+  {
+    "hash": "512a050f32b185710de7a0b3a5fce8cabd99003b",
+    "date": "2026-03-09",
+    "message": "Design: Implement swirling fog blob waves for music card aura"
+  },
+  {
+    "hash": "69511526b83163cdf2cf398154e6ccce965686a8",
+    "date": "2026-03-09",
+    "message": "Design: Switch to single ambient titanium heat pulse aura instead of wave-layers"
+  },
+  {
+    "hash": "fb4dd3cae58287ac0d33a421baa8d7ef7b0d4b82",
+    "date": "2026-03-09",
+    "message": "Design: Switch to sweeping wave-layers for ambient aura effect"
+  },
+  {
+    "hash": "8ef150d5d388148f8938e12cba37a34f1b2fe243",
+    "date": "2026-03-09",
+    "message": "Design: Enable multi-music cards on mobile and upgrade EQ bars to a continuous Liquid Waveform aura"
+  },
+  {
+    "hash": "b0f078c534e4bb6b24823a467cb9da2082d83a19",
+    "date": "2026-03-09",
+    "message": "Design: True EQ waveform bumps and restored YouTube Music icon size"
+  },
+  {
+    "hash": "3072b354f730a1424c9bd64e7b913ca1ede8559b",
+    "date": "2026-03-09",
+    "message": "Fix: Remove custom card outlines and replace jumpy aura with performant linear lava flow"
+  },
+  {
+    "hash": "85c5d14c55418f50d62ef31716eeac9b16b68da4",
+    "date": "2026-03-09",
+    "message": "Fix: Remove thin separator outline in music cards"
+  },
+  {
+    "hash": "c19a0ebe80427196578d8d7c8900b60850196fb7",
+    "date": "2026-03-09",
+    "message": "Fix: Stabilize high-fidelity album art rendering to prevent 'sharpening' jumps"
+  },
+  {
+    "hash": "bb5d910b0f499bf04a29413581e5de5967eb31e0",
+    "date": "2026-03-09",
+    "message": "Design: Consistent card hover styles and refined marquee fades"
+  },
+  {
+    "hash": "70cbe1e8bed2d4315d2daf9d54920769caffe0d6",
+    "date": "2026-03-09",
+    "message": "Design: Dynamic marquee fades and stable card layout"
+  },
+  {
+    "hash": "b7555a559b34e0652e0a0212cd8bdce6f7c485e2",
+    "date": "2026-03-09",
+    "message": "Fix: Dual-end marquee fades and outline-based card borders"
+  },
+  {
+    "hash": "36e1d97cc4ce626fe13416a0b4e91404bd156af9",
+    "date": "2026-03-09",
+    "message": "Design: Buttery-smooth Titanium aura and elegant badge-scale YT logo"
+  },
+  {
+    "hash": "98dee237a8a54fc16fc4686e2a0941d70fe6314f",
+    "date": "2026-03-09",
+    "message": "Design: High-contrast Titanium Aura and refined card borders"
+  },
+  {
+    "hash": "e38b8e4f2a4687b775c669e88f84225083edc49d",
+    "date": "2026-03-09",
+    "message": "Design: Sidechain-inspired Titanium aura and marquee text fades"
+  },
+  {
+    "hash": "528b64741f612781048416e566a91af7c05a8827",
+    "date": "2026-03-09",
+    "message": "Design: Rhythmic Titanium Heartbeat (110 BPM) for live tracks"
+  },
+  {
+    "hash": "25b27ca07d0e262de8c1802c3f25c0365f9b5400",
+    "date": "2026-03-09",
+    "message": "Design: Rhythmic Titanium Aura and enhanced YouTube Music compatibility"
+  },
+  {
+    "hash": "47cfc7ea47a4a54ee44c3ad2e47d0b5877ebd5ba",
+    "date": "2026-03-09",
+    "message": "Design: Titanium Heat-Tint Waveform and high-fidelity abstract placeholder"
+  },
+  {
+    "hash": "26fac9264c912be48ffb6ed5025966729c6e1d9c",
+    "date": "2026-03-09",
+    "message": "Fix: Seamless art corners and morphing lava-lamp atmosphere"
+  },
+  {
+    "hash": "b98fd90887f0eb1e39919df01899242e81214bae",
+    "date": "2026-03-09",
+    "message": "Design: Lava-lamp gradient atmosphere and persistent YT icon"
+  },
+  {
+    "hash": "f664ddf53b27fd49b73f0312b0f8fa44fa2e5f2b",
+    "date": "2026-03-09",
+    "message": "Design: Transition ripples to tempered-steel waveform atmosphere"
+  },
+  {
+    "hash": "cd2b059839336aecc89798195eecb71df0ff8526",
+    "date": "2026-03-09",
+    "message": "Fix: Hardening link detection, trimming CSV headers, and font-size sync"
+  },
+  {
+    "hash": "454d926acb0b67c66506e6314b5be61577583ead",
+    "date": "2026-03-09",
+    "message": "Fix: Hardening music link search fallback and precise font alignment"
+  },
+  {
+    "hash": "4d8d7fb06e19da3a676164140fe4313951bacf76",
+    "date": "2026-03-09",
+    "message": "Enhancement: proactive background refresh and logic hardening"
+  },
+  {
+    "hash": "e3da1a06a73f0a85ad823803038f081d92f419eb",
+    "date": "2026-03-09",
+    "message": "Refining music visuals and in-place player logic"
+  },
+  {
+    "hash": "a21d4f14f1f7dc107bcb587e327fb188ca13053a",
+    "date": "2026-03-08",
+    "message": "fix: standardize browser tab titles to use clean leaf-names"
+  },
+  {
+    "hash": "eed952af14bd052b89614d220163f9513570048f",
+    "date": "2026-03-08",
+    "message": "fix: implement conditional snapping and mathematical midpoint for sub-nav"
+  },
+  {
+    "hash": "e3e8b393512113d106452d4822cdaf2ef3814c10",
+    "date": "2026-03-08",
+    "message": "fix: resolve sub-nav centering issues by removing midpoint logic"
+  },
+  {
+    "hash": "6e9854ada85a7f05b88aa7115dcee99119e830cf",
+    "date": "2026-03-08",
+    "message": "fix: remove unnecessary 'preview scroll' glide to ensure instant navigation responsiveness"
+  },
+  {
+    "hash": "ebbfcca1a2c2591e11cdc4811eb1919fbfcca527",
+    "date": "2026-03-08",
+    "message": "fix: eliminate sub-nav stutter by forcing instant centering during active interactions"
+  },
+  {
+    "hash": "7019be44242ee4b0aea6f0a078fc67fcb0b145ee",
+    "date": "2026-03-08",
+    "message": "feat: universal markdown support for buttons, chips, and layouts"
+  },
+  {
+    "hash": "36fe29666f5858e2bd68713b1658d3f16727fde5",
+    "date": "2026-03-08",
+    "message": "feat: implement line-based button layouts (same line = side-by-side, new line = stacked)"
+  },
+  {
+    "hash": "4573ac27b71195ef84e291726f281101320846e4",
+    "date": "2026-03-08",
+    "message": "feat: simplify button syntax (shorthand pipes and markdown markers)"
+  },
+  {
+    "hash": "0f3d0b534b96ba954c1fda5a58bf3390267f7b11",
+    "date": "2026-03-07",
+    "message": "fix: eliminate mobile navigation shake using dynamic snap-on-settle system"
+  },
+  {
+    "hash": "b21df90a37f19559861d0c3ac818ed603a3aade1",
+    "date": "2026-03-07",
+    "message": "fix: strip dynamic tags like {Random Quote} from browser tab titles"
+  },
+  {
+    "hash": "d3f1e233b552a5ade7b924514d65ce2d16659e3a",
+    "date": "2026-03-07",
+    "message": "style: apply premium 2px hover border to colored buttons"
+  },
+  {
+    "hash": "a759076939d4813abe608af1bbced63b497f772c",
+    "date": "2026-03-07",
+    "message": "fix: eliminate vibration on hover using inset box-shadow technique"
+  },
+  {
+    "hash": "36385d336d990b7fae1b47cfc38f70560d555632",
+    "date": "2026-03-07",
+    "message": "style: refine hover states (2px borders, preserve text color)"
+  },
+  {
+    "hash": "227c2dcf1e660dd1b2cd8c1cc5164f1cc1ba074d",
+    "date": "2026-03-07",
+    "message": "style: link tag chips hover state with design system (bright borders, pointer cursor)"
+  },
+  {
+    "hash": "bc5efaf0978a8334547595590cbc7f52661c2c43",
+    "date": "2026-03-07",
+    "message": "perf: optimize SEO sync workflow for faster execution"
+  },
+  {
+    "hash": "a7561b4dd853199da0f85714849bfc162537e5d3",
+    "date": "2026-03-07",
+    "message": "fix: invert loop logic (default off, -loop enables) and remove duplicate code"
+  },
+  {
+    "hash": "7972b7803894b861e47eeed403a1806143d92dd7",
+    "date": "2026-03-07",
+    "message": "fix: preserve video behavior markers in card thumbnails"
+  },
+  {
+    "hash": "123c254b532f4b42530d430f307347c7b625d75f",
+    "date": "2026-03-07",
+    "message": "fix: remove forced autoplay/loop for card thumbnails, following user-defined markers"
+  },
+  {
+    "hash": "7df23e45caf07cc00158546011b04a983a831312",
+    "date": "2026-03-07",
+    "message": "fix: restrict autoplay to marked videos in articles, enable by default on cards"
+  },
+  {
+    "hash": "370d37a45bae2c293b72a86e3f80fc019e61fead",
+    "date": "2026-03-07",
+    "message": "fix: media 404s, refined button colors, and optimized SEO sync workflow"
+  },
+  {
+    "hash": "786b01fd16c1b28f6e12bb7d751859f79bbe43a3",
+    "date": "2026-03-07",
+    "message": "fix: resolve GitHub Action rejection by pulling with rebase before commit"
+  },
+  {
+    "hash": "678e00a02adc7131f7a977b652c27f19b7ed1751",
+    "date": "2026-03-07",
+    "message": "fix: resolve 404s by excluding -thumb from behavioral stripping and improving card media detection"
+  },
+  {
+    "hash": "25570a330af1287f24459424f232b8355c65593e",
+    "date": "2026-03-07",
+    "message": "fix: robust stripping of behavioral suffixes to prevent 404s"
+  },
+  {
+    "hash": "7fa22461ceb4ffa9ec4ecb22968d07a5272d3a53",
+    "date": "2026-03-07",
+    "message": "fix: ensure media detection allows behavior suffixes in content blocks"
+  },
+  {
+    "hash": "35e9381c87881f0e7efdd872da54597d0c14aa68",
+    "date": "2026-03-07",
+    "message": "feat: disable button text 'light up' hover and add color suffix support"
+  },
+  {
+    "hash": "b01b324f31a995eade58b8631248bb8191a4f103",
+    "date": "2026-03-07",
+    "message": "feat: allow behavioral markers in sheet without physical renames"
+  },
+  {
+    "hash": "f4ee5151d8ad4f5558cf1c9c3899e35e1cacbbf0",
+    "date": "2026-03-07",
+    "message": "refactor: remove behavior markers from physical video filenames"
+  },
+  {
+    "hash": "6bf88b97c489682e0ff6cd3e175b8d9466cf3565",
+    "date": "2026-03-07",
+    "message": "fix: complete directory capitalization normalization"
+  },
+  {
+    "hash": "067e121992312a854cea12fe556ac349578d0f18",
+    "date": "2026-03-07",
+    "message": "fix: normalize asset directory casing to fix 404s on GitHub Pages"
+  },
+  {
+    "hash": "d70f26504b3f249dc283359bb38711efc02ac1b4",
+    "date": "2026-03-07",
+    "message": "chore: ensure all video renames are correctly staged and pushed"
+  },
+  {
+    "hash": "9504cba3549f36c4564cdd4adc4b5e4e6a82a27c",
+    "date": "2026-03-07",
+    "message": "refactor: update autoplay logic to use -autoplay suffix exclusively"
+  },
+  {
+    "hash": "173c0fdd5a312791f30cb070ec487eab0974f46c",
+    "date": "2026-03-07",
+    "message": "refactor: rename video files to use -autoplay suffix instead of -thumb"
+  },
+  {
+    "hash": "4ae5d4df41cf31ade751ffeeee34e2f29fc957bc",
+    "date": "2026-03-07",
+    "message": "fix: deduplicate SEO entries and cleanup meta injection"
+  },
+  {
+    "hash": "7ae022f6424c74e6e7be3399b972a819f4dfd195",
+    "date": "2026-03-07",
+    "message": "feat: inject raw content into index.html for full-text indexing"
+  },
+  {
+    "hash": "bed53d659948f82d170dd2e45625dfce663ef7f1",
+    "date": "2026-03-07",
+    "message": "chore: increase SEO sync frequency to hourly"
+  },
+  {
+    "hash": "31d33d482561ceca62bc645cfd0556c61ea3d6b6",
+    "date": "2026-03-07",
+    "message": "fix: handle multi-line CSV values in SEO sync"
+  },
+  {
+    "hash": "4e81796dea5584a359e9b1ed80cabdda55e9a8e9",
+    "date": "2026-03-07",
+    "message": "fix: bulletproof CSV parser for SEO sync script"
+  },
+  {
+    "hash": "6afd4d43a1ff0fca20cfd0fda47454af5d30e453",
+    "date": "2026-03-07",
+    "message": "feat: Introduce SEO synchronization script to automate content and sitemap generation by restructuring existing links."
+  },
+  {
+    "hash": "3102c99c1f23f70520c07a21d2dda04cedf707f8",
+    "date": "2026-03-07",
+    "message": "feat: implement automated SEO engine with GitHub Actions and sitemap sync"
+  },
+  {
+    "hash": "c7a49244229868539884f01a0159dde736ce0ea7",
+    "date": "2026-02-27",
+    "message": "Fix video autoplay: include '-thumb' in autoplay detection and ensure muted attribute"
+  },
+  {
+    "hash": "ead68cb67a2f95ab2114ce1aca143bfe90a4dfde",
+    "date": "2026-02-27",
+    "message": "Cleanup video thumbnails: remove controls from autoplaying preview videos"
+  },
+  {
+    "hash": "afad2511378bf00b19c05c74b95afab974cfe581",
+    "date": "2026-02-27",
+    "message": "Optimize initial load performance: lazy-load videos and stagger GLB initialization"
+  },
+  {
+    "hash": "9b2cf09230c5449f7040425f0c81a404646b02a2",
+    "date": "2026-02-25",
+    "message": "Unify play button hover thickness with site buttons and links (2px design)"
+  },
+  {
+    "hash": "64ce127598bb59facd859533ca06dbd252ad47e1",
+    "date": "2026-02-25",
+    "message": "Enhance YouTube support: added shorts compatibility and robust chained thumbnail fallbacks"
+  },
+  {
+    "hash": "7df77b7aea3617ddd26e763f3bac59a72b4da98c",
+    "date": "2026-02-24",
+    "message": "Fix video aspect ratios and YouTube thumbnail cropping in galleries"
+  },
+  {
+    "hash": "c0cb4e80afcb6c01bef17c5281d225abbfcde7cc",
+    "date": "2026-02-23",
+    "message": "perf: Add passive option to touchmove event listener and remove extraneous blank lines in index.html."
+  },
+  {
+    "hash": "1bd14b75262c1815f838f03352a13eacd776a94f",
+    "date": "2026-02-22",
+    "message": "feat(media): Restore complete aspect-ratio flexibility for all video/embed formats"
+  },
+  {
+    "hash": "c4118a51b3bc62fbfbb77a03141f9573d34e37ab",
+    "date": "2026-02-22",
+    "message": "style(media): Update YouTube and video embed wrappers to 16:9 aspect ratio and 100% width."
+  },
+  {
+    "hash": "7ae4a780515562e8c20f2d1980e2e0ba6b143c5b",
+    "date": "2026-02-22",
+    "message": "perf: Add passive option to touchmove event listener for improved scrolling performance."
+  },
+  {
+    "hash": "19fb0e3dfc481e4afc7c88ae5d96b6afa221d11c",
+    "date": "2026-02-22",
+    "message": "fix(media): Remove maxresdefault.jpg probing to prevent 404 network errors, relying exclusively on hqdefault.jpg to match the 4:3 container perfectly."
+  },
+  {
+    "hash": "afb1d80970e99158098f08b597f6b91ff6f89bc6",
+    "date": "2026-02-22",
+    "message": "fix(media): Replace URL-based 404 YouTube fallback check with dataset flags to prevent cross-origin issues."
+  },
+  {
+    "hash": "03c945885104701a0ee8b8928130d0fee489676a",
+    "date": "2026-02-22",
+    "message": "fix(perf): Add passive flag to global scroll listeners"
+  },
+  {
+    "hash": "d1ba37a2682b6e32322713815b74e902f1d3f555",
+    "date": "2026-02-22",
+    "message": "fix: Fixed YouTube glassmorphic player syntax and fallback logic."
+  },
+  {
+    "hash": "c58629cd9cb347cec4417c32f8d23897f109f00f",
+    "date": "2026-02-22",
+    "message": "fix: Allow captions to include parentheses by removing the redundant markdown link exclusion."
+  },
+  {
+    "hash": "46da9d51900f0f2f6851892f9f17c34b09a65b35",
+    "date": "2026-02-21",
+    "message": "feat: Generate virtual collection cards for implicit sub-path categories in hierarchical navigation, borrowing cover images from descendants."
+  },
+  {
+    "hash": "a54fe7673e18392adf135567179095f19a255a00",
+    "date": "2026-02-21",
+    "message": "Refactor: Remove hardware acceleration CSS from cards and update image sizing and border-radius in media containers."
+  },
+  {
+    "hash": "991426a8c5c0fb5b94394e5b2dbb9bef08a6074b",
+    "date": "2026-02-21",
+    "message": "style: Enhance rendering performance and clipping consistency for embedded content and gallery items by adding mask-image, transform: translateZ(0), and adjusting border-radius inheritance."
+  },
+  {
+    "hash": "51bd7a7f348d937e7d3a696cd0525a3ff9306d8e",
+    "date": "2026-02-21",
+    "message": "feat: improve Strava embed rendering and ID parsing, and refine full-width image margins."
+  },
+  {
+    "hash": "07c742cce50a2f35f9c19fcc4a258f1209ffa132",
+    "date": "2026-02-21",
+    "message": "Media Sync: Add 1771695052486.png"
+  },
+  {
+    "hash": "4c52ff2d0c5c4c5b2f3fad527f1117376bca1cd3",
+    "date": "2026-02-21",
+    "message": "style: Improve centering for media elements and enhance Strava embed UI with new icons and text."
+  },
+  {
+    "hash": "70cec3a9e5ce3425be4b7151b80e5a95fdd1e572",
+    "date": "2026-02-21",
+    "message": "feat: Add `overflow: hidden` to cards and style Strava embed placeholders."
+  },
+  {
+    "hash": "6c87ae25b96e276771531e0c9111fead6f6517ee",
+    "date": "2026-02-21",
+    "message": "feat: improve Strava embed detection and rendering, enhance multi-line media block parsing, and update card navigation."
+  },
+  {
+    "hash": "0728314ec88c0b62f2c1630ead32f3ade25854b3",
+    "date": "2026-02-21",
+    "message": "feat: Add support for embedding Strava activities with dynamic script loading."
+  },
+  {
+    "hash": "8f4ff9c929a1a3f4b60d0cdc7baaaa82d97a1b52",
+    "date": "2026-02-21",
+    "message": "style: Add responsive padding for article view and adjust media wrapper margins for smaller screens."
+  },
+  {
+    "hash": "840136a91cd2acc5e5fe5e8ab591b032abe7d4a9",
+    "date": "2026-02-21",
+    "message": "feat: Introduce `unified-media-wrapper` class and apply it to single media items for consistent block spacing."
+  },
+  {
+    "hash": "c9bc4be07c2cd865c55f2295fbd29b395914aadc",
+    "date": "2026-02-21",
+    "message": "fix: Adjust responsive styling for gallery item widths, layout gaps, and gallery spacing on small screens."
+  },
+  {
+    "hash": "d37a3aa852a65c426ad7c22cc46446f64375c617",
+    "date": "2026-02-21",
+    "message": "refactor: Remove custom scroll restoration logic and always scroll to top on navigation (except for swipes)."
+  },
+  {
+    "hash": "a86fd540283b3ccbd0e77042ff89f077f6b51b09",
+    "date": "2026-02-21",
+    "message": "Style: Update `.layout-quote` properties by adjusting margin, padding, and max-width."
+  },
+  {
+    "hash": "c79c918bc6655eac8e7a1e3469fd4303a8c31950",
+    "date": "2026-02-21",
+    "message": "feat: Hide footer with `display: none` and separate `pointer-events` for main header when search is active."
+  },
+  {
+    "hash": "332975758da5a7561b689feecf47a1e701bafa0b",
+    "date": "2026-02-21",
+    "message": "feat: Fully hide the main app content when search is active, automatically close search before navigation, and refine card rendering conditions."
+  },
+  {
+    "hash": "909ff7c7e8f60bb10ea1069a6813effffee0c467",
+    "date": "2026-02-21",
+    "message": "feat: Expand `_resetHaptic` function to clear additional scroll and input state variables."
+  },
+  {
+    "hash": "1f95b37ba8082bfa295c7d78c07a3a0e25112443",
+    "date": "2026-02-21",
+    "message": "feat: Implement scroll position restoration when navigating between pages using a scroll memory map."
+  },
+  {
+    "hash": "b577feadb11ff041ee5902376d0b38d92de35bb1",
+    "date": "2026-02-21",
+    "message": "fix: update \"About\" link to be an anchor link."
+  },
+  {
+    "hash": "399cded25fc10a9a0883d48dec75cffa5de16358",
+    "date": "2026-02-21",
+    "message": "refactor: Remove `_isNavSwiping` flag, overscroll bubbling logic, and gesture protection for GLB model loading."
+  },
+  {
+    "hash": "a506a73929e821da307ad2110ee621836ae00ee7",
+    "date": "2026-02-21",
+    "message": "feat: Implement overscroll bubbling for navigation swipes and defer 3D model loading during active swipes to prevent touchcancel issues."
+  },
+  {
+    "hash": "57bddb13b4d0592e6ad5a09dc9a7db7c157ffb3e",
+    "date": "2026-02-21",
+    "message": "Fix global swipe behavior by disabling it on main category pages when no subnav item is active."
+  },
+  {
+    "hash": "e248a0593fe7b583e2132deec4e6fbf6fc1cea10",
+    "date": "2026-02-21",
+    "message": "fix: Update touch event ignore conditions for fullscreen model viewers and iframes, and refine scrollable navigation row selection to include only those with actual overflow."
+  },
+  {
+    "hash": "4c21a7d6fabe4a42f86be2c5890a18cd6d9cf39b",
+    "date": "2026-02-21",
+    "message": "refactor: Remove double `requestAnimationFrame` for scroll positioning and ensure row visibility before measurement."
+  },
+  {
+    "hash": "54d6a4f803c4aec64e03ff50c36c032fe544bb81",
+    "date": "2026-02-21",
+    "message": "feat: Implement experimental global horizontal swipe functionality for subnavigation."
+  },
+  {
+    "hash": "73b5a62bf8cdbd20d1bf005481b594a46cf02dca",
+    "date": "2026-02-21",
+    "message": "fix: manage OrbitControls enabled state and canvas touch-action for improved mobile interaction."
+  },
+  {
+    "hash": "e0991c9e29e83b84684dc04e55b05e38e6b38c8e",
+    "date": "2026-02-21",
+    "message": "fix: Enforce highp WebGL precision to ensure accurate PBR reflections and prevent visual artifacts."
+  },
+  {
+    "hash": "dec6bc1e581a79ef026c7502e5808aefedbe383b",
+    "date": "2026-02-21",
+    "message": "Refine GLB viewer controls by explicitly enabling rotation, implementing mobile-specific pan/rotate logic, and adjusting lighting intensity."
+  },
+  {
+    "hash": "a29b83a0faac91a0f6b9c6898a3ba1e9b789c768",
+    "date": "2026-02-21",
+    "message": "feat: Add `HemisphereLight` to `RoomEnvironment`, adjust a `DirectionalLight` intensity, and refine `OrbitControls` panning logic for mobile devices."
+  },
+  {
+    "hash": "9e55151934a96a3aa6de36d25240013b7b737746",
+    "date": "2026-02-21",
+    "message": "Refactor scroll event handling to accurately distinguish user-initiated scrolls from programmatic ones, removing `_autoScroll` logic and introducing `_isValidUserScroll` with input tracking."
+  },
+  {
+    "hash": "9dc15d5ee57e5cb0c4d93b91e60d3fdc347cdd41",
+    "date": "2026-02-21",
+    "message": "fix: prevent phantom sub-link selections from programmatic DOM mutations by introducing auto-scroll flags and timeouts."
+  },
+  {
+    "hash": "f2ee3a89091a4bdc386951cf4686628af6bc7191",
+    "date": "2026-02-21",
+    "message": "Refactor scroll handling to prevent conflicts between programmatic and user scrolls by introducing an `_autoScroll` flag and removing the `userTouching` state."
+  },
+  {
+    "hash": "3d824e0db51054ee19e4b6873872c1d40f42567c",
+    "date": "2026-02-21",
+    "message": "Refactor: update color palette variables, remove unused styles, and refine link and chip styling."
+  },
+  {
+    "hash": "3619c755f420e990c5431edbe59a9d6ff1353696",
+    "date": "2026-02-21",
+    "message": "style: remove ease timing function from button transition property."
+  },
+  {
+    "hash": "e68c755d6684ea37098deb9f879b2255677c8f70",
+    "date": "2026-02-21",
+    "message": "style: Remove `var(--ease)` from CSS transition property."
+  },
+  {
+    "hash": "401bc6dc740a2a335f6f738c8d4bf0b3f69c782a",
+    "date": "2026-02-21",
+    "message": "Fix: Adjust `--sub-row-h` and `--main-row-h` CSS variables to `20px`."
+  },
+  {
+    "hash": "8e5a5f6610d277e250390927cc5922a194d93643",
+    "date": "2026-02-21",
+    "message": "style: switch article headings to rem-based margins for uniform spacing"
+  },
+  {
+    "hash": "677bd84bb7de43dc947400c9efac0b2671a4c654",
+    "date": "2026-02-21",
+    "message": "style: switch article headings to em-based margins"
+  },
+  {
+    "hash": "b33eb2b3f69b1440abc0e0771645f27d756984bc",
+    "date": "2026-02-21",
+    "message": "chore: Restore stable rendering logic and synchronize pipeline flags"
+  },
+  {
+    "hash": "166620878803fe3260029918b6d84e598e3a6ba3",
+    "date": "2026-02-21",
+    "message": "Refactor: Prune dead code, decouple internal functions, and fix card rendering logic"
+  },
+  {
+    "hash": "12ab441bdea953483815d82e0052203c4132921a",
+    "date": "2026-02-21",
+    "message": "Refactor: Consolidation of repetitive CSS and JS to improve elegance and reduce line count"
+  },
+  {
+    "hash": "1f38c7b8ee4058ae1b83703e3b1c08b7bed2c3a4",
+    "date": "2026-02-20",
+    "message": "fix: Adjust dice icon size and position by updating its margins, width, and height."
+  },
+  {
+    "hash": "a6142dc217548cd9ecefce7fdffe759ebf83c027",
+    "date": "2026-02-20",
+    "message": "feat: implement path-to-URL conversion to handle spaces by replacing them with underscores."
+  },
+  {
+    "hash": "56f65d14e1beab08158c36c0158ae890ebb595d2",
+    "date": "2026-02-19",
+    "message": "Fix: Prevent programmatic scrolls from triggering user-initiated navigation logic by refining scroll event detection and resetting scroll position."
+  },
+  {
+    "hash": "6efef4a608e0a8aa0168e0d1ba93f5821853d9f1",
+    "date": "2026-02-19",
+    "message": "refactor: remove custom mobile viewport gesture proxy and app transition effects, and refine navigation centering logic."
+  },
+  {
+    "hash": "7ecdae154f10d9f5af981fd361240a988c9aaf37",
+    "date": "2026-02-19",
+    "message": "Fix: Update dynamic scroll baseline to prevent jumps when row is reset by navigation."
+  },
+  {
+    "hash": "bb2964769d15de2fa525eed7d24e512c6f862d44",
+    "date": "2026-02-19",
+    "message": "fix: Improve nav row centering by instantly disabling snap-scrolling and resetting position, then re-enabling snapping after centering."
+  },
+  {
+    "hash": "73eed50514f29754fd4c898543ca59540f11fa3f",
+    "date": "2026-02-19",
+    "message": "feat: Implement mobile viewport gesture proxy for horizontal navigation scrolling on mobile devices."
+  },
+  {
+    "hash": "d5bf6cffdb1a8aec13b74dca4b3d3631bbbda823",
+    "date": "2026-02-19",
+    "message": "feat: Add pointer cursor to picker rows and authoritatively track user interaction during scrolling."
+  },
+  {
+    "hash": "2c51ae5893491da153abd3009dea9f312655fee1",
+    "date": "2026-02-19",
+    "message": "refactor: Remove `scroll-snap-stop: always` from sub-link navigation."
+  },
+  {
+    "hash": "00de8cd0b388f1c9fe8590a4d67e6f5644e17c42",
+    "date": "2026-02-19",
+    "message": "fix: Move picker lock release to execute only when the finger is lifted to prevent veering off."
+  },
+  {
+    "hash": "99762f6eca1d290e0f08a94d1dc39306d6a5f76c",
+    "date": "2026-02-19",
+    "message": "feat: Improve navigation picker's scroll snapping to ensure item selection, refine centering, and optimize scroll settling for a more responsive feel."
+  },
+  {
+    "hash": "49890a2a3a585b8c2f36cee859f6666146466de9",
+    "date": "2026-02-19",
+    "message": "feat: Enhance navigation picker layout, spacing, and scrolling behavior with updated CSS variables, mask images, and refined JavaScript logic."
+  },
+  {
+    "hash": "286105fffaed6bfa7290a87287fbcf89a559ef7e",
+    "date": "2026-02-19",
+    "message": "fix: Improve touch interaction by disabling user selection, setting touch action, and increasing row gap to prevent touch bleed."
+  },
+  {
+    "hash": "ac40579fc81c560af8d448c5525c73f39d37a60e",
+    "date": "2026-02-19",
+    "message": "feat: Enhance navigation UX by increasing row heights and spacing, removing mask-image, and optimizing scroll-based navigation for snappier responses."
+  },
+  {
+    "hash": "665cffb56ac11813e49d473011a694c776aa6567",
+    "date": "2026-02-19",
+    "message": "refactor: Adjust scroll reset logic to instantly center active items or midpoint instead of forcing to leftmost."
+  },
+  {
+    "hash": "0238921d40c1ac27ac88a8c125a532f91725ab2e",
+    "date": "2026-02-19",
+    "message": "Refactor CSS by removing global overscroll and body transition styles, adjusting navigation scroll behavior and snap type, adding pointer-events to nav arrows, and simplifying scroll detection logic."
+  },
+  {
+    "hash": "3fbb6d2a5b5d8e67363f2f4e7b516bdb3b2e2091",
+    "date": "2026-02-19",
+    "message": "feat: Disable overscroll behavior globally and for horizontal tag lists."
+  },
+  {
+    "hash": "6c7dd54e37fa71781591d800dcb9ab232380fe07",
+    "date": "2026-02-18",
+    "message": "refactor: streamline navigation centering logic with `isSubNav` parameter and remove explicit scroll position reset."
+  },
+  {
+    "hash": "3c671a27783563f4317af7c28a9b044d5c82c79b",
+    "date": "2026-02-18",
+    "message": "perf: Optimize navigation dwell time for initial and subsequent page loads and add a fallback title to Umami tracking."
+  },
+  {
+    "hash": "3afa3a489fd23ba585f4793d990c9ebf27172834",
+    "date": "2026-02-18",
+    "message": "fix: Standardize navigation row initial scroll position, reset scroll before content updates, and ensure correct centering behavior, especially after state restoration."
+  },
+  {
+    "hash": "8c1917bc439df3653f6d620e7463a8f20be6b783",
+    "date": "2026-02-18",
+    "message": "feat: Implement exclusive rendering mode for fullscreen models and adjust OrbitControls damping factor."
+  },
+  {
+    "hash": "8beb28f79045f5e9ba6a0ba4b78e11c8027112e4",
+    "date": "2026-02-18",
+    "message": "feat: Adjust card rotation base speed for card mode from 0.0008 to 0.0010."
+  },
+  {
+    "hash": "4a3414a42bcec37e8151ac45ca48bdaf1ea41f80",
+    "date": "2026-02-18",
+    "message": "feat: Improve fullscreen experience by repositioning and restyling the button, optimizing rendering, and capping resolution for performance."
+  },
+  {
+    "hash": "645500941cef3fc95b4663137c1dfd8acd06b93c",
+    "date": "2026-02-18",
+    "message": "feat: Implement a new 'Jewelry Store' lighting rig with adjusted tone mapping exposure and reposition the fullscreen button."
+  },
+  {
+    "hash": "ee608ef41c86d05dc660e6883ec9d20a1ee9cd61",
+    "date": "2026-02-18",
+    "message": "feat: Improve 3D scene lighting by generating per-renderer environment maps, increasing light intensities, and disposing of environment textures during cleanup."
+  },
+  {
+    "hash": "d8e7cea72c3eebc790923e3f866c3eeffcc2dfc7",
+    "date": "2026-02-18",
+    "message": "feat: Improve rendering performance by capping pixel ratio at 2.0, prioritizing fullscreen viewer updates, and enabling damping for OrbitControls."
+  },
+  {
+    "hash": "6833d9cf287e8be9bfd205d7cd5b4dadf624ea9b",
+    "date": "2026-02-18",
+    "message": "feat: Introduce unified media entrance animations with skeleton fade-out and improve 3D model lighting consistency across devices."
+  },
+  {
+    "hash": "f2c45d3168292049412668114fa9e1d2b9231401",
+    "date": "2026-02-18",
+    "message": "refactor: specify CSS transition properties for background and border-color."
+  },
+  {
+    "hash": "9460d73137e38176d7e6890f7a52177a1f438e98",
+    "date": "2026-02-18",
+    "message": "Refactor element centering from flex to grid, add overflow hidden, and normalize inner element display and margin."
+  },
+  {
+    "hash": "dac53de568ee355a4aafa490ad0119d739781dfc",
+    "date": "2026-02-18",
+    "message": "feat: Enhance model viewer fullscreen experience by removing card framing and adjusting fullscreen button position for mobile accessibility."
+  },
+  {
+    "hash": "87dee5cf9e81aeb5121c18fdac093c663f358bc4",
+    "date": "2026-02-18",
+    "message": "style: Update skeleton and model viewer backgrounds for contrast, remove fullscreen button shadows and hover effects, and increase Three.js lighting intensities."
+  },
+  {
+    "hash": "acf96d90247cf30bbf474e3c38115446c5d00fde",
+    "date": "2026-02-18",
+    "message": "style: Adjust skeleton and model viewer backgrounds for better contrast, remove button shadows and hover effects, and increase Three.js light intensities to prevent black metals."
+  },
+  {
+    "hash": "0dc0c775f023a1fa293a796f71f38d374185e1c6",
+    "date": "2026-02-17",
+    "message": "feat: Enhance fullscreen button styling and add specific adjustments for fullscreen mode."
+  },
+  {
+    "hash": "3cdabdb3e36b273b7974e089896d0d7a90027f2b",
+    "date": "2026-02-17",
+    "message": "perf: Optimize 3D model viewer loading and rendering by matching backgrounds, adding loading text, and disabling WebGL alpha for stability."
+  },
+  {
+    "hash": "9d6b4ea9ce55545d06eb4a30356cb31f408279f6",
+    "date": "2026-02-17",
+    "message": "fix: Prevent GLB viewer flickering and improve theme-aware clear color handling by adjusting backgrounds and removing the `renderGLBViewer` helper."
+  },
+  {
+    "hash": "7a4cf84dda19348ff418111ee54197078ac34386",
+    "date": "2026-02-17",
+    "message": "feat: Add `renderGLBViewer` function with supporting CSS for dynamic GLB model embedding."
+  },
+  {
+    "hash": "28f65b7b323b5ea3b973e0a6a8595fbccce1e8b3",
+    "date": "2026-02-17",
+    "message": "Remove iframe embedding logic, universal transformer, and compact sizing for embeds."
+  },
+  {
+    "hash": "e3a3ace3de4939d2f026de02405cc34a2f2894a4",
+    "date": "2026-02-17",
+    "message": "feat: Add compact sizing for Spotify and Strava embeds, and extend media detection to include HTML, Lichess, and Strava URLs."
+  },
+  {
+    "hash": "32023f38b487dfc31c2644899c3ebf0216ebfdee",
+    "date": "2026-02-17",
+    "message": "feat: Enhance content block parsing to intelligently detect and separate button and media blocks, and add autoplay and controls to video elements."
+  },
+  {
+    "hash": "ff920e100a8c2d5a9d7b1c28f469ddaabb9c0935",
+    "date": "2026-02-17",
+    "message": "feat: Add universal embed transformer, raw iframe support, and refine video styling."
+  },
+  {
+    "hash": "3f9ba43dd5c0b47347379693dfff8ed766af3ea1",
+    "date": "2026-02-17",
+    "message": "feat: Enhance text layout and readability by increasing paragraph spacing in hero and text sections, simplifying hero link selectors, and enabling `<br>` tag rendering in markdown."
+  },
+  {
+    "hash": "da73c1c1912987ca28b899f6d63f6abe19f7f18b",
+    "date": "2026-02-17",
+    "message": "feat: Add WebGL context loss recovery, defer cached model setup, and implement a loading safety net."
+  },
+  {
+    "hash": "7394fc5f51c3e85b8a7d0d6df9ac850a1ce6de88",
+    "date": "2026-02-17",
+    "message": "refactor: improve 3D model viewer initialization, entrance triggering, and add explicit WebGL context disposal."
+  },
+  {
+    "hash": "79a14e2e9991f11a30508a407a3777538ac0587d",
+    "date": "2026-02-17",
+    "message": "Perf: Simplify GLB loader queue processing by removing `requestIdleCallback` and refine overlay styling for improved performance."
+  },
+  {
+    "hash": "0a10e9753fd1158d8f8e8df7fd5fed2b8d7e8ec0",
+    "date": "2026-02-17",
+    "message": "Refactor: Improve 3D viewer cleanup by relocating its execution and adding logic to flush orphaned GLB initialization queue items."
+  },
+  {
+    "hash": "ced4c0b5dea4d25d27812241a42ecdc249e226e3",
+    "date": "2026-02-17",
+    "message": "feat: Implement WebGL context cleanup for 3D viewers, enhance GLB loader styling and loading fidelity, and add error handling to the GLB queue."
+  },
+  {
+    "hash": "4a8aa30615975c2875178c28843052ab280c616e",
+    "date": "2026-02-17",
+    "message": "Remove unused CSS animations and 3D loader icon, adjust GLB observer pre-load margin, and fix markdown italic parsing."
+  },
+  {
+    "hash": "b969246f85d2cd8833bf23ff6500c22e76a5b781",
+    "date": "2026-02-17",
+    "message": "feat: Implement 3D model loading UI with asset caching and improved parallel loading for GLB viewers."
+  },
+  {
+    "hash": "b89f2f4e246eb53ede3bf632dad69d95f5593444",
+    "date": "2026-02-17",
+    "message": "feat: Optimize rendering for mobile devices by conditionally lowering pixel ratio and using an analytic lighting rig."
+  },
+  {
+    "hash": "ed218bcd41a5dc422473a738d7641c50bf47c6e5",
+    "date": "2026-02-16",
+    "message": "refactor: explicitly set instant scroll behavior using `window.scrollTo` options object."
+  },
+  {
+    "hash": "6db153e31aa5d13ed82f8b5e0fb0ce12ff41c4a0",
+    "date": "2026-02-16",
+    "message": "refactor: Generate environment maps per-renderer from a shared RoomEnvironment scene due to WebGL context limitations."
+  },
+  {
+    "hash": "e73304a24d43a3a7edea0b855a4ce28718e059c6",
+    "date": "2026-02-16",
+    "message": "feat: Adjust Three.js tone mapping exposure, environment intensity, and accent light strengths for enhanced scene lighting."
+  },
+  {
+    "hash": "23e1ee8435b4da1e697a58b3a0886d74f35b0bbb",
+    "date": "2026-02-16",
+    "message": "Remove specific touch control configurations for the viewer."
+  },
+  {
+    "hash": "e0e049cb902d61c996fb220cfaacf8dac7e59c06",
+    "date": "2026-02-16",
+    "message": "style: Refine 3D scene lighting and rendering parameters for improved saturation and contrast, and remove specific touch control settings."
+  },
+  {
+    "hash": "5d54ab211687f64e6c948d6182e41fe1d7c61e72",
+    "date": "2026-02-16",
+    "message": "feat: Adjust OrbitControls zoom, pan, and touch gestures, enabling them in fullscreen and disabling by default."
+  },
+  {
+    "hash": "0117058d8cda9868e75f5609c762226292e546b3",
+    "date": "2026-02-16",
+    "message": "refactor: Standardize OrbitControls to consistently enable panning and define two-finger touch for panning."
+  },
+  {
+    "hash": "275c1c4fad7d9916469886e958924883227c5314",
+    "date": "2026-02-16",
+    "message": "feat: Prevent input trapping by conditionally disabling OrbitControls pan for touch devices and removing a touch gesture override."
+  },
+  {
+    "hash": "307d1a9bfcbcab4e0be5c25a92c79d335a689553",
+    "date": "2026-02-16",
+    "message": "feat: Enable pan control and configure two-finger touch for panning."
+  },
+  {
+    "hash": "e537064c5c55158fbb171d4d2d35b86e3a95a9ab",
+    "date": "2026-02-16",
+    "message": "feat: Dynamically enable pan control for 3D viewers in fullscreen and disable it in inline mode."
+  },
+  {
+    "hash": "d7892e58e92123909d5432d8866ef68c83cd41af",
+    "date": "2026-02-16",
+    "message": "feat: Implement a shared environment map, adjust hemisphere light intensity, refine OrbitControls for input devices, and remove redundant FPS limit and model property."
+  },
+  {
+    "hash": "244ef4b0b9646a9778fae39b49ad084f68bff5bb",
+    "date": "2026-02-16",
+    "message": "refactor: Simplify header behavior to sticky positioning, remove complex scroll animations, and clean up unused styles and animations."
+  },
+  {
+    "hash": "d66125113e1f6f067583fb98a9fee20f94f86e94",
+    "date": "2026-02-16",
+    "message": "feat: Gate 3D model entrance animation on first render and delay loader overlay removal."
+  },
+  {
+    "hash": "373f714ecd4493c7e3ec3cf0d5d02cef43c14e22",
+    "date": "2026-02-16",
+    "message": "refactor: Dynamically adjust body padding-top using a ResizeObserver on the header for frame-synced updates, removing old padding transition logic."
+  },
+  {
+    "hash": "48ac401d284638bdcd001583907c30eb0b0f6417",
+    "date": "2026-02-16",
+    "message": "perf: Enhance GLB processing compatibility with `requestIdleCallback` fallbacks and relax `IntersectionObserver` threshold."
+  },
+  {
+    "hash": "fc2bb0b60a07b67b684f9b9477fc65d9c2026dfa",
+    "date": "2026-02-16",
+    "message": "feat: Gate model entrance animation to trigger only when fully loaded and visible, and adjust visibility observer threshold."
+  },
+  {
+    "hash": "143de96a260b9bbb7dc3f15c24b216865180554a",
+    "date": "2026-02-16",
+    "message": "style: Remove shimmer animations from skeleton loaders, update their display properties, add box-shadows to hover effects, and refine the skeleton hero layout."
+  },
+  {
+    "hash": "113becf46124fd54eca321de521e71c5b362a1bc",
+    "date": "2026-02-16",
+    "message": "feat: Add SARIT video thumbnail (non-looping)."
+  },
+  {
+    "hash": "41b3a4df6dccdc97d52749e78f8a696b50e8ecad",
+    "date": "2026-02-16",
+    "message": "feat: Add SARIT and Honda thumbnail videos to assets."
+  },
+  {
+    "hash": "2f77cad492f8ad8dc320f1d11fb03e6ffb4d0886",
+    "date": "2026-02-16",
+    "message": "feat: Implement vibrant studio lighting for 3D scenes, refine model rotation for a professional feel, and add new video thumbnails."
+  },
+  {
+    "hash": "7a32a348270a846e65939c3ef9ab9fca10359356",
+    "date": "2026-02-16",
+    "message": "feat: Add SARIT thumbnail video asset."
+  },
+  {
+    "hash": "924ef4ca053153bcf4f9b758111b783f343cae44",
+    "date": "2026-02-16",
+    "message": "feat: Add Honda and SARIT video thumbnails and remove a file."
+  },
+  {
+    "hash": "a590bbc475ac10c8592c978e32db9486baa2a84e",
+    "date": "2026-02-16",
+    "message": "feat: Add support for videos to conditionally disable looping if their URL contains \"-noloop\"."
+  },
+  {
+    "hash": "447038669884b242c4b031f9e4a175c534b6057d",
+    "date": "2026-02-16",
+    "message": "Add files via upload"
+  },
+  {
+    "hash": "6427f044c2681c551d6a0e6e84ae82b9936a6998",
+    "date": "2026-02-16",
+    "message": "Create temp"
+  },
+  {
+    "hash": "eeadddc0a0b0e98c451683f534f0d43fd26d7b4d",
+    "date": "2026-02-16",
+    "message": "Delete assets/videos"
+  },
+  {
+    "hash": "2d4c3d3e4a70d941dbedbc7118036778a2cb271f",
+    "date": "2026-02-16",
+    "message": "Create videos"
+  },
+  {
+    "hash": "3851778d7b6ae90351660efcf0728a8b7fc08c2a",
+    "date": "2026-02-16",
+    "message": "style: Increase font size for specific UI elements from 13px to 15px."
+  },
+  {
+    "hash": "5d51a95e1e7a9ab635eed54b2f5cb36c9e394046",
+    "date": "2026-02-16",
+    "message": "refactor: Refine content block parsing for flexible media and caption syntax, and improve hierarchical page discovery."
+  },
+  {
+    "hash": "9b9fc3d615953ed7e56f82d5a1b5a2b3966c3ce0",
+    "date": "2026-02-16",
+    "message": "feat: Enhance GLB viewer stability and rendering precision with theme-aware clear colors, delayed fullscreen resize, and refined camera and model fitting."
+  },
+  {
+    "hash": "9da517f107881ac8f785da0bd5d8c46c58fcb24d",
+    "date": "2026-02-16",
+    "message": "refactor: Introduce `.card-info` to standardize card content padding and layout, and adjust card title styling."
+  },
+  {
+    "hash": "8cf40f8b2d9202fdfa8b0f5ae92f31421b8233d6",
+    "date": "2026-02-16",
+    "message": "refactor: Standardize media aspect ratios to 4/3 across cards and galleries, and remove image analysis and inversion logic."
+  },
+  {
+    "hash": "7c5c1c43a01f0d858276b6ff1fedff8f457e6afb",
+    "date": "2026-02-16",
+    "message": "Delete assets/images/resume-thumb.jpg"
+  },
+  {
+    "hash": "bea5f209e6537f28a266040d12f2fb55921cc59a",
+    "date": "2026-02-16",
+    "message": "feat: add loading skeletons for images, videos, and YouTube embeds."
+  },
+  {
+    "hash": "3841c0159be6a57de01e8476a65725824abe7fb8",
+    "date": "2026-02-16",
+    "message": "feat: Enhance content parsing for resume, galleries, buttons, and grids; remove image grayscale filters; and add `guide.md`."
+  },
+  {
+    "hash": "8adf571eac0442c91b16ab19a558eed5af5e029f",
+    "date": "2026-02-16",
+    "message": "fix: Reset auto-rotate angle to 0 for Z-up models."
+  },
+  {
+    "hash": "0b00ebba43cb3194a249d07c385d186930ec0404",
+    "date": "2026-02-16",
+    "message": "feat: Implement responsive GLB viewer resizing and reframing with adjusted initial model orientation."
+  },
+  {
+    "hash": "98ddb51ec7631121f345445decbeeb65fc13bb66",
+    "date": "2026-02-16",
+    "message": "feat: Add conditional Z-up to Y-up orientation correction for GLB models based on filename."
+  },
+  {
+    "hash": "f630324a56ab9b506289cba94254688092284c69",
+    "date": "2026-02-16",
+    "message": "Rename Quardin-Trophy.glb to Quardin-Trophy-Z-up.glb"
+  },
+  {
+    "hash": "4570032102bcd0016dce54f38cded9631d070ff5",
+    "date": "2026-02-15",
+    "message": "feat: Add a loading overlay to model viewers that is removed after the entrance animation."
+  },
+  {
+    "hash": "db84f1bcbb143fa71c59f3655db91444957d90e0",
+    "date": "2026-02-15",
+    "message": "feat: update the fullscreen exit icon SVG path."
+  },
+  {
+    "hash": "26047108d92d177263fa5ebb630e4c944b451686",
+    "date": "2026-02-15",
+    "message": "feat: Implement DRACOLoader for GLTF models, add styling for quote skeleton, and wrap YouTube embeds in `row-media`."
+  },
+  {
+    "hash": "2a6b5aca2b04abfc495a15310bda54a3fe79e018",
+    "date": "2026-02-15",
+    "message": "Rename Gripper_Subassembly.glb to Gripper-Subassembly.glb"
+  },
+  {
+    "hash": "f67e81a546af38883d88a1644c5610c52102ab0b",
+    "date": "2026-02-15",
+    "message": "Delete .agent/rules directory"
+  },
+  {
+    "hash": "c1e691c8e254741c49be875b14ec9bc93ef9d2c7",
+    "date": "2026-02-15",
+    "message": "feat: adjust tone mapping exposure and light intensities to prevent white blowout and soften scene lighting."
+  },
+  {
+    "hash": "2096279d4c35a7a476ee26f9caea4d606ecb2797",
+    "date": "2026-02-15",
+    "message": "feat: Implement PBR lighting with shadows and refined 3D model auto-rotation interaction."
+  },
+  {
+    "hash": "b4aab376e6c08db33baf25fe4410262724a8d502",
+    "date": "2026-02-15",
+    "message": "feat: Enhance 3D viewer performance and appearance by optimizing GLB queue processing, unifying camera and scaling, enabling zoom, implementing manual rotation, and applying texture filtering."
+  },
+  {
+    "hash": "0b13e5e1e048f676038f831c9c7c6afc04113360",
+    "date": "2026-02-15",
+    "message": "feat: Implement lazy-loaded 3D GLB model viewers with fullscreen support and enhance media extraction for various media types."
+  },
+  {
+    "hash": "9aa9d5759cd330d4500fc65711932e115514110c",
+    "date": "2026-02-15",
+    "message": "feat: move theme initialization to head, refine initial transition handling, add GLB entrance animations, and simplify article media display logic."
+  },
+  {
+    "hash": "bcf48a8929f8e7296459dcc1fe067b4993bbea93",
+    "date": "2026-02-15",
+    "message": "refactor: Use `entry.Thumbnail` instead of `entry.Media` for media assignment in card rendering."
+  },
+  {
+    "hash": "c0e51b6ced81f8c4bde921fd15f194826923e9ef",
+    "date": "2026-02-15",
+    "message": "feat: Implement light mode theme, refine CSS variables, and adjust link styling and header control positioning."
+  },
+  {
+    "hash": "2317d7459ec4832d41e99519bc6fd41b98deb812",
+    "date": "2026-02-15",
+    "message": "feat: Add support for displaying video files in media rows and containers with updated styling and extraction logic."
+  },
+  {
+    "hash": "08f3b382cebbc5f175944d5dba28e46a9657d420",
+    "date": "2026-02-14",
+    "message": "Refactor: Remove unused resume skill rendering and media detection functions, and refine skeleton loading and dice icon styles."
+  },
+  {
+    "hash": "59a46c04c2c2fad813419dd7779d907184faef4d",
+    "date": "2026-02-13",
+    "message": "refactor: Simplify Umami analytics tracking by removing heartbeat and event abstraction, and add category-specific hover colors for card titles."
+  },
+  {
+    "hash": "c2c0818ba47eadf5d75395b6347c337f109c8ec7",
+    "date": "2026-02-13",
+    "message": "refactor: Standardize Umami tracking paths to use hash-prefixed URLs and ensure heartbeat starts on page load."
+  },
+  {
+    "hash": "cef9ec51f15c656af5fcecf98cc34bece949c57d",
+    "date": "2026-02-13",
+    "message": "refactor: Unify and expand analytics tracking with a universal click handler, standardized event names, and streamlined calls."
+  },
+  {
+    "hash": "fc80fe067e26dc3f859b212e236a3a1f7823e1da",
+    "date": "2026-02-13",
+    "message": "feat: Implement robust SPA analytics with dwell time tracking and heartbeat events for Umami."
+  },
+  {
+    "hash": "a37fc1d328e07f857ec5f1b29259e4bc5d40aea1",
+    "date": "2026-02-13",
+    "message": "fix: Update social media image meta tags to use standard filenames."
+  },
+  {
+    "hash": "4d42960c007d89f4bc9a27bd932f5060ef6305a6",
+    "date": "2026-02-13",
+    "message": "feat: Add Twitter meta tags for enhanced social media sharing."
+  },
+  {
+    "hash": "dd9cf1bd2c9f449a98f986c80e66e6fbc81ab319",
+    "date": "2026-02-13",
+    "message": "feat: Add logic to force 'quote' section type for specific titles and prevent 'hero' default override."
+  },
+  {
+    "hash": "23240295ea6c47c99d43625769189e9007f828e3",
+    "date": "2026-02-13",
+    "message": "feat: Add support for \"{random quote}\" as a valid title for random quote sections."
+  },
+  {
+    "hash": "4739c6cb0525d2958b482523988f5264cbe17c78",
+    "date": "2026-02-13",
+    "message": "feat: Add haptic feedback to refresh button and remove automatic random quote display from personal view."
+  },
+  {
+    "hash": "b86a0b75828caeb363422f74a89811362aba9f3f",
+    "date": "2026-02-13",
+    "message": "refactor: Add haptic feedback throttling and remove the user activation check."
+  },
+  {
+    "hash": "d4457adc1f692e203cd3cf693af7c38c39d6e7e3",
+    "date": "2026-02-13",
+    "message": "Refactor: move `_resetHaptic()` call to only execute on full re-renders."
+  },
+  {
+    "hash": "dfee2992424cc0f1e194147734e713a1c1e0976f",
+    "date": "2026-02-13",
+    "message": "feat: Improve swipe navigation responsiveness with instant visual updates, optimized rendering, and refined haptic feedback."
+  },
+  {
+    "hash": "925a157ad8cefe29322c302ba7e0c5c20764d77b",
+    "date": "2026-02-13",
+    "message": "feat: extend click haptic feedback to additional interactive elements including those with `role=\"button\"` and specific classes."
+  },
+  {
+    "hash": "ed29f3d2595790a3a252169499d07f7a41a97a8c",
+    "date": "2026-02-13",
+    "message": "Refactor: Optimize page rendering with debounced content updates and CSS-driven navigation row visibility."
+  },
+  {
+    "hash": "c5e15266139172dce531fceafc424c9b2f65f010",
+    "date": "2026-02-13",
+    "message": "feat: Implement a tiered haptic feedback system with distinct vibrations for scroll boundaries and click interactions."
+  },
+  {
+    "hash": "82662a4f09839e38d0a8b7ea7c28c3a27951b022",
+    "date": "2026-02-13",
+    "message": "Refactor CSS hover effects to use `@media (hover: hover)` queries, adjust icon button sizing, and streamline navigation active states and category color definitions."
+  },
+  {
+    "hash": "d04c2e2e13f6d14614b9841a2a20cebe80c33971",
+    "date": "2026-02-13",
+    "message": "feat: instantly render sub-navigation during page switches"
+  },
+  {
+    "hash": "f105837a49576f6980e8cce5f105fa07dc68912a",
+    "date": "2026-02-13",
+    "message": "feat: Improve touch device navigation hover/active states, instantly render content on swipe, and activate the brand name on the home page."
+  },
+  {
+    "hash": "5422476782a7ef40de03bceb467c32db37ad38de",
+    "date": "2026-02-13",
+    "message": "Refine touch device CSS by removing `!important` from hover states and allowing transitions for active states, including `fill-anim-mask` selectors."
+  },
+  {
+    "hash": "2018047bb57f62b0fc433a1c4d80c68477250836",
+    "date": "2026-02-13",
+    "message": "feat: Restore active state styling for navigation links and buttons to provide tap feedback."
+  },
+  {
+    "hash": "a7ca084f9e2336134ca8e84a7b34a329491f2632",
+    "date": "2026-02-13",
+    "message": "feat: Add slide-in animation for deep-level navigation row updates."
+  },
+  {
+    "hash": "4e18bfdb79e5c8683fcb944118abc5529689747b",
+    "date": "2026-02-13",
+    "message": "refactor: Reduce haptic feedback durations for various UI interactions."
+  },
+  {
+    "hash": "7e8e7d4966ed493a0833d148f48f82430bcf9cb4",
+    "date": "2026-02-13",
+    "message": "Refine header spacing variables and brand text margin for improved visual alignment."
+  },
+  {
+    "hash": "e182ed2400fa1bda466fb8559a2ea0e7cabf019f",
+    "date": "2026-02-13",
+    "message": "feat: implement touch device hover fixes and improve scroll animation smoothness with requestAnimationFrame."
+  },
+  {
+    "hash": "0bb238349fafe1084a01d2816e3001cf3eae2111",
+    "date": "2026-02-13",
+    "message": "perf: Optimize navigation row updates by directly modifying link classes, broaden haptic feedback priming to multiple interaction types, and add scroll tolerance to haptic scroll detection."
+  },
+  {
+    "hash": "460432adbb0ce63943257fe94edd89387770b634",
+    "date": "2026-02-13",
+    "message": "refactor: simplify navigation rendering, haptic scroll, and CSS, updating scroll snap behavior from mandatory to proximity."
+  },
+  {
+    "hash": "71d9f7e491e495359446be67bfbbae3a4fad7ad2",
+    "date": "2026-02-13",
+    "message": "perf: Debounce history API updates and refine scroll-end detection for smoother navigation, and add responsive header styling."
+  },
+  {
+    "hash": "ec4fa9677a80079832f576dbe59fd3196b7e7113",
+    "date": "2026-02-13",
+    "message": "fix: Improve navigation active state handling, optimize rendering, and robustify haptic feedback."
+  },
+  {
+    "hash": "42c6e8361c9938cb335b66dfea3d4234295acf57",
+    "date": "2026-02-13",
+    "message": "feat: Enhance navigation active state application for mobile and refactor page rendering to use specific functions for Resume and Index."
+  },
+  {
+    "hash": "1bd5d7fbf9244d3fca0de59fb1874bbcfbd7aa83",
+    "date": "2026-02-13",
+    "message": "feat: Adjust navigation active state application and padding updates for picker scrolling, and ensure navigation renders on page changes."
+  },
+  {
+    "hash": "5cdec4085a7508158bbd2392a38807841152a166",
+    "date": "2026-02-13",
+    "message": "Delay `renderNavigation` execution until after scroll completion and only for non-Home pages."
+  },
+  {
+    "hash": "583ff0323860f2a19f74cc5dbead05111ec8aeb2",
+    "date": "2026-02-13",
+    "message": "Fix: Prevent unnecessary picker row DOM updates and ensure navigation rendering after page changes."
+  },
+  {
+    "hash": "8eca3ecb8820b6a7b52d446d7f9b879ba53edec7",
+    "date": "2026-02-13",
+    "message": "feat: Expand vibration API priming to cover a wider range of user activation events."
+  },
+  {
+    "hash": "53eb787417f78b278a2c2e793f68494d5d36c6c2",
+    "date": "2026-02-13",
+    "message": "fix: Prevent picker wobble and improve active link transition handling during scroll."
+  },
+  {
+    "hash": "361177fbd63dfe4e30fdc24999e0c606e6a24a41",
+    "date": "2026-02-13",
+    "message": "refactor: Enhance vibration API priming with multiple activation layers and remove redundant priming calls."
+  },
+  {
+    "hash": "dd3e874fcd43aef76221541e737d1ac22d8773b3",
+    "date": "2026-02-13",
+    "message": "Refactor: simplify scroll state tracking, prime vibration API on touch, and update page navigation to use history.replaceState for silent URL updates."
+  },
+  {
+    "hash": "865a9bbf02039ec41d76ed0ef799f040c795793d",
+    "date": "2026-02-13",
+    "message": "feat: Improve navigation active state transitions and refine haptic feedback by priming the vibration API, adjusting durations, and resetting scroll state."
+  },
+  {
+    "hash": "0c4ec221daa4cc93cd9e9f8e9ef9d4af263ca406",
+    "date": "2026-02-13",
+    "message": "refactor: track the specific picker row being scrolled instead of a global boolean state."
+  },
+  {
+    "hash": "1a4899ac4b9022d1cde266baea740510bb6f0a17",
+    "date": "2026-02-13",
+    "message": "feat: Enable instant navigation during haptic scroll and refactor navigation rendering and keydown handler for improved readability."
+  },
+  {
+    "hash": "0436d0a9bf1522af8f5fa378c8615e13f2c586af",
+    "date": "2026-02-13",
+    "message": "Refactor haptic feedback system to be touch-gated during scroll and implement tiered intensity for click interactions."
+  },
+  {
+    "hash": "1df2aa88f231f8dc7738ce8a3abc0c7b8c97bdc0",
+    "date": "2026-02-13",
+    "message": "feat: Add live visual feedback for active items on scroll, reduce scroll end delay, and expand haptic feedback triggers."
+  },
+  {
+    "hash": "2fede18dc0d004d7fd836004eff0703528ca7ccf",
+    "date": "2026-02-13",
+    "message": "feat: Add global haptic feedback on interactive element clicks and refine navigation scroll haptics with auto-navigation on settle."
+  },
+  {
+    "hash": "40e32e1c069e19d0a4396d219d2ec1b341fc2001",
+    "date": "2026-02-13",
+    "message": "feat: Add scroll snapping to navigation, suppress haptic feedback during programmatic scrolls, and reduce haptic vibration duration."
+  },
+  {
+    "hash": "0d0bf67d4d722626b95670008fd78ac0c04d4909",
+    "date": "2026-02-13",
+    "message": "Refactor: Always center navigation rows on resize and increment header top padding."
+  },
+  {
+    "hash": "3b0b9d5e743bbc7a5419175456a632772bca5886",
+    "date": "2026-02-13",
+    "message": "feat: Introduce haptic scroll feedback for sub-navigation rows and adjust various CSS spacing variables."
+  },
+  {
+    "hash": "f142ada7dd98a4c85036459368ebdbae447bb119",
+    "date": "2026-02-13",
+    "message": "refactor: optimize header and mobile layout by adjusting spacing variables and removing redundant CSS."
+  },
+  {
+    "hash": "485bdcb99a11fb4753fad9b6004695f9277fa7a3",
+    "date": "2026-02-13",
+    "message": "refactor: Refactor header styling with new CSS variables for improved responsiveness and update scroll/resize event listeners for performance."
+  },
+  {
+    "hash": "fc857d960cb3ad7729b12e96727a423b5fababe4",
+    "date": "2026-02-13",
+    "message": "refactor: Enhance header layout and responsiveness using CSS variables and restrict navigation centering to mobile."
+  },
+  {
+    "hash": "941b4bf586164ea075515721f565d8fccce4be17",
+    "date": "2026-02-12",
+    "message": "style: Add top and bottom padding to a layout element to match quote spacing."
+  },
+  {
+    "hash": "d7e2f03acf329a4c48d84dc96f743b6f8907b202",
+    "date": "2026-02-12",
+    "message": "Remove mobile search scroll fix and search results styling, and update search overlay background opacity to 1 while removing `backdrop-filter`."
+  },
+  {
+    "hash": "7084a1b95d30efd64aa8bb6e58a3459e0b446cfe",
+    "date": "2026-02-12",
+    "message": "feat: Implement mobile scroll fix for search results and enhance placeholder text legibility."
+  },
+  {
+    "hash": "0738cb9ff90b300170bbf01437cfa8fb747900d2",
+    "date": "2026-02-12",
+    "message": "style: remove search trigger wrapper prominence styling."
+  },
+  {
+    "hash": "8c82cacf59f2a9f85e74cf52a0bff8c2ce227340",
+    "date": "2026-02-12",
+    "message": "style: Enhance search overlay and trigger styling, remove global blur, and refine search dismissal logic."
+  },
+  {
+    "hash": "2877e528e2e1ddf73e29391e6090fb70081cf2a9",
+    "date": "2026-02-12",
+    "message": "refactor: Adjust button styling and standardize grid layout properties for improved visual consistency."
+  },
+  {
+    "hash": "2348ed7e9ee3a090e07b3a669a54b72682d605ad",
+    "date": "2026-02-12",
+    "message": "feat: implement quote shuffle bag logic and refactor `renderQuoteCard` for improved quote selection."
+  },
+  {
+    "hash": "5de7da88695136e7c60e3cf8549de71353c9914c",
+    "date": "2026-02-11",
+    "message": "Refactor: Standardize component spacing, update chip styles, and introduce category-based heading colors."
+  },
+  {
+    "hash": "26c0c6680745cf8bc712702e613d49803c521191",
+    "date": "2026-02-10",
+    "message": "refactor: Update placeholder card gradients, text styles, and hover transitions for a refined visual appearance."
+  },
+  {
+    "hash": "e5cabca2ed5c753c6fdc52b9cc3bf4249018b7dc",
+    "date": "2026-02-10",
+    "message": "feat: Enhance placeholder card styling with a smoother gradient, a new hover overlay, and refined text transitions."
+  },
+  {
+    "hash": "cd7f54e6e64dd0197b5bcfef9408976a2b7e157c",
+    "date": "2026-02-09",
+    "message": "feat: Implement inline markdown for buttons, allow grouping of multiple buttons, and update button wrapper styles for better layout."
+  },
+  {
+    "hash": "c504137ac3c647e9d17cc1f2997b2ad9527ebfbf",
+    "date": "2026-02-09",
+    "message": "refactor: extract card rendering and chip rendering logic into new `renderCardHTML` and `renderChip` functions."
+  },
+  {
+    "hash": "b200b21bed170d8685e0bc4be9419111b36b9e6e",
+    "date": "2026-02-09",
+    "message": "feat: Introduce CTA button and markdown grid styles, update link styling to exclude new buttons, and refine child page rendering logic."
+  },
+  {
+    "hash": "b6a5d231988186652c947747925f73773c99711d",
+    "date": "2026-02-09",
+    "message": "feat: Generate placeholder text from a cleaned entry title and refine its CSS styling."
+  },
+  {
+    "hash": "808ea726a685d34dbf73cf4c503d83ea9a77dc7c",
+    "date": "2026-02-09",
+    "message": "chore: Simplify page title."
+  },
+  {
+    "hash": "3685cfdc31a108421e00dc54643d716987b02725",
+    "date": "2026-02-09",
+    "message": "feat: Add support for non-link text in the footer, improve link parsing, and include dynamic year replacement with updated styling."
+  },
+  {
+    "hash": "2d4d612f31e3d8f9c279be288f32991c1a8658d0",
+    "date": "2026-02-08",
+    "message": "feat: Implement shimmer loading effect and refine various CSS styles for layout and variable consistency."
+  },
+  {
+    "hash": "0e64e3889fc9d61e033df5eddcbd823ccf035e5e",
+    "date": "2026-02-08",
+    "message": "style: Add `--op-line` CSS variable and apply it to text decoration colors for consistent styling."
+  },
+  {
+    "hash": "3a471182cfa461a5d7133faf18a63d58b247a0b5",
+    "date": "2026-02-08",
+    "message": "refactor: update CSS color palette to use RGB components and opacity variables for improved theming."
+  },
+  {
+    "hash": "e41c2d4178d40dc8048949d575c9d96b11a92fe4",
+    "date": "2026-02-07",
+    "message": "refactor: Remove demo mode, implement stale-while-revalidate cache strategy, and refactor `renderRows` function for enhanced content rendering."
+  },
+  {
+    "hash": "5078f3e8aafa75f76fe63e9f44c88bc58100c752",
+    "date": "2026-02-07",
+    "message": "style: remove `cursor: pointer` and `position: relative` CSS properties."
+  },
+  {
+    "hash": "8253a705ee22cc449ad61b506b49f521a36976c4",
+    "date": "2026-02-07",
+    "message": "Refactor `renderResume` to dynamically render all resume sections using `SectionType` and introduce `formatSectionTitle`."
+  },
+  {
+    "hash": "706db98f55c91804224756e1a5957e6787c41163",
+    "date": "2026-02-07",
+    "message": "style: Remove text-decoration-color from link transitions."
+  },
+  {
+    "hash": "0f9610e7284a01c81393bd9075477b04d7d8f392",
+    "date": "2026-02-07",
+    "message": "refactor: update checkbox list item styling to use absolute positioning and include resume entries, and remove the `processText` function."
+  },
+  {
+    "hash": "5cbd518ac4b0087d67eaa4fdecf8ce2ab9b15e78",
+    "date": "2026-02-07",
+    "message": "feat: Refactor media gallery and embedding styles for improved responsiveness and uniform height."
+  },
+  {
+    "hash": "a1d292deb109d7bd739a33a6c20e662ca9169788",
+    "date": "2026-02-06",
+    "message": "feat: Refine search control positioning and icon sizing, simplify chip button styles, and adjust 3D model auto-rotation behavior."
+  },
+  {
+    "hash": "ea5a43effb3057357ffce2bfbe3c9a5c92b6248e",
+    "date": "2026-02-06",
+    "message": "Refactor link, chip, blockquote, and list styling, adjust layout max-widths, and enable desktop model viewer interaction."
+  },
+  {
+    "hash": "ff1fc0b8117bef8da1c01374eb352717de51708a",
+    "date": "2026-02-05",
+    "message": "chore: Remove fullscreen exit event tracking."
+  },
+  {
+    "hash": "8c5696c8368c1ba9716ff274e289c37e72c1cf5f",
+    "date": "2026-02-04",
+    "message": "Remove passive analytics tracking for page views, scroll depth, and GLB model loads, clarifying that `trackEvent` is for intentional user actions only."
+  },
+  {
+    "hash": "ce1f28e0a844ce734988bc51a7cf81f1921a121d",
+    "date": "2026-02-03",
+    "message": "Delete assets/images/xi.avif"
+  },
+  {
+    "hash": "dbc6928d32b70c4ae971a4fc00f05814968737eb",
+    "date": "2026-02-03",
+    "message": "Rename xi.avif"
+  },
+  {
+    "hash": "5a6ab7c24a618b4f04e7ae3438d4ea3075dca1a7",
+    "date": "2026-02-03",
+    "message": "Remove Antigravity scripts (moved to private scripts repo)"
+  },
+  {
+    "hash": "9cae9ffbbceaa70e6f8fc5f9b9f2059e3106e4d5",
+    "date": "2026-02-03",
+    "message": "feat: Add PowerShell script to launch Antigravity with GPU performance optimizations."
+  },
+  {
+    "hash": "2e66e6b47d5179df408b961cda4ed4d3ea7d56c3",
+    "date": "2026-02-03",
+    "message": "feat: Add Umami analytics tracking for page views, scroll depth, resume prints, quote refreshes, chip clicks, and external links."
+  },
+  {
+    "hash": "e9a69351e8575881f55b22ca063706698f68de15",
+    "date": "2026-02-03",
+    "message": "Refactor search functions to improve state management and input validation."
+  },
+  {
+    "hash": "c1c2ea83d8f8d8dea7335e50e2bd25ab794615c9",
+    "date": "2026-02-03",
+    "message": "feat: Add senior-software-engineer rule definition with basic template."
+  },
+  {
+    "hash": "e77fb19bdceb22769abedff69149c57d3bb61af2",
+    "date": "2026-02-03",
+    "message": "fix: ensure page routing is triggered after closing an active search."
+  },
+  {
+    "hash": "da0d570c440b3965c7d834c3949e09754e3b6b70",
+    "date": "2026-02-03",
+    "message": "fix: Clear app content when search input is empty instead of re-routing."
+  },
+  {
+    "hash": "de1e5fcd2b5499f0e12034fb61358682d2afa7a2",
+    "date": "2026-02-03",
+    "message": "refactor: Reformat a long line in `index.html` for improved readability."
+  },
+  {
+    "hash": "acad0463c3ab97045136613922544c94fd35ba87",
+    "date": "2026-02-03",
+    "message": "style: add `display: grid` to `.resume-grid` CSS."
+  },
+  {
+    "hash": "bfc314bb4fe776f50e4df089afc23f5702f52802",
+    "date": "2026-02-03",
+    "message": "feat: Improve mobile header and navigation styling, update search icon, and add dynamic navigation centering on resize."
+  },
+  {
+    "hash": "c2618767ef5f2c8d8341a0015dd074bd7acfc411",
+    "date": "2026-02-03",
+    "message": "refactor: Remove unused CSS for footer meta and version tag elements."
+  },
+  {
+    "hash": "15e2140bb88e82857fe4821b7bad8cc10eae17f1",
+    "date": "2026-02-03",
+    "message": "fix: Adjust model viewer height for improved mobile aspect ratio on narrow screens."
+  },
+  {
+    "hash": "382c4665b6970c9ef71d119451a71946a76a75bc",
+    "date": "2026-02-02",
+    "message": "perf: Add `will-change` properties, refine responsive header spacing, and scope model viewer pointer events to mobile devices."
+  },
+  {
+    "hash": "4a210e5178e8fc9bd5f3899dfeb593c7d131b63d",
+    "date": "2026-02-02",
+    "message": "refactor: Adjust UI spacing, improve model viewer interaction, and refine mobile resume layout."
+  },
+  {
+    "hash": "b7b5d32f35508af1ee314f99ba7b8afd1b83cf30",
+    "date": "2026-02-02",
+    "message": "feat: Add a comprehensive content guide and enhance article display with new styling and 3D model loading improvements."
+  },
+  {
+    "hash": "72b5e117eac9a826294a1abae91d1a002f0311f5",
+    "date": "2026-02-02",
+    "message": "Style search overlay with full border-radius, hide search input cancel button, and adjust search close behavior on Backspace key."
+  },
+  {
+    "hash": "a92a8bd9fcb1159f8aaf8e604307e08a177033a8",
+    "date": "2026-02-02",
+    "message": "feat: Introduce CSS variables for spacing, border-radius, and animation durations, and apply new global link styling."
+  },
+  {
+    "hash": "b8d9d27cdf299d3bcc6c46921484262efedfed1a",
+    "date": "2026-02-02",
+    "message": "refactor: Remove custom resume sheet functionality and refine UI styles for brand name, navigation, and grid item interactions."
+  },
+  {
+    "hash": "ca0e75651e7abd69f812d62c36fc6f071f0f3a5e",
+    "date": "2026-02-02",
+    "message": "feat: Add a comprehensive content guide detailing the portfolio content system's structure, features, and usage."
+  },
+  {
+    "hash": "c1b4c6598aca7cb0c7c59024f9a888489ecc4ada",
+    "date": "2026-02-02",
+    "message": "refactor: expand and comment inlined JavaScript for readability and enable text selection on brand name."
+  },
+  {
+    "hash": "bcb4e7c135dacfda5bdd551d97a35e5e581c0ac6",
+    "date": "2026-02-02",
+    "message": "Refactor site styling using new CSS variables, remove Twitter meta tags and light theme styles, delete `CHEATSHEET.md`, and add `resume-thumb.jpg`."
+  },
+  {
+    "hash": "23a2eab4804d5a77c3d4af5995eb3375b5b8e9d6",
+    "date": "2026-02-02",
+    "message": "feat: Add resume thumbnail and refactor `index.html` by externalizing inline styles and scripts."
+  },
+  {
+    "hash": "d48cf3edcb5cb51c5e94b49055988f26e9b2be41",
+    "date": "2026-02-01",
+    "message": "Print CSS v2: black text, remove header/footer from flow, preserve layout"
+  },
+  {
+    "hash": "b1f1572c8e19d4264bd96009e1228c43c4890cb0",
+    "date": "2026-02-01",
+    "message": "Fix CSS syntax error - body background was outside media print block"
+  },
+  {
+    "hash": "9164284fba10f5f66b4a9febbf449fa5218193b8",
+    "date": "2026-02-01",
+    "message": "Fix resume print styles with !important to hide header/footer/nav"
+  },
+  {
+    "hash": "1c3b4b7396732f5f2d2ed51461bb6466f8082cb4",
+    "date": "2026-02-01",
+    "message": "Simplify: remove hero/quote/text layouts, add Page#section format for resume"
+  },
+  {
+    "hash": "aab23c1f7090e963e9be0aa351a874c5d09d0ba6",
+    "date": "2026-02-01",
+    "message": "Search UX improvements: glassmorphism, blur backdrop, hidden clear button, footer safe area"
+  },
+  {
+    "hash": "8920102b7279b74d97f91244a931fc59a06db89c",
+    "date": "2026-02-01",
+    "message": "Footer cleanup, search glassmorphism, analytics removal, dependency reduction"
+  },
+  {
+    "hash": "821b701f5d8038ef92911325a282b30bae947048",
+    "date": "2026-02-01",
+    "message": "perf: Inline CSS into `index.html` and remove the `update_demo.py` script and MathJax configuration."
+  },
+  {
+    "hash": "eb04c503b87401f84367ff498044ba55ac5f6219",
+    "date": "2026-02-01",
+    "message": "Fix: Critical Math, Auto-Grid, Callout Links, and 3D Model logic"
+  },
+  {
+    "hash": "ac5f7a843f3878f159ee5a604b84e17d946e8bb0",
+    "date": "2026-02-01",
+    "message": "Fix layout: Standardized grid height and restored unique test case"
+  },
+  {
+    "hash": "72286a42a9616c29a5c27d814f08abee86e5b66e",
+    "date": "2026-02-01",
+    "message": "Fix: Remove dangling CSS and replace broken demo link"
+  },
+  {
+    "hash": "ced21658ab9ccb79f1769fcc916607373c43dea9",
+    "date": "2026-02-01",
+    "message": "Fix: Auto-Grid height coherence and 404 link removal"
+  },
+  {
+    "hash": "64aff4e765f0c0b0eb497baa75b44cb2ec268377",
+    "date": "2026-02-01",
+    "message": "Fix: Robust Auto-Grid image detection with onError fallback"
+  },
+  {
+    "hash": "cdd42da9b241e3921c3d20adc291c6ddcc67d092",
+    "date": "2026-02-01",
+    "message": "Fix: Detect Unsplash URLs as images even without extensions"
+  },
+  {
+    "hash": "d20795d5cef389174d2868c523ef839eef18591c",
+    "date": "2026-02-01",
+    "message": "Fix SyntaxError: Remove duplicate titleTag declaration"
+  },
+  {
+    "hash": "ae1d5b383f1542be3f5313f3103969aab521fc6e",
+    "date": "2026-02-01",
+    "message": "Engine Hardening: Fix 3D Regex, Captions, AutoGrid, Mermaid, and restores Demo"
+  },
+  {
+    "hash": "03a2e1ce39b761ffe38632e882004b5831301800",
+    "date": "2026-02-01",
+    "message": "Engine Hardening: Grid/Caption CSS fixes, Math/3D JS fixes, & Chaos Test Suite"
+  },
+  {
+    "hash": "6f962b10d3a60619090d87c27e3672229e23478f",
+    "date": "2026-02-01",
+    "message": "Refactor: Smart newline parsing, CSS cleanup (no !important), and utility classes"
+  },
+  {
+    "hash": "69bff4dc31565e2b150de384cdcd4b927a476826",
+    "date": "2026-01-31",
+    "message": "Refactor: Cleanup CSS utilities and JS inline styles"
+  },
+  {
+    "hash": "71fa28402d953177030a103572e9f1c8194b2724",
+    "date": "2026-01-31",
+    "message": "Refactor: ProcessText uses paragraph logic, restored readable demo content"
+  },
+  {
+    "hash": "57fc90edc7e04d17136eac9b89c10ca812e9f24b",
+    "date": "2026-01-31",
+    "message": "Fix: Comparison container centering with flexbox wrapper"
+  },
+  {
+    "hash": "528291e92ee3f1a026dfb4ab31f8aac394efaabc",
+    "date": "2026-01-31",
+    "message": "Fix: Comparison animation waits for images to load"
+  },
+  {
+    "hash": "3adace5ee80bd2223cd59e4967e7a002af72fa9f",
+    "date": "2026-01-31",
+    "message": "Fix: Comparison image layering and add slider preview animation"
+  },
+  {
+    "hash": "d39187f1a932fc5af3f5e0b054e0776b22760d45",
+    "date": "2026-01-31",
+    "message": "Feat: Update Demo with Rain vs Dry comparison"
+  },
+  {
+    "hash": "2ce0b073b8fa0a4f4aee90a04a300f48df4fda0a",
+    "date": "2026-01-31",
+    "message": "Feat: Update Demo with High Contrast Comparison images"
+  },
+  {
+    "hash": "668abf68763d927d97fc12c75bcdb3796f462e47",
+    "date": "2026-01-31",
+    "message": "Feat: Compact demo content (removed empty lines)"
+  },
+  {
+    "hash": "b9f8d23f73d04590d6013c2939a63938eaa2b30d",
+    "date": "2026-01-31",
+    "message": "Fix: Warning/Error callout curvature and spacing"
+  },
+  {
+    "hash": "09f31dac07e4cd8cdbfd933d46a2d83f42374511",
+    "date": "2026-01-31",
+    "message": "Fix: Warning/Danger callout styles (Red/Yellow) and correct icons"
+  },
+  {
+    "hash": "35045bf155982fa2f68d4310b5020a7b0f497fd3",
+    "date": "2026-01-31",
+    "message": "Feat: Refine alignment, lists, math, and captions"
+  },
+  {
+    "hash": "fd02c613924fd4b5d362f152ed18201c0e7380f8",
+    "date": "2026-01-31",
+    "message": "Feat: Refine Demo page, fix Mermaid/Math, and update styles"
+  },
+  {
+    "hash": "cbeeb47083940d8b16bd491ca5d6dfec9d27d580",
+    "date": "2026-01-31",
+    "message": "Fix: Styles, Demo loader, and Shortcode parsing logic"
+  },
+  {
+    "hash": "0cf86d805d5a2f6f73f45563432214a8640addc2",
+    "date": "2026-01-31",
+    "message": "Feat: Add comprehensive #Demo page for feature testing"
+  },
+  {
+    "hash": "4f21f9a15cd9308e3ee7df39876e6465ee8102d0",
+    "date": "2026-01-31",
+    "message": "Style: Standardize all inactive headers to #999"
+  },
+  {
+    "hash": "133952a8a7c04f37eb843109db55fc8d422400c9",
+    "date": "2026-01-31",
+    "message": "Style: Increase H1 size and harmonize header colors"
+  },
+  {
+    "hash": "72dea3c695b2dee0fcb29d58b1e01af4d4a73b93",
+    "date": "2026-01-31",
+    "message": "Fix: Revert split and fix quote encoding"
+  },
+  {
+    "hash": "52135e76f27705305f1041905aefa0d77809a71e",
+    "date": "2026-01-31",
+    "message": "Revert \"Refactor: V2 Clean Rewrite (Monolith)\""
+  },
+  {
+    "hash": "ecc61ab2926b905eb330a42951549b722a1fe8e3",
+    "date": "2026-01-31",
+    "message": "Refactor: V2 Clean Rewrite (Monolith)"
+  },
+  {
+    "hash": "439e68c3f2f09f9cf3da2be738db73fea0298e97",
+    "date": "2026-01-30",
+    "message": "feat: Introduce a comprehensive design system, new styling, core scripts, and various image assets, updating `index.html` and removing `robots.txt`."
+  },
+  {
+    "hash": "7321a163d13b9c6f8721945bc25405604467d227",
+    "date": "2026-01-30",
+    "message": "Delete assets/models/ENG4000-Assembly-v2.glb"
+  },
+  {
+    "hash": "e4eaf5ca60d746b5781bafb5a7411bcb4e2e26d1",
+    "date": "2026-01-30",
+    "message": "feat: Deduplicate recent activity items by page to display only one card per article in recent activity."
+  },
+  {
+    "hash": "b31bd5db4eede378b763a0fbc662a9f6ca1d9b2f",
+    "date": "2026-01-30",
+    "message": "style: re-enable grayscale filter with transition for image hover effects."
+  },
+  {
+    "hash": "e26012b6f4f42242b4ddc45212422ee5568d83f1",
+    "date": "2026-01-30",
+    "message": "style: Remove grayscale image filter and add transform optimization properties to image styles."
+  },
+  {
+    "hash": "e1e2267eec656d44bb5b4c6838d11900659f2df7",
+    "date": "2026-01-30",
+    "message": "feat: Add new card thumbnail styling with hover effect and remove grayscale filter from hidden resume entries."
+  },
+  {
+    "hash": "61ab5c6727cae9b0f43c6fbc5a108202df722e9e",
+    "date": "2026-01-30",
+    "message": "Rename resume-thumb.jpg.jpg to resume-thumb.jpg"
+  },
+  {
+    "hash": "ba90234cc784a763760a6e65913e0acc46bd5d13",
+    "date": "2026-01-30",
+    "message": "Remove the resume entry print visibility toggle and its associated CSS and HTML."
+  },
+  {
+    "hash": "402528e8b493e62cf682b52a1e7e6981443b8fe2",
+    "date": "2026-01-30",
+    "message": "chore: Remove console log for resume hot-swapping."
+  },
+  {
+    "hash": "7124321ad83a057a0bc3949ffb024e8cc3f890d5",
+    "date": "2026-01-30",
+    "message": "feat: Implement custom resume data source switching based on URL hash and refactor resume entry toggle for improved usability and styling."
+  },
+  {
+    "hash": "ec930691a43decd8d570063bd2d03b774696f619",
+    "date": "2026-01-30",
+    "message": "feat: Add light theme support and resume entry print toggles."
+  },
+  {
+    "hash": "6362cdfe41b51635728cc65111e2255c46a44043",
+    "date": "2026-01-30",
+    "message": "feat: Upgrade search input to type=\"search\" and add various accessibility and usability attributes."
+  },
+  {
+    "hash": "522599ef3d69cee705efdd160ddc345f0e871c50",
+    "date": "2026-01-30",
+    "message": "style: update UI element's background, box-shadow, and border styles."
+  },
+  {
+    "hash": "ce69c258f1c0be8b77d875fddeebba9f97c3b9ec",
+    "date": "2026-01-30",
+    "message": "Fix: Prevent resume date and location text from overflowing by allowing wrapping and setting max-width."
+  },
+  {
+    "hash": "0deea0c7c725d89b4215e69a210603f1f2ace0c0",
+    "date": "2026-01-30",
+    "message": "feat: Add comprehensive CSS for resume layout, including print-specific styles and mobile responsiveness."
+  },
+  {
+    "hash": "ee241bdf894f616e8e1cdd55c8ee8a454a84d9d5",
+    "date": "2026-01-25",
+    "message": "chore: Update console log message and colors."
+  },
+  {
+    "hash": "a2976520d6105dab4d7ba490de2af96ea1783ecc",
+    "date": "2026-01-25",
+    "message": "feat: Add content authoring cheat sheet detailing data structure, smart blocks, and markdown usage."
+  },
+  {
+    "hash": "3facb55687a7c05a6e86b4a51ec6bcffb604a97b",
+    "date": "2026-01-25",
+    "message": "feat: Add tag display to the hero section and refactor date display into a unified metadata block."
+  },
+  {
+    "hash": "7ff46220e871ad3a9f73b5afaeb96a6ee513e023",
+    "date": "2026-01-25",
+    "message": "feat: Add new button color variants and enhance button and timeline callout processing."
+  },
+  {
+    "hash": "2f47e3b9fcb8f1405686e7a2902a160d68eacbb6",
+    "date": "2026-01-25",
+    "message": "feat: Add new `.chip` CSS style for displaying interactive tags."
+  },
+  {
+    "hash": "93ed7a79f2892fc44c466453d334257983ec0ef6",
+    "date": "2026-01-25",
+    "message": "feat: Add image resizing script, refine button styles, enhance date filtering, and differentiate external link tags."
+  },
+  {
+    "hash": "9a5b6b8de0029e3f5c7d3e5803f5acfe79964ed5",
+    "date": "2026-01-25",
+    "message": "feat: Add new `.btn-pill` button styles and remove an unnecessary wrapper div from its rendering."
+  },
+  {
+    "hash": "771558de567868e3133d4cdeec7a6244261c3664",
+    "date": "2026-01-25",
+    "message": "feat: improve social media sharing previews by adding new assets and updating Twitter card type."
+  },
+  {
+    "hash": "3ede5b73fead613a02e1d259a21428c3974a6d33",
+    "date": "2026-01-25",
+    "message": "feat: Introduce smart block parsing for content authoring and add a corresponding cheat sheet."
+  },
+  {
+    "hash": "8cb9e34f22d93519b05b05f08a7909c247ba7b67",
+    "date": "2026-01-25",
+    "message": "style: Center content within the footer meta container."
+  },
+  {
+    "hash": "9d465dc5467839e6013c19543caa7b02f7f153e2",
+    "date": "2026-01-25",
+    "message": "feat: Improve SEO and social sharing with updated meta tags and an optimized social image."
+  },
+  {
+    "hash": "b020cf59793a51e41d4cc1104cba2aa40280da60",
+    "date": "2026-01-25",
+    "message": "feat: update Open Graph and Twitter social media image URLs."
+  },
+  {
+    "hash": "f987f03c5616c06a832a884a1820fa3d92611b64",
+    "date": "2026-01-25",
+    "message": "feat: Add print styles, implement draft content filtering, enhance escape key navigation, and display estimated read time for articles."
+  },
+  {
+    "hash": "5ba9a2e8bbaa0d0c4d0e58813cb70f9c87450fbf",
+    "date": "2026-01-25",
+    "message": "style: Refine footer layout and responsiveness, add `line-clamp` property for text previews, and update 404 page button text."
+  },
+  {
+    "hash": "733c9a3c2fe208ec93b269d6ffa7d596a622ee46",
+    "date": "2026-01-25",
+    "message": "feat: remove hardcoded demo data and quotes from `loadDemoData` function."
+  },
+  {
+    "hash": "58918162cfc024b4bbb8f320db39b7d259440f1b",
+    "date": "2026-01-25",
+    "message": "docs: Add a content authoring cheat sheet detailing data structure, markdown, and custom elements for site content."
+  },
+  {
+    "hash": "ebe2aab9e5bac3cb60fad305dfecd1df8024856f",
+    "date": "2026-01-25",
+    "message": "refactor: update footer styling by consolidating link styles under `#footer-links` and adding a top border."
+  },
+  {
+    "hash": "f562fc3b28fc980a71faa48c1c1795b96e2d86b0",
+    "date": "2026-01-25",
+    "message": "feat: ignore analytics tracking for local development and opted-out users."
+  },
+  {
+    "hash": "3bf2416f5c456799baa5a8707939dc5390f77a6e",
+    "date": "2026-01-25",
+    "message": "feat: integrate Umami analytics, create a unified Analytics utility, and update the analytics dashboard link."
+  },
+  {
+    "hash": "ddf0b79e87642093b67122436e1dd5cae53bf226",
+    "date": "2026-01-25",
+    "message": "feat: Broaden recent activity content by removing the section type filter and enabling a rendering flag."
+  },
+  {
+    "hash": "9d4a63a4cff1fc92b929d32fae58836372594e36",
+    "date": "2026-01-25",
+    "message": "feat: Add a content authoring cheat sheet and implement support for location tags with map links in content metadata."
+  },
+  {
+    "hash": "f116b581a5edf4022b80fe1498040e0bf1d2932c",
+    "date": "2026-01-25",
+    "message": "docs: add content authoring cheat sheet."
+  },
+  {
+    "hash": "47c34913533b03cf398c4354393b31836cc4e6f9",
+    "date": "2026-01-25",
+    "message": "feat: Add robots.txt to define web crawling directives."
+  },
+  {
+    "hash": "ade78df20937fd0f7f3fd0f225bb27b9a9b93e29",
+    "date": "2026-01-25",
+    "message": "Shorten page and social media titles and update favicon paths to be absolute."
+  },
+  {
+    "hash": "7760db2920752ca213e2bc9670c196dd5b2c4092",
+    "date": "2026-01-25",
+    "message": "chore: Add meta tags to prevent browser caching."
+  },
+  {
+    "hash": "e6d62761d3c8f8c888749f6845e5df78013de5b4",
+    "date": "2026-01-25",
+    "message": "refactor: standardize random quote title comparison to be case-insensitive and use 'random quote'."
+  },
+  {
+    "hash": "f6b72d68ecffb8c8a5ce7311ce40fc387a35a88e",
+    "date": "2026-01-25",
+    "message": "Remove vault functionality and related demo content, and refine dice icon styling and transition."
+  },
+  {
+    "hash": "eab93c3448d76911b513839ff3dc1dcacba4b4ae",
+    "date": "2026-01-25",
+    "message": "feat: enhance quote card styling with Lora font, improve mobile responsiveness, and refactor dice icon behavior and quote refresh logic."
+  },
+  {
+    "hash": "e44441afbc9638f5330d01c819da50fc2d9e675b",
+    "date": "2026-01-25",
+    "message": "refactor: Consolidate `#footer-meta` CSS properties and remove the \"Return to Home\" button from the 404 message."
+  },
+  {
+    "hash": "15ef6c3615fb8678b08253731490b460a376b662",
+    "date": "2026-01-25",
+    "message": "feat: Introduce animated mask icons and a dice icon, standardize global heading styles, and refine the footer layout, while removing obsolete search and tooltip CSS."
+  },
+  {
+    "hash": "57a3e201b60500c596b9da1cb69f6dd2b31fbd2e",
+    "date": "2026-01-18",
+    "message": "refactor: Adjust font sizes for hero and article titles, add word-break, and remove an unused responsive type rule."
+  },
+  {
+    "hash": "bea93a259e15ed41038bbb90047d9bc715aa807f",
+    "date": "2026-01-18",
+    "message": "style: Decrease font sizes for hero heading and article titles, and reduce article title line height."
+  },
+  {
+    "hash": "33833d4f2a2ec192ad021ef066f955179e1ea2a0",
+    "date": "2026-01-18",
+    "message": "Adjust article title font size, add line height, and update word wrapping properties."
+  },
+  {
+    "hash": "25c8ff05efc9b8bcb7bf2aa4795d3d826a8b5706",
+    "date": "2026-01-18",
+    "message": "feat: introduce responsive font sizing and refine text wrapping for article titles."
+  },
+  {
+    "hash": "0cd1b04eec273337a899c807b4ad6d3c84110df3",
+    "date": "2026-01-18",
+    "message": "feat: prevent Markdown from mangling LaTeX math, style article titles, and disable mobile tooltips."
+  },
+  {
+    "hash": "68bc5e4e818ae821b1ba7a753ab51e81a5951b2e",
+    "date": "2026-01-18",
+    "message": "feat: Remove reading time calculation and display from blog post metadata."
+  },
+  {
+    "hash": "6160efa53880d65f96ac6bf34cd18b802ed0bdbd",
+    "date": "2026-01-18",
+    "message": "feat: Implement new CSS for unselectable text, highlights, task lists, styled tables, and CTA pill buttons, including category accent variables, and refine tap highlight and link overflow."
+  },
+  {
+    "hash": "4b213bb9b44ce30c56262b164756b4c0d1151383",
+    "date": "2026-01-18",
+    "message": "feat: Prevent WebKit user selection and touch highlighting, and add a debounced window resize listener to re-center navigation elements."
+  },
+  {
+    "hash": "57d21ba116dd78dbcc8637fceab1ccc19b8cd7ae",
+    "date": "2026-01-18",
+    "message": "fix: prevent phantom mouse events on mobile devices by introducing a touch flag."
+  },
+  {
+    "hash": "505b82bf3f404f05a61397d8d2b60c60cbdf61d2",
+    "date": "2026-01-18",
+    "message": "fix: Disable and re-enable CSS transitions on images during drag operations for direct control."
+  },
+  {
+    "hash": "53165ded002f83f8ff6833340c140a07d0d3329d",
+    "date": "2026-01-18",
+    "message": "feat: implement draggable panning for zoomed images with a fixed scale."
+  },
+  {
+    "hash": "bfd07672097a4c5d112983bdae9483df62cd2904",
+    "date": "2026-01-18",
+    "message": "refactor: Update global link styling to use border-bottom for underlines and refine specific link styles."
+  },
+  {
+    "hash": "3059c630a9159eef8daf800410ca35bf21d981f6",
+    "date": "2026-01-18",
+    "message": "refactor: Use border-bottom instead of text-decoration for wiki and index link underlines to improve rendering consistency."
+  },
+  {
+    "hash": "39b47666efa697c29147ddf9f313027404b2bae1",
+    "date": "2026-01-18",
+    "message": "style: Add distinct dotted underline styles for wiki and index links, and simplify general article body link styling."
+  },
+  {
+    "hash": "cbea71d5e540109288ca229d8422035dad9e23b8",
+    "date": "2026-01-18",
+    "message": "style: Apply global hyperlink styling to `.index-link` elements."
+  },
+  {
+    "hash": "07b0e88c721d9ecdd4c34786f58d20f7daff58d3",
+    "date": "2026-01-18",
+    "message": "refactor: Update link underlines to use `text-decoration` properties for better control and consistency."
+  },
+  {
+    "hash": "43f7d76722a9283afd1240323a4575a0fb030a86",
+    "date": "2026-01-18",
+    "message": "feat: Add Twitter widgets script and refactor global CSS, including font weights, color variables, and header layout adjustments."
+  },
+  {
+    "hash": "6f5799634343631025545d4a44c85a23b8d2aa06",
+    "date": "2026-01-17",
+    "message": "v1.6 stable"
+  },
+  {
+    "hash": "b834221f6b63cba3adaf8eb4de095f8b8ad51317",
+    "date": "2026-01-17",
+    "message": "v1.6 test"
+  },
+  {
+    "hash": "412fe1ae5c1d68f46f8c8fbd2c20005742dc637a",
+    "date": "2026-01-16",
+    "message": "v1.6 again"
+  },
+  {
+    "hash": "8eada1502de318758bb65ab12ef930ee930f7111",
+    "date": "2026-01-16",
+    "message": "v1.6 test again again"
+  },
+  {
+    "hash": "d7fc133976efe2ba68512a984cd0ca97248467ee",
+    "date": "2026-01-16",
+    "message": "Update index.html"
+  },
+  {
+    "hash": "7b0546bd2968eaa7044069a8e103a54afd598a0d",
+    "date": "2026-01-16",
+    "message": "v1.6 test again"
+  },
+  {
+    "hash": "ee4b9c819209b61b2bf53b6d5dec24f3f42b2f89",
+    "date": "2026-01-16",
+    "message": "v1.5 merge attempt"
+  },
+  {
+    "hash": "034294e5237720d5bbe392d1a60f12fd60a44b66",
+    "date": "2026-01-16",
+    "message": "v1.5 housekeeping"
+  },
+  {
+    "hash": "548bb12051458c0179319558b506dc8024c826a6",
+    "date": "2026-01-16",
+    "message": "v1.5 social.jpg"
+  },
+  {
+    "hash": "9dd34f1f0edcd1f41c8db2d9b007ff1a8295998d",
+    "date": "2026-01-16",
+    "message": "v1.5 meta update after v2.0 attempt"
+  },
+  {
+    "hash": "c62276844d13fa88831bb416c07d8e380b1f2f7e",
+    "date": "2026-01-16",
+    "message": "v2.0 cancelled"
+  },
+  {
+    "hash": "2c2a376f1668b134594935abf2782fb2dea5867f",
+    "date": "2026-01-16",
+    "message": "v2.0"
+  },
+  {
+    "hash": "4d731ba3a521ad1fe1a38a9b4360779b964fe2d6",
+    "date": "2026-01-16",
+    "message": "Jekyll + Markdown"
+  },
+  {
+    "hash": "b0907e7ec0f34c791004207f020a2c8866ee0f6f",
+    "date": "2026-01-16",
+    "message": "v1.5 nv bar scroll fix"
+  },
+  {
+    "hash": "2ca75a04fc065ecca5a0a5e4aa8e8a096ed5d171",
+    "date": "2026-01-16",
+    "message": "v1.5"
+  },
+  {
+    "hash": "0cda4c79bc69a0d86b18ee61948efaca1fe1644f",
+    "date": "2026-01-16",
+    "message": "Merge pull request #2 from sahibdsv/revert-1-v1.5.1"
+  },
+  {
+    "hash": "83c30d4ec69b72e54adb2aa0337960ece1e6060b",
+    "date": "2026-01-16",
+    "message": "Revert \"v1.5\""
+  },
+  {
+    "hash": "aece9b00b4373df2bb870135933db76e2d387aaf",
+    "date": "2026-01-16",
+    "message": "Merge pull request #1 from sahibdsv/v1.5.1"
+  },
+  {
+    "hash": "926965d3a6d1bfba394e520e0dd1430c305b7672",
+    "date": "2026-01-16",
+    "message": "v1.5 stable"
+  },
+  {
+    "hash": "c3bdd45ca6a55d589c1fe37feccdf00c6190c995",
+    "date": "2026-01-16",
+    "message": "v1..5"
+  },
+  {
+    "hash": "bddada39ebdc5644812010d625e9c0ed6b0ca58a",
+    "date": "2026-01-16",
+    "message": "v1.5 whatttt how"
+  },
+  {
+    "hash": "3ed143f894e513c71545d9f8ff27d9aded23ae96",
+    "date": "2026-01-16",
+    "message": "v1.5 cray"
+  },
+  {
+    "hash": "3e97d80644c97a48a2014a7974fb4ea2a8c3ddaa",
+    "date": "2026-01-16",
+    "message": "v1.5 split"
+  },
+  {
+    "hash": "afb50aa3b1cc810b382597843d531999fad01ca3",
+    "date": "2026-01-16",
+    "message": "v1.5.1"
+  },
+  {
+    "hash": "d1d17cdeea582ee37fb5bb62f5670bedd01a8fa1",
+    "date": "2026-01-16",
+    "message": "v1,5.1"
+  },
+  {
+    "hash": "88ec17c8caa001e268d1801e39ac2b09f8479c30",
+    "date": "2026-01-16",
+    "message": "v.1.5.1"
+  },
+  {
+    "hash": "d9f60ca2f1c9e7a1a06bf035aee5484bcde4e151",
+    "date": "2026-01-16",
+    "message": "testing"
+  },
+  {
+    "hash": "722cd2182d93bacb8b3f4128d8d9b1c5a97861b6",
+    "date": "2026-01-16",
+    "message": "attempt 2"
+  },
+  {
+    "hash": "fa957dc943eb657e1506f138df6cbae204cbb893",
+    "date": "2026-01-15",
+    "message": "v1.4 reset 3 need to learn how to use branches and merging"
+  },
+  {
+    "hash": "e0810dea697bcf613184c5b2a0060e36ba996ba3",
+    "date": "2026-01-15",
+    "message": "v1.5 subsub att 5"
+  },
+  {
+    "hash": "15b5b7a9085e82a1c62589c56616c999f021f871",
+    "date": "2026-01-15",
+    "message": "v1.4 reset 2"
+  },
+  {
+    "hash": "4b671dca6c560d59af653b7f037983cd3a1eff36",
+    "date": "2026-01-15",
+    "message": "v1.5 subsub nav attempt 4"
+  },
+  {
+    "hash": "2d9b3484fec1153e879f92e4896686afa499678e",
+    "date": "2026-01-15",
+    "message": "v1.5 subsub nav attempt 3"
+  },
+  {
+    "hash": "a470542bf7186f45303bf45ef8ea66e527b6e0a5",
+    "date": "2026-01-15",
+    "message": "v1.4 reset"
+  },
+  {
+    "hash": "052e7887ef3129967a4960cab671f7c2a9a2e7da",
+    "date": "2026-01-15",
+    "message": "v1.5 attempt 2 subsub nav"
+  },
+  {
+    "hash": "48ad626c6370a9aa1ce87e56982e080968450af1",
+    "date": "2026-01-15",
+    "message": "v1.5 testing new nav"
+  },
+  {
+    "hash": "bbf8ff26d10331135836484d3e1ca281a9119a0e",
+    "date": "2026-01-15",
+    "message": "v1.5 attempting directory traversal system"
+  },
+  {
+    "hash": "938b98e6baa1ab4064f999451cb2484e6f40dd17",
+    "date": "2026-01-15",
+    "message": "v1.4 renderer warning in console"
+  },
+  {
+    "hash": "786745d0615446387715fa351c19d55dffb6bf01",
+    "date": "2026-01-15",
+    "message": "v1.4 footer clipping"
+  },
+  {
+    "hash": "1251a93d068e1545e7d920e3d7a517aa4fa66a10",
+    "date": "2026-01-15",
+    "message": "v1.4 numbering"
+  },
+  {
+    "hash": "5fd862f251e44c8dc6a9ada52d530786e794c12f",
+    "date": "2026-01-15",
+    "message": "v1.4 image fix"
+  },
+  {
+    "hash": "bf448c9d826e4f50e2ce1152e2e3e8d85cf2f12b",
+    "date": "2026-01-15",
+    "message": "v1.4"
+  },
+  {
+    "hash": "a0e749ede7b0701dfcc1a04e1019ed59eab77c89",
+    "date": "2026-01-15",
+    "message": "v1.4 again"
+  },
+  {
+    "hash": "2a2766c2109dadf7af8271590d97cddc24be9b70",
+    "date": "2026-01-15",
+    "message": "v1.4 studio lighting for GLB"
+  },
+  {
+    "hash": "ae9a85b9d40318c370fdc12b95dae24fd1b443e9",
+    "date": "2026-01-15",
+    "message": "v1.4 testing GLB"
+  },
+  {
+    "hash": "37f51295259c2d21ab7143da07c56144eab8b013",
+    "date": "2026-01-15",
+    "message": "v1.4 GLB"
+  },
+  {
+    "hash": "2398f26dda885631f0619dc84eebe75be430df10",
+    "date": "2026-01-15",
+    "message": "v1.4 STL"
+  },
+  {
+    "hash": "a4a30b416d238298272be4ce362998e6fbeb484f",
+    "date": "2026-01-15",
+    "message": "v1.3"
+  },
+  {
+    "hash": "a589ca3ceca6ef1ca9c2e194a752937c39268ca7",
+    "date": "2026-01-14",
+    "message": "Update style.css"
+  },
+  {
+    "hash": "ab41746c6251c9e47d5324d7a4f4415ad014e848",
+    "date": "2026-01-14",
+    "message": "v1.3 Added GoatCounter for respectful open-source analytics."
+  },
+  {
+    "hash": "3898cede24792e6c2492c5d2486c9077244a49b9",
+    "date": "2026-01-14",
+    "message": "v1.2"
+  },
+  {
+    "hash": "609f5219bb10438dea99d3de68ab076509c974d4",
+    "date": "2026-01-14",
+    "message": "v1.1"
+  },
+  {
+    "hash": "22842fa2f92eee2c2f77e47840f95b2f0863d5cb",
+    "date": "2026-01-14",
+    "message": "Refactor comments for skeleton text injection"
+  },
+  {
+    "hash": "22d758d0f8371e6e88ff62dc9d484978dc35093d",
+    "date": "2026-01-14",
+    "message": "Refactor skeleton animation and styles"
+  },
+  {
+    "hash": "458bb35ab8a2be446f582bb175b3854077d6efa9",
+    "date": "2026-01-14",
+    "message": "Remove toolbar and update rendering logic"
+  },
+  {
+    "hash": "b16364b112617454a4e9b82a65512dcba68791a8",
+    "date": "2026-01-14",
+    "message": "Update styles for search mode and header visibility"
+  },
+  {
+    "hash": "8608684a3718f2d67a472f06d0dd9a27aaa9432e",
+    "date": "2026-01-14",
+    "message": "v1.0"
+  },
+  {
+    "hash": "248f3d266dc18f29e67c515bf67ef4d9b194390a",
+    "date": "2026-01-13",
+    "message": "Delete assets"
+  },
+  {
+    "hash": "186ae09e685fa0d1153d10e5db1149c72756554e",
+    "date": "2026-01-13",
+    "message": "Create assets"
+  },
+  {
+    "hash": "91bf2312109c6bf494245e767168bfe93918521f",
+    "date": "2026-01-13",
+    "message": "Delete projects directory"
+  },
+  {
+    "hash": "b7f8474a2884bf6b31c11e0b9ba561db00b9c81b",
+    "date": "2026-01-13",
+    "message": "Delete professional directory"
+  },
+  {
+    "hash": "18294d509f983bdefca1ba6bb731d8d38e3802e9",
+    "date": "2026-01-13",
+    "message": "Delete personal directory"
+  },
+  {
+    "hash": "5c0898b1880c18df562e461aa2e237afcf6e465f",
+    "date": "2026-01-13",
+    "message": "minor style fixes in CSS file"
+  },
+  {
+    "hash": "277474c00cae7615f42965cb49fa920735e7601b",
+    "date": "2026-01-13",
+    "message": "auto update"
+  },
+  {
+    "hash": "a3b0c97b4cf96932af49999059c23e5a0eeb6181",
+    "date": "2026-01-13",
+    "message": "update indexes"
+  },
+  {
+    "hash": "5688c015ca8ed5854a5867740f72ccc5b9e0f9e0",
+    "date": "2026-01-13",
+    "message": "update css"
+  },
+  {
+    "hash": "a2a7befed6cfc3832f9ad0c05f52eca56aa90293",
+    "date": "2026-01-13",
+    "message": "update index"
+  },
+  {
+    "hash": "8b0e75d3d1c5e88d434e418f20ea3cd46d3aa172",
+    "date": "2026-01-13",
+    "message": "Fix nav and content"
+  },
+  {
+    "hash": "f60514d4987a82df4a8c23555e6cf1d409880257",
+    "date": "2026-01-12",
+    "message": "delete nojekyll"
+  },
+  {
+    "hash": "1492f525d3cea1e31091706d0992a31ad11fa22c",
+    "date": "2026-01-12",
+    "message": "Create .nojekyll"
+  },
+  {
+    "hash": "7aa413960dd0abbaa6979d8305c2afe79d5d514b",
+    "date": "2026-01-12",
+    "message": "Fix mobile view"
+  },
+  {
+    "hash": "318a5c96e2c1b11368df7ff492df61208d9589a5",
+    "date": "2026-01-12",
+    "message": "Create index.html"
+  },
+  {
+    "hash": "23cb354bc0ccaed00cd8a1701a2fde53ef078dc3",
+    "date": "2026-01-12",
+    "message": "Create style.css"
+  },
+  {
+    "hash": "f9a16fd9cbf6c822ccf3503f8c740cef11d52aba",
+    "date": "2026-01-12",
+    "message": "Delete projects.html"
+  },
+  {
+    "hash": "c4b06d6a9a6ba22ef4030b780e37727db8cc8cc5",
+    "date": "2026-01-12",
+    "message": "Delete css directory"
+  },
+  {
+    "hash": "ce08898b23c644d1321fa0ca7aff548f5377f5a0",
+    "date": "2026-01-12",
+    "message": "Delete README.md"
+  },
+  {
+    "hash": "abd52404bc9668f7c5365f272742d1eded64e7c2",
+    "date": "2026-01-12",
+    "message": "Rename style.css to css/style.css"
+  },
+  {
+    "hash": "e96cfadcb4793a14a7fe0cf3ada2d9dea1fe021f",
+    "date": "2026-01-12",
+    "message": "Rename index.html to index.html"
+  },
+  {
+    "hash": "a980b35ce8a7efec256bb7ab4da3c3595a9b459d",
+    "date": "2026-01-12",
+    "message": "Rename personal.html to projects/index.html"
+  },
+  {
+    "hash": "60f5b5853adde96f020588907e0a7932672cdfe8",
+    "date": "2026-01-12",
+    "message": "Create personal.html"
+  },
+  {
+    "hash": "52133154748a959d4b444da2e1bdedc85b8d8e5b",
+    "date": "2026-01-12",
+    "message": "Create projects.html"
+  },
+  {
+    "hash": "7d22d9f71df8300dafb4da52e9d6f4b34dbbe0df",
+    "date": "2026-01-12",
+    "message": "Create CNAME"
+  },
+  {
+    "hash": "932c485cd5a49b9532b9c53c77940927f4578015",
+    "date": "2026-01-12",
+    "message": "Delete mkdocs.yml"
+  },
+  {
+    "hash": "fa6ed0f489c243fd97da8ca1d6536e4387972b57",
+    "date": "2026-01-12",
+    "message": "Delete docs directory"
+  },
+  {
+    "hash": "63c9a9ee40fec0dc8082cea8cea17e5486882494",
+    "date": "2026-01-12",
+    "message": "Delete .github directory"
+  },
+  {
+    "hash": "f11dfdcd19e277fe271bc0b1dbdc8c4961efbef6",
+    "date": "2026-01-12",
+    "message": "Update extra.css"
+  },
+  {
+    "hash": "7e0f4930c313b1a29b2ca8812b90855a985644cb",
+    "date": "2026-01-12",
+    "message": "Update mkdocs.yml"
+  },
+  {
+    "hash": "b6ecf0feab0f14c435b200e967bc6147fc8057c6",
+    "date": "2026-01-12",
+    "message": "Create index.md"
+  },
+  {
+    "hash": "339ef76e434d02d8a9f3ffe6cf69f065ca508bfd",
+    "date": "2026-01-12",
+    "message": "Rename docs/docs/professional/index.md to docs/professional/index.md"
+  },
+  {
+    "hash": "1c0ead3d7d9009597a9d7355421ab610c7a50e83",
+    "date": "2026-01-12",
+    "message": "Create extra.css"
+  },
+  {
+    "hash": "8ec449fb6d32f1e9dd1ccdc389db0e84a51e211a",
+    "date": "2026-01-12",
+    "message": "Create mkdocs.yml"
+  },
+  {
+    "hash": "1b2f1f156bdf94f060a368e3b07ef874ea33abcb",
+    "date": "2026-01-12",
+    "message": "Create publish.yml"
+  },
+  {
+    "hash": "c9b934ceb57e19aed26ced51a7bf2e72d8975ca6",
+    "date": "2026-01-12",
+    "message": "Initial commit"
+  }
+]
