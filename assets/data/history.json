@@ -1,5 +1,10 @@
 [
   {
+    "hash": "92c802cc78bd74bfb7f70babc2995c00ff1b77e5",
+    "date": "2026-03-21",
+    "message": "fix: Revert to native .btn-cta styling and add global text wrapping support"
+  },
+  {
     "hash": "b601b48fb9cbae02f68ecd957f1bb9dedf4aae9c",
     "date": "2026-03-21",
     "message": "fix: Resolve marquee animation reset bug and button frame clipping"
