@@ -1682,6 +1682,11 @@
             overflow: visible;
             margin: 5px; /* Minimum breathing room for wrapped buttons */
             transition: color var(--anim-quick), border-color var(--anim-quick), background var(--anim-quick), box-shadow var(--anim-quick);
+            height: auto;
+            max-width: 100%;
+            white-space: normal; /* Allow long text to wrap */
+            text-align: center;
+            word-break: break-word;
         }
 
         /* Centering fallback for buttons inside non-flex paragraphs */

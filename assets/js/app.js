@@ -956,7 +956,7 @@ function handleSearch(e) {
                    <div class="section layout-hero">
                         <h2 class="header-fade-anim" style="color:var(--accent-projects)">Submit ${actionLabel}?</h2>
                         <p style="color:var(--text-dim); font-size:16px; margin-bottom: 20px;">"${safeHTML(msg)}"</p>
-                        <button class="chip stat" id="feedback-submit-btn" onclick="submitFeedback('${actionLabel}', '${safeMsg}')" style="cursor:pointer; background:var(--accent-projects); color:black; font-weight:bold; font-size:14px; padding:10px 20px; text-transform:uppercase; height:auto; display:inline-block; border:none; border-radius:8px;">Send to System</button>
+                        <button class="btn-cta orange" id="feedback-submit-btn" onclick="submitFeedback('${actionLabel}', '${safeMsg}')">Send to System</button>
                    </div>`;
               }
               resultsContainer.style.display = "block";
