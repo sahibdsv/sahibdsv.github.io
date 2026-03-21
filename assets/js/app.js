@@ -1115,36 +1115,34 @@ async function renderSnapshots() {
 
     // Distill v0 history: only show the final commit of each week for the legacy era.
     // v1+ Milestones are always shown.
-    const weeklyV0s = new Map();
-    const milestones = [];
+    // Spree Detection: Group v0 commits into "coding sessions" separated by 4-hour gaps.
+    // We only show the latest (highest) commit from each spree. v1+ milestones are always shown.
+    const distilledHistory = [];
+    const SPREE_GAP_MS = 4 * 60 * 60 * 1000; // 4 hours
 
-    sortedHistory.forEach(item => { // Use sortedHistory for distillation
+    sortedHistory.forEach((item, index) => {
         const isMilestone = /\[v\d+\.\d+\]/i.test(item.message);
         if (isMilestone) {
-            milestones.push(item);
+            distilledHistory.push(item);
         } else {
-            // Get week key (e.g. 2024-W12)
-            const date = new Date(item.date);
-            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-            const dayNum = d.getUTCDay() || 7;
-            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-            const weekKey = `${d.getUTCFullYear()}-W${weekNo}`;
-            
-            // Keep the latest one encountered (since history is sorted newest to oldest, we keep the first one seen per week)
-            if (!weeklyV0s.has(weekKey)) {
-                weeklyV0s.set(weekKey, item);
+            // First v0 is always the start of its spree
+            if (index === 0) {
+                distilledHistory.push(item);
+            } else {
+                const prevTime = new Date(sortedHistory[index - 1].date).getTime();
+                const currTime = new Date(item.date).getTime();
+                const gap = Math.abs(prevTime - currTime);
+                
+                // If the gap between THIS and the PREVIOUS (newer) commit is > 4h, this is a new spree
+                if (gap > SPREE_GAP_MS) {
+                    distilledHistory.push(item);
+                }
             }
         }
     });
 
-    const distilledHistory = [...milestones, ...Array.from(weeklyV0s.values())].sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return _archiveSortAsc ? dateA - dateB : dateB - dateA; // Apply user sort preference
-    });
-
+    const distilledCount = distilledHistory.length; 
+    
     // Grouping logic (Distilled)
     const groups = {};
     distilledHistory.forEach(item => {
@@ -1168,7 +1166,7 @@ async function renderSnapshots() {
 
     let finalHTML = `<div class="section layout-hero">
         <h1 class="fill-anim">Snapshots</h1>
-        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through <b>${history.length} commits</b> across <b>${distilledHistory.length}</b> weekly snapshots.</p>
+        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through <b>${history.length} commits</b> across <b>${distilledCount}</b> coding sessions.</p>
         
         <div class="toc-container" style="margin: 1.5rem 0; text-align: center;">
             <h2 id="contents" style="margin-bottom: 8px; font-size: 18px; font-weight: 700; font-family:'Jost', sans-serif;">Chronology</h2>
