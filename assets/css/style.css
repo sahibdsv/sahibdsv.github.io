@@ -32,6 +32,7 @@
             --search-glow: rgba(var(--bright-rgb), 0.1);
             --search-border: rgba(var(--bright-rgb), 0.3);
             --accent-personal: #00ffa3;
+            --accent-personal-rgb: 0, 255, 163;
             --accent-prof: #00f2ff;
             --accent-projects: #ff9100;
             --shadow-subtle: 0 0 15px rgba(0, 0, 0, 0.1);

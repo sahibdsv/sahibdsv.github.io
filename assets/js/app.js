@@ -1136,11 +1136,19 @@ async function renderSnapshots() {
         </div>`;
     }).join('');
 
+    // Determine the current version/era dynamically
+    const allVersions = history
+        .map(h => h.message.match(/\[v(\d+\.\d+)\]/i))
+        .filter(m => m)
+        .map(m => parseFloat(m[1]));
+    
+    const latestVersion = allVersions.length > 0 ? `v${Math.max(...allVersions).toFixed(1)}` : 'v0';
+
     let finalHTML = `<div class="section layout-hero">
         <h1 class="fill-anim">Snapshots</h1>
-        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through ${history.length} versions.</p>
+        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through <b>${history.length} commits</b> starting from <b>${latestVersion}</b>.</p>
         
-        <div class="toc-container" style="margin: 1rem 0; text-align: center;">
+        <div class="toc-container" style="margin: 1.5rem 0; text-align: center;">
             <h2 id="contents" style="margin-bottom: 8px; font-size: 18px; font-weight: 700; font-family:'Jost', sans-serif;">Chronology</h2>
             <div class="toc-list" style="padding-left: 0; display: flex; flex-direction: column; gap: 8px; align-items: center;">
                 ${tocLinks}
@@ -1162,13 +1170,19 @@ async function renderSnapshots() {
             finalHTML += '<div class="section archive-list-grid" style="padding-top: 0; padding-bottom: 20px;">';
             groups[monthKey].forEach(item => {
                 const visitUrl = `https://raw.githack.com/sahibdsv/sahibdsv.github.io/${item.hash}/index.html`;
+                const versionMatch = item.message.match(/\[v(\d+\.\d+)\]/i);
+                const versionTag = versionMatch ? `v${versionMatch[1]}` : 'v0';
+
                 finalHTML += `
                     <div class="archive-item-card" onclick="window.open('${visitUrl}', '_blank'); haptic('pulse');">
                         <div class="archive-card-header">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="chip stat version-chip" style="margin:0; pointer-events:none; cursor:default; background:var(--border-subtle); color:var(--text-dim); font-size:9px; height:auto; padding:3px 6px; border:none; opacity:0.8;">${versionTag}</span>
+                                <span class="date">${item.date}</span>
+                            </div>
                             <span class="hash" style="color:var(--accent-projects);">${item.hash.substring(0, 7)}</span>
-                            <span class="date">${item.date}</span>
                         </div>
-                        <h3 class="message" style="font-family:'Jost', sans-serif;">${safeHTML(item.message)}</h3>
+                        <h3 class="message" style="font-family:'Jost', sans-serif;">${safeHTML(item.message.replace(/\[v\d+\.\d+\]/i, '').trim())}</h3>
                     </div>
                 `;
             });

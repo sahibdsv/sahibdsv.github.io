@@ -1,5 +1,10 @@
 [
   {
+    "hash": "82997713a86f7a5639f8292dd73864e2f2fa16d9",
+    "date": "2026-03-20",
+    "message": "feat: Add Snapshots version history engine and page"
+  },
+  {
     "hash": "3b84f2fb5973a3348c330d67142ac488fdbe8c3b",
     "date": "2026-03-20",
     "message": "feat: Add initial `style.css` to define base website styling."
