@@ -22,7 +22,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1 
+          fetch-depth: 0 # Ensure full history for the Snapshots engine
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
