@@ -1,5 +1,10 @@
 [
   {
+    "hash": "b407e0d72aebf9f3b3e48fcb6b52caee5b93b914",
+    "date": "2026-03-20",
+    "message": "[v1.0] fix: Centralize Snapshots haptics into global engine"
+  },
+  {
     "hash": "285822fb758fcc5cfe5091ef0effb3fd135be8c8",
     "date": "2026-03-20",
     "message": "[v1.0] fix: Resolve PowerShell pipe issue in history sync"
