@@ -492,6 +492,25 @@ function initApp() {
                 closeSearch();
                 return;
             }
+            if ("Enter" === e.key) {
+                e.preventDefault();
+                const searchInput = document.getElementById("search-input");
+                const t = (searchInput.value || '').toLowerCase();
+                const cmdMatch = ['!bug', '!idea', '!feedback'].find(w => t.startsWith(w));
+                
+                if (cmdMatch) {
+                    const msg = searchInput.value.substring(cmdMatch.length).trim();
+                    if (msg.length >= 3) {
+                        const actionLabel = cmdMatch.replace('!', '').toUpperCase();
+                        submitFeedback(actionLabel, msg);
+                    }
+                } else {
+                    const firstResultUrl = document.querySelector('#search-results a');
+                    if(firstResultUrl) {
+                         firstResultUrl.click();
+                    }
+                }
+            }
         }
 
         if (("/" === e.key || e.metaKey && "k" === e.key || e.ctrlKey && "k" === e.key) && !isSearchActive &&
@@ -903,8 +922,16 @@ function toggleTheme() {
 }
 
 window.submitFeedback = async function(type, text) {
-    const btn = document.getElementById("feedback-submit-btn");
-    if (btn) btn.innerText = "Sending...";
+    const searchInput = document.getElementById("search-input");
+    const resultsContainer = document.getElementById("search-results");
+    
+    if (searchInput) {
+        searchInput.style.color = "var(--text-dim)";
+        searchInput.disabled = true;
+    }
+    if (resultsContainer) {
+        resultsContainer.innerHTML = `<div class="section layout-hero"><h2 class="header-fade-anim" style="color:var(--text-dim); font-size: 14px;">Sending...</h2></div>`;
+    }
     
     const payload = new URLSearchParams();
     payload.append("type", "feedback");
@@ -920,18 +947,31 @@ window.submitFeedback = async function(type, text) {
         
         const result = await response.json();
         
-        if (result.status === "success") {
-            if (btn) {
-                btn.innerText = "Sent! Thanks.";
-                btn.style.background = "#00ffa3";
-                setTimeout(() => closeSearch(), 1500);
+        if (result.status === "success" || result.result === "success") {
+            if (searchInput) {
+                searchInput.style.color = "#00ffa3"; // SUCCESS GREEN
+                haptic('pulse');
+                setTimeout(() => {
+                    closeSearch();
+                    searchInput.value = '';
+                    searchInput.disabled = false;
+                    searchInput.style.color = "";
+                }, 1000);
             }
         } else {
-            if (btn) btn.innerText = "Failed";
+            if (searchInput) {
+                searchInput.style.color = "#e74c3c"; // ERROR RED
+                searchInput.disabled = false;
+                haptic('pulse');
+            }
             console.error("Failed to submit feedback:", result);
         }
     } catch (err) {
-        if (btn) btn.innerText = "Error (check console)";
+        if (searchInput) {
+            searchInput.style.color = "#e74c3c"; // ERROR RED
+            searchInput.disabled = false;
+            haptic('pulse');
+        }
         console.error("Error during feedback submission:", err);
     }
 };
@@ -953,31 +993,34 @@ function handleSearch(e) {
     const t = e.toLowerCase();
 
     // ⚡ COMMAND INTERCEPT LOGIC
+    const searchInput = document.getElementById("search-input");
     const cmdMatch = ['!bug', '!idea', '!feedback'].find(w => t.startsWith(w));
+    
     if (cmdMatch) {
+         if (searchInput) {
+              // Highlight the input to show it's in Command Mode
+              searchInput.style.color = "var(--accent-projects)"; 
+         }
          if (resultsContainer) {
               const msg = e.substring(cmdMatch.length).trim();
               const actionLabel = cmdMatch.replace('!', '').toUpperCase();
               
-              if (msg.length < 3) {
-                   resultsContainer.innerHTML = `<div class="section layout-hero"><h2 class="header-fade-anim" style="color:var(--accent-projects)">${actionLabel} Mode</h2><p style="color:var(--text-dim); font-size:16px;">Keep typing your ${actionLabel.toLowerCase()}...</p></div>`;
-              } else {
-                   // Clean string for HTML onclick attribute
-                   const safeMsg = msg.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                   resultsContainer.innerHTML = `
-                   <div class="section layout-hero">
-                        <h2 class="header-fade-anim" style="color:var(--accent-projects)">Submit ${actionLabel}?</h2>
-                        <p style="color:var(--text-dim); font-size:16px; margin-bottom: 20px;">"${safeHTML(msg)}"</p>
-                        <div class="btn-cta-wrapper">
-                            <a href="javascript:void(0)" class="btn-cta orange" id="feedback-submit-btn" onclick="submitFeedback('${actionLabel}', '${safeMsg}')">Send to System</a>
-                        </div>
-                   </div>`;
-              }
+              resultsContainer.innerHTML = `
+              <div class="section layout-hero">
+                   <h2 class="header-fade-anim" style="color:var(--accent-projects)">${actionLabel} Mode</h2>
+                   <p style="color:var(--text-dim); font-size:16px; margin-bottom: 30px;">
+                        ${msg.length < 3 ? `Type your ${actionLabel.toLowerCase()}...` : `Press <strong>Enter</strong> to submit your ${actionLabel.toLowerCase()}.`}
+                   </p>
+                   ${msg.length >= 3 ? `<p style="font-style:italic; font-size:14px; opacity:0.8;">"${safeHTML(msg)}"</p>` : ''}
+              </div>`;
               resultsContainer.style.display = "block";
          }
          if (app) app.style.display = "none";
          return; // Stop normal search execution
+    } else {
+         if (searchInput && !searchInput.disabled) searchInput.style.color = ""; // Restore normal color
     }
+
 
     const matchesQuery = (entry, term) => entry?.Title?.toLowerCase().includes(term) || entry?.Content
         ?.toLowerCase().includes(term) || entry?.Tags?.toLowerCase().includes(term);
