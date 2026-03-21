@@ -1,5 +1,10 @@
 [
   {
+    "hash": "b838013d5c8d56b1b2840336af0c7d52e24a4252",
+    "date": "2026-03-21",
+    "message": "feat: Implement formal URLSearchParams payload for feedback"
+  },
+  {
     "hash": "2a81f9f254989ac9e6ea8386aee73894c8d9dda1",
     "date": "2026-03-21",
     "message": "fix: Merge conflicts and wrap feedback submit in native .btn-cta-wrapper anchor"
