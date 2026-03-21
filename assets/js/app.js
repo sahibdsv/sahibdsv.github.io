@@ -1001,12 +1001,13 @@ function renderFiltered(filter) {
     let label = filter;
 
     if (m) {
-        label = `${new Date(m[1], parseInt(m[2]) - 1, 1).toLocaleString("default", { month: "short" }).toUpperCase()} ${m[1]}`;
+        label = `${new Date(m[1], parseInt(m[2]) - 1, 1).toLocaleString("default", { month: "long" })} ${m[1]}`;
     }
-
+    
     renderRows(
         db.filter(row => (row.Timestamp || "").startsWith(filter) || row.Tags && row.Tags.includes(filter)),
-        `Posts from ${safeHTML(label)}`, false, true, false, true
+        safeHTML(label),
+        false, true, false, true
     );
 }
 
