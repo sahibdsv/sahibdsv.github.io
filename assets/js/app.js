@@ -911,6 +911,16 @@ function handleSearch(e) {
         n = db.filter(entry => matchesQuery(entry, t));
     }
 
+    // Exclude dynamic blocks and non-searchable UI placeholders
+    n = n.filter(item => {
+        const title = (item.Title || "").toLowerCase();
+        // Skip purely dynamic block triggers
+        if (title.includes("{random quote}") || title.includes("{top artists}") || 
+            title.includes("{top songs}") || title.includes("{fresh favorites}") ||
+            title.includes("{recently played}") || title.includes("{recent music}")) return false;
+        return true;
+    });
+
     // Special case for Resume content which lives in a separate sheet
     if (resumeDb.some(entry => matchesQuery(entry, t)) && !n.find(entry => "Professional/Resume" === entry.Page)) {
         const resumePage = db.find(entry => "Professional/Resume" === entry.Page);
