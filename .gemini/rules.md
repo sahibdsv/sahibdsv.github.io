@@ -52,7 +52,8 @@
 - **Version Logic**:
   - **Major [vX.0]**: Large-scale architectural shifts or full-site logic changes. (e.g., v1.0 is the official launch of the Snapshots feature).
   - **Minor [vX.Y]**: New feature pages (like Snapshots), new major components (3D/Maps), or significant UI refinements.
-- **Maintenance**: Content-only updates (Sheet entries) or trivial bugfixes do not require a version bump.
+  - **Confirmation Required**: The AI Agent MUST ask the user to confirm or specify the appropriate version increment (e.g., v1.0 -> v1.1) **at the conclusion of each major feature or significant coding session**. 
+  - **No Ask for Routine Maintenance**: Maintenance commits (content fixes, trivial tweaks) do not require a version bump and do not need to prompt the user.
 - **Starting Point**: All history prior to the implementation of the Snapshots feature is collectively categorized as **v0**.
 
 ---

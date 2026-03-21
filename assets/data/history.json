@@ -1,5 +1,10 @@
 [
   {
+    "hash": "f527fab0a180f8b107acd67d77efe9811f816af0",
+    "date": "2026-03-20",
+    "message": "feat: add GPS art thumbnail image."
+  },
+  {
     "hash": "fc1134c533d3cfa22b4a1513559a3cb25512138f",
     "date": "2026-03-20",
     "message": "[v1.0] fix: Resolve 'scroll leakage' when navigating from search results"
