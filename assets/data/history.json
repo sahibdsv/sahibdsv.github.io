@@ -1,5 +1,10 @@
 [
   {
+    "hash": "46960aa59a7996958c488942c926b05e05e71cc4",
+    "date": "2026-03-20",
+    "message": "[v1.0] ui: Only show version chips for tagged commits"
+  },
+  {
     "hash": "f316dec9f75d700287ac6ff7213b342eec008bf0",
     "date": "2026-03-20",
     "message": "[v1.0] meta: Refine versioning rules to be per-session"
