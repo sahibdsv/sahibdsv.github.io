@@ -1,5 +1,10 @@
 [
   {
+    "hash": "d9bffef945dd102e5ec183e4c65210d042356510",
+    "date": "2026-03-21",
+    "message": "fix: Streamline feedback UX - remove redundant Command UI and fix color reset"
+  },
+  {
     "hash": "cd68af975b5191cbf6d2261fe4bac9ea5a01320c",
     "date": "2026-03-21",
     "message": "feat: Seamless search-command feedback with Enter submission and live color detection"
