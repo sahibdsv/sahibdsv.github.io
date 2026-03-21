@@ -1,5 +1,10 @@
 [
   {
+    "hash": "eebc93e67fdfe5ee9f263bf15b1adcba620ce482",
+    "date": "2026-03-21",
+    "message": "fix: Resolve merge conflicts and update to Apps Script Version 38"
+  },
+  {
     "hash": "72b761a6578f979ceaf2879ac6e35457a04a0f9d",
     "date": "2026-03-21",
     "message": "fix: Update Apps Script API to Version 38"
