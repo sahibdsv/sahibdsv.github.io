@@ -1,5 +1,15 @@
 [
   {
+    "hash": "22b3f8e0ee5d2a02a1c9a88f24c480af7dbfa981",
+    "date": "2026-03-23",
+    "message": "[v1] about"
+  },
+  {
+    "hash": "cba472db2d0d6cb90de712a26cf0aa75b37ac971",
+    "date": "2026-03-23",
+    "message": "[v1] feat: Add AboutMe thumbnail images."
+  },
+  {
     "hash": "6c8998b779b7656a835309dd6e2c5f1131606682",
     "date": "2026-03-23",
     "message": "feat: add AboutMe.jpg image for the profile page."
