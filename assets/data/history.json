@@ -1,5 +1,10 @@
 [
   {
+    "hash": "d78d66b320db972b113cae1beb572a661f5c5ea0",
+    "date": "2026-03-23",
+    "message": "feat: add Eevah_v3 GLB model"
+  },
+  {
     "hash": "1cc27c53057fc7214583eae5304317ff87ca3cc6",
     "date": "2026-03-23",
     "message": "Fix card model rotation speed and transparent fullscreen button"
