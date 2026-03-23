@@ -1,5 +1,15 @@
 [
   {
+    "hash": "c374d54f98b164358edffec46a7f7adcae0394b9",
+    "date": "2026-03-23",
+    "message": "Fix: Rebalanced lighting and exposure to prevent 'overblown' highlights."
+  },
+  {
+    "hash": "1086456f4cc14b7b5a5544c7040b74ffb6f6957d",
+    "date": "2026-03-23",
+    "message": "Chore: Renamed -hero tag to -faster for better clarity."
+  },
+  {
     "hash": "73873553ff65d2bea1ecf0358f0dbe18a1a9c16f",
     "date": "2026-03-23",
     "message": "Fix: Resolved ReferenceErrors by correctly hoisting spinGroup and customTiltDeg variables."
