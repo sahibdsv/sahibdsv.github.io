@@ -543,10 +543,10 @@
                     camera.aspect = width / height;
                     camera.updateProjectionMatrix();
 
-                    // PERFORMANCE LOCK:
-                    // We removed the aggressive 1.25 limit because it caused "pixely" models on high-res screens.
-                    // We now allow up to 2.0 DPR for crisp rendering, but rely on Time-Slicing to save performance.
-                    const newDpr = Math.min(window.devicePixelRatio, 2.0);
+                    // PERFORMANCE LOCK: Dynamic resolution based on view mode
+                    const isFs = container.classList.contains('fullscreen');
+                    const dprThreshold = isFs ? 1.0 : (isCardMode ? 1.0 : 1.25);
+                    const newDpr = Math.min(window.devicePixelRatio, dprThreshold);
                     viewerInstance._dpr = newDpr; // Store locally for the shared renderer
 
                     // Update local 2D canvas size
