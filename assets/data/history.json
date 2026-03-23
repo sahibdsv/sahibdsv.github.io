@@ -1,5 +1,10 @@
 [
   {
+    "hash": "4ed6b5c7cda88223957ef2164c9cf6a46738b12a",
+    "date": "2026-03-23",
+    "message": "feat: add Goose4_Nose_Cone.glb 3D model asset."
+  },
+  {
     "hash": "9c3e381a56a541c186da56264b1655c72ab0ba57",
     "date": "2026-03-22",
     "message": "Fix: Restored high-fidelity DPR caps to prevent pixelation on modern high-resolution screens."
