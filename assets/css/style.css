@@ -1008,8 +1008,8 @@
 
 
         @keyframes dice-spin {
-            0% { transform: scale(1.15) rotate(0deg); }
-            100% { transform: scale(1.15) rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .dice-icon {
@@ -1030,14 +1030,13 @@
         .dice-icon:hover,
         .dice-icon:active {
             opacity: 1;
-            transform: scale(1.15);
+            transform: none;
             color: var(--text-bright);
         }
 
         .layout-quote.loading .dice-icon {
             opacity: 1;
             color: var(--text-bright);
-            transform: scale(1.15); /* Keep the scale during loading */
             animation: dice-spin 0.6s cubic-bezier(.175, .885, .32, 1.275);
         }
 
