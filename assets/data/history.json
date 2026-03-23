@@ -1,5 +1,25 @@
 [
   {
+    "hash": "9da8dca3eb51f923915261b34255dae2bc158293",
+    "date": "2026-03-23",
+    "message": "refactor: integrate article descriptions into the tight rhythmic lead group"
+  },
+  {
+    "hash": "443e762fb4deaf18d0907ba5ea967025f9c7d01d",
+    "date": "2026-03-23",
+    "message": "refactor: simplify article descriptions to use standard typographic rhythm"
+  },
+  {
+    "hash": "af7fc961eecc9cdf9a7c9940a74716d968616472",
+    "date": "2026-03-23",
+    "message": "feat: display card descriptions in article and hero views"
+  },
+  {
+    "hash": "65cc81b7f25511a293bb926b9928234bb0524746",
+    "date": "2026-03-23",
+    "message": "feat: add support for multi-line card titles as descriptions"
+  },
+  {
     "hash": "4c61835e8ad82020a94987b58c7f0c83ee1bccb8",
     "date": "2026-03-23",
     "message": "feat: add support for -autorotate[deg] start angle tag and fix tilt posture"
