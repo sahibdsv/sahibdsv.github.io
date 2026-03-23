@@ -81,6 +81,7 @@
             --rhythm-gap: 1rem;          /* Master rhythm unit */
             --rhythm-gap-tight: 0.125rem; /* 2px: Ultra-tight structural anchoring */
             --rhythm-gap-wide: 1.5rem;   /* 24px: Clean section breaks */
+            color-scheme: light dark;
         }
 
         @media (min-width: 1024px) {
@@ -148,16 +149,16 @@
         }
 
         .loader-overlay {
-            position: absolute;
+            position: fixed;
             inset: 0;
-            background: var(--bg-trans);
+            background: var(--bg);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 200;
-            border-radius: inherit;
+            z-index: 20000;
             pointer-events: none;
-            transition: opacity 0.5s var(--ease);
+            transition: opacity 0.6s var(--ease), visibility 0.6s var(--ease);
+            visibility: visible;
         }
 
         .loader-overlay.finished {
@@ -387,7 +388,7 @@
             left: 0;
             width: 100%;
             background: var(--bg-trans);
-            z-index: 1000;
+            z-index: 10000;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -396,6 +397,9 @@
             gap: var(--header-gap);
             border-bottom: 1px solid var(--border-header);
             overflow: visible;
+            isolation: isolate;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
 
         #brand-name,
@@ -567,7 +571,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1002;
+            z-index: 10002;
             transition: transform .6s cubic-bezier(.2, 0, 0, 1), opacity var(--anim-layout) var(--ease), height .6s cubic-bezier(.2, 0, 0, 1);
         }
 
@@ -684,22 +688,23 @@
             transform-origin: center;
             transform: translate3d(-50%, -40px, 0) scale(.9);
             background: var(--search-bg);
-            z-index: 9999;
+            z-index: 30000;
             border-radius: 999px;
-            box-shadow: var(--shadow-heavy, 0 0 100px 40px rgba(0, 0, 0, 0.95));
             border: 1px solid var(--border-strong);
             transition: transform var(--anim-layout) cubic-bezier(.16, 1, .3, 1), opacity var(--anim-layout) ease;
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
-            will-change: transform, opacity
+            will-change: transform, opacity;
+            box-shadow: none;
         }
 
         #search-overlay.active {
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
-            transform: translate3d(-50%, 0, 0) scale(1)
+            transform: translate3d(-50%, 0, 0) scale(1);
+            box-shadow: var(--shadow-heavy, 0 0 100px 40px rgba(0, 0, 0, 0.95));
         }
 
         #search-input::-webkit-search-cancel-button {

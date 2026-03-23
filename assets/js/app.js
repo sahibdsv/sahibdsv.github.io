@@ -171,8 +171,8 @@ function startApp() {
         document.body.classList.remove('no-transition');
         document.getElementById('main-header')?.classList.remove('no-transition');
         
-        // Ensure the loader is removed if we have any data to show
-        const sk = document.querySelector('.loader-overlay');
+        // Use ID for boot loader to avoid selecting card loaders
+        const sk = document.getElementById('boot-loader');
         if (sk) {
             sk.classList.add('finished');
             setTimeout(() => {

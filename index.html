@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#eeeef2">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050505">
     <link rel="preconnect" href="https://docs.google.com" crossorigin>
     <link rel="preconnect" href="https://script.google.com" crossorigin>
     <link rel="dns-prefetch" href="https://docs.google.com">
@@ -39,7 +41,7 @@
 
 
 
-    <link rel="stylesheet" href="assets/css/style.css?v=68.4">
+    <link rel="stylesheet" href="assets/css/style.css?v=68.7">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@5.4.3/dist/photoswipe.css">
     
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
@@ -83,7 +85,7 @@
         </div>
     </header>
     <div class="content-container" id="app">
-        <div class="loader-overlay" style="position: fixed; background: var(--bg); z-index: 1000;">
+        <div id="boot-loader" class="loader-overlay">
             <div class="spinner" style="width: 40px; height: 40px; border-width: 3px;"></div>
         </div>
 
@@ -93,11 +95,9 @@
                 // If we have cached data, the app will render nearly instantly.
                 // We hide the loader immediately to avoid a "flash of spinner".
                 if (localStorage.getItem('db_cache')) {
-                    const loader = document.querySelector('.loader-overlay');
+                    const loader = document.getElementById('boot-loader');
                     if (loader) {
-                        loader.style.display = 'none';
-                        // We don't remove it yet as app.js might expect to find it for cleanup
-                        loader.classList.add('finished');
+                        loader.remove(); // NUCLEAR: Immediate removal for cached sessions
                     }
                 }
             })();
@@ -107,8 +107,8 @@
     <footer>
         <div id="footer-links"></div>
     </footer>
-    <script src="assets/js/app.js?v=68.5"></script>
-    <script type="module" src="assets/js/three-viewer.js?v=68.6"></script>
+    <script src="assets/js/app.js?v=68.7"></script>
+    <script type="module" src="assets/js/three-viewer.js?v=68.7"></script>
     <!-- SEO_LINK_START -->
 <div id="seo-content" style="display:none;" aria-hidden="true">
   <nav id="seo-nav">
