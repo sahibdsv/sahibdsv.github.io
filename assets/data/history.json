@@ -1,5 +1,10 @@
 [
   {
+    "hash": "1cc27c53057fc7214583eae5304317ff87ca3cc6",
+    "date": "2026-03-23",
+    "message": "Fix card model rotation speed and transparent fullscreen button"
+  },
+  {
     "hash": "d035f04367ef4453b15875ad751c980a2d756a2d",
     "date": "2026-03-23",
     "message": "fix: change touchmove listener to non-passive to allow preventDefault for bottom bounce"
