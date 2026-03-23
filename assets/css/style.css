@@ -1364,7 +1364,8 @@
         #app .model-viewer-wrapper .loader-overlay,
         #app .row-media .loader-overlay,
         #app .embed-wrapper .loader-overlay {
-            background: inherit;
+            background: transparent;
+            position: absolute;
         }
 
         .model-viewer-wrapper.loaded canvas {
