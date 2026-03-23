@@ -126,6 +126,7 @@
 
         window.initThreeJSViewer = function initThreeJSViewer(container, glbPath, isCardMode) {
             const canvas = container.querySelector('canvas');
+            const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true }) || canvas.getContext('2d');
 
             // Parse custom scale from path (e.g., -scale73)
             let customScale = 1.0;
@@ -158,54 +159,54 @@
 
             camera.lookAt(0, 0, 0); // Point camera at model center
 
-            const renderer = new THREE.WebGLRenderer({
-                canvas,
-                antialias: true,
-                alpha: true,
-                powerPreference: "high-performance",
-                // Mobile GPUs strictly enforce mediump, which severely breaks PBR reflections (banding/voids). 
-                // Always use highp for accurate environment mapping.
-                precision: "highp"
-            });
+            // SHARED RENDERER & ENVIRONMENT
+            // We create ONE WebGLRenderer for the entire application to prevent context exhaustion
+            if (!window._sharedWebGLRenderer) {
+                const offscreenCanvas = document.createElement('canvas');
+                window._sharedWebGLRenderer = new THREE.WebGLRenderer({
+                    canvas: offscreenCanvas,
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: "high-performance",
+                    // Mobile GPUs strictly enforce mediump, which severely breaks PBR reflections (banding/voids). 
+                    // Always use highp for accurate environment mapping.
+                    precision: "highp"
+                });
+                
+                // ALPHA-TRANSPARENT RENDERER: Inherits --card-bg from CSS. 
+                window._sharedWebGLRenderer.setClearColor(0x000000, 0);
+                window._sharedWebGLRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+                window._sharedWebGLRenderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials
+                window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
+                
+                // UNIFIED LIGHTING: Compile once globally! This saves MASSIVE load time per card.
+                const roomEnvScene = new RoomEnvironment();
+                const pmremGenerator = new THREE.PMREMGenerator(window._sharedWebGLRenderer);
+                pmremGenerator.compileEquirectangularShader();
+                window._sharedEnvMap = pmremGenerator.fromScene(roomEnvScene).texture;
+                pmremGenerator.dispose();
 
-            // Add this to help with the fill-rate:
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Drop to 1.5 for even more speed
-            renderer.setSize(width, height, false);
-            // Limit pixel ratio to 2.0 (Industry Gold Standard)
-            // 3.0+ offers diminishing returns but doubles/triples GPU load, causing stuttering in fullscreen.
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || (window.innerWidth < 800 && window.matchMedia("(pointer: coarse)").matches);
+                // Shared Context Loss Handler
+                offscreenCanvas.addEventListener('webglcontextlost', (e) => {
+                    e.preventDefault();
+                    console.warn('Global WebGL context lost! The browser may have killed the WebGL process.');
+                });
+            }
+
+            const renderer = window._sharedWebGLRenderer;
+            const envMap = window._sharedEnvMap;
 
             // RESOLUTION CEILING: Never render more than 2560px wide (Quad HD).
-            // A 4K monitor (3840px) at 2.0x ratio would try to render 8K (too heavy).
             let dpr = Math.min(window.devicePixelRatio, 2.0);
             const maxWidth = 2560;
             if (width * dpr > maxWidth) dpr = maxWidth / width;
 
-            renderer.setPixelRatio(dpr);
-            // ALPHA-TRANSPARENT RENDERER: Instead of hard-coding hex values, 
-            // we use transparency so the viewer inherits the --card-bg from CSS. 
-            // This makes theme-switching 100% seamless without script intervention.
-            renderer.setClearColor(0x000000, 0);
+            // Setup local 2D canvas for blitting
             canvas.style.backgroundColor = 'transparent';
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials and preserves highlight detail
-            renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-            // CONTEXT LOSS HANDLER: Detect and gracefully try to recover or cleanup
-            canvas.addEventListener('webglcontextlost', (e) => {
-                e.preventDefault();
-                console.warn('WebGL context lost for:', glbPath);
-                // Allow the registry to clean this up naturally
-            });
-
-            // UNIFIED LIGHTING: Fix for "Black Metals" and "Dark Reloads"
-            // We create a FRESH RoomEnvironment for EACH viewer. Sharing a scene across different 
-            // WebGL contexts is risky and can lead to "Dark Viewers" if one context is suspended.
-            const roomEnvScene = new RoomEnvironment();
-            const pmremGenerator = new THREE.PMREMGenerator(renderer);
-            pmremGenerator.compileEquirectangularShader();
-            const envMap = pmremGenerator.fromScene(roomEnvScene).texture;
-            pmremGenerator.dispose();
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
 
             scene.environment = envMap;
             scene.environmentIntensity = 1.6; // Slight bump for better resilience
@@ -433,10 +434,14 @@
                     // PERFORMANCE LOCK:
                     // If the window is large (Desktop/Fullscreen), we cap at 1.5.
                     // This is the "Butter Zone" for performance vs quality.
-                    const dpr = width > 1200 ? 1.0 : Math.min(window.devicePixelRatio, 2.0);
+                    const newDpr = width > 1200 ? 1.0 : Math.min(window.devicePixelRatio, 2.0);
+                    viewerInstance._dpr = newDpr; // Store locally for the shared renderer
 
-                    renderer.setPixelRatio(dpr);
-                    renderer.setSize(width, height, false);
+                    // Update local 2D canvas size
+                    canvas.width = width * newDpr;
+                    canvas.height = height * newDpr;
+                    canvas.style.width = width + 'px';
+                    canvas.style.height = height + 'px';
 
                     if (viewerInstance.fitStage) viewerInstance.fitStage();
                 },
@@ -477,7 +482,18 @@
                         controls.autoRotateSpeed = 0.5 * (Math.min(delta, 64) / 16.6);
                         controls.update();
                     }
+                    
+                    // 1. Point shared renderer to this viewer's dimensions
+                    const curDpr = viewerInstance._dpr || dpr;
+                    renderer.setPixelRatio(curDpr);
+                    renderer.setSize(width, height, false);
+                    
+                    // 2. Render 3D scene to offscreen canvas
                     renderer.render(scene, camera);
+                    
+                    // 3. Copy pixels to the visible 2D canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(renderer.domElement, 0, 0);
 
                     // Mark as rendered so the entrance gate can open
                     if (!hasRendered) {
@@ -493,20 +509,7 @@
                     visibilityObserver.disconnect();
                     window._glbRegistry = window._glbRegistry.filter(v => v !== viewerInstance);
 
-                    // Cleanup environment texture to prevent leaks
-                    if (scene.environment) scene.environment.dispose();
-
-                    renderer.dispose();
-                    // CRITICAL: Explicitly release WebGL context to free the GPU slot immediately.
-                    // renderer.dispose() alone does NOT free the context on mobile browsers.
-                    try {
-                        const gl = renderer.getContext();
-                        const ext = gl.getExtension('WEBGL_lose_context');
-                        if (ext) {
-                            // Defer losing context slightly to avoid flicker if page is still transitioning
-                            setTimeout(() => ext.loseContext(), 50);
-                        }
-                    } catch (e) { /* Context may already be lost */ }
+                    // We no longer dispose the renderer or environment map here since they are globally shared.
                     scene.clear();
                 },
                 model: () => model,
