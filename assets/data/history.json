@@ -1,5 +1,15 @@
 [
   {
+    "hash": "d035f04367ef4453b15875ad751c980a2d756a2d",
+    "date": "2026-03-23",
+    "message": "fix: change touchmove listener to non-passive to allow preventDefault for bottom bounce"
+  },
+  {
+    "hash": "c0fc29235a0b118b39821bcbfc67c65b1645f17d",
+    "date": "2026-03-23",
+    "message": "fix: remove gray rectangle from card loader and localize positioning"
+  },
+  {
     "hash": "91f2a38b3724ee3ff4270cd8f8c045a08bfd3805",
     "date": "2026-03-23",
     "message": "fix(date): handle YYYY-MM and YYYY formats without adding a day"
