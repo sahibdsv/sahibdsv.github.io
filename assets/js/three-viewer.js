@@ -231,12 +231,13 @@
                 if (customScale <= 0) customScale = 1.0; // Safety fallback
             }
 
-            // SPEED & HERO EXTRACTION
+            // SPEED, TILT & HERO EXTRACTION
             const isModelFast = lowerPath.includes('-fast');
             const isModelHero = lowerPath.includes('-hero');
+            const isModelTilt = lowerPath.includes('-tilt');
 
             // CLEAN URL: Strip ALL behavior tags before calling the loader or cache
-            glbPath = glbPath.replace(/-(?:z-up|scale\d+|autoplay|thumb|loop|noloop|nocontrols|invert|fast|hero)/gi, '');
+            glbPath = glbPath.replace(/-(?:z-up|scale\d+|autoplay|thumb|loop|noloop|nocontrols|invert|fast|hero|tilt)/gi, '');
 
             // Setup scene
             const scene = new THREE.Scene();
@@ -408,6 +409,11 @@
                             model.rotation.x = -Math.PI / 2;
                             model.updateMatrixWorld();
                             autoRotateAngle = 0;
+                        }
+
+                        // DIAGONAL TILT: For slender models (rockets/rods), tilt 45deg to fill the diagonal space
+                        if (isModelTilt) {
+                            model.rotation.z = Math.PI / 4; 
                         }
 
                         // 1. CENTER MODEL
