@@ -1,5 +1,10 @@
 [
   {
+    "hash": "87705506acaa4afc120f263dbec5a7b8ca5eef34",
+    "date": "2026-03-22",
+    "message": "feat: adjust media IntersectionObserver thresholds to prevent premature loading"
+  },
+  {
     "hash": "6f454d8239b098aa98e1f0ec5a6c2bd499889dd0",
     "date": "2026-03-21",
     "message": "feat: Implement Three.js GLB 3D model viewer with optimized rendering and add a sample CubeSat model."
