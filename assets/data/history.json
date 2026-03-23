@@ -1,5 +1,10 @@
 [
   {
+    "hash": "a064b4525ff7acbf458ca1d95eb1840931fc9fa7",
+    "date": "2026-03-22",
+    "message": "fix(3d-viewer): optimize lighting, material fallback, and performance"
+  },
+  {
     "hash": "6b08839209e570fdebd955e5598dcfe34a260cea",
     "date": "2026-03-22",
     "message": "fix: remove undefined envMap references after PMREM removal"
