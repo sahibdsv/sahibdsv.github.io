@@ -1,5 +1,15 @@
 [
   {
+    "hash": "e2536dbd6789048e89c72eaa3425253a16e2d836",
+    "date": "2026-03-22",
+    "message": "Final fix: Reduced exposure and removed artificial brightness to restore geometric part definition and seams."
+  },
+  {
+    "hash": "56b378a00e3e4935788f04a7b9ce60a730463c7b",
+    "date": "2026-03-22",
+    "message": "Fix: Restore Studio Lighting Rig and remove artificial brightness boost to fix washed-out seams on models"
+  },
+  {
     "hash": "e34aef067bd6afe689da4ef9b034b234fdc1bdc1",
     "date": "2026-03-22",
     "message": "Fix: Condensed gap and padding on chips to prevent premature line-wrapping in cards"
