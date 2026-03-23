@@ -268,9 +268,6 @@
             canvas.style.width = width + 'px';
             canvas.style.height = height + 'px';
 
-            scene.environment = envMap;
-            scene.environmentIntensity = 1.6; // Slight bump for better resilience
-            scene.backgroundBlurriness = 0.5;
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x222222, 0.45); // Improved fill
             scene.add(hemiLight);
 
