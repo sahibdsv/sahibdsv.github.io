@@ -1,5 +1,10 @@
 [
   {
+    "hash": "0c9bd9808dfccd89bef594e48ded1252a60df36b",
+    "date": "2026-03-22",
+    "message": "feat: add REALIZE_Live_2025 GLB 3D model."
+  },
+  {
     "hash": "a064b4525ff7acbf458ca1d95eb1840931fc9fa7",
     "date": "2026-03-22",
     "message": "fix(3d-viewer): optimize lighting, material fallback, and performance"
