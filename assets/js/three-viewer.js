@@ -200,7 +200,7 @@
                 
                 window._sharedWebGLRenderer.setClearColor(0x000000, 0);
                 window._sharedWebGLRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-                window._sharedWebGLRenderer.toneMappingExposure = 0.8; // BALANCED: High-fidelity highlights without washing out cards
+                window._sharedWebGLRenderer.toneMappingExposure = 0.55; // REFINED: Lower exposure to handle the high-detail 6-point rig without blowing out highlights
                 window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
 
                 // PREMIUM ENVIRONMENT MAP: Generated once and shared globally
@@ -296,10 +296,10 @@
             // Crucial for CAD geometries without baked ambient occlusion. 
             // This provides contrasting gradients (warm vs cool) across flat planes and seams
             // so identical colored parts can be visually separated.
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 1.0); // Natural outdoor gradient
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 0.8); // Slightly dimmed
             scene.add(hemiLight);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // BRIGHTER: Prevents deep black pockets
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // SUBTLE: Provides base fill without flattening shadows
             scene.add(ambientLight);
 
             // HEADLAMP (Camera-Attached Light): 
@@ -309,14 +309,14 @@
             scene.add(camera);
 
             // KEY LIGHTS (High-Intensity Spotlights): 
-            // 6-Point Rig: Key, Rim, Left Side, Right Side, Front, and Back
+            // Balanced 6-Point Rig: Key, Rim, Left Side, Right Side, Front, and Back
             [
-                [0xfff5ea, 1.8, [5, 10, 5]],    // Warm Key
-                [0xddeeff, 1.2, [-5, 5, -5]],   // Cool Rim
-                [0xffffff, 1.0, [-8, 0, 0]],    // Left Fill
-                [0xffffff, 0.8, [8, 0, 0]],     // Right Fill (Added for complete coverage)
-                [0xffffff, 0.8, [0, 0, 8]],     // Front Fill
-                [0xffffff, 0.7, [0, 5, -8]]     // Back Fill (Added for complete coverage)
+                [0xfff5ea, 1.0, [5, 10, 5]],    // Warm Key (Primary Direction)
+                [0xddeeff, 0.7, [-5, 5, -5]],   // Cool Rim (Edge Definition)
+                [0xffffff, 0.6, [-8, 0, 0]],    // Left Fill
+                [0xffffff, 0.5, [8, 0, 0]],     // Right Fill
+                [0xffffff, 0.8, [0, 0, 8]],     // Front Fill (Crucial for thumbnails)
+                [0xffffff, 0.6, [0, 5, -8]]     // Back Fill (Eliminates dark corners)
             ].forEach(([c, i, p]) => {
                 const l = new THREE.DirectionalLight(c, i);
                 l.position.set(...p);
