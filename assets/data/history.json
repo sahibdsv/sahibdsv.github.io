@@ -1,5 +1,15 @@
 [
   {
+    "hash": "9c3e381a56a541c186da56264b1655c72ab0ba57",
+    "date": "2026-03-22",
+    "message": "Fix: Restored high-fidelity DPR caps to prevent pixelation on modern high-resolution screens."
+  },
+  {
+    "hash": "916fbe89a495c2898088ae1cb68b315ba3f96192",
+    "date": "2026-03-22",
+    "message": "Perf: Dynamic resolution scaling and DPR capping for fullscreen mode (Desktop)"
+  },
+  {
     "hash": "e2536dbd6789048e89c72eaa3425253a16e2d836",
     "date": "2026-03-22",
     "message": "Final fix: Reduced exposure and removed artificial brightness to restore geometric part definition and seams."
