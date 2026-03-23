@@ -200,8 +200,7 @@
                 
                 window._sharedWebGLRenderer.setClearColor(0x000000, 0);
                 window._sharedWebGLRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-                window._sharedWebGLRenderer.toneMappingExposure = 1.0; 
-                window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
+                window._sharedWebGLRenderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials to preserve part seams                window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
                 
                 offscreenCanvas.addEventListener('webglcontextlost', (e) => {
                     e.preventDefault();
