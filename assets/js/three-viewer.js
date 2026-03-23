@@ -305,12 +305,14 @@
             scene.add(camera);
 
             // KEY LIGHTS (High-Intensity Spotlights): 
-            // Warm Key (Front-Top), Cool Rim (Back-Low), Neutral Fill (Side)
+            // 6-Point Rig: Key, Rim, Left Side, Right Side, Front, and Back
             [
-                [0xfff5ea, 1.8, [5, 10, 5]], 
-                [0xddeeff, 1.2, [-5, 5, -5]],
-                [0xffffff, 1.0, [-8, 0, 0]], // Fill light for side-definition
-                [0xffffff, 0.8, [0, 0, 8]]   // Front-on fill to prevent "black nose" syndrome
+                [0xfff5ea, 1.8, [5, 10, 5]],    // Warm Key
+                [0xddeeff, 1.2, [-5, 5, -5]],   // Cool Rim
+                [0xffffff, 1.0, [-8, 0, 0]],    // Left Fill
+                [0xffffff, 0.8, [8, 0, 0]],     // Right Fill (Added for complete coverage)
+                [0xffffff, 0.8, [0, 0, 8]],     // Front Fill
+                [0xffffff, 0.7, [0, 5, -8]]     // Back Fill (Added for complete coverage)
             ].forEach(([c, i, p]) => {
                 const l = new THREE.DirectionalLight(c, i);
                 l.position.set(...p);
