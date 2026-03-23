@@ -200,7 +200,15 @@
                 
                 window._sharedWebGLRenderer.setClearColor(0x000000, 0);
                 window._sharedWebGLRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-                window._sharedWebGLRenderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials to preserve part seams                window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
+                window._sharedWebGLRenderer.toneMappingExposure = 0.8; // BALANCED: High-fidelity highlights without washing out cards
+                window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
+
+                // PREMIUM ENVIRONMENT MAP: Generated once and shared globally
+                const pmremGenerator = new THREE.PMREMGenerator(window._sharedWebGLRenderer);
+                pmremGenerator.compileCubemapShader();
+                const roomEnv = new RoomEnvironment();
+                window._sharedEnvironmentMap = pmremGenerator.fromScene(roomEnv).texture;
+                pmremGenerator.dispose();
                 
                 offscreenCanvas.addEventListener('webglcontextlost', (e) => {
                     e.preventDefault();
@@ -228,6 +236,9 @@
 
             // Setup scene
             const scene = new THREE.Scene();
+            if (window._sharedEnvironmentMap) {
+                scene.environment = window._sharedEnvironmentMap;
+            }
 
             // Setup camera - cache dimensions to avoid layout thrashing in rAF
             let width = container.clientWidth || 100;
@@ -265,14 +276,26 @@
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 1.0); // Natural outdoor gradient
             scene.add(hemiLight);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // Prevents pitch black shadows
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // BRIGHTER: Prevents deep black pockets
             scene.add(ambientLight);
 
-            // Key light (Warm Front/Top), Rim light (Cool Back/Underside)
-            [[0xfff5ea, 1.4, [5, 10, 5], scene], [0xddeeff, 1.0, [-5, 5, -5], scene]].forEach(([c, i, p, parent]) => {
+            // HEADLAMP (Camera-Attached Light): 
+            // Ensures the face you're looking at is NEVER pitch black.
+            const headlamp = new THREE.DirectionalLight(0xffffff, 0.5); // SUBTLE: Provides fill without washing out detail
+            camera.add(headlamp); // Child of camera = stays positioned relative to view
+            scene.add(camera);
+
+            // KEY LIGHTS (High-Intensity Spotlights): 
+            // Warm Key (Front-Top), Cool Rim (Back-Low), Neutral Fill (Side)
+            [
+                [0xfff5ea, 1.8, [5, 10, 5]], 
+                [0xddeeff, 1.2, [-5, 5, -5]],
+                [0xffffff, 1.0, [-8, 0, 0]], // Fill light for side-definition
+                [0xffffff, 0.8, [0, 0, 8]]   // Front-on fill to prevent "black nose" syndrome
+            ].forEach(([c, i, p]) => {
                 const l = new THREE.DirectionalLight(c, i);
                 l.position.set(...p);
-                parent.add(l);
+                scene.add(l);
             });
 
             scene.add(camera);
@@ -398,22 +421,26 @@
 
                                 if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
 
-                                // FAKE SHEEN FOR MAXIMUM PERFORMANCE:
-                                // Instead of a heavy Environment Map (which caused scrolling lag),
-                                // we drop metalness and force an incredibly low roughness (like polished plastic).
-                                // Combined with Directional Lights, this creates a sharp, bright specular highlight
-                                // that looks exactly like shiny metal but without the BRDF overhead.
+                                // PREMIUM METALLIC & SHEEN ADAPTATION:
+                                // For Article Mode (Heroic view), we use real Environment reflections for the "Super Nice" look.
+                                // For Card Mode (scrolling grid), we use a cheaper setup to save performance.
                                 if (node.material.metalness !== undefined && node.material.metalness > 0.0) {
-                                    node.material.metalness = 0.1; // Minimal real metal calculation
-                                    node.material.roughness = 0.05; // Chrome-like smoothness for the specular ping
-                                    // Removed the artificial color boost to preserve shading contrast!
+                                    if (!isCardMode) {
+                                        // "Super Nice" Article Metal: Balanced reflections, no "Black Spots"
+                                        node.material.metalness = 0.9; // SAFETY: Max 0.9 preserves some base color fallback
+                                        node.material.roughness = 0.15;
+                                        node.material.envMapIntensity = 2.2; // REFINED POWER: Pops without blowing out
+                                    } else {
+                                        // "High Performance" Card Metal: Restore real metallic properties
+                                        node.material.metalness = 0.8;
+                                        node.material.roughness = 0.2;
+                                        node.material.envMapIntensity = 1.2;
+                                    }
+                                } else {
+                                    // Non-metals: Healthy environment bounce
+                                    node.material.envMapIntensity = isCardMode ? 0.6 : 1.0;
                                 }
 
-                                if (isCardMode) {
-                                    if (node.material.roughness !== undefined) {
-                                        node.material.roughness = Math.max(0.15, node.material.roughness);
-                                    }
-                                }
                                 node.material.needsUpdate = true;
                             }
                         });
