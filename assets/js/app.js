@@ -377,7 +377,7 @@ function initApp() {
                 if (e.cancelable) e.preventDefault();
             }
         }
-    }, { passive: true });
+    }, { passive: false });
 
     // 1. Central Haptic Engine: Intercepts taps in CAPTURE phase
     document.addEventListener("click", e => {
