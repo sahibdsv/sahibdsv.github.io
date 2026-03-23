@@ -543,9 +543,9 @@
                     camera.aspect = width / height;
                     camera.updateProjectionMatrix();
 
-                    // PERFORMANCE LOCK: Dynamic resolution based on view mode
+                    // FIDELITY LOCK: Increased DPR caps to prevent pixelation on modern high-res screens
                     const isFs = container.classList.contains('fullscreen');
-                    const dprThreshold = isFs ? 1.0 : (isCardMode ? 1.0 : 1.25);
+                    const dprThreshold = isFs ? 1.25 : (isCardMode ? 1.5 : 2.0);
                     const newDpr = Math.min(window.devicePixelRatio, dprThreshold);
                     viewerInstance._dpr = newDpr; // Store locally for the shared renderer
 
