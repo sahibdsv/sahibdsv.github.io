@@ -1,5 +1,10 @@
 [
   {
+    "hash": "8a7e90201ea83749472390819e753e2f7255cdce",
+    "date": "2026-03-23",
+    "message": "Fix: Eliminated header artifact by isolating search shadow and improving boot-loader cleanup."
+  },
+  {
     "hash": "c374d54f98b164358edffec46a7f7adcae0394b9",
     "date": "2026-03-23",
     "message": "Fix: Rebalanced lighting and exposure to prevent 'overblown' highlights."
