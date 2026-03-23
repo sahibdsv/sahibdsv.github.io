@@ -236,8 +236,14 @@
             const isModelHero = lowerPath.includes('-hero');
             const isModelTilt = lowerPath.includes('-tilt');
 
-            // CLEAN URL: Strip ALL behavior tags before calling the loader or cache
-            glbPath = glbPath.replace(/-(?:z-up|scale\d+|autoplay|thumb|loop|noloop|nocontrols|invert|fast|hero|tilt)/gi, '');
+            // ROBUST URL CLEANER: 
+            // We strip EVERYTHING after the .glb extension to ensure behavior tags
+            // never reach the server and cause 404s.
+            const cleanGlbPath = glbPath.replace(/(\.glb)-.*/i, '$1');
+            console.log('3D Loader Requesting Sanitized Path:', cleanGlbPath);
+            
+            // From this point forward, we use 'glbPath' for LOGIC but 'cleanGlbPath' for FETCHING
+            const modelUrl = (cleanGlbPath.startsWith('assets/') || cleanGlbPath.startsWith('http')) ? cleanGlbPath : `assets/models/${cleanGlbPath}`;
 
             // Setup scene
             const scene = new THREE.Scene();
@@ -466,23 +472,20 @@
                         resolve();
                     };
 
-                    // ASSET CACHE: Check if model is already loaded/parsing
-                    // CRITICAL: Use setTimeout(0) for cached models to defer setupModel
-                    // until AFTER viewerInstance is assigned. Without this, fitStage()
-                    // and triggerEntrance() can't access viewerInstance.
-                    if (window.glbCache.has(glbPath)) {
-                        const cached = window.glbCache.get(glbPath);
+                    // ASSET CACHE: Use cleanGlbPath (no tags) to share underlying geometry in memory
+                    if (window.glbCache.has(cleanGlbPath)) {
+                        const cached = window.glbCache.get(cleanGlbPath);
                         if (cached.status === 'DONE') {
                             setTimeout(() => setupModel(cached.data), 0);
                         } else {
                             cached.callbacks.push(setupModel);
                         }
                     } else {
-                        window.glbCache.set(glbPath, { status: 'LOADING', data: null, callbacks: [setupModel] });
+                        window.glbCache.set(cleanGlbPath, { status: 'LOADING', data: null, callbacks: [setupModel] });
                         pruneGLBCache();
 
-                        window._sharedGLTFLoader.load(glbPath, (gltf) => {
-                            const cache = window.glbCache.get(glbPath);
+                        window._sharedGLTFLoader.load(modelUrl, (gltf) => {
+                            const cache = window.glbCache.get(cleanGlbPath);
                             if (!cache) return resolve(); // Might have been pruned during load
                             cache.status = 'DONE';
                             cache.data = gltf;
