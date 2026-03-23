@@ -1,5 +1,10 @@
 [
   {
+    "hash": "e34aef067bd6afe689da4ef9b034b234fdc1bdc1",
+    "date": "2026-03-22",
+    "message": "Fix: Condensed gap and padding on chips to prevent premature line-wrapping in cards"
+  },
+  {
     "hash": "7470b01a6b748c45dc2b8d47ac35c1bf72e4e5b3",
     "date": "2026-03-22",
     "message": "Perf: Replace expensive PMREM environment map with high-performance fake sheen for metals"
