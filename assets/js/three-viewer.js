@@ -80,6 +80,8 @@
             // FULLSCREEN OPTIMIZATION: If any model is in fullscreen, we skip all other rendering
             const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
             const fsViewerId = fsEl?.id;
+            
+            let interactingViewer = null;
 
             for (let i = 0; i < total; i++) {
                 const viewer = window._glbRegistry[i];
@@ -87,6 +89,8 @@
                 const isThisFs = fsViewerId && (viewer.canvas.parentElement?.id === fsViewerId);
 
                 if (viewer.isVisible() && (!fsViewerId || isThisFs)) {
+                    if (viewer.isInteracting?.()) interactingViewer = viewer;
+                    
                     if (!viewer.hasRenderedState) unrenderedVisible.push(viewer);
                     else renderedVisible.push(viewer);
                 } else {
@@ -94,12 +98,22 @@
                 }
             }
 
+            // PHASE 0: Priority Interaction
+            // If the user is actively dragging a model, we render it IMMEDIATELY and FIRST.
+            // This bypasses budgeting to ensure the interaction feels snappy.
+            if (interactingViewer) {
+                interactingViewer.update(now);
+            }
+
             // PHASE 1: Render new entrances (NOW SUBJECT TO BUDGET)
             // We only render up to 1 entrance per frame if budget is tight, to avoid 100ms blocks
             let entrancesProcessed = 0;
             for (let i = 0; i < unrenderedVisible.length; i++) {
+                const viewer = unrenderedVisible[i];
+                if (viewer === interactingViewer) continue; // Already rendered
+                
                 if (entrancesProcessed >= 1 && (performance.now() - startTime) > budget) break;
-                unrenderedVisible[i].update(now);
+                viewer.update(now);
                 entrancesProcessed++;
             }
 
@@ -108,14 +122,20 @@
             const budgetStartTime = performance.now();
 
             // EXCLUSIVE MODE: If we have a fullscreen model, ONLY render that one.
-            // This stops all background cards from "stealing" GPU draw calls.
             if (fsViewerId) {
                 const fsViewer = renderedVisible.find(v => v.canvas.parentElement?.id === fsViewerId);
-                if (fsViewer) fsViewer.update(now);
+                if (fsViewer && fsViewer !== interactingViewer) fsViewer.update(now);
             } else {
                 // HOME/ARTICLE MODE: Render with budget
+                // If we are interacting, we might want to skip background cards to keep interaction buttery
+                const isHeavyInteraction = interactingViewer && !isMobile;
+                
                 for (let i = 0; i < renderedVisible.length; i++) {
                     const viewer = renderedVisible[i];
+                    if (viewer === interactingViewer) continue; // Already rendered
+                    
+                    if (isHeavyInteraction && i % 2 === 0) continue; // Throttle background cards during drag
+                    
                     if (performance.now() - budgetStartTime > remainingBudget) break;
                     viewer.update(now);
                 }
@@ -196,6 +216,8 @@
             const renderer = window._sharedWebGLRenderer;
             const envMap = window._sharedEnvMap;
 
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || (window.innerWidth < 800 && window.matchMedia("(pointer: coarse)").matches);
+
             // RESOLUTION CEILING: Never render more than 2560px wide (Quad HD).
             let dpr = Math.min(window.devicePixelRatio, 2.0);
             const maxWidth = 2560;
@@ -231,7 +253,8 @@
             if (!isCardMode) {
                 controls = new OrbitControls(camera, canvas);
                 controls.enableDamping = true;
-                controls.dampingFactor = 0.15;
+                controls.dampingFactor = 0.08; // LOWERED for snappier interaction
+                controls.rotateSpeed = 1.2; // BUMPED for snappier interaction
                 controls.enableZoom = false;
 
                 // JS-based cursor management to avoid CSS conflicts
@@ -393,6 +416,7 @@
                 renderer,
                 controls,
                 canvas,
+                isInteracting: () => isInteracting,
                 fitStage: () => {
                     // Root Fix: Use Bounding Sphere instead of Box3 (AABB)
                     // Bounding Sphere radius is rotationally invariant, eliminating "breathing".
@@ -434,7 +458,7 @@
                     // PERFORMANCE LOCK:
                     // If the window is large (Desktop/Fullscreen), we cap at 1.5.
                     // This is the "Butter Zone" for performance vs quality.
-                    const newDpr = width > 1200 ? 1.0 : Math.min(window.devicePixelRatio, 2.0);
+                    const newDpr = width > 1200 ? 1.25 : Math.min(window.devicePixelRatio, 2.0);
                     viewerInstance._dpr = newDpr; // Store locally for the shared renderer
 
                     // Update local 2D canvas size
@@ -456,7 +480,6 @@
                     delta = Math.min(delta, 50);
 
                     // PROFESSIONAL MOTION: Slower, more subtle rotation for a premium feel
-                    // Cards are now slow (0.0010) to minimize distraction in grids.
                     const baseSpeed = isCardMode ? 0.0010 : 0.0015;
                     const rotationStep = (Math.min(delta, 64) / 16.6) * baseSpeed;
 
@@ -467,7 +490,6 @@
                             modelGroup.rotation.y = autoRotateAngle;
                         }
                     } else if (model && controls && !controls.autoRotate) {
-                        // MANUAL ROTATION FOR ARTICLE MODE
                         const modelGroup = model.parent;
                         if (modelGroup && modelGroup.type === 'Group') {
                             if (!isInteracting) {
@@ -478,22 +500,45 @@
                     }
 
                     if (controls) {
-                        // Match OrbitControls autoRotate speed to the slowed professional standard
                         controls.autoRotateSpeed = 0.5 * (Math.min(delta, 64) / 16.6);
                         controls.update();
                     }
                     
-                    // 1. Point shared renderer to this viewer's dimensions
+                    // MASTER BUFFER STRATEGY:
+                    // Instead of resizing the renderer (slow), we ensure the shared renderer 
+                    // is "at least" big enough, and then we render into a specific viewport.
                     const curDpr = viewerInstance._dpr || dpr;
-                    renderer.setPixelRatio(curDpr);
-                    renderer.setSize(width, height, false);
+                    const targetW = Math.floor(width * curDpr);
+                    const targetH = Math.floor(height * curDpr);
                     
-                    // 2. Render 3D scene to offscreen canvas
+                    const currentRendererCanvas = renderer.domElement;
+                    if (currentRendererCanvas.width < targetW || currentRendererCanvas.height < targetH) {
+                        // Only grow the buffer, never shrink it in the loop. 
+                        // This eliminates 99% of GPU memory re-allocations.
+                        const growW = Math.max(currentRendererCanvas.width, targetW);
+                        const growH = Math.max(currentRendererCanvas.height, targetH);
+                        renderer.setPixelRatio(1); // We manage DPR manually via target dimensions
+                        renderer.setSize(growW, growH, false);
+                    }
+                    
+                    // 1. Setup Viewport (Only render into the top-left sub-rectangle of the master buffer)
+                    renderer.setViewport(0, 0, targetW, targetH);
+                    renderer.setScissor(0, 0, targetW, targetH);
+                    renderer.setScissorTest(true);
+                    
+                    // 2. Render 3D scene
                     renderer.render(scene, camera);
                     
-                    // 3. Copy pixels to the visible 2D canvas
+                    // 3. Copy pixels from the specific sub-rect of the master buffer
+                    // Note: WebGL coordinates are bottom-up, but drawImage expects top-down.
+                    // Because we are rendering into a sub-viewport at (0, 0), and our 
+                    // master buffer might be larger, we must copy correctly.
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(renderer.domElement, 0, 0);
+                    ctx.drawImage(
+                        renderer.domElement, 
+                        0, currentRendererCanvas.height - targetH, targetW, targetH, // Source (WebGL is bottom-up)
+                        0, 0, canvas.width, canvas.height // Destination
+                    );
 
                     // Mark as rendered so the entrance gate can open
                     if (!hasRendered) {
