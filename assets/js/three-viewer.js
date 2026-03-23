@@ -187,8 +187,7 @@
             const canvas = container.querySelector('canvas');
             const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true }) || canvas.getContext('2d');
 
-            // --- SHARED RENDERER & ENVIRONMENT INITIALIZATION ---
-            // We do this first to ensure the environment map is ready for the very first scene
+            // --- SHARED RENDERER INITIALIZATION ---
             if (!window._sharedWebGLRenderer) {
                 const offscreenCanvas = document.createElement('canvas');
                 window._sharedWebGLRenderer = new THREE.WebGLRenderer({
@@ -201,14 +200,8 @@
                 
                 window._sharedWebGLRenderer.setClearColor(0x000000, 0);
                 window._sharedWebGLRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-                window._sharedWebGLRenderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials
+                window._sharedWebGLRenderer.toneMappingExposure = 1.0; 
                 window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
-
-                const pmremGenerator = new THREE.PMREMGenerator(window._sharedWebGLRenderer);
-                pmremGenerator.compileCubemapShader();
-                const roomEnv = new RoomEnvironment();
-                window._sharedEnvironmentMap = pmremGenerator.fromScene(roomEnv).texture;
-                pmremGenerator.dispose();
                 
                 offscreenCanvas.addEventListener('webglcontextlost', (e) => {
                     e.preventDefault();
@@ -236,9 +229,6 @@
 
             // Setup scene
             const scene = new THREE.Scene();
-            if (window._sharedEnvironmentMap) {
-                scene.environment = window._sharedEnvironmentMap;
-            }
 
             // Setup camera - cache dimensions to avoid layout thrashing in rAF
             let width = container.clientWidth || 100;
@@ -403,18 +393,23 @@
 
                                 if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
 
-                                // PBR OPTIMIZATION:
-                                // To prevent metals from appearing pitch black if reflections are subtle,
-                                // we ensure they retain a healthy diffuse base (max 0.8 metalness).
+                                // FAKE SHEEN FOR MAXIMUM PERFORMANCE:
+                                // Instead of a heavy Environment Map (which caused scrolling lag),
+                                // we drop metalness and force an incredibly low roughness (like polished plastic).
+                                // Combined with Directional Lights, this creates a sharp, bright specular highlight
+                                // that looks exactly like shiny metal but without the BRDF overhead.
                                 if (node.material.metalness !== undefined && node.material.metalness > 0.0) {
-                                    node.material.metalness = Math.min(node.material.metalness, 0.7);
-                                    node.material.roughness = Math.max(0.3, node.material.roughness || 0.3);
+                                    node.material.metalness = 0.1; // Minimal real metal calculation
+                                    node.material.roughness = 0.05; // Chrome-like smoothness for the specular ping
+                                    // Retain or boost color so the surface stays visible
+                                    if (node.material.color) {
+                                        node.material.color.multiplyScalar(1.5);
+                                    }
                                 }
 
                                 if (isCardMode) {
-                                    node.material.envMapIntensity = 0.7; // Brighter reflections in cards
                                     if (node.material.roughness !== undefined) {
-                                        node.material.roughness = Math.max(0.4, node.material.roughness);
+                                        node.material.roughness = Math.max(0.15, node.material.roughness);
                                     }
                                 }
                                 node.material.needsUpdate = true;
