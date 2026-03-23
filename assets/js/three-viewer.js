@@ -9,6 +9,7 @@
         // Global Rendering Orchestrator
         window._glbLastFrameTime = 0;
         window._glbTimeBudget = 8; // ms per frame for rendering
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || (window.innerWidth < 800 && window.matchMedia("(pointer: coarse)").matches);
         window.glbCache = new Map(); // Global parsed GLTF asset cache (Scene, Animations)
         const MAX_CACHE_SIZE = 10;
 
@@ -237,13 +238,6 @@
                 window._sharedWebGLRenderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials
                 window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
                 
-                // UNIFIED LIGHTING: Compile once globally! This saves MASSIVE load time per card.
-                const roomEnvScene = new RoomEnvironment();
-                const pmremGenerator = new THREE.PMREMGenerator(window._sharedWebGLRenderer);
-                pmremGenerator.compileEquirectangularShader();
-                window._sharedEnvMap = pmremGenerator.fromScene(roomEnvScene).texture;
-                pmremGenerator.dispose();
-
                 // Shared Context Loss Handler
                 offscreenCanvas.addEventListener('webglcontextlost', (e) => {
                     e.preventDefault();
@@ -252,9 +246,6 @@
             }
 
             const renderer = window._sharedWebGLRenderer;
-            const envMap = window._sharedEnvMap;
-
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || (window.innerWidth < 800 && window.matchMedia("(pointer: coarse)").matches);
 
             // RESOLUTION CEILING: Never render more than 2560px wide (Quad HD).
             let dpr = Math.min(window.devicePixelRatio, 2.0);
@@ -268,11 +259,15 @@
             canvas.style.width = width + 'px';
             canvas.style.height = height + 'px';
 
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x222222, 0.45); // Improved fill
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 1.0); // Soft ambient fill with slight cool tint in shadows
             scene.add(hemiLight);
 
-            // JEWELRY STORE LIGHTING RIG: High-contrast specialized rig
-            [[0xfff5ea, 0.6, [5, 10, 5], scene], [0xeaefff, 0.4, [-5, 2, 5], scene], [0xffffff, 0.9, [-2, 5, -5], scene], [0xffffff, 0.25, [0, 0, 1], camera], [0xffffff, 0.15, [0, -5, 0], scene]].forEach(([c, i, p, parent]) => {
+            // PREMIUM STUDIO LIGHTING RIG: Maximum 3D definition, zero extra performance cost
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+
+            // Key light (Warm), Rim light (Cool)
+            [[0xfff5ea, 1.4, [5, 10, 5], scene], [0xddeeff, 1.0, [-5, 5, -5], scene]].forEach(([c, i, p, parent]) => {
                 const l = new THREE.DirectionalLight(c, i);
                 l.position.set(...p);
                 parent.add(l);
@@ -395,18 +390,34 @@
                         // For cards, we use lower anisotropy to save GPU fill-rate.
                         const maxAnisotropy = isCardMode ? 2 : renderer.capabilities.getMaxAnisotropy();
                         model.traverse((node) => {
-                            if (node.isMesh) {
-                                // CRITICAL: Clone the material if we are modifying it, so we don't 
-                                // pollute the global cache. This allows a Card and an Article 
-                                // on the same page to use the same model but with different quality!
+                            if (node.isMesh && node.material) {
+                                // We clone all materials so we can alter them safely
+                                node.material = node.material.clone();
+
+                                if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
+
+                                // PBR FALLBACK FOR PERFORMANCE:
+                                // Since we removed the heavy environment maps, pure metals have nothing
+                                // to reflect, causing them to turn pitch black when out of direct spotlight.
+                                // We fix this by converting them into diffuse materials (removing metalness).
+                                if (node.material.metalness !== undefined) {
+                                    if (node.material.metalness > 0.0) {
+                                        node.material.metalness = 0.0; // Completely demetallize everything
+                                        // Use a 'satin/polished' roughness instead of purely matte. 
+                                        // This allows crisp specular highlights from the directional lights to simulate metallic sheen.
+                                        node.material.roughness = Math.max(0.3, node.material.roughness || 0.3);
+                                        // Slight boost to base color to counteract darkening from lost reflections
+                                        if (node.material.color) {
+                                            node.material.color.multiplyScalar(1.2);
+                                        }
+                                    }
+                                }
+
                                 if (isCardMode) {
-                                    node.material = node.material.clone();
-                                    if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
-                                    // AGGRESSIVE ECO-MODE: Cards don't need high-end PBR calculations.
-                                    node.material.envMapIntensity = 0.5; // Lower reflections
-                                    node.material.roughness = Math.max(0.5, node.material.roughness); // Less glossy = less complex highlights
-                                } else {
-                                    if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
+                                    node.material.envMapIntensity = 0.5;
+                                    if (node.material.roughness !== undefined) {
+                                        node.material.roughness = Math.max(0.5, node.material.roughness);
+                                    }
                                 }
                                 node.material.needsUpdate = true;
                             }

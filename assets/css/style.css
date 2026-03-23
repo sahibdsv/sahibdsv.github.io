@@ -1890,7 +1890,7 @@
             aspect-ratio: auto !important;
             width: 100vw !important;
             height: 100vh !important;
-            background: #000 !important;
+            background: var(--bg) !important;
         }
 
         .model-viewer-wrapper.fullscreen canvas {
