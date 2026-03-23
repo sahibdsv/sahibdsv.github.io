@@ -92,8 +92,8 @@
             const frameTime = now - window._glbLastFrameTime;
             window._glbLastFrameTime = now;
 
-            // If we're dropping below 50fps (20ms), slash the 3D budget to 4ms
-            const budget = frameTime > 20 ? 4 : 8;
+            // If we're dropping below 50fps (20ms), slash the 3D budget to 3ms
+            const budget = frameTime > 20 ? 3 : 6; 
 
             const startTime = performance.now();
             const total = window._glbRegistry.length;
@@ -171,9 +171,9 @@
                     
                     if (isHeavyInteraction && i % 2 === 0) continue; // Throttle background cards during drag
                     
-                    // CARD THROTTLE: If it's a card, only update its render 1 out of every 3 frames (~20fps)
-                    // The CSS transitions and page scroll will still be 60fps, but the 3D rotation will be 20fps.
-                    if (viewer.isCardMode && (i + _glbCircularIndex) % 3 !== 0) continue;
+                    // CARD THROTTLE: If it's a card, only update its render 1 out of every 4 frames (~15fps)
+                    // This dramatically reduces CPU/GPU overhead when multiple cards are scrolling.
+                    if (viewer.isCardMode && (i + _glbCircularIndex) % 4 !== 0) continue;
                     
                     if (performance.now() - budgetStartTime > remainingBudget) break;
                     viewer.update(now);
@@ -186,6 +186,37 @@
         window.initThreeJSViewer = function initThreeJSViewer(container, glbPath, isCardMode) {
             const canvas = container.querySelector('canvas');
             const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true }) || canvas.getContext('2d');
+
+            // --- SHARED RENDERER & ENVIRONMENT INITIALIZATION ---
+            // We do this first to ensure the environment map is ready for the very first scene
+            if (!window._sharedWebGLRenderer) {
+                const offscreenCanvas = document.createElement('canvas');
+                window._sharedWebGLRenderer = new THREE.WebGLRenderer({
+                    canvas: offscreenCanvas,
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: "high-performance",
+                    precision: "highp"
+                });
+                
+                window._sharedWebGLRenderer.setClearColor(0x000000, 0);
+                window._sharedWebGLRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+                window._sharedWebGLRenderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials
+                window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
+
+                const pmremGenerator = new THREE.PMREMGenerator(window._sharedWebGLRenderer);
+                pmremGenerator.compileCubemapShader();
+                const roomEnv = new RoomEnvironment();
+                window._sharedEnvironmentMap = pmremGenerator.fromScene(roomEnv).texture;
+                pmremGenerator.dispose();
+                
+                offscreenCanvas.addEventListener('webglcontextlost', (e) => {
+                    e.preventDefault();
+                    console.warn('Global WebGL context lost!');
+                });
+            }
+
+            const renderer = window._sharedWebGLRenderer;
 
             // ORIENTATION & SCALE EXTRACTION
             // We strip these from the path so we reach the real .glb file, but keep flags.
@@ -205,9 +236,10 @@
 
             // Setup scene
             const scene = new THREE.Scene();
-            // scene.background = null; // Transparent background
+            if (window._sharedEnvironmentMap) {
+                scene.environment = window._sharedEnvironmentMap;
+            }
 
-            // Setup camera - adjust position for narrower FOV in card mode
             // Setup camera - cache dimensions to avoid layout thrashing in rAF
             let width = container.clientWidth || 100;
             let height = container.clientHeight || 100;
@@ -219,42 +251,14 @@
                 1000
             );
             // UNIFIED CAMERA: Enforce exact same perspective for Cards and Article
-            // If user says Cards are perfect, we mirror that settings 1:1
-            camera.position.set(2.4, 1.6, 2.8); // Standard "Perfect" Card Angle
+            camera.position.set(2.4, 1.6, 2.8); 
+            camera.lookAt(0, 0, 0); 
 
-            camera.lookAt(0, 0, 0); // Point camera at model center
-
-            // SHARED RENDERER & ENVIRONMENT
-            // We create ONE WebGLRenderer for the entire application to prevent context exhaustion
-            if (!window._sharedWebGLRenderer) {
-                const offscreenCanvas = document.createElement('canvas');
-                window._sharedWebGLRenderer = new THREE.WebGLRenderer({
-                    canvas: offscreenCanvas,
-                    antialias: true,
-                    alpha: true,
-                    powerPreference: "high-performance",
-                    // Mobile GPUs strictly enforce mediump, which severely breaks PBR reflections (banding/voids). 
-                    // Always use highp for accurate environment mapping.
-                    precision: "highp"
-                });
-                
-                // ALPHA-TRANSPARENT RENDERER: Inherits --card-bg from CSS. 
-                window._sharedWebGLRenderer.setClearColor(0x000000, 0);
-                window._sharedWebGLRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-                window._sharedWebGLRenderer.toneMappingExposure = 0.85; // PREMIUM: Prevents clipping on white materials
-                window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
-                
-                // Shared Context Loss Handler
-                offscreenCanvas.addEventListener('webglcontextlost', (e) => {
-                    e.preventDefault();
-                    console.warn('Global WebGL context lost! The browser may have killed the WebGL process.');
-                });
-            }
-
-            const renderer = window._sharedWebGLRenderer;
-
-            // RESOLUTION CEILING: Never render more than 2560px wide (Quad HD).
-            let dpr = Math.min(window.devicePixelRatio, 2.0);
+            // RESOLUTION THROTTLING: 
+            // Cards use 1.0x DPR on mobile and 1.25x on desktop to preserve fill-rate.
+            // Article view uses up to 2.0x for crisp heroics.
+            const targetDpr = isCardMode ? (isMobile ? 1.0 : 1.25) : 2.0;
+            let dpr = Math.min(window.devicePixelRatio, targetDpr);
             const maxWidth = 2560;
             if (width * dpr > maxWidth) dpr = maxWidth / width;
 
@@ -402,27 +406,18 @@
 
                                 if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
 
-                                // PBR FALLBACK FOR PERFORMANCE:
-                                // Since we removed the heavy environment maps, pure metals have nothing
-                                // to reflect, causing them to turn pitch black when out of direct spotlight.
-                                // We fix this by converting them into diffuse materials (removing metalness).
-                                if (node.material.metalness !== undefined) {
-                                    if (node.material.metalness > 0.0) {
-                                        node.material.metalness = 0.0; // Completely demetallize everything
-                                        // Use a 'satin/polished' roughness instead of purely matte. 
-                                        // This allows crisp specular highlights from the directional lights to simulate metallic sheen.
-                                        node.material.roughness = Math.max(0.3, node.material.roughness || 0.3);
-                                        // Slight boost to base color to counteract darkening from lost reflections
-                                        if (node.material.color) {
-                                            node.material.color.multiplyScalar(1.2);
-                                        }
-                                    }
+                                // PBR OPTIMIZATION:
+                                // To prevent metals from appearing pitch black if reflections are subtle,
+                                // we ensure they retain a healthy diffuse base (max 0.8 metalness).
+                                if (node.material.metalness !== undefined && node.material.metalness > 0.0) {
+                                    node.material.metalness = Math.min(node.material.metalness, 0.7);
+                                    node.material.roughness = Math.max(0.3, node.material.roughness || 0.3);
                                 }
 
                                 if (isCardMode) {
-                                    node.material.envMapIntensity = 0.5;
+                                    node.material.envMapIntensity = 0.7; // Brighter reflections in cards
                                     if (node.material.roughness !== undefined) {
-                                        node.material.roughness = Math.max(0.5, node.material.roughness);
+                                        node.material.roughness = Math.max(0.4, node.material.roughness);
                                     }
                                 }
                                 node.material.needsUpdate = true;
