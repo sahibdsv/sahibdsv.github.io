@@ -231,8 +231,7 @@
                 if (customScale <= 0) customScale = 1.0; // Safety fallback
             }
 
-            console.log('--- 3D VIEWER INIT ---');
-            console.log('RAW input glbPath:', glbPath);
+
 
             // SPEED, TILT & HERO EXTRACTION
             const isModelFast = lowerPath.includes('-fast');
@@ -252,8 +251,7 @@
                 ? cleanGlbPath 
                 : `assets/models/${cleanGlbPath}`;
             
-            console.log('SANITIZED Request path:', cleanGlbPath);
-            console.log('FINAL Loader URL:', modelUrl);
+
 
             // Setup scene
             const scene = new THREE.Scene();
