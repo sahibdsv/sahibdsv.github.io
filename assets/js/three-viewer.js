@@ -11,11 +11,37 @@
         window._glbTimeBudget = 8; // ms per frame for rendering
         window.glbCache = new Map(); // Global parsed GLTF asset cache (Scene, Animations)
         const MAX_CACHE_SIZE = 10;
+        
+        // CONCURRENCY LIMITER: Only allow 2 GLBs to initialize/parse at once
+        window._glbInitQueue = [];
+        window._glbInitActiveCount = 0;
+        const MAX_CONCURRENT_INIT = 2;
+
+        function processGLBInitQueue() {
+            if (window._glbInitActiveCount >= MAX_CONCURRENT_INIT || window._glbInitQueue.length === 0) return;
+            
+            const next = window._glbInitQueue.shift();
+            window._glbInitActiveCount++;
+            next().finally(() => {
+                window._glbInitActiveCount--;
+                processGLBInitQueue();
+            });
+        }
 
         function pruneGLBCache() {
             if (window.glbCache.size > MAX_CACHE_SIZE) {
                 const oldestKey = window.glbCache.keys().next().value;
-                console.log('Pruning 3D Cache:', oldestKey);
+                const cached = window.glbCache.get(oldestKey);
+                // VRAM CLEANUP: When pruning from cache, ensure we dispose textures/geometries
+                if (cached && cached.data) {
+                    cached.data.scene.traverse(node => {
+                        if (node.isMesh) {
+                            node.geometry.dispose();
+                            if (node.material.map) node.material.map.dispose();
+                            node.material.dispose();
+                        }
+                    });
+                }
                 window.glbCache.delete(oldestKey);
             }
         }
@@ -338,73 +364,110 @@
                 if (overlay) overlay.remove();
             };
 
-            const setupModel = (gltf) => {
-                // SCENE CLONING: Essential to allow multiple viewers for the same model
-                model = SkeletonUtils.clone(gltf.scene);
+            // ASSET CACHE: Check if model is already loaded/parsing
+            // CRITICAL: We wrap the setup in a queue-able function
+            const initTask = async () => {
+                return new Promise((resolve) => {
+                    const setupModel = (gltf) => {
+                        // SCENE CLONING: Essential to allow multiple viewers for the same model
+                        model = SkeletonUtils.clone(gltf.scene);
 
-                // ORIENTATION CORRECTION
-                if (glbPath.toLowerCase().includes('-z-up')) {
-                    model.rotation.x = -Math.PI / 2;
-                    model.updateMatrixWorld();
-                    autoRotateAngle = 0;
-                }
+                        // ORIENTATION CORRECTION
+                        if (glbPath.toLowerCase().includes('-z-up')) {
+                            model.rotation.x = -Math.PI / 2;
+                            model.updateMatrixWorld();
+                            autoRotateAngle = 0;
+                        }
 
-                // 1. CENTER MODEL
-                const box = new THREE.Box3().setFromObject(model);
-                const center = box.getCenter(new THREE.Vector3());
-                model.position.sub(center);
+                        // 1. CENTER MODEL
+                        const box = new THREE.Box3().setFromObject(model);
+                        const center = box.getCenter(new THREE.Vector3());
+                        model.position.sub(center);
 
-                // 2. TEXTURE FILTERING
-                const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-                model.traverse((node) => {
-                    if (node.isMesh) {
-                        if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
-                        node.material.needsUpdate = true;
+                        // 2. TEXTURE FILTERING & LOW-FIDELITY CARDS
+                        // For cards, we use lower anisotropy to save GPU fill-rate.
+                        const maxAnisotropy = isCardMode ? 2 : renderer.capabilities.getMaxAnisotropy();
+                        model.traverse((node) => {
+                            if (node.isMesh) {
+                                if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
+                                
+                                // ECO-MODE: Disable heavy environment intensity for cards
+                                if (isCardMode) {
+                                    node.material.envMapIntensity = 0.8; 
+                                }
+                                node.material.needsUpdate = true;
+                            }
+                        });
+
+                        // Wrap model in a group for rotation
+                        const modelGroup = new THREE.Group();
+                        modelGroup.add(model);
+                        scene.add(modelGroup);
+
+                        if (viewerInstance) viewerInstance.fitStage();
+                        isModelReady = true;
+                        triggerEntrance();
+                        resolve();
+                    };
+
+                    if (window.glbCache.has(glbPath)) {
+                        const cached = window.glbCache.get(glbPath);
+                        if (cached.status === 'DONE') {
+                            setupModel(cached.data);
+                        } else {
+                            cached.callbacks.push(setupModel);
+                        }
+                    } else {
+                        window.glbCache.set(glbPath, { status: 'LOADING', data: null, callbacks: [setupModel] });
+                        pruneGLBCache();
+
+                        window._sharedGLTFLoader.load(glbPath, (gltf) => {
+                            const cache = window.glbCache.get(glbPath);
+                            if (!cache) return;
+                            cache.status = 'DONE';
+                            cache.data = gltf;
+                            cache.callbacks.forEach(cb => cb(gltf));
+                            cache.callbacks = [];
+                        });
                     }
                 });
-
-                // Wrap model in a group for rotation
-                const modelGroup = new THREE.Group();
-                modelGroup.add(model);
-                scene.add(modelGroup);
-
-                if (viewerInstance) viewerInstance.fitStage();
-                isModelReady = true;
-                triggerEntrance();
             };
 
-            // ASSET CACHE: Check if model is already loaded/parsing
-            // CRITICAL: Use setTimeout(0) for cached models to defer setupModel
-            // until AFTER viewerInstance is assigned. Without this, fitStage()
-            // and triggerEntrance() can't access viewerInstance.
-            if (window.glbCache.has(glbPath)) {
-                const cached = window.glbCache.get(glbPath);
-                if (cached.status === 'DONE') {
-                    setTimeout(() => setupModel(cached.data), 0);
-                } else {
-                    cached.callbacks.push(setupModel);
-                }
-            } else {
-                window.glbCache.set(glbPath, { status: 'LOADING', data: null, callbacks: [setupModel] });
-                pruneGLBCache();
+            // Queue the initialization
+            window._glbInitQueue.push(initTask);
+            processGLBInitQueue();
 
-                window._sharedGLTFLoader.load(glbPath, (gltf) => {
-                    const cache = window.glbCache.get(glbPath);
-                    if (!cache) return; // Might have been pruned during load
-                    cache.status = 'DONE';
-                    cache.data = gltf;
-                    cache.callbacks.forEach(cb => cb(gltf));
-                    cache.callbacks = [];
-                });
-            }
-            // Visibility tracking for rendering optimization and entrance gating
-            let isVisible = false; // Initialize false to force a clean entry check
+            // Visibility tracking with HIBERNATION
+            let isVisible = false;
+            let isHibernating = false;
+
             const visibilityObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     isVisible = entry.isIntersecting;
-                    if (isVisible) triggerEntrance(); // Try to start fade-in on scroll entry
+                    
+                    // VRAM GUARD: If we are very far away (not even close to viewport), hibernate.
+                    // This is handled by a secondary rootMargin observer for better performance,
+                    // but for simplicity we'll check it here.
+                    if (isVisible) {
+                        if (isHibernating) {
+                            isHibernating = false;
+                            // Re-add model to scene if it was removed
+                            if (model && !scene.children.includes(model.parent)) {
+                                scene.add(model.parent);
+                            }
+                        }
+                        triggerEntrance();
+                    } else {
+                        // Hibernate after 2 seconds of being off-screen to free VRAM
+                        setTimeout(() => {
+                            if (!isVisible && model && !isHibernating) {
+                                isHibernating = true;
+                                scene.remove(model.parent); // Removes from GPU render tree
+                            }
+                        }, 2000);
+                    }
                 });
-            }, { threshold: 0.01 }); // Relaxed threshold for mobile/small screens
+            }, { threshold: 0.01 });
             visibilityObserver.observe(container);
 
             // Viewer logic moved into an update function for the orchestrator
