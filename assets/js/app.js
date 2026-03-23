@@ -2287,7 +2287,7 @@ _videoObserver = new IntersectionObserver((entries) => {
             }
         }
     });
-}, { rootMargin: '200px' });
+}, { rootMargin: '0px', threshold: 0.15 });
 
 // Observe newly added videos
 function observeVideos(container) {
@@ -2371,7 +2371,7 @@ _glbObserver = new IntersectionObserver((entries) => {
             _glbObserver.unobserve(entry.target);
         }
     });
-}, { rootMargin: '800px' }); // Aggressive pre-loading to start models before they are scrolled to
+}, { rootMargin: '50px' }); // Reduced pre-loading so models start building near view
 
 // GLB Viewer Renderer
 function renderGLBViewer(glbPath, isCardMode) {
@@ -2429,7 +2429,7 @@ function renderMapBoxViewer(geojsonUrl, isCardMode) {
                     window._mapboxObserver.unobserve(container);
                 }
             });
-        }, { rootMargin: '300px' });
+        }, { rootMargin: '50px' });
     }
 
     if (!window._mapboxScriptLoaded) {
