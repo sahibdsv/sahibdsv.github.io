@@ -1,5 +1,10 @@
 [
   {
+    "hash": "75e53753bd15ddb0741005ea47a14450b9c893b0",
+    "date": "2026-03-23",
+    "message": "aboutme.jpg"
+  },
+  {
     "hash": "d8c6cb96d8113c1336abc1f1b727b20f40001291",
     "date": "2026-03-23",
     "message": "feat: add About page image"
