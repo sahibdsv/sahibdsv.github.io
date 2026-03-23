@@ -2245,8 +2245,8 @@ function extractMediaFromContent(content) {
 }
 function getThumbnail(media) {
     if (!media) return null;
-    // Catch GLB/3D models - support new -scale and -z-up suffixes
-    if (media.match(/\.glb(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols|scale\d+|z-up|invert))*$/i)) return 'GLB_VIEWER';
+    // Catch GLB/3D models - support all behavioral suffixes including -fast, -hero, and -tilt
+    if (media.match(/\.glb(?:-[a-zA-Z0-9_-]+)*$/i)) return 'GLB_VIEWER';
     // Catch GeoJSON maps
     if (media.match(/\.geojson(?:-[NSEW]{1,2})?(\?.*)?$/i)) return 'MAP_VIEWER';
     // Catch YouTube

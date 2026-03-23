@@ -231,19 +231,29 @@
                 if (customScale <= 0) customScale = 1.0; // Safety fallback
             }
 
+            console.log('--- 3D VIEWER INIT ---');
+            console.log('RAW input glbPath:', glbPath);
+
             // SPEED, TILT & HERO EXTRACTION
             const isModelFast = lowerPath.includes('-fast');
             const isModelHero = lowerPath.includes('-hero');
             const isModelTilt = lowerPath.includes('-tilt');
 
-            // ROBUST URL CLEANER: 
-            // We strip EVERYTHING after the .glb extension to ensure behavior tags
-            // never reach the server and cause 404s.
-            const cleanGlbPath = glbPath.replace(/(\.glb)-.*/i, '$1');
-            console.log('3D Loader Requesting Sanitized Path:', cleanGlbPath);
+            // ROBUST SLEDGEHAMMER URL CLEANER: 
+            // We strip EVERYTHING after the .glb extension IF it contains a tag.
+            let cleanGlbPath = glbPath;
+            const lowerGlb = glbPath.toLowerCase();
+            if (lowerGlb.includes('.glb-')) {
+                cleanGlbPath = glbPath.split(/\.glb-/i)[0] + '.glb';
+            }
             
             // From this point forward, we use 'glbPath' for LOGIC but 'cleanGlbPath' for FETCHING
-            const modelUrl = (cleanGlbPath.startsWith('assets/') || cleanGlbPath.startsWith('http')) ? cleanGlbPath : `assets/models/${cleanGlbPath}`;
+            const modelUrl = (cleanGlbPath.startsWith('assets/') || cleanGlbPath.startsWith('http')) 
+                ? cleanGlbPath 
+                : `assets/models/${cleanGlbPath}`;
+            
+            console.log('SANITIZED Request path:', cleanGlbPath);
+            console.log('FINAL Loader URL:', modelUrl);
 
             // Setup scene
             const scene = new THREE.Scene();
