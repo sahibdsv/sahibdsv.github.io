@@ -1,5 +1,10 @@
 [
   {
+    "hash": "6b08839209e570fdebd955e5598dcfe34a260cea",
+    "date": "2026-03-22",
+    "message": "fix: remove undefined envMap references after PMREM removal"
+  },
+  {
     "hash": "a9b3cdd03d2dc1c43c47b66e8715110945583a0c",
     "date": "2026-03-22",
     "message": "perf: reimplement safe VRAM hibernation, eco-mode, parser queue, and time-slicing"
