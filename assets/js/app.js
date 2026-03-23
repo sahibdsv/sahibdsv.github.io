@@ -1470,7 +1470,19 @@ function renderCardHTML(entry, contextCategory = "") {
             `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
     }
 
-    return `<div class="layout-grid ${contextCategory || getCategoryClass(entry.Page)} ${!entry.Thumbnail ? "has-placeholder" : ""}" onclick="location.hash=path2url('${entry.Page}')">${mediaHTML}<div class="card-info">${(entry.Title && !isTitleLink) ? `<h3 class="fill-anim">${processSingleLine(entry.Title)}</h3>` : ""}${metaRowHTML}</div></div>`;
+    let titleHTML = "";
+    if (entry.Title && !isTitleLink) {
+        const lines = entry.Title.split('\n').map(l => l.trim()).filter(Boolean);
+        const mainTitle = lines[0] || "";
+        const descText = lines.slice(1).join(' ');
+        
+        titleHTML = `<h3 class="fill-anim">${processSingleLine(mainTitle)}</h3>`;
+        if (descText) {
+            titleHTML += `<p class="card-description">${processSingleLine(descText)}</p>`;
+        }
+    }
+
+    return `<div class="layout-grid ${contextCategory || getCategoryClass(entry.Page)} ${!entry.Thumbnail ? "has-placeholder" : ""}" onclick="location.hash=path2url('${entry.Page}')">${mediaHTML}<div class="card-info">${titleHTML}${metaRowHTML}</div></div>`;
 };
 
 const SECTION_RENDERERS = {
