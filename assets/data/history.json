@@ -1,13 +1,8 @@
 [
   {
-    "hash": "22b3f8e0ee5d2a02a1c9a88f24c480af7dbfa981",
+    "hash": "598ecf349f2b1d7b0607151fbae8770a2d71e303",
     "date": "2026-03-23",
-    "message": "[v1] about"
-  },
-  {
-    "hash": "cba472db2d0d6cb90de712a26cf0aa75b37ac971",
-    "date": "2026-03-23",
-    "message": "[v1] feat: Add AboutMe thumbnail images."
+    "message": "fix: prevent dice icon from enlarging on hover and click"
   },
   {
     "hash": "6c8998b779b7656a835309dd6e2c5f1131606682",
