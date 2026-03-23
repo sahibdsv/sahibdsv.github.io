@@ -1,5 +1,20 @@
 [
   {
+    "hash": "d0c8c7de237aebabcabb5660deb189d2fd3357ab",
+    "date": "2026-03-23",
+    "message": "Feat: Added '-tilt' tag for diagonal model presentation (fits tall objects better)."
+  },
+  {
+    "hash": "e394799cc8fd7fe875864549a959607177bf0138",
+    "date": "2026-03-23",
+    "message": "Feat: Built '-fast' and '-hero' behavior tags for slender/tall assemblies like rockets."
+  },
+  {
+    "hash": "ba8028b4aad0678c5c05bbcc1b9fdf3548f41de2",
+    "date": "2026-03-23",
+    "message": "Fix: Balanced metallic reflections and exposure for both Article and Card modes."
+  },
+  {
     "hash": "c21eb5991b02471dbaa2d4cb0b38a0c8efdb5fc2",
     "date": "2026-03-23",
     "message": "feat: Add Goose4 Nose Cone 3D model asset."
