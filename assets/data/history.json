@@ -1,5 +1,10 @@
 [
   {
+    "hash": "6d60687a9a543915f0a6431288acdbdb8055e62e",
+    "date": "2026-03-23",
+    "message": "Fix: Robust URL sanitization and cache-keying for the 3D viewer to prevent 404 errors with behavior tags."
+  },
+  {
     "hash": "d0c8c7de237aebabcabb5660deb189d2fd3357ab",
     "date": "2026-03-23",
     "message": "Feat: Added '-tilt' tag for diagonal model presentation (fits tall objects better)."
