@@ -233,10 +233,14 @@
 
 
 
-            // SPEED, TILT & HERO EXTRACTION
+            // SPEED, TILT, HERO & SCALE EXTRACTION
             const isModelFast = lowerPath.includes('-fast');
             const isModelHero = lowerPath.includes('-hero');
             const isModelTilt = lowerPath.includes('-tilt');
+            
+            let customTiltDeg = 45; // Default for -tilt
+            const tiltMatch = glbPath.match(/-tilt(\d+)/i);
+            if (tiltMatch) customTiltDeg = parseInt(tiltMatch[1]);
 
             // ROBUST SLEDGEHAMMER URL CLEANER: 
             // We strip EVERYTHING after the .glb extension IF it contains a tag.
@@ -394,13 +398,13 @@
                 window._sharedGLTFLoader = loader;
             }
 
+            // HOISTED STATE: Shared across setupModel (async), update (rAF), and fitStage
             let model = null;
+            let spinGroup = null;
             let autoRotateAngle = Math.PI; // Start at 180deg to face "Front" from CAD
-            let isModelReady = false; // GATED: Only true when GLB is fully processed
-            let hasRendered = false; // GATED: Only true when the first 3D frame has been painted
-            // HOISTED: Must be declared before cache check because cached models
-            // call setupModel synchronously, which references viewerInstance.
-            let viewerInstance = null;
+            let isModelReady = false;      // GATED: Only true when GLB is fully processed
+            let hasRendered = false;       // GATED: Only true when the first 3D frame has been painted
+            let viewerInstance = null;     // Must be declared before cache check
 
             const triggerEntrance = () => {
                 // FIDELITY GATE: Entrance only triggers when geometry is ready AND the first frame is painted
@@ -417,33 +421,47 @@
             const initTask = async () => {
                 return new Promise((resolve) => {
                     const setupModel = (gltf) => {
-                        // SCENE CLONING: Essential to allow multiple viewers for the same model
-                        model = SkeletonUtils.clone(gltf.scene);
+                        // SCENE CLONING
+                        const root = SkeletonUtils.clone(gltf.scene);
 
-                        // ORIENTATION CORRECTION
+                        // 1. NESTED TRANSFORM STACK: Order is critical for perfect axis isolation
+                        // centerGroup -> zUpGroup -> spinGroup -> tiltGroup -> model
+                        const centerGroup = new THREE.Group();
+                        const zUpGroup = new THREE.Group();
+                        spinGroup = new THREE.Group();
+                        const tiltGroup = new THREE.Group();
+                        model = new THREE.Group(); // The Exterior Container
+
+                        // 2. PERFECT CENTERING (Bottom of stack)
+                        centerGroup.add(root);
+                        const box = new THREE.Box3().setFromObject(root);
+                        const center = box.getCenter(new THREE.Vector3());
+                        root.position.sub(center);
+
+                        // 3. ORIENTATION (Middle of stack)
+                        zUpGroup.add(centerGroup);
                         if (isModelZUp) {
-                            model.rotation.x = -Math.PI / 2;
-                            model.updateMatrixWorld();
+                            zUpGroup.rotation.x = -Math.PI / 2;
                             autoRotateAngle = 0;
                         }
 
-                        // DIAGONAL TILT: For slender models (rockets/rods), tilt 45deg to fill the diagonal space
+                        // 4. SPIN (The one we rotate in the update loop)
+                        // This allows rotation along the TUBE axis even when tilted
+                        spinGroup.add(zUpGroup);
+                        spinGroup.rotation.y = autoRotateAngle;
+
+                        // 5. TILT (Final slant)
+                        tiltGroup.add(spinGroup);
                         if (isModelTilt) {
-                            model.rotation.z = Math.PI / 4; 
+                            tiltGroup.rotation.z = customTiltDeg * (Math.PI / 180); 
                         }
 
-                        // INITIAL ROTATION: Apply starting angle to LOCAL rotation
-                        model.rotation.y = autoRotateAngle;
-
-                        // 1. CENTER MODEL
-                        const box = new THREE.Box3().setFromObject(model);
-                        const center = box.getCenter(new THREE.Vector3());
-                        model.position.sub(center);
-
-                        // 2. TEXTURE FILTERING & ECO-MODE
-                        // For cards, we use lower anisotropy to save GPU fill-rate.
+                        // 6. FINAL ASSEMBLY
+                        model.add(tiltGroup);
+                        
+                        // 7. TEXTURE FILTERING & ECO-MODE
                         const maxAnisotropy = isCardMode ? 2 : renderer.capabilities.getMaxAnisotropy();
-                        model.traverse((node) => {
+                        root.traverse((node) => {
                             if (node.isMesh && node.material) {
                                 // We clone all materials so we can alter them safely
                                 node.material = node.material.clone();
@@ -478,6 +496,13 @@
                         const modelGroup = new THREE.Group();
                         modelGroup.add(model);
                         scene.add(modelGroup);
+
+                        // INITIAL STATE: Apply starting angle to the correct pivot
+                        if (isModelTilt) {
+                            model.rotation.y = autoRotateAngle;
+                        } else {
+                            modelGroup.rotation.y = autoRotateAngle;
+                        }
 
                         if (viewerInstance) viewerInstance.fitStage();
                         isModelReady = true;
@@ -633,13 +658,11 @@
 
                     const rotationStep = (Math.min(delta, 64) / 16.6) * baseSpeed;
 
-                    if (isCardMode && model) {
-                        autoRotateAngle += rotationStep;
-                        model.rotation.y = autoRotateAngle;
-                    } else if (model && !isInteracting) {
-                        // Standard article/fullscreen auto-rotation
-                        autoRotateAngle += rotationStep;
-                        model.rotation.y = autoRotateAngle;
+                    if (model && spinGroup) {
+                        if (isCardMode || !isInteracting) {
+                            autoRotateAngle += rotationStep;
+                            spinGroup.rotation.y = autoRotateAngle;
+                        }
                     }
 
                     if (controls) {
@@ -701,6 +724,7 @@
                     scene.clear();
                 },
                 model: () => model,
+                spinGroup: () => spinGroup,
                 isCardMode,
                 customScale, // Store parsed scale for fitStage
                 loaded: false,
