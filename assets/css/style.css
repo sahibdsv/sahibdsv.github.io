@@ -299,6 +299,24 @@
             color: var(--text-dim);
         }
 
+        .article-description {
+            font-size: 19px;
+            color: var(--text-dim);
+            opacity: 0.8;
+            margin-top: 8px !important;
+            margin-bottom: 4px !important;
+            line-height: 1.5;
+            font-weight: 500;
+            max-width: 800px;
+        }
+
+        @media (max-width: 767px) {
+            .article-description {
+                font-size: 16px;
+                margin-top: 6px !important;
+            }
+        }
+
         a {
             text-decoration: none;
             color: inherit;
@@ -355,10 +373,9 @@
             text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
             text-decoration-thickness: 1px;
             text-underline-offset: 3px;
-            display: inline-block;
-            vertical-align: top;
+            display: inline;
+            vertical-align: baseline;
             font-weight: inherit;
-            transform: translateZ(0);
             transition: text-decoration-color var(--anim-quick) var(--ease), text-decoration-thickness var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease);
         }
 
@@ -1120,6 +1137,15 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             font-weight: 400;
+        }
+
+        .card-description a {
+            display: inline !important;
+            vertical-align: baseline !important;
+            opacity: 1;
+            color: var(--text-bright);
+            text-decoration-color: var(--cat-accent, var(--text-muted));
+            line-height: inherit;
         }
 
         .card-info {

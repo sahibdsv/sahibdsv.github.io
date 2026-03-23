@@ -1395,14 +1395,21 @@ function processSingleLine(e) {
 
 function formatTitle(e, t) {
     if (!e) return "";
-    const processed = processInlineMarkdown(e);
-    if (processed.includes('btn-cta-wrapper')) return processed;
 
-    const n = e.match(/^(#{1,6})\s+(.*)$/);
-    let o = t,
-        r = e;
-    n && (o = "h" + n[1].length, r = n[2]);
-    return `<${o} class="header-fade-anim">${processInlineMarkdown(r)}</${o}>`
+    const lines = e.split('\n').map(l => l.trim()).filter(Boolean);
+    const rawTitle = lines[0];
+    const rawDesc = lines.slice(1).join(' ');
+
+    const n = rawTitle.match(/^(#{1,6})\s+(.*)$/);
+    let tag = t,
+        content = rawTitle;
+    n && (tag = "h" + n[1].length, content = n[2]);
+
+    let html = `<${tag} class="header-fade-anim">${processInlineMarkdown(content)}</${tag}>`;
+    if (rawDesc) {
+        html += `<p class="article-description header-fade-anim">${processInlineMarkdown(rawDesc)}</p>`;
+    }
+    return html;
 }
 // Chip rendering helper
 function renderChip(tag) {
