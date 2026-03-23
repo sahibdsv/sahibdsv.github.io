@@ -1,5 +1,10 @@
 [
   {
+    "hash": "91f2a38b3724ee3ff4270cd8f8c045a08bfd3805",
+    "date": "2026-03-23",
+    "message": "fix(date): handle YYYY-MM and YYYY formats without adding a day"
+  },
+  {
     "hash": "9da8dca3eb51f923915261b34255dae2bc158293",
     "date": "2026-03-23",
     "message": "refactor: integrate article descriptions into the tight rhythmic lead group"
