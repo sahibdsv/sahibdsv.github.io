@@ -2193,9 +2193,9 @@
             margin-top: var(--rhythm-gap) !important;
         }
 
-        /* 3. Tight gap (0.5x) below headings */
-        .article-view > :is(h1, h2, h3, h4) + *,
-        .article-body > :is(h1, h2, h3, h4) + * {
+        /* 3. Tight gap (0.125rem) below headings AND header subtitles (The 'Lead' Group) */
+        .article-view > :is(h1, h2, h3, h4, .article-subtitle) + *,
+        .article-body > :is(h1, h2, h3, h4, .article-subtitle) + * {
             margin-top: var(--rhythm-gap-tight) !important;
         }
 

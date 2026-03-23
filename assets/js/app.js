@@ -1407,8 +1407,8 @@ function formatTitle(e, t) {
 
     let html = `<${tag} class="header-fade-anim">${processInlineMarkdown(content)}</${tag}>`;
     if (rawDesc) {
-        // We use a regular paragraph class that participates in the site's vertical rhythm
-        html += `<p class="header-fade-anim">${processInlineMarkdown(rawDesc)}</p>`;
+        // We use a specific class to anchor this to the 'header lead' rhythmic rules
+        html += `<p class="article-subtitle header-fade-anim">${processInlineMarkdown(rawDesc)}</p>`;
     }
     return html;
 }
