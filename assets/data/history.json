@@ -1,5 +1,10 @@
 [
   {
+    "hash": "621aa486987e3c62933a22006339882924c52459",
+    "date": "2026-03-22",
+    "message": "feat: add Three.js GLB 3D model viewer with advanced rendering optimizations, caching, and WebGL context management."
+  },
+  {
     "hash": "0c9bd9808dfccd89bef594e48ded1252a60df36b",
     "date": "2026-03-22",
     "message": "feat: add REALIZE_Live_2025 GLB 3D model."
