@@ -2547,11 +2547,27 @@ function formatDate(e) {
     if (!e) return "";
     if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`;
     e = String(e).trim();
+
+    // Detect format precision
+    const isYearOnly = /^\d{4}$/.test(e);
+    const isYearMonth = /^\d{4}-\d{2}$/.test(e);
+
     const n = new Date(e);
     if (isNaN(n.getTime())) return e;
+    
+    // Standardize to midday UTC to avoid timezone drift during formatting
     const r = new Date(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), 12, 0, 0);
-    return `${r.getDate()} ${r.toLocaleString("default", { month: "short" }).toUpperCase()} ${r.getFullYear()}`;
+    
+    const day = r.getUTCDate();
+    const month = r.toLocaleString("default", { month: "short" }).toUpperCase();
+    const year = r.getUTCFullYear();
+    
+    if (isYearOnly) return `${year}`;
+    if (isYearMonth) return `${month} ${year}`;
+    
+    return `${day} ${month} ${year}`;
 }
+
 
 function updateSEO(path = "") {
     const cleanPath = url2path(path || window.location.hash.substring(1) || "Home");
