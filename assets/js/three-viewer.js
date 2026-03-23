@@ -231,8 +231,12 @@
                 if (customScale <= 0) customScale = 1.0; // Safety fallback
             }
 
+            // SPEED & HERO EXTRACTION
+            const isModelFast = lowerPath.includes('-fast');
+            const isModelHero = lowerPath.includes('-hero');
+
             // CLEAN URL: Strip ALL behavior tags before calling the loader or cache
-            glbPath = glbPath.replace(/-(?:z-up|scale\d+|autoplay|thumb|loop|noloop|nocontrols|invert)/gi, '');
+            glbPath = glbPath.replace(/-(?:z-up|scale\d+|autoplay|thumb|loop|noloop|nocontrols|invert|fast|hero)/gi, '');
 
             // Setup scene
             const scene = new THREE.Scene();
@@ -551,8 +555,12 @@
                     const distVertical = radius / Math.tan(vFOV / 2);
                     const distHorizontal = radius / Math.tan(hFOV / 2);
 
-                    const baseMultiplier = isCardMode ? 1.0 : 0.66; // ~1.5x larger in articles
-                    const multiplier = baseMultiplier / (customScale || 1.0);
+                    const baseMultiplier = isCardMode ? 1.1 : 0.7; // Standard padding
+                    
+                    // HERO OVERRIDE: For slender tall models, we zoom in 30% further so it fills the frame (even if tips clip slightly)
+                    const heroMultiplier = isModelHero ? 0.7 : 1.0;
+                    const multiplier = (baseMultiplier / (customScale || 1.0)) * heroMultiplier;
+                    
                     const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
 
                     const dir = new THREE.Vector3(2.4, 1.6, 2.8).normalize();
@@ -595,7 +603,12 @@
                     delta = Math.min(delta, 50);
 
                     // PROFESSIONAL MOTION: Slower, more subtle rotation for a premium feel
-                    const baseSpeed = isCardMode ? 0.0010 : 0.0015;
+                    let baseSpeed = isCardMode ? 0.0010 : 0.0015;
+                    
+                    // SPEED OVERRIDES: For tall/thin assemblies that need more visual momentum
+                    if (isModelFast) baseSpeed *= 3.0;
+                    if (isModelHero) baseSpeed *= 4.0; 
+
                     const rotationStep = (Math.min(delta, 64) / 16.6) * baseSpeed;
 
                     if (isCardMode && model) {
