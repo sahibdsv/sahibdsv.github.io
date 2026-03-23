@@ -242,6 +242,12 @@
             const tiltMatch = glbPath.match(/-tilt(\d+)/i);
             if (tiltMatch) customTiltDeg = parseInt(tiltMatch[1]);
 
+            // AUTOROTATE START ANGLE EXTRACTION
+            // Tags live outside the .glb extension in the path string (e.g. model.glb-autorotate90)
+            let customRotateDeg = isModelZUp ? 0 : 180;
+            const rotateMatch = glbPath.match(/-autorotate(\d+)/i);
+            if (rotateMatch) customRotateDeg = parseInt(rotateMatch[1]);
+
             // ROBUST SLEDGEHAMMER URL CLEANER: 
             // We strip EVERYTHING after the .glb extension IF it contains a tag.
             let cleanGlbPath = glbPath;
@@ -401,7 +407,7 @@
             // HOISTED STATE: Shared across setupModel (async), update (rAF), and fitStage
             let model = null;
             let spinGroup = null;
-            let autoRotateAngle = Math.PI; // Start at 180deg to face "Front" from CAD
+            let autoRotateAngle = customRotateDeg * (Math.PI / 180); 
             let isModelReady = false;      // GATED: Only true when GLB is fully processed
             let hasRendered = false;       // GATED: Only true when the first 3D frame has been painted
             let viewerInstance = null;     // Must be declared before cache check
@@ -442,7 +448,6 @@
                         zUpGroup.add(centerGroup);
                         if (isModelZUp) {
                             zUpGroup.rotation.x = -Math.PI / 2;
-                            autoRotateAngle = 0;
                         }
 
                         // 4. SPIN (The one we rotate in the update loop)
@@ -497,11 +502,13 @@
                         modelGroup.add(model);
                         scene.add(modelGroup);
 
-                        // INITIAL STATE: Apply starting angle to the correct pivot
+                        // POSTURAL ORIENTATION: 
+                        // We apply a static world-Y rotation (180 for standard, 0 for Z-Up) 
+                        // to match the legacy 'facing' expectations for tilted models.
                         if (isModelTilt) {
-                            model.rotation.y = autoRotateAngle;
+                            model.rotation.y = isModelZUp ? 0 : Math.PI;
                         } else {
-                            modelGroup.rotation.y = autoRotateAngle;
+                            modelGroup.rotation.y = isModelZUp ? 0 : Math.PI;
                         }
 
                         if (viewerInstance) viewerInstance.fitStage();
