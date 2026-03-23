@@ -259,16 +259,22 @@
             canvas.style.width = width + 'px';
             canvas.style.height = height + 'px';
 
-            // LIGHTING OPTIMIZATION: 
-            // Since we use an Environment Map for PBR reflections and ambient bounce, 
-            // we don't need expensive Hemisphere or dual Directional lights.
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Slightly brighter to compensate
+            // PREMIUM STUDIO LIGHTING RIG: 
+            // Crucial for CAD geometries without baked ambient occlusion. 
+            // This provides contrasting gradients (warm vs cool) across flat planes and seams
+            // so identical colored parts can be visually separated.
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 1.0); // Natural outdoor gradient
+            scene.add(hemiLight);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4); // Prevents pitch black shadows
             scene.add(ambientLight);
 
-            // Single Key light (Warm) for primary specular highlights
-            const keyLight = new THREE.DirectionalLight(0xfff5ea, 1.4);
-            keyLight.position.set(5, 10, 5);
-            scene.add(keyLight);
+            // Key light (Warm Front/Top), Rim light (Cool Back/Underside)
+            [[0xfff5ea, 1.4, [5, 10, 5], scene], [0xddeeff, 1.0, [-5, 5, -5], scene]].forEach(([c, i, p, parent]) => {
+                const l = new THREE.DirectionalLight(c, i);
+                l.position.set(...p);
+                parent.add(l);
+            });
 
             scene.add(camera);
 
@@ -401,10 +407,7 @@
                                 if (node.material.metalness !== undefined && node.material.metalness > 0.0) {
                                     node.material.metalness = 0.1; // Minimal real metal calculation
                                     node.material.roughness = 0.05; // Chrome-like smoothness for the specular ping
-                                    // Retain or boost color so the surface stays visible
-                                    if (node.material.color) {
-                                        node.material.color.multiplyScalar(1.5);
-                                    }
+                                    // Removed the artificial color boost to preserve shading contrast!
                                 }
 
                                 if (isCardMode) {
