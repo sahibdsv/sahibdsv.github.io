@@ -1,5 +1,10 @@
 [
   {
+    "hash": "c58d17a3c8a15a3994999786fa14cd9992506379",
+    "date": "2026-03-23",
+    "message": "feat: add Goose4 nose cone 3D model."
+  },
+  {
     "hash": "4ed6b5c7cda88223957ef2164c9cf6a46738b12a",
     "date": "2026-03-23",
     "message": "feat: add Goose4_Nose_Cone.glb 3D model asset."
