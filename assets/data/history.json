@@ -1,5 +1,10 @@
 [
   {
+    "hash": "7470b01a6b748c45dc2b8d47ac35c1bf72e4e5b3",
+    "date": "2026-03-22",
+    "message": "Perf: Replace expensive PMREM environment map with high-performance fake sheen for metals"
+  },
+  {
     "hash": "2d1a3382393683590fbd0e6b1efda1705b052d5d",
     "date": "2026-03-22",
     "message": "Perf: Aggressive DPR scaling and reduced fragment lighting calculations for 3D viewers."
