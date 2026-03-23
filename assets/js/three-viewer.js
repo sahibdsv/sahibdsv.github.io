@@ -432,6 +432,9 @@
                             model.rotation.z = Math.PI / 4; 
                         }
 
+                        // INITIAL ROTATION: Apply starting angle to LOCAL rotation
+                        model.rotation.y = autoRotateAngle;
+
                         // 1. CENTER MODEL
                         const box = new THREE.Box3().setFromObject(model);
                         const center = box.getCenter(new THREE.Vector3());
@@ -631,19 +634,12 @@
                     const rotationStep = (Math.min(delta, 64) / 16.6) * baseSpeed;
 
                     if (isCardMode && model) {
-                        const modelGroup = model.parent;
-                        if (modelGroup && modelGroup.type === 'Group') {
-                            autoRotateAngle += rotationStep;
-                            modelGroup.rotation.y = autoRotateAngle;
-                        }
-                    } else if (model && controls && !controls.autoRotate) {
-                        const modelGroup = model.parent;
-                        if (modelGroup && modelGroup.type === 'Group') {
-                            if (!isInteracting) {
-                                autoRotateAngle += rotationStep;
-                                modelGroup.rotation.y = autoRotateAngle;
-                            }
-                        }
+                        autoRotateAngle += rotationStep;
+                        model.rotation.y = autoRotateAngle;
+                    } else if (model && !isInteracting) {
+                        // Standard article/fullscreen auto-rotation
+                        autoRotateAngle += rotationStep;
+                        model.rotation.y = autoRotateAngle;
                     }
 
                     if (controls) {
