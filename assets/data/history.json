@@ -1,5 +1,15 @@
 [
   {
+    "hash": "c27727e54f814e05ac9e8ab0303c312df1e7c2fe",
+    "date": "2026-03-23",
+    "message": "Feat: Implemented 'Tilted-Spit' rotation for rocket assemblies (rotate on local axis)."
+  },
+  {
+    "hash": "44dbd697dece5a68701b0b20f560be02e3fddea2",
+    "date": "2026-03-23",
+    "message": "Fix: Updated app.js to recognize new -fast, -hero, and -tilt tags for card rendering."
+  },
+  {
     "hash": "6d60687a9a543915f0a6431288acdbdb8055e62e",
     "date": "2026-03-23",
     "message": "Fix: Robust URL sanitization and cache-keying for the 3D viewer to prevent 404 errors with behavior tags."
