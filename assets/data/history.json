@@ -1,5 +1,10 @@
 [
   {
+    "hash": "96f32f6181b9c791474c48941831849734ed436a",
+    "date": "2026-03-23",
+    "message": "Fix: Full 6-Point Studio Lighting rig for complete 360-degree coverage."
+  },
+  {
     "hash": "d6729d355e69bbe865ccaa2262b4153c31905842",
     "date": "2026-03-23",
     "message": "Chore: Removed debug console logs from three-viewer.js."
