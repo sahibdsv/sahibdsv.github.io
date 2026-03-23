@@ -235,7 +235,7 @@
 
             // SPEED, TILT, HERO & SCALE EXTRACTION
             const isModelFast = lowerPath.includes('-fast');
-            const isModelHero = lowerPath.includes('-hero');
+            const isModelFaster = lowerPath.includes('-faster');
             const isModelTilt = lowerPath.includes('-tilt');
             
             let customTiltDeg = 45; // Default for -tilt
@@ -604,9 +604,9 @@
 
                     const baseMultiplier = isCardMode ? 1.1 : 0.7; // Standard padding
                     
-                    // HERO OVERRIDE: For slender tall models, we zoom in 30% further so it fills the frame (even if tips clip slightly)
-                    const heroMultiplier = isModelHero ? 0.7 : 1.0;
-                    const multiplier = (baseMultiplier / (customScale || 1.0)) * heroMultiplier;
+                    // FASTER OVERRIDE: For slender tall models, we zoom in 30% further so it fills the frame (even if tips clip slightly)
+                    const speedMultiplier = isModelFaster ? 0.7 : 1.0;
+                    const multiplier = (baseMultiplier / (customScale || 1.0)) * speedMultiplier;
                     
                     const cameraDist = Math.max(distVertical, distHorizontal) * multiplier;
 
@@ -654,8 +654,8 @@
                     
                     // SPEED OVERRIDES: For tall/thin assemblies that need more visual momentum
                     if (isModelFast) baseSpeed *= 3.0;
-                    if (isModelHero) baseSpeed *= 4.0; 
-
+                    if (isModelFaster) baseSpeed *= 4.0; 
+                    
                     const rotationStep = (Math.min(delta, 64) / 16.6) * baseSpeed;
 
                     if (model && spinGroup) {
