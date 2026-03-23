@@ -1,5 +1,10 @@
 [
   {
+    "hash": "73873553ff65d2bea1ecf0358f0dbe18a1a9c16f",
+    "date": "2026-03-23",
+    "message": "Fix: Resolved ReferenceErrors by correctly hoisting spinGroup and customTiltDeg variables."
+  },
+  {
     "hash": "96f32f6181b9c791474c48941831849734ed436a",
     "date": "2026-03-23",
     "message": "Fix: Full 6-Point Studio Lighting rig for complete 360-degree coverage."
