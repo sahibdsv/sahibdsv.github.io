@@ -255,9 +255,9 @@
             camera.lookAt(0, 0, 0); 
 
             // RESOLUTION THROTTLING: 
-            // Cards use 1.0x DPR on mobile and 1.25x on desktop to preserve fill-rate.
-            // Article view uses up to 2.0x for crisp heroics.
-            const targetDpr = isCardMode ? (isMobile ? 1.0 : 1.25) : 2.0;
+            // Cards use 0.75x DPR on mobile and 1.0x on desktop to preserve fill-rate.
+            // Article view uses up to 1.5x for balanced heroics.
+            const targetDpr = isCardMode ? (isMobile ? 0.75 : 1.0) : 1.5;
             let dpr = Math.min(window.devicePixelRatio, targetDpr);
             const maxWidth = 2560;
             if (width * dpr > maxWidth) dpr = maxWidth / width;
@@ -269,19 +269,16 @@
             canvas.style.width = width + 'px';
             canvas.style.height = height + 'px';
 
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 1.0); // Soft ambient fill with slight cool tint in shadows
-            scene.add(hemiLight);
-
-            // PREMIUM STUDIO LIGHTING RIG: Maximum 3D definition, zero extra performance cost
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            // LIGHTING OPTIMIZATION: 
+            // Since we use an Environment Map for PBR reflections and ambient bounce, 
+            // we don't need expensive Hemisphere or dual Directional lights.
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Slightly brighter to compensate
             scene.add(ambientLight);
 
-            // Key light (Warm), Rim light (Cool)
-            [[0xfff5ea, 1.4, [5, 10, 5], scene], [0xddeeff, 1.0, [-5, 5, -5], scene]].forEach(([c, i, p, parent]) => {
-                const l = new THREE.DirectionalLight(c, i);
-                l.position.set(...p);
-                parent.add(l);
-            });
+            // Single Key light (Warm) for primary specular highlights
+            const keyLight = new THREE.DirectionalLight(0xfff5ea, 1.4);
+            keyLight.position.set(5, 10, 5);
+            scene.add(keyLight);
 
             scene.add(camera);
 
