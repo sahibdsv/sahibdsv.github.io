@@ -653,17 +653,18 @@
                     let delta = lastFrameTime ? (now - lastFrameTime) : 16.6;
                     lastFrameTime = now;
 
-                    // Cap delta at 50ms to prevent huge jumps if browser stutters
-                    delta = Math.min(delta, 50);
+                    // Cap delta at 100ms (was 50ms) to ensure throttled card updates (~66ms) 
+                    // maintain full rotation momentum without losing 25% of their speed.
+                    delta = Math.min(delta, 100);
 
                     // PROFESSIONAL MOTION: Slower, more subtle rotation for a premium feel
-                    let baseSpeed = isCardMode ? 0.0010 : 0.0015;
+                    let baseSpeed = isCardMode ? 0.0012 : 0.0015; // Slightly narrowed gap
                     
                     // SPEED OVERRIDES: For tall/thin assemblies that need more visual momentum
-                    if (isModelFast) baseSpeed *= 3.0;
-                    if (isModelFaster) baseSpeed *= 4.0; 
+                    if (isModelFaster) baseSpeed *= 4.0;
+                    else if (isModelFast) baseSpeed *= 3.0;
                     
-                    const rotationStep = (Math.min(delta, 64) / 16.6) * baseSpeed;
+                    const rotationStep = (Math.min(delta, 128) / 16.6) * baseSpeed;
 
                     if (model && spinGroup) {
                         if (isCardMode || !isInteracting) {

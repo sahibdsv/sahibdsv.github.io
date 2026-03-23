@@ -1872,7 +1872,7 @@
             width: 42px;
             height: 42px;
             padding: 0;
-            background: var(--bg);
+            background: rgba(var(--bg-rgb), 0); /* No solid fill as requested */
             color: var(--text-bright);
             border: 1px solid var(--border-subtle);
             border-radius: 50%;
@@ -1893,8 +1893,8 @@
         .model-viewer-wrapper:fullscreen .fs-btn:hover {
             border-color: rgba(var(--bright-rgb), 1);
             box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 1);
-            /* Site-wide glow */
-            background: var(--bg);
+            /* Keep it transparent even on hover as requested */
+            background: rgba(var(--bg-rgb), 0.1); 
             color: var(--text-bright);
         }
 
@@ -1941,9 +1941,14 @@
             left: auto;
             width: 54px;
             height: 54px;
-            background: var(--bg);
+            background: rgba(var(--bg-rgb), 0.2); /* Subtle fill enough to be interactive in full */
             border-color: rgba(var(--bright-rgb), 0.6);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .model-viewer-wrapper.fullscreen .fs-btn:hover {
+            background: rgba(var(--bg-rgb), 0.4);
+            opacity: 1;
         }
 
         .model-viewer-wrapper.fullscreen .fs-btn svg {
@@ -1951,12 +1956,7 @@
             height: 28px;
         }
 
-        .model-viewer-wrapper .fs-btn:hover {
-            color: var(--text-bright);
-            border-color: rgba(var(--bright-rgb), 1);
-            box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), 1);
-            background: var(--bg);
-        }
+
 
         .model-viewer-wrapper.card-preview .fs-btn {
             display: none;
