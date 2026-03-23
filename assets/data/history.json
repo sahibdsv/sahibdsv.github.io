@@ -1,5 +1,10 @@
 [
   {
+    "hash": "6b0388a59d01d77b7e1bb2d9ff8e37f137845a45",
+    "date": "2026-03-22",
+    "message": "Fix: GLB -Z-up tag detection and restore metallic shine with shared environment map. Optimized performance with card-specific DPR throttling."
+  },
+  {
     "hash": "621aa486987e3c62933a22006339882924c52459",
     "date": "2026-03-22",
     "message": "feat: add Three.js GLB 3D model viewer with advanced rendering optimizations, caching, and WebGL context management."
