@@ -187,15 +187,21 @@
             const canvas = container.querySelector('canvas');
             const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true }) || canvas.getContext('2d');
 
+            // ORIENTATION & SCALE EXTRACTION
+            // We strip these from the path so we reach the real .glb file, but keep flags.
+            const lowerPath = glbPath.toLowerCase();
+            const isModelZUp = lowerPath.includes('-z-up');
+            
             // Parse custom scale from path (e.g., -scale73)
             let customScale = 1.0;
             const sizeMatch = glbPath.match(/-scale(\d+)/i);
             if (sizeMatch) {
                 customScale = parseInt(sizeMatch[1]) / 100;
                 if (customScale <= 0) customScale = 1.0; // Safety fallback
-                // Strip scale from path so we fetch the actual file
-                glbPath = glbPath.replace(sizeMatch[0], '');
             }
+
+            // CLEAN URL: Strip ALL behavior tags before calling the loader or cache
+            glbPath = glbPath.replace(/-(?:z-up|scale\d+|autoplay|thumb|loop|noloop|nocontrols|invert)/gi, '');
 
             // Setup scene
             const scene = new THREE.Scene();
@@ -375,7 +381,7 @@
                         model = SkeletonUtils.clone(gltf.scene);
 
                         // ORIENTATION CORRECTION
-                        if (glbPath.toLowerCase().includes('-z-up')) {
+                        if (isModelZUp) {
                             model.rotation.x = -Math.PI / 2;
                             model.updateMatrixWorld();
                             autoRotateAngle = 0;
