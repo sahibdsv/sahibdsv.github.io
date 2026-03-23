@@ -1,5 +1,10 @@
 [
   {
+    "hash": "4c61835e8ad82020a94987b58c7f0c83ee1bccb8",
+    "date": "2026-03-23",
+    "message": "feat: add support for -autorotate[deg] start angle tag and fix tilt posture"
+  },
+  {
     "hash": "699406372fc450312ff78ed097c46020063761ae",
     "date": "2026-03-23",
     "message": "feat: add Eevah_v3.glb 3D model asset"
