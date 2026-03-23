@@ -12,9 +12,38 @@
         window.glbCache = new Map(); // Global parsed GLTF asset cache (Scene, Animations)
         const MAX_CACHE_SIZE = 10;
 
+        // CONCURRENCY LIMITER: Only allow 2 GLBs to initialize/parse at once
+        window._glbParserQueue = [];
+        window._glbInitActiveCount = 0;
+        const MAX_CONCURRENT_INIT = 2;
+
+        function processGLBInitQueue() {
+            if (window._glbInitActiveCount >= MAX_CONCURRENT_INIT || window._glbParserQueue.length === 0) return;
+
+            const next = window._glbParserQueue.shift();
+            window._glbInitActiveCount++;
+            next().finally(() => {
+                window._glbInitActiveCount--;
+                processGLBInitQueue();
+            });
+        }
+
         function pruneGLBCache() {
             if (window.glbCache.size > MAX_CACHE_SIZE) {
                 const oldestKey = window.glbCache.keys().next().value;
+                const cached = window.glbCache.get(oldestKey);
+                // VRAM CLEANUP: When pruning from cache, ensure we dispose textures/geometries
+                if (cached && cached.data) {
+                    cached.data.scene.traverse(node => {
+                        if (node.isMesh) {
+                            if (node.geometry) node.geometry.dispose();
+                            if (node.material) {
+                                if (node.material.map) node.material.map.dispose();
+                                node.material.dispose();
+                            }
+                        }
+                    });
+                }
                 console.log('Pruning 3D Cache:', oldestKey);
                 window.glbCache.delete(oldestKey);
             }
@@ -130,11 +159,20 @@
                 // If we are interacting, we might want to skip background cards to keep interaction buttery
                 const isHeavyInteraction = interactingViewer && !isMobile;
                 
+                // TIME-SLICING: Only render a fraction of background cards per frame.
+                // Because we keep quality (DPR) high so they look crisp,
+                // we drop their framerate to ~20fps to save GPU fill-rate.
+                _glbCircularIndex++;
+                
                 for (let i = 0; i < renderedVisible.length; i++) {
                     const viewer = renderedVisible[i];
                     if (viewer === interactingViewer) continue; // Already rendered
                     
                     if (isHeavyInteraction && i % 2 === 0) continue; // Throttle background cards during drag
+                    
+                    // CARD THROTTLE: If it's a card, only update its render 1 out of every 3 frames (~20fps)
+                    // The CSS transitions and page scroll will still be 60fps, but the 3D rotation will be 20fps.
+                    if (viewer.isCardMode && (i + _glbCircularIndex) % 3 !== 0) continue;
                     
                     if (performance.now() - budgetStartTime > remainingBudget) break;
                     viewer.update(now);
@@ -338,71 +376,118 @@
                 if (overlay) overlay.remove();
             };
 
-            const setupModel = (gltf) => {
-                // SCENE CLONING: Essential to allow multiple viewers for the same model
-                model = SkeletonUtils.clone(gltf.scene);
+            const initTask = async () => {
+                return new Promise((resolve) => {
+                    const setupModel = (gltf) => {
+                        // SCENE CLONING: Essential to allow multiple viewers for the same model
+                        model = SkeletonUtils.clone(gltf.scene);
 
-                // ORIENTATION CORRECTION
-                if (glbPath.toLowerCase().includes('-z-up')) {
-                    model.rotation.x = -Math.PI / 2;
-                    model.updateMatrixWorld();
-                    autoRotateAngle = 0;
-                }
+                        // ORIENTATION CORRECTION
+                        if (glbPath.toLowerCase().includes('-z-up')) {
+                            model.rotation.x = -Math.PI / 2;
+                            model.updateMatrixWorld();
+                            autoRotateAngle = 0;
+                        }
 
-                // 1. CENTER MODEL
-                const box = new THREE.Box3().setFromObject(model);
-                const center = box.getCenter(new THREE.Vector3());
-                model.position.sub(center);
+                        // 1. CENTER MODEL
+                        const box = new THREE.Box3().setFromObject(model);
+                        const center = box.getCenter(new THREE.Vector3());
+                        model.position.sub(center);
 
-                // 2. TEXTURE FILTERING
-                const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-                model.traverse((node) => {
-                    if (node.isMesh) {
-                        if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
-                        node.material.needsUpdate = true;
+                        // 2. TEXTURE FILTERING & ECO-MODE
+                        // For cards, we use lower anisotropy to save GPU fill-rate.
+                        const maxAnisotropy = isCardMode ? 2 : renderer.capabilities.getMaxAnisotropy();
+                        model.traverse((node) => {
+                            if (node.isMesh) {
+                                // CRITICAL: Clone the material if we are modifying it, so we don't 
+                                // pollute the global cache. This allows a Card and an Article 
+                                // on the same page to use the same model but with different quality!
+                                if (isCardMode) {
+                                    node.material = node.material.clone();
+                                    if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
+                                    // AGGRESSIVE ECO-MODE: Cards don't need high-end PBR calculations.
+                                    node.material.envMapIntensity = 0.5; // Lower reflections
+                                    node.material.roughness = Math.max(0.5, node.material.roughness); // Less glossy = less complex highlights
+                                } else {
+                                    if (node.material.map) node.material.map.anisotropy = maxAnisotropy;
+                                }
+                                node.material.needsUpdate = true;
+                            }
+                        });
+
+                        // Wrap model in a group for rotation
+                        const modelGroup = new THREE.Group();
+                        modelGroup.add(model);
+                        scene.add(modelGroup);
+
+                        if (viewerInstance) viewerInstance.fitStage();
+                        isModelReady = true;
+                        triggerEntrance();
+                        resolve();
+                    };
+
+                    // ASSET CACHE: Check if model is already loaded/parsing
+                    // CRITICAL: Use setTimeout(0) for cached models to defer setupModel
+                    // until AFTER viewerInstance is assigned. Without this, fitStage()
+                    // and triggerEntrance() can't access viewerInstance.
+                    if (window.glbCache.has(glbPath)) {
+                        const cached = window.glbCache.get(glbPath);
+                        if (cached.status === 'DONE') {
+                            setTimeout(() => setupModel(cached.data), 0);
+                        } else {
+                            cached.callbacks.push(setupModel);
+                        }
+                    } else {
+                        window.glbCache.set(glbPath, { status: 'LOADING', data: null, callbacks: [setupModel] });
+                        pruneGLBCache();
+
+                        window._sharedGLTFLoader.load(glbPath, (gltf) => {
+                            const cache = window.glbCache.get(glbPath);
+                            if (!cache) return resolve(); // Might have been pruned during load
+                            cache.status = 'DONE';
+                            cache.data = gltf;
+                            cache.callbacks.forEach(cb => cb(gltf));
+                            cache.callbacks = [];
+                        });
                     }
                 });
-
-                // Wrap model in a group for rotation
-                const modelGroup = new THREE.Group();
-                modelGroup.add(model);
-                scene.add(modelGroup);
-
-                if (viewerInstance) viewerInstance.fitStage();
-                isModelReady = true;
-                triggerEntrance();
             };
 
-            // ASSET CACHE: Check if model is already loaded/parsing
-            // CRITICAL: Use setTimeout(0) for cached models to defer setupModel
-            // until AFTER viewerInstance is assigned. Without this, fitStage()
-            // and triggerEntrance() can't access viewerInstance.
-            if (window.glbCache.has(glbPath)) {
-                const cached = window.glbCache.get(glbPath);
-                if (cached.status === 'DONE') {
-                    setTimeout(() => setupModel(cached.data), 0);
-                } else {
-                    cached.callbacks.push(setupModel);
-                }
-            } else {
-                window.glbCache.set(glbPath, { status: 'LOADING', data: null, callbacks: [setupModel] });
-                pruneGLBCache();
+            // Queue the initialization
+            window._glbParserQueue.push(initTask);
+            processGLBInitQueue();
 
-                window._sharedGLTFLoader.load(glbPath, (gltf) => {
-                    const cache = window.glbCache.get(glbPath);
-                    if (!cache) return; // Might have been pruned during load
-                    cache.status = 'DONE';
-                    cache.data = gltf;
-                    cache.callbacks.forEach(cb => cb(gltf));
-                    cache.callbacks = [];
-                });
-            }
-            // Visibility tracking for rendering optimization and entrance gating
+            // Visibility tracking with HIBERNATION
             let isVisible = false; // Initialize false to force a clean entry check
+            let isHibernating = false;
+            let hibernateTimeout = null;
+
             const visibilityObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     isVisible = entry.isIntersecting;
-                    if (isVisible) triggerEntrance(); // Try to start fade-in on scroll entry
+                    
+                    if (isVisible) {
+                        if (hibernateTimeout) {
+                            clearTimeout(hibernateTimeout);
+                            hibernateTimeout = null;
+                        }
+                        if (isHibernating) {
+                            isHibernating = false;
+                            if (model && !scene.children.includes(model.parent)) {
+                                scene.add(model.parent);
+                            }
+                        }
+                        triggerEntrance(); // Try to start fade-in on scroll entry
+                    } else {
+                        // VRAM GUARD: Hibernate after 2 seconds of being off-screen to save VRAM/GPU cycles
+                        if (hibernateTimeout) clearTimeout(hibernateTimeout);
+                        hibernateTimeout = setTimeout(() => {
+                            if (!isVisible && model && !isHibernating) {
+                                isHibernating = true;
+                                scene.remove(model.parent); // Removes from GPU render tree
+                            }
+                        }, 2000);
+                    }
                 });
             }, { threshold: 0.01 }); // Relaxed threshold for mobile/small screens
             visibilityObserver.observe(container);
@@ -456,9 +541,9 @@
                     camera.updateProjectionMatrix();
 
                     // PERFORMANCE LOCK:
-                    // If the window is large (Desktop/Fullscreen), we cap at 1.5.
-                    // This is the "Butter Zone" for performance vs quality.
-                    const newDpr = width > 1200 ? 1.25 : Math.min(window.devicePixelRatio, 2.0);
+                    // We removed the aggressive 1.25 limit because it caused "pixely" models on high-res screens.
+                    // We now allow up to 2.0 DPR for crisp rendering, but rely on Time-Slicing to save performance.
+                    const newDpr = Math.min(window.devicePixelRatio, 2.0);
                     viewerInstance._dpr = newDpr; // Store locally for the shared renderer
 
                     // Update local 2D canvas size
