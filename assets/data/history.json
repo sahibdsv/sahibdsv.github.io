@@ -1,5 +1,15 @@
 [
   {
+    "hash": "95d863b4bbb5e5126e85bd5f0b4996b46148b7ee",
+    "date": "2026-03-22",
+    "message": "perf: prioritize active interaction and implement stable viewport rendering"
+  },
+  {
+    "hash": "ba6f623a717a3df265982261d086549783d1c7fd",
+    "date": "2026-03-22",
+    "message": "perf: implement singleton WebGL renderer and 2D blitting to resolve main thread blocking"
+  },
+  {
     "hash": "87705506acaa4afc120f263dbec5a7b8ca5eef34",
     "date": "2026-03-22",
     "message": "feat: adjust media IntersectionObserver thresholds to prevent premature loading"
