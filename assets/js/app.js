@@ -1812,7 +1812,7 @@ function initMusicMarquee(container) {
 function renderMusicCardHTML(item) {
     const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
     const track = safeHTML(item.track || "Unknown Track");
-    const artist = safeHTML(item.artist || "Unknown Artist");
+    const artist = (item.artist === "" || item.artist === null) ? "" : safeHTML(item.artist || "Unknown Artist");
     
     // SVG Guard: Never use the YT Music SVG as a full-bleed thumbnail (Case-Insensitive & Fuzzy)
     const isSVGLogo = item.thumb && (item.thumb.toLowerCase().includes("youtube_music_icon.svg") || item.thumb === ytLogo);
@@ -2050,13 +2050,12 @@ async function renderRewindSection(container, type) {
                // Final Sanity Guard: Handle track/artist labels with extreme care site-wide
         const isArtistMode = (type === 'top-artists');
         const displayTitle = isArtistMode ? artistVal : track;
-        
-        // Hide sub-label for Top Artists to emphasize the Artist themselves
-        // For Songs/Favorites, we still show the Artist as the sub-label
-        const displaySub = isArtistMode ? "" : artistVal;
+            // Hide sub-label for Top Artists to emphasize the Artist themselves
+        // Passing an explicit null ensures the renderer doesn't use the 'Unknown Artist' fallback
+        const displaySub = isArtistMode ? null : artistVal;
 
         const lowSong = fuzzyNorm_(displayTitle);
-        const lowSub = fuzzyNorm_(displaySub);
+        const lowSub = displaySub ? fuzzyNorm_(displaySub) : "";
 
         // Deduplication Guard: Only hide the sub-label if the TWO labels on ONE card are identical
         if (lowSong === lowSub || displaySub === "Unknown Artist") {
@@ -2604,7 +2603,7 @@ function toggleFullscreen(viewerId) {
                 viewer.canvas.style.setProperty('touch-action', 'none', 'important'); // Restore OrbitControls expectation
                 viewer.controls.minDistance = 0.2;
                 viewer.controls.maxDistance = 100; // Let her rip
-                viewer.controls.zoomSpeed = 0.6; // v=69.12
+                viewer.controls.zoomSpeed = 0.6; // v=69.13
             }
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(() => { });
