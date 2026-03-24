@@ -1,5 +1,10 @@
 [
   {
+    "hash": "040d74dc3dc925f23a9384fc96e6f092546b0529",
+    "date": "2026-03-24",
+    "message": "fix(ui): implement atomic soft-update to eliminate music flickering and refine {Refresh} tag styling"
+  },
+  {
     "hash": "f1244511077a07dba77d417d8f2cb038f0de9b53",
     "date": "2026-03-24",
     "message": "fix(links): resolve ISO date filtering regression and add {Refresh} tag support"
