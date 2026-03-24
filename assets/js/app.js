@@ -1620,7 +1620,6 @@ function updateContainer(container, html, append = false) {
 
         if (container.innerHTML !== normalizedHTML) {
             // PRESERVATION LAYER: Prevent flickering of dynamic components (Music, Quotes)
-            // Capture currently initialized dynamic content before they are wiped by the new template
             const dynamicState = new Map();
             container.querySelectorAll('[data-type], .layout-quote').forEach(el => {
                 const key = el.getAttribute('data-type') || el.getAttribute('data-title') || el.className;
@@ -1635,10 +1634,8 @@ function updateContainer(container, html, append = false) {
                 }
             });
 
-            container.innerHTML = normalizedHTML;
-
-            // RESTORATION LAYER: Inject preserved content back into the fresh templates
-            container.querySelectorAll('[data-needs-init="true"]').forEach(el => {
+            // RESTORATION LAYER: Inject preserved content ATOMICALLY before rendering to DOM
+            temp.querySelectorAll('[data-needs-init="true"]').forEach(el => {
                 const key = el.getAttribute('data-type') || el.getAttribute('data-title') || el.className;
                 const state = dynamicState.get(key);
                 if (state) {
@@ -1649,6 +1646,7 @@ function updateContainer(container, html, append = false) {
                 }
             });
 
+            container.innerHTML = temp.innerHTML;
             postRender(container);
         }
     }
@@ -2586,7 +2584,7 @@ function toggleFullscreen(viewerId) {
                 viewer.canvas.style.setProperty('touch-action', 'none', 'important'); // Restore OrbitControls expectation
                 viewer.controls.minDistance = 0.2;
                 viewer.controls.maxDistance = 100; // Let her rip
-                viewer.controls.zoomSpeed = 0.6;
+                viewer.controls.zoomSpeed = 0.6; // v69.7
             }
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(() => { });
@@ -3668,7 +3666,10 @@ function processInlineMarkdown(text, depth = 0) {
         result = result.replace(/\{Top Songs\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="top-songs"></div>');
         result = result.replace(/\{Fresh Favorites\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="fresh-favorites"></div>');
         result = result.replace(/\{Random Quote\}/gi, '<div class="layout-quote" data-needs-init="true" data-title="random quote"></div>');
-        result = result.replace(/\{Refresh\}/gi, '<a href="javascript:location.reload()" class="refresh-link" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; color:var(--text-bright); font-weight:600; font-family: Jost, sans-serif;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> REFRESH</a>');
+        result = result.replace(/\{Refresh\}/gi, (match) => {
+            const label = match.substring(1, match.length - 1);
+            return `<a href="javascript:location.reload()" class="refresh-link" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; color:inherit; font-weight:600; font-family: Jost, sans-serif;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> ${label}</a>`;
+        });
     }
 
     // Standard Markdown (Multi-line support with [\s\S])
