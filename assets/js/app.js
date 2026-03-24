@@ -1143,18 +1143,25 @@ const getCategoryClass = page => {
 };
 
 function renderFiltered(filter) {
-    const m = filter.match(/^(\d{4})-(\d{2})/) || filter.match(/^(\d{4})(\d{2})/);
+    const range = getDateRange(filter);
     let label = filter;
 
+    // Humanize label if it's a simple YYYY-MM
+    const m = filter.match(/^(\d{4})-(\d{2})$/);
     if (m) {
         label = `${new Date(m[1], parseInt(m[2]) - 1, 1).toLocaleString("default", { month: "long" })} ${m[1]}`;
     }
+
+    const filtered = db.filter(row => {
+        if (row.Tags && row.Tags.includes(filter)) return true;
+        if (!row.Timestamp) return false;
+        
+        // Advanced Range Overlap Check
+        const itemRange = getDateRange(row.Timestamp);
+        return (itemRange.start <= range.end && itemRange.end >= range.start);
+    });
     
-    renderRows(
-        db.filter(row => (row.Timestamp || "").startsWith(filter) || row.Tags && row.Tags.includes(filter)),
-        safeHTML(label),
-        false, true, false, true
-    );
+    renderRows(filtered, safeHTML(label), false, true, false, true);
 }
 
 function renderPage(e) {
@@ -1475,7 +1482,7 @@ function renderCardHTML(entry, contextCategory = "") {
     let metaRowHTML = "";
     if (entry.Timestamp || tagsList.length > 0) {
         metaRowHTML =
-            `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp.substring(0, 7)}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
+            `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
     }
 
     let titleHTML = "";
@@ -2626,25 +2633,101 @@ function formatDate(e) {
     if (e instanceof Date) return `${e.getDate()} ${e.toLocaleString("default", { month: "short" }).toUpperCase()} ${e.getFullYear()}`;
     e = String(e).trim();
 
-    // Detect format precision
+    // If it looks like a range or season (contains non-digit/non-dash chars beyond simple ISO), keep it as is
+    // This allows "FALL 2025" or "DEC 2025 - FEB 2026" to render beautifully
+    if (/[A-Za-z]/.test(e) && !/^\d{4}-\d{2}-\d{2}$/.test(e)) return e;
+
     const isYearOnly = /^\d{4}$/.test(e);
     const isYearMonth = /^\d{4}-\d{2}$/.test(e);
 
     const n = new Date(e);
     if (isNaN(n.getTime())) return e;
     
-    // Standardize to midday UTC to avoid timezone drift during formatting
     const r = new Date(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), 12, 0, 0);
-    
     const day = r.getUTCDate();
     const month = r.toLocaleString("default", { month: "short" }).toUpperCase();
     const year = r.getUTCFullYear();
     
     if (isYearOnly) return `${year}`;
     if (isYearMonth) return `${month} ${year}`;
-    
     return `${day} ${month} ${year}`;
 }
+
+/**
+ * Smart Date Range Parser
+ * Converts "FALL 25 - SPR 2026", "2026-01-03", "DEC 2025", etc. into {start, end} Dates.
+ */
+function getDateRange(str) {
+    if (!str) return { start: new Date(0), end: new Date(8640000000000000) };
+    const parts = str.split('-').map(p => p.trim());
+    
+    const startObj = parseFlexibleDate(parts[0], true);
+    const endObj = parts.length > 1 ? parseFlexibleDate(parts[1], false) : parseFlexibleDate(parts[0], false);
+    
+    return { start: startObj, end: endObj };
+}
+
+function parseFlexibleDate(token, isStart) {
+    const t = token.toUpperCase();
+    
+    // Extract Year (4 digits or 2 digits with ')
+    const yearMatch = t.match(/\b(\d{4})\b/) || t.match(/'?(\d{2})\b/);
+    let year = yearMatch ? parseInt(yearMatch[yearMatch.length - 1]) : new Date().getFullYear();
+    if (year < 100) year += 2000;
+
+    // Fallback if no specific month/season found
+    let monthStart = 0; // Jan
+    let monthEnd = 11; // Dec
+
+    const seasons = {
+        'WINTER': [11, 1], 'WIN': [11, 1], 'WTR': [11, 1],
+        'SPRING': [2, 4],  'SPR': [2, 4],
+        'SUMMER': [5, 7],  'SUM': [5, 7],
+        'FALL': [8, 10],   'AUTUMN': [8, 10], 'AUT': [8, 10]
+    };
+
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    
+    // Check Seasons
+    for (const [name, range] of Object.entries(seasons)) {
+        if (t.includes(name)) {
+            monthStart = range[0];
+            monthEnd = range[1];
+            // Winter special case (Dec - Feb)
+            if (monthStart > monthEnd && !isStart) year += 1; 
+            break;
+        }
+    }
+
+    // Check Months (Overwrites season if specific month is named)
+    months.forEach((name, idx) => {
+        if (t.includes(name)) {
+            monthStart = idx;
+            monthEnd = idx;
+        }
+    });
+
+    // ISO Format overrides (2026-01-03)
+    const isoMatch = t.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+        const d = new Date(parseInt(isoMatch[1]), parseInt(isoMatch[2]) - 1, parseInt(isoMatch[3]));
+        return d;
+    }
+    const isoMonthMatch = t.match(/(\d{4})-(\d{2})/);
+    if (isoMonthMatch) {
+        monthStart = parseInt(isoMonthMatch[2]) - 1;
+        monthEnd = monthStart;
+        year = parseInt(isoMonthMatch[1]);
+    }
+
+    if (isStart) {
+        return new Date(year, monthStart, 1);
+    } else {
+        // Last day of the period
+        return new Date(year, monthEnd + 1, 0, 23, 59, 59);
+    }
+}
+
 
 
 function updateSEO(path = "") {
