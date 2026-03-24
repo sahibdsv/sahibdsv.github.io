@@ -1,5 +1,10 @@
 [
   {
+    "hash": "62945be029a444e285b74d216ba4bc3a1cfb441e",
+    "date": "2026-03-24",
+    "message": "chore: normalize Arbalest logo filename to lowercase to match spreadsheet and fix 404"
+  },
+  {
     "hash": "7985e037727a72f200ee6e55b0b69816cdf1ac1b",
     "date": "2026-03-24",
     "message": "v69.17: Refined Watermark Inversion & Fixed Article Mode Transparency. Implemented smart brightness detection (transparency-aware) for watermarks to ensure high contrast against both light and dark themes."
