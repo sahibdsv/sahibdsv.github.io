@@ -265,10 +265,18 @@
 
         del,
         s {
-            text-decoration: none;
-            /* Precise strikethrough: lowers the line slightly for geometric fonts */
+            /* Semantic line-through for the clipboard (copy-paste support) */
+            text-decoration: line-through;
+            text-decoration-color: transparent;
+            /* Precise visual strikethrough: lowers the line slightly for geometric fonts */
             background-image: linear-gradient(transparent 58%, currentColor 58%, currentColor 64%, transparent 64%);
             background-repeat: repeat-x;
+        }
+
+        del::selection,
+        s::selection {
+            /* Make the strike visible during selection so the user knows it's captured */
+            text-decoration-color: currentColor;
         }
 
         #brand-name {
