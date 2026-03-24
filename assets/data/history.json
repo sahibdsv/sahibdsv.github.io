@@ -1,5 +1,10 @@
 [
   {
+    "hash": "dc68772f3d85a9f575ff04d633afcf25a6e19dd0",
+    "date": "2026-03-24",
+    "message": "fix(ui): eliminate flicker in music cards and quotes via state preservation layer and RAF initialization"
+  },
+  {
     "hash": "fb1b7cc9c48ca81800ad897f13623ce36fe0efba",
     "date": "2026-03-24",
     "message": "feat(ui): restore text selection to card components and bump version to 68.8"
