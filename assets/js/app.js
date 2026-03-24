@@ -1608,7 +1608,36 @@ function updateContainer(container, html, append = false) {
         const normalizedHTML = temp.innerHTML;
 
         if (container.innerHTML !== normalizedHTML) {
+            // PRESERVATION LAYER: Prevent flickering of dynamic components (Music, Quotes)
+            // Capture currently initialized dynamic content before they are wiped by the new template
+            const dynamicState = new Map();
+            container.querySelectorAll('[data-type], .layout-quote').forEach(el => {
+                const key = el.getAttribute('data-type') || el.getAttribute('data-title') || el.className;
+                if (el.innerHTML.trim() && !el.getAttribute('data-needs-init')) {
+                    dynamicState.set(key, {
+                        content: el.innerHTML,
+                        hash: el.getAttribute('data-last-render') || el.getAttribute('data-last-id'),
+                        attrs: Array.from(el.attributes)
+                            .filter(a => !['data-needs-init', 'id', 'class'].includes(a.name))
+                            .map(a => ({n: a.name, v: a.value}))
+                    });
+                }
+            });
+
             container.innerHTML = normalizedHTML;
+
+            // RESTORATION LAYER: Inject preserved content back into the fresh templates
+            container.querySelectorAll('[data-needs-init="true"]').forEach(el => {
+                const key = el.getAttribute('data-type') || el.getAttribute('data-title') || el.className;
+                const state = dynamicState.get(key);
+                if (state) {
+                    el.innerHTML = state.content;
+                    state.attrs.forEach(a => el.setAttribute(a.n, a.v));
+                    if (state.hash) el.setAttribute('data-last-render', state.hash);
+                    el.removeAttribute('data-needs-init'); // Skip re-initialization in postRender
+                }
+            });
+
             postRender(container);
         }
     }
@@ -1822,7 +1851,9 @@ function renderEmptyStateHTML(message, showSpinner = false) {
 
 function renderRecentMusic(container) {
     if (musicDb.length === 0) {
-        container.innerHTML = renderEmptyStateHTML("Syncing Music...", true);
+        if (!container.innerHTML.trim() || container.querySelector('.spinner')) {
+            container.innerHTML = renderEmptyStateHTML("Syncing Music...", true);
+        }
         return;
     }
 
@@ -1876,8 +1907,8 @@ function renderRecentMusic(container) {
                 </div>
             `;
 
-    // Initialization for marquee
-    setTimeout(() => initMusicMarquee(container), 100);
+    // Initialization for marquee - use RAF for buttery smooth transition
+    requestAnimationFrame(() => initMusicMarquee(container));
 }
 
 let _rewindData = null;
@@ -1912,7 +1943,9 @@ function fuzzyNorm_(str) {
 async function renderRewindSection(container, type) {
     const data = await fetchRewindData();
     if (!data) {
-        container.innerHTML = renderEmptyStateHTML("Syncing Stats...", true);
+        if (!container.innerHTML.trim() || container.querySelector('.spinner')) {
+            container.innerHTML = renderEmptyStateHTML("Syncing Stats...", true);
+        }
         return;
     }
 
