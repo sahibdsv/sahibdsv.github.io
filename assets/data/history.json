@@ -1,5 +1,20 @@
 [
   {
+    "hash": "d15928d2ecc48ad81ebc806417f9c2ada24b6310",
+    "date": "2026-03-24",
+    "message": "Style: More robust footer home bar clearance [v69.27]"
+  },
+  {
+    "hash": "33c8204df27683768c618618b3038e5ecc76f526",
+    "date": "2026-03-24",
+    "message": "Build: Correctly versioning footer fixes [v69.25]"
+  },
+  {
+    "hash": "b73cc97c969b44d92beb3a79a87acc9d83bad77c",
+    "date": "2026-03-24",
+    "message": "Style: Reduced footer top gap and padding for tighter layout [v69.25]"
+  },
+  {
     "hash": "83b5e756ec272f461eca934e0ffa4062c872bb04",
     "date": "2026-03-24",
     "message": "Feat: Granular event tracking for quotes, music, search, 3D, and clicks [v69.23]"
