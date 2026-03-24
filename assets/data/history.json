@@ -1,5 +1,20 @@
 [
   {
+    "hash": "e0b2dfa5231c3099952dc2750af7bfac3d321c12",
+    "date": "2026-03-24",
+    "message": "fix(music): normalize chip alignment by replacing fixed margins with parent-level gap"
+  },
+  {
+    "hash": "4842f0695b7b67b9a052646b711a271bab287f6a",
+    "date": "2026-03-24",
+    "message": "fix(music): suppress 'Unknown Artist' fallback for Top Artists charts"
+  },
+  {
+    "hash": "a2e64b315ce2318c29edda46807830d2d18f786c",
+    "date": "2026-03-24",
+    "message": "fix(music): swap artist/track hierarchy for Top Artists section and hide sub-labels"
+  },
+  {
     "hash": "7ebbaf8f9cab3bf91102a853a47210700a365ef9",
     "date": "2026-03-24",
     "message": "feat(3d): implement multi-layer watermark branding for 3D model cards"
