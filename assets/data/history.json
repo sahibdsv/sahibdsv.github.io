@@ -1,5 +1,10 @@
 [
   {
+    "hash": "7ebbaf8f9cab3bf91102a853a47210700a365ef9",
+    "date": "2026-03-24",
+    "message": "feat(3d): implement multi-layer watermark branding for 3D model cards"
+  },
+  {
     "hash": "cf165ba8a9c6d6fe6617defd5d103bf2c6df723c",
     "date": "2026-03-24",
     "message": "feat(ui): expand manual refresh support to include {reload} and [[refresh/reload]] with case preservation"
