@@ -1,8 +1,33 @@
 [
   {
-    "hash": "598ecf349f2b1d7b0607151fbae8770a2d71e303",
+    "hash": "2f96fc1bf87b71db42f85591c25f475a742042a0",
+    "date": "2026-03-24",
+    "message": "fix(music): ensure play count chips render for all numeric values"
+  },
+  {
+    "hash": "44abee0d7c0d50e500e6884c5a387076b386126e",
+    "date": "2026-03-24",
+    "message": "feat(music): update play count logic to use PlayCount and fix pluralization"
+  },
+  {
+    "hash": "93d1afe4ec0d4cde94553fbdd5cca619426e53ac",
+    "date": "2026-03-23",
+    "message": "chore: update history.json for snapshots"
+  },
+  {
+    "hash": "ed83144e56444d5467b1373b4ccc1513b076b95d",
     "date": "2026-03-23",
     "message": "fix: prevent dice icon from enlarging on hover and click"
+  },
+  {
+    "hash": "22b3f8e0ee5d2a02a1c9a88f24c480af7dbfa981",
+    "date": "2026-03-23",
+    "message": "[v1] about"
+  },
+  {
+    "hash": "cba472db2d0d6cb90de712a26cf0aa75b37ac971",
+    "date": "2026-03-23",
+    "message": "[v1] feat: Add AboutMe thumbnail images."
   },
   {
     "hash": "6c8998b779b7656a835309dd6e2c5f1131606682",
