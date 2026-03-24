@@ -2584,7 +2584,7 @@ function toggleFullscreen(viewerId) {
                 viewer.canvas.style.setProperty('touch-action', 'none', 'important'); // Restore OrbitControls expectation
                 viewer.controls.minDistance = 0.2;
                 viewer.controls.maxDistance = 100; // Let her rip
-                viewer.controls.zoomSpeed = 0.6; // v=69.8
+                viewer.controls.zoomSpeed = 0.6; // v=69.9
             }
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(() => { });
@@ -3666,8 +3666,8 @@ function processInlineMarkdown(text, depth = 0) {
         result = result.replace(/\{Top Songs\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="top-songs"></div>');
         result = result.replace(/\{Fresh Favorites\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="fresh-favorites"></div>');
         result = result.replace(/\{Random Quote\}/gi, '<div class="layout-quote" data-needs-init="true" data-title="random quote"></div>');
-        result = result.replace(/\{Refresh\}/gi, (match) => {
-            const label = match.substring(1, match.length - 1);
+        result = result.replace(/\{(Refresh|Reload)\}|\[\[(Refresh|Reload)\]\]/gi, (match) => {
+            const label = match.replace(/^[\{\[]+|[\}\]]+$/g, '');
             return `<a href="javascript:location.reload()">${label}</a>`;
         });
     }
