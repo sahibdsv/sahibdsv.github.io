@@ -73,6 +73,7 @@
             --music-fallback-opacity: 0.25; /* Boosted High-Fidelity ghost intensity for Dark mode */
             --surface-subtle: #222222;
             --surface-strong: #333333;
+            --card-bg-dark: #0a0a0a;
             --border-hover: var(--border-strong);
             --accent-strava: #FC6100;
             /* GLOBAL SPACING SYSTEM (8px Multiplier Rule) */
@@ -121,6 +122,7 @@
             --border-hover: var(--border-strong);
             --surface-subtle: #eeeeee;
             --surface-strong: #dddddd;
+            --card-bg-dark: #e8e8ed;
             --music-fallback-opacity: 0.18;
             --music-fallback-inv: 0;
         }
@@ -1341,7 +1343,7 @@
             width: 100%;
             border-radius: var(--card-radius);
             overflow: hidden;
-            background: var(--bg);
+            background: transparent;
         }
 
         .model-viewer-wrapper.card-preview {
@@ -1657,7 +1659,7 @@
             height: 450px;
             opacity: 1;
             position: relative;
-            background: var(--card-bg-dark);
+            background: transparent;
             border: none;
             border-radius: var(--card-radius);
             box-sizing: border-box;
@@ -1670,15 +1672,36 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            opacity: 0.12;
+            opacity: 0.15;
             z-index: 1;
             pointer-events: none;
             filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
             transition: opacity 1.2s var(--ease);
         }
 
-        .model-bg-watermark.theme-invert {
-            filter: invert(1) hue-rotate(180deg) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+        /* Intelligent Watermark Reactivity: Logos must NOT match the background (contrast-first) */
+
+        /* If logo is Bright (white), invert it only in Light mode to stay dark */
+        [data-theme="light"] .model-bg-watermark.is-bright {
+            filter: invert(1) hue-rotate(180deg) drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+            opacity: 0.16;
+        }
+
+        /* If logo is Dark (black), invert it only in Dark mode to stay light */
+        [data-theme="dark"] .model-bg-watermark.is-dark {
+            filter: invert(1) hue-rotate(180deg) drop-shadow(0 4px 12px rgba(255,255,255,0.1));
+            opacity: 0.18;
+        }
+
+        /* Base states for matching themes (ensure they have some contrast/popping) */
+        [data-theme="dark"] .model-bg-watermark.is-bright {
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+            opacity: 0.18;
+        }
+
+        [data-theme="light"] .model-bg-watermark.is-dark {
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            opacity: 0.14;
         }
 
         .model-viewer-wrapper canvas {

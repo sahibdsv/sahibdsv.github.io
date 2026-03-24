@@ -2358,7 +2358,8 @@ function getThumbnail(media) {
     if (!media) return null;
 
     // Check for multi-line Thumbnail (special case: GLB model + background logo)
-    const lines = String(media).split('\n').map(l => l.trim()).filter(Boolean);
+    // Support all common newline separators in Spreadsheet data (\n, \r\n, \r, etc.)
+    const lines = String(media).split(/\r?\n|\r/).map(l => l.trim()).filter(Boolean);
     const hasGLB = lines.some(l => l.match(/\.glb(?:-[a-zA-Z0-9_-]+)*/i));
     const hasIMG = lines.some(l => l.match(/\.(png|jpg|jpeg|webp|svg)(?:-[a-zA-Z0-9_-]+)*/i));
     if (hasGLB && hasIMG) return 'GLB_WITH_BG';
@@ -2498,7 +2499,8 @@ function renderGLBViewer(glbPath, isCardMode, bgUrl = null) {
         const p = processMediaUrl(bgUrl);
         // Ensure background images from spreadsheet use the assets/images prefix if raw
         const fullBgUrl = (p.url.startsWith('assets/') || p.url.startsWith('http')) ? p.url : `assets/images/${p.url}`;
-        bgHTML = `<div class="model-bg-watermark ${p.invert ? 'theme-invert' : ''}" style="background-image: url('${fullBgUrl}');"></div>`;
+        // We no longer manually tag 'theme-invert' as we use applySmartWatermark for per-model logic
+        bgHTML = `<div class="model-bg-watermark" style="background-image: url('${fullBgUrl}');"></div>`;
     }
 
     const html = `
@@ -2524,6 +2526,12 @@ function renderGLBViewer(glbPath, isCardMode, bgUrl = null) {
     setTimeout(() => {
         const container = document.getElementById(uniqueId);
         if (container) {
+            // Detect watermark brightness if present to facilitate intelligent contrast
+            const watermark = container.querySelector('.model-bg-watermark');
+            if (watermark) {
+                const bgImg = watermark.style.backgroundImage;
+                if (bgImg) applySmartWatermark(watermark, bgImg);
+            }
             _glbObserver.observe(container);
         }
     }, 0);
@@ -2603,7 +2611,7 @@ function toggleFullscreen(viewerId) {
                 viewer.canvas.style.setProperty('touch-action', 'none', 'important'); // Restore OrbitControls expectation
                 viewer.controls.minDistance = 0.2;
                 viewer.controls.maxDistance = 100; // Let her rip
-                viewer.controls.zoomSpeed = 0.6; // v=69.13
+                viewer.controls.zoomSpeed = 0.6; // v=69.16
             }
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(() => { });
@@ -3235,11 +3243,11 @@ function detectMediaItem(text) {
     if (markdownImgMatch) {
         const subUrl = markdownImgMatch[2].trim();
         const subCaption = markdownImgMatch[1].trim();
-        // detectBasicUrlType replaced by unified extractMediaFromContent
+        const subType = extractMediaFromContent(subUrl);
         return {
             type: subType ? subType.type : 'image',
             url: subUrl,
-            id: media ? media.id : null,
+            id: subType ? subType.id : null,
             caption: caption || subCaption || null
         };
     }
@@ -3918,6 +3926,52 @@ function applySmartInversion(img) {
         // (safe bet for most logos/diagrams)
         img.classList.add('is-bright');
     }
+}
+
+function applySmartWatermark(el, url) {
+    if (!url) return;
+    const img = new Image();
+    
+    // Robust URL normalization from backgroundImage CSS string
+    let cleanUrl = url.trim().replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '');
+    
+    // Security: Handle external CORS for brightness detection
+    if (cleanUrl.startsWith('http') && !cleanUrl.includes(window.location.hostname)) {
+        img.crossOrigin = "anonymous";
+    }
+    
+    img.src = cleanUrl;
+    img.onload = () => {
+        try {
+            const canvas = document.createElement('canvas');
+            // Use a slightly larger sample area to avoid edges
+            const size = 20;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0, size, size);
+            const data = ctx.getImageData(0, 0, size, size).data;
+            
+            let totalBrightness = 0;
+            let count = 0;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const alpha = data[i+3];
+                if (alpha > 50) { // Only count pixels that aren't mostly transparent
+                    const r = data[i], g = data[i+1], b = data[i+2];
+                    totalBrightness += (r * 299 + g * 587 + b * 114) / 1000;
+                    count++;
+                }
+            }
+            
+            const bness = count > 0 ? (totalBrightness / count) : 255; // Default white if empty/transparent
+            if (bness > 128) el.classList.add('is-bright');
+            else el.classList.add('is-dark');
+        } catch (e) {
+            el.classList.add('is-bright'); // Safest default
+        }
+    };
+    img.onerror = () => el.classList.add('is-bright');
 }
 
 function renderTOC(allBlocks, currentIndex) {
