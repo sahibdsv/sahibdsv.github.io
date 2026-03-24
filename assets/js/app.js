@@ -2669,7 +2669,20 @@ function getDateRange(str) {
     const isDateLike = /\d{2,4}|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC|SPRING|SUMMER|FALL|AUTUMN|WINTER|SPR|SUM|AUT|WIN|WTR/.test(str.toUpperCase());
     if (!isDateLike) return null;
 
-    const parts = str.split('-').map(p => p.trim());
+    let parts;
+    // Special handling for ISO format YYYY-MM-DD which contains dashes but isn't a range
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str.trim())) {
+        parts = [str.trim()];
+    } else {
+        // Only split on dashes that look like range separators (spaces around them)
+        parts = str.split(/ - | – | — /).map(p => p.trim());
+        // Fallback for YYYY-YYYY format
+        if (parts.length === 1 && str.includes('-') && !str.includes(' ')) {
+            const yyyyRange = str.match(/^(\d{4})-(\d{4})$/);
+            if (yyyyRange) parts = [yyyyRange[1], yyyyRange[2]];
+        }
+    }
+
     const startObj = parseFlexibleDate(parts[0], true);
     const endObj = parts.length > 1 ? parseFlexibleDate(parts[1], false) : parseFlexibleDate(parts[0], false);
     
@@ -3655,6 +3668,7 @@ function processInlineMarkdown(text, depth = 0) {
         result = result.replace(/\{Top Songs\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="top-songs"></div>');
         result = result.replace(/\{Fresh Favorites\}/gi, '<div class="music-embed-container" data-needs-init="true" data-type="fresh-favorites"></div>');
         result = result.replace(/\{Random Quote\}/gi, '<div class="layout-quote" data-needs-init="true" data-title="random quote"></div>');
+        result = result.replace(/\{Refresh\}/gi, '<a href="javascript:location.reload()" class="refresh-link" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; color:var(--text-bright); font-weight:600; font-family: Jost, sans-serif;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> REFRESH</a>');
     }
 
     // Standard Markdown (Multi-line support with [\s\S])
@@ -3696,11 +3710,14 @@ function processInlineMarkdown(text, depth = 0) {
     // C. SMART LINKS & MARKDOWN LINKS
     result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
         const cleanURL = url.trim();
+        const isInternal = cleanURL.startsWith('#') || cleanURL.startsWith('/') || cleanURL.includes(window.location.hostname);
+        const target = isInternal ? '' : 'target="_blank" rel="noopener"';
+        
         // Standard Link
         if (label.toLowerCase().includes('strava')) {
-            return `<a href="${cleanURL}" target="_blank" rel="noopener" class="strava-link" onclick="event.stopPropagation();">${processInlineMarkdown(label, depth + 1)}</a>`;
+            return `<a href="${cleanURL}" ${target} class="strava-link" onclick="event.stopPropagation();">${processInlineMarkdown(label, depth + 1)}</a>`;
         }
-        return `<a href="${cleanURL}" target="_blank" rel="noopener" onclick="event.stopPropagation();">${processInlineMarkdown(label, depth + 1)}</a>`;
+        return `<a href="${cleanURL}" ${target} onclick="event.stopPropagation();">${processInlineMarkdown(label, depth + 1)}</a>`;
     });
 
     if (depth === 0) {
