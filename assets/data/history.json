@@ -1,5 +1,10 @@
 [
   {
+    "hash": "7985e037727a72f200ee6e55b0b69816cdf1ac1b",
+    "date": "2026-03-24",
+    "message": "v69.17: Refined Watermark Inversion & Fixed Article Mode Transparency. Implemented smart brightness detection (transparency-aware) for watermarks to ensure high contrast against both light and dark themes."
+  },
+  {
     "hash": "e0b2dfa5231c3099952dc2750af7bfac3d321c12",
     "date": "2026-03-24",
     "message": "fix(music): normalize chip alignment by replacing fixed margins with parent-level gap"
