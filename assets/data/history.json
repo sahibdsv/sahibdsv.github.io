@@ -1,5 +1,15 @@
 [
   {
+    "hash": "38364c521a0f654e4a68fe6147ec918fba9f0c97",
+    "date": "2026-03-24",
+    "message": "Build: Version bump [v69.21]"
+  },
+  {
+    "hash": "045a443642b288727239b642b1a68646adeaa969",
+    "date": "2026-03-24",
+    "message": "Fix: Descriptive Date Range Truncation in Hero/Article Layouts [v69.21]"
+  },
+  {
     "hash": "8c8ebfc15ae34b440e942a616623c24d5ee9e838",
     "date": "2026-03-24",
     "message": "v69.19: True Transparency for Cards. Removed redundant backgrounds from media containers to allow whole-card hover effects."
