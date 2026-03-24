@@ -1,5 +1,15 @@
 [
   {
+    "hash": "9137f1ef52905b8e7f8ff045d65492538f87ddc9",
+    "date": "2026-03-24",
+    "message": "feat(markdown): add support for strikethrough using ~~ and bump version to 68.9"
+  },
+  {
+    "hash": "72628e4b3ae31485890fee9e08837a87777c4084",
+    "date": "2026-03-24",
+    "message": "feat(temporal): add smart date range and season support with interval-based filtering"
+  },
+  {
     "hash": "dc68772f3d85a9f575ff04d633afcf25a6e19dd0",
     "date": "2026-03-24",
     "message": "fix(ui): eliminate flicker in music cards and quotes via state preservation layer and RAF initialization"
