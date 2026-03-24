@@ -1,5 +1,15 @@
 [
   {
+    "hash": "cf165ba8a9c6d6fe6617defd5d103bf2c6df723c",
+    "date": "2026-03-24",
+    "message": "feat(ui): expand manual refresh support to include {reload} and [[refresh/reload]] with case preservation"
+  },
+  {
+    "hash": "d7e63409cbdbdbfb4c3d79b587498c4757370966",
+    "date": "2026-03-24",
+    "message": "fix(ui): simplify {Refresh} tag to render as standard text link"
+  },
+  {
     "hash": "040d74dc3dc925f23a9384fc96e6f092546b0529",
     "date": "2026-03-24",
     "message": "fix(ui): implement atomic soft-update to eliminate music flickering and refine {Refresh} tag styling"
