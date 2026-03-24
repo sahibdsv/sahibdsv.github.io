@@ -1054,8 +1054,7 @@
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             transition: background var(--anim-instant), border-color var(--anim-instant);
-            user-select: none;
-            -webkit-user-select: none;
+
             background: var(--card-bg);
             box-shadow: var(--shadow-subtle, none);
             overflow: hidden;
@@ -2368,7 +2367,7 @@
             margin: 40px 0;
             width: 100%;
             box-sizing: border-box;
-            user-select: none;
+
             -webkit-user-drag: none;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
