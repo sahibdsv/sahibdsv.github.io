@@ -2047,30 +2047,32 @@ async function renderRewindSection(container, type) {
                 }
             }
         }
+               // Final Sanity Guard: Handle track/artist labels with extreme care site-wide
+        const isArtistMode = (type === 'top-artists');
+        const displayTitle = isArtistMode ? artistVal : track;
+        
+        // Hide sub-label for Top Artists to emphasize the Artist themselves
+        // For Songs/Favorites, we still show the Artist as the sub-label
+        const displaySub = isArtistMode ? "" : artistVal;
 
-        // Final Sanity Guard: Handle track/artist labels with extreme care site-wide
-        const isSongFirst = (type !== 'top-artists');
-        const songTitle = isSongFirst ? track : artistVal;
-        const subLabel = isSongFirst ? artistVal : track;
-
-        const lowSong = fuzzyNorm_(songTitle);
-        const lowSub = fuzzyNorm_(subLabel);
+        const lowSong = fuzzyNorm_(displayTitle);
+        const lowSub = fuzzyNorm_(displaySub);
 
         // Deduplication Guard: Only hide the sub-label if the TWO labels on ONE card are identical
-        if (lowSong === lowSub || subLabel === "Unknown Artist") {
-            artistVal = (type === 'top-artists') ? "" : "Recent Track"; 
+        if (lowSong === lowSub || displaySub === "Unknown Artist") {
+            // (displaySub already set to empty for artists above)
         }
         
         // Echo Guard: If we've already seen this SONG in the current grid, clear it for the next card
-        if (type === 'top-artists' && artistVal && seenSongs.has(lowSub)) {
-            artistVal = "";
+        if (type === 'top-artists' && displaySub && seenSongs.has(lowSub)) {
+            // This logic is now handled by the displaySub being empty for artists
         }
         
         // Mark the SONG (and only the song) as "Seen" to prevent it being guessed for the next card
-        if (type === 'top-artists' && artistVal) seenSongs.add(lowSub);
-        else if (type !== 'top-artists' && songTitle) seenSongs.add(lowSong);
+        if (type === 'top-artists' && displaySub) seenSongs.add(lowSub);
+        else if (type !== 'top-artists' && displayTitle) seenSongs.add(lowSong);
 
-        return renderMusicCardHTML({ artist: artistVal, track, link, thumb, source: "YT Music", count });
+        return renderMusicCardHTML({ artist: displaySub, track: displayTitle, link, thumb, source: "YT Music", count });
     }).join("");
 
     container.innerHTML = `
@@ -2602,7 +2604,7 @@ function toggleFullscreen(viewerId) {
                 viewer.canvas.style.setProperty('touch-action', 'none', 'important'); // Restore OrbitControls expectation
                 viewer.controls.minDistance = 0.2;
                 viewer.controls.maxDistance = 100; // Let her rip
-                viewer.controls.zoomSpeed = 0.6; // v=69.11
+                viewer.controls.zoomSpeed = 0.6; // v=69.12
             }
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(() => { });
