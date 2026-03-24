@@ -1779,8 +1779,8 @@ function renderMusicCardHTML(item) {
     const isYTMusic = (!item.source || item.source === "YT Music" || item.source === "YouTube Music" || item.source === "Music (Desktop)");
     
     // Play Count Chip logic - Standardized with other unclickable chips
-    const hasCount = item.count !== undefined && item.count !== null && item.count !== "";
-    const countLabel = item.count === 1 ? "play" : "plays";
+    const hasCount = item.count !== undefined && item.count !== null && String(item.count).trim() !== "";
+    const countLabel = parseInt(item.count) === 1 ? "play" : "plays";
     const countHTML = hasCount ? `<span class="chip stat no-hover music-stat-chip">${item.count} ${countLabel}</span>` : "";
 
     // Explicit branding icons / overlays
