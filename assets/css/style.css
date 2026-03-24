@@ -275,12 +275,10 @@
             background-repeat: repeat-x;
         }
 
-        /* Prevent the 'jumping line' by keeping the decorations stable during selection */
+        /* Keep decorations stable during selection without overriding site colors */
         del::selection,
         s::selection {
-            background-color: var(--accent-projects);
-            color: #000;
-            text-decoration-color: rgba(0, 0, 0, 0.2);
+            text-decoration-color: currentColor;
         }
 
         #brand-name {
