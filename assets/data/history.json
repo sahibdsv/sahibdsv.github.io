@@ -1,5 +1,25 @@
 [
   {
+    "hash": "faf9aa672539e19e07db5b283b4f010ff523c64b",
+    "date": "2026-03-24",
+    "message": "fix(strikethrough): remove aggressive orange selection highlight and bump to 69.3"
+  },
+  {
+    "hash": "5d9a1c91dc5e4af8cacc05a68b52880776b7475f",
+    "date": "2026-03-24",
+    "message": "fix(strikethrough): switch to <s> tag and implement dual-strike strategy for better clipboard/selection support"
+  },
+  {
+    "hash": "9f49b33f4068201ac4f8826f6a8551dfb88b8675",
+    "date": "2026-03-24",
+    "message": "feat(semantics): enable clipboard support for strikethrough via transparent text-decoration and bump to 69.1"
+  },
+  {
+    "hash": "e07317ca52fbc696190bca5387f515251d1c5b81",
+    "date": "2026-03-24",
+    "message": "fix(css): refine strikethrough vertical alignment for better typography match and bump to 69.0"
+  },
+  {
     "hash": "9137f1ef52905b8e7f8ff045d65492538f87ddc9",
     "date": "2026-03-24",
     "message": "feat(markdown): add support for strikethrough using ~~ and bump version to 68.9"
