@@ -1778,8 +1778,10 @@ function renderMusicCardHTML(item) {
     const thumb = (item.thumb && !isSVGLogo) ? item.thumb.replace(/^http:\/\//i, "https://") : null;
     const isYTMusic = (!item.source || item.source === "YT Music" || item.source === "YouTube Music" || item.source === "Music (Desktop)");
     
-    // Play Count Chip logic
-    const countHTML = item.count ? `<span class="music-stat-chip">${item.count} plays</span>` : "";
+    // Play Count Chip logic - Standardized with other unclickable chips
+    const hasCount = item.count !== undefined && item.count !== null && item.count !== "";
+    const countLabel = item.count === 1 ? "play" : "plays";
+    const countHTML = hasCount ? `<span class="chip stat no-hover music-stat-chip">${item.count} ${countLabel}</span>` : "";
 
     // Explicit branding icons / overlays
     let sourceOverlay = "";
@@ -1800,7 +1802,7 @@ function renderMusicCardHTML(item) {
                     <span class="marquee-content highlight-pulse"><h3 class="fill-anim">${track}</h3></span>
                 </div>
                 <div class="marquee-container artist-marquee">
-                    <span class="marquee-content"><div class="music-artist-label">${artist}${countHTML}</div></span>
+                    <span class="marquee-content"><span class="music-artist-label">${artist}${countHTML}</span></span>
                 </div>
             </div>
             ${sourceOverlay}
@@ -1835,12 +1837,25 @@ function renderRecentMusic(container) {
 
     const cardsHTML = latestItems.map((item) => {
         // Map to our unified structure
-        const artist = item.artist || item.Artist || "Unknown Artist";
-        const track = item.track || item.Track || item.Song || "Unknown Track";
+        const artist = cleanMusicLabel(item.artist || item.Artist || "Unknown Artist");
+        const track = cleanMusicLabel(item.track || item.Track || item.Song || "Unknown Track");
         let link = (item.link || item.Link || "").trim();
         const thumb = (item.thumbnail || item.Thumbnail || "").trim();
         const source = item.source || item.Source || "YT Music";
-        const count = item.playCount || item.count || 0;
+        // Unified Play Count extraction for Quantified Self - High Resilience
+        let count = item.PlayCount || item.plays || item.Plays || item.playCount || item.Count || item.count || 0;
+        
+        // If count is 0 or missing, calculate the real total plays across the entire DB
+        if (count === 0) {
+            const linkVal = (item.link || item.Link || "").trim();
+            const ytId = linkVal ? getYouTubeID(linkVal) : null;
+            const matches = musicDb.filter(m => {
+                const mLink = (m.link || m.Link || "").trim();
+                if (ytId && getYouTubeID(mLink) === ytId) return true;
+                return mLink === linkVal;
+            });
+            count = matches.length || 1; 
+        }
 
         // Fallback to search if link is missing or invalid
         const bareURL = link.toLowerCase();
@@ -1871,6 +1886,24 @@ async function fetchRewindData() {
 }
 
 // Resilient string normalization for cross-referencing stats with the main music database
+function cleanMusicLabel(val) {
+    if (!val) return "";
+    let str = String(val).trim();
+    // Detect 1899-12-30T... (Google Sheets "Time" as ISO Date)
+    if (str.startsWith('1899-12-30T')) {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+            // Reconstruct HH:MMam/pm (e.g., "5am")
+            let h = d.getHours();
+            const m = d.getMinutes();
+            const ampm = h >= 12 ? 'pm' : 'am';
+            h = h % 12 || 12;
+            return `${h}${m > 0 ? ':' + String(m).padStart(2, '0') : ''}${ampm}`;
+        }
+    }
+    return str;
+}
+
 function fuzzyNorm_(str) {
     if (typeof str !== 'string') str = String(str || "");
     return str.toLowerCase().replace(/[^\w\d]/g, "");
@@ -1900,20 +1933,32 @@ async function renderRewindSection(container, type) {
         // Map to our unified structure with extreme resilience (Objects vs Strings)
         let track = "Unknown Track";
         let artistVal = "Unknown Artist";
-        let count = item.count || 0;
+        let count = item.PlayCount || item.count || item.playCount || item.Count || item.plays || item.Plays || 0;
+
+        // Quantified Self Resilience: If count is 0, calculate from the main DB
+        if (count === 0 && typeof musicDb !== 'undefined') {
+            const searchVal = fuzzyNorm_(track);
+            const matches = musicDb.filter(m => {
+                const mSong = fuzzyNorm_(m.track || m.Track || m.Song || m.title || "");
+                const mArtist = fuzzyNorm_(m.artist || m.Artist || "");
+                if (type === 'top-artists') return mArtist === searchVal;
+                return mSong === searchVal;
+            });
+            count = matches.length || 1;
+        }
 
         if (typeof item === 'string') {
             if (item.includes(" - ")) {
                 const parts = item.split(" - ");
-                artistVal = parts[0].trim();
-                track = parts[1].trim();
+                artistVal = cleanMusicLabel(parts[0].trim());
+                track = cleanMusicLabel(parts[1].trim());
             } else {
-                track = item.trim();
-                artistVal = (type === 'top-artists') ? item.trim() : "Unknown Artist";
+                track = cleanMusicLabel(item.trim());
+                artistVal = (type === 'top-artists') ? cleanMusicLabel(item.trim()) : "Unknown Artist";
             }
         } else if (item && typeof item === 'object') {
-            track = item.track || item.Track || item.Song || item.name || item.Name || item.title || "Unknown Track";
-            artistVal = item.artist || item.Artist || item.author || (item.name && !item.track ? item.name : "Unknown Artist");
+            track = cleanMusicLabel(item.track || item.Track || item.Song || item.name || item.Name || item.title || "Unknown Track");
+            artistVal = cleanMusicLabel(item.artist || item.Artist || item.author || (item.name && !item.track ? item.name : "Unknown Artist"));
 
             // Display Guard: If the backend returns "Unknown" for the track, lead with the artist
             if (track === "Unknown" || track === "Unknown Track") {
@@ -1927,7 +1972,7 @@ async function renderRewindSection(container, type) {
 
         // Phase 3: Priority Branding (Backend provided Top Song / Thumbnail)
         if (type === 'top-artists' && item.topTrack) {
-            artistVal = item.topTrack; 
+            artistVal = cleanMusicLabel(item.topTrack); 
         }
 
         if (!thumb && typeof musicDb !== 'undefined') {
@@ -2072,7 +2117,7 @@ async function renderMusicCluster(container) {
                 // QUANTIFIED SELF: If it's in our DB, find the real play count
                 // (Looking for any row that matches this Link or ID)
                 const allPlays = musicDb.filter(m => m.Link && (m.Link.includes(ytId) || m.Link === bareURL));
-                if (allPlays.length > 0) count = allPlays.length;
+                count = dbMatch.PlayCount || allPlays.length || 0;
             }
         }
 

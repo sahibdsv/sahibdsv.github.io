@@ -2788,23 +2788,28 @@
 
         /* High-Fidelity Play Count Chip (Metadata Badge) */
         .music-stat-chip {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2px 8px;
             margin-left: 8px;
-            background: var(--surface-subtle);
-            border: 1px solid var(--border-subtle);
-            border-radius: 100px;
-            font-size: 10px;
-            font-weight: 600;
-            color: var(--text-dim);
-            letter-spacing: 0.02em;
-            text-transform: uppercase;
             vertical-align: middle;
             pointer-events: none;
-            line-height: 1;
-            white-space: nowrap;
+            /* Inherit standard chip sizing but force smaller text for density */
+            font-size: 10px;
+            padding: 2px 8px;
+            height: auto;
+            line-height: 1.2;
+            opacity: 0.7;
+            border-radius: 50px;
+            text-transform: uppercase;
+            font-weight: 600;
+            background: var(--surface-subtle);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+        }
+
+        /* Ensure chips don't cause layout jumps in marquees */
+        .music-artist-label {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
         }
 
         /* Site Archive / Time Machine Styles */
