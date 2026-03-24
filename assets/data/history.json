@@ -1,5 +1,10 @@
 [
   {
+    "hash": "e3c79dd4afda5f7e4f8defe5d1b6c81f35f3112a",
+    "date": "2026-03-24",
+    "message": "fix(filtering): eliminate tag-to-date leakage by implementing date heuristics and strict filter separation"
+  },
+  {
     "hash": "faf9aa672539e19e07db5b283b4f010ff523c64b",
     "date": "2026-03-24",
     "message": "fix(strikethrough): remove aggressive orange selection highlight and bump to 69.3"
