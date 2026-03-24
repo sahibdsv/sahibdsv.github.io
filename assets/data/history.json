@@ -1,5 +1,10 @@
 [
   {
+    "hash": "8c8ebfc15ae34b440e942a616623c24d5ee9e838",
+    "date": "2026-03-24",
+    "message": "v69.19: True Transparency for Cards. Removed redundant backgrounds from media containers to allow whole-card hover effects."
+  },
+  {
     "hash": "62945be029a444e285b74d216ba4bc3a1cfb441e",
     "date": "2026-03-24",
     "message": "chore: normalize Arbalest logo filename to lowercase to match spreadsheet and fix 404"
