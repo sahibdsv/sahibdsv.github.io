@@ -263,6 +263,14 @@
             margin: 0;
         }
 
+        del,
+        s {
+            text-decoration: none;
+            /* Precise strikethrough: lowers the line slightly for geometric fonts */
+            background-image: linear-gradient(transparent 58%, currentColor 58%, currentColor 64%, transparent 64%);
+            background-repeat: repeat-x;
+        }
+
         #brand-name {
             user-select: text;
             -webkit-user-select: text;
