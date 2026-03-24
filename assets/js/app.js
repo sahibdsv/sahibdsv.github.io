@@ -2584,7 +2584,7 @@ function toggleFullscreen(viewerId) {
                 viewer.canvas.style.setProperty('touch-action', 'none', 'important'); // Restore OrbitControls expectation
                 viewer.controls.minDistance = 0.2;
                 viewer.controls.maxDistance = 100; // Let her rip
-                viewer.controls.zoomSpeed = 0.6; // v69.7
+                viewer.controls.zoomSpeed = 0.6; // v=69.8
             }
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(() => { });
@@ -3668,7 +3668,7 @@ function processInlineMarkdown(text, depth = 0) {
         result = result.replace(/\{Random Quote\}/gi, '<div class="layout-quote" data-needs-init="true" data-title="random quote"></div>');
         result = result.replace(/\{Refresh\}/gi, (match) => {
             const label = match.substring(1, match.length - 1);
-            return `<a href="javascript:location.reload()" class="refresh-link" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; color:inherit; font-weight:600; font-family: Jost, sans-serif;"><svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> ${label}</a>`;
+            return `<a href="javascript:location.reload()">${label}</a>`;
         });
     }
 
