@@ -1645,6 +1645,12 @@
             width: 100%;
             height: 100%;
             outline: none;
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .media-gallery .model-viewer-wrapper.loaded canvas {
+            opacity: 1;
         }
 
         .model-viewer-wrapper {
@@ -1655,6 +1661,16 @@
             border: none;
             border-radius: var(--card-radius);
             box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .model-viewer-wrapper canvas {
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .model-viewer-wrapper.loaded canvas {
+            opacity: 1;
         }
 
         .gallery-item .model-viewer-wrapper {

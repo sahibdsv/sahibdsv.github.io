@@ -414,14 +414,23 @@
 
             const triggerEntrance = () => {
                 // FIDELITY GATE: Entrance only triggers when geometry is ready AND the first frame is painted
-                // Guard: viewerInstance might not exist yet if model was cached (synchronous setupModel)
                 if (!isModelReady || !hasRendered || !viewerInstance) return;
                 if (viewerInstance.loaded) return;
 
-                container.classList.add('loaded');
                 viewerInstance.loaded = true;
+                
                 const overlay = container.querySelector('.loader-overlay');
-                if (overlay) overlay.remove();
+                if (overlay) {
+                    overlay.classList.add('finished');
+                    setTimeout(() => {
+                        if (overlay.parentNode) overlay.remove();
+                    }, 800);
+                }
+
+                // Smoothly fade in the canvas
+                requestAnimationFrame(() => {
+                    container.classList.add('loaded');
+                });
             };
 
             const initTask = async () => {
