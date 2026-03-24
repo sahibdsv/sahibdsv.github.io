@@ -3652,6 +3652,7 @@ function processInlineMarkdown(text, depth = 0) {
     result = result.replace(/\*\*((?:[\s\S])*?)\*\*/g, (m, p1) => `<strong>${processInlineMarkdown(p1, depth + 1)}</strong>`);
     result = result.replace(/__((?:[\s\S])*?)__/g, (m, p1) => `<u>${processInlineMarkdown(p1, depth + 1)}</u>`);
     result = result.replace(/\*((?:[\s\S])*?)\*/g, (m, p1) => `<em>${processInlineMarkdown(p1, depth + 1)}</em>`);
+    result = result.replace(/~~((?:[\s\S])*?)~~/g, (m, p1) => `<del>${processInlineMarkdown(p1, depth + 1)}</del>`);
     result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
 
     // D. INTERNAL WIKI LINKS: [[Page Title]] or [[Page/Path]]
