@@ -1,5 +1,15 @@
 [
   {
+    "hash": "f1244511077a07dba77d417d8f2cb038f0de9b53",
+    "date": "2026-03-24",
+    "message": "fix(links): resolve ISO date filtering regression and add {Refresh} tag support"
+  },
+  {
+    "hash": "14405da5ffc1004358694fdc1d3b4af38928647d",
+    "date": "2026-03-24",
+    "message": "fix(3d): standardize model entrance sequence for smooth fade-ins and eliminate 'popping'"
+  },
+  {
     "hash": "e3c79dd4afda5f7e4f8defe5d1b6c81f35f3112a",
     "date": "2026-03-24",
     "message": "fix(filtering): eliminate tag-to-date leakage by implementing date heuristics and strict filter separation"
