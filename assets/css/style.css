@@ -883,10 +883,10 @@
         }
 
         footer {
-            padding: 6px 15px 30px 15px;
-            padding-bottom: max(30px, env(safe-area-inset-bottom));
+            padding: 0.5rem 1rem;
+            padding-bottom: calc(3rem + env(safe-area-inset-bottom));
             border-top: 1px solid var(--border-subtle);
-            margin-top: 60px;
+            margin-top: 2rem;
             width: 100%;
             max-width: 1200px;
             margin-left: auto;
@@ -896,14 +896,14 @@
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 1.5rem;
         }
 
         #footer-links {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 6px 18px;
+            gap: 1.25rem 2rem;
             padding: 0;
             margin: 0;
         }
@@ -936,7 +936,7 @@
             footer {
                 flex-wrap: nowrap;
                 justify-content: center;
-                gap: 30px;
+                gap: 2rem;
             }
         }
 
