@@ -1515,7 +1515,7 @@ const SECTION_RENDERERS = {
         let metaHTML = "";
         if (entry.Timestamp) {
             const dateStr = formatDate(entry.Timestamp),
-                monthKey = entry.Timestamp.substring(0, 7);
+                monthKey = (entry.Timestamp && /^\d{4}-\d{2}/.test(entry.Timestamp)) ? entry.Timestamp.substring(0, 7) : (entry.Timestamp || "");
             metaHTML +=
                 `<span class="chip date" data-val="${dateStr}" data-date="${monthKey}">${dateStr}</span>`;
         }
@@ -1529,7 +1529,7 @@ const SECTION_RENDERERS = {
         if (index === 0) {
             const hasLink = !!entry.LinkURL;
             const dateStr = entry.Timestamp ? formatDate(entry.Timestamp) : "";
-            const monthKey = entry.Timestamp ? entry.Timestamp.substring(0, 7) : "";
+            const monthKey = (entry.Timestamp && /^\d{4}-\d{2}/.test(entry.Timestamp)) ? entry.Timestamp.substring(0, 7) : (entry.Timestamp || "");
             const tags = entry.Tags ? entry.Tags.split(",").map(t => t.trim()) : [];
             const readTime = Math.ceil((entry.Content || "").trim().split(/\s+/).length / 200);
 
