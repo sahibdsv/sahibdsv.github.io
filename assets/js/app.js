@@ -354,6 +354,16 @@ function safeHTML(str) {
     return str.replace(/[&<>"']/g, m => map[m]);
 }
 
+function trackEvent(path, title = "") {
+    if (window.goatcounter && window.goatcounter.count) {
+        window.goatcounter.count({
+            path: path,
+            title: title || path,
+            event: true
+        });
+    }
+}
+
 function initApp() {
     handleRouting();
     window.addEventListener("hashchange", handleRouting);
@@ -387,6 +397,11 @@ function initApp() {
         if (interactive && navigator.vibrate) {
             const isMajor = interactive.closest("#brand-name, #search-controls, #theme-toggle, .nav-row.level-1 .nav-link, .archive-item-card");
             haptic(isMajor ? 'pulse' : 'tap');
+
+            // GoatCounter: General Click Tracking
+            const type = interactive.id || interactive.className || interactive.tagName;
+            const text = (interactive.innerText || interactive.title || interactive.ariaLabel || "").trim().substring(0, 50);
+            trackEvent(`click:${type}`, text);
         }
     }, {
         passive: true,
@@ -1000,6 +1015,9 @@ function handleSearch(e) {
         return;
     }
     const t = e.toLowerCase();
+    
+    // GoatCounter: Track significant search queries (throttled/debounced implicitly by the search logic)
+    if (t.length > 2) trackEvent(`search:${t}`, `Searching for: ${t}`);
 
     // ⚡ COMMAND INTERCEPT LOGIC
     const searchInput = document.getElementById("search-input");
@@ -1685,6 +1703,7 @@ function showPageLoader() {
 }
 
 window.rollQuote = function (btn) {
+    trackEvent('quote-roll', 'Rolling a new quote');
     const allQuotes = document.querySelectorAll('.layout-quote');
     const randomQuotes = Array.from(allQuotes).filter(q => {
         const title = (q.getAttribute('data-title') || '').toLowerCase();
@@ -2281,6 +2300,9 @@ function playMusicInCard(event) {
             // Append on top of existing content
             mediaRow.appendChild(iframe);
             card.classList.add('is-playing');
+
+            // GoatCounter: Track Music Play
+            trackEvent('music-play', `${card.querySelector('.row-title')?.innerText || ytId}`);
         }
     } else if (link) {
         window.open(link, '_blank');

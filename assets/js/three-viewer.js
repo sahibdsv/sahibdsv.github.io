@@ -386,6 +386,11 @@
                     isInteracting = true;
                     if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
                     canvas.style.cursor = 'grabbing';
+
+                    // GOATCOUNTER: Track 3D Model Interaction
+                    if (window.trackEvent) {
+                        window.trackEvent('model-interact', glbPath);
+                    }
                 });
 
                 controls.addEventListener('end', () => {
