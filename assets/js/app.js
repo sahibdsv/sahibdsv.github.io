@@ -1127,6 +1127,13 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
         if (typeof window.__STRAVA_EMBED_BOOTSTRAP__ === 'function') {
             window.__STRAVA_EMBED_BOOTSTRAP__();
         }
+
+        // GOATCOUNTER: Track SPA page view
+        if (window.goatcounter && window.goatcounter.count) {
+            window.goatcounter.count({
+                path: location.pathname + location.search + location.hash
+            });
+        }
     });
 }
 
