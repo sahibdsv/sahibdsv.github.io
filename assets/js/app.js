@@ -1153,12 +1153,16 @@ function renderFiltered(filter) {
     }
 
     const filtered = db.filter(row => {
+        // 1. Direct Tag Match (Always priority)
         if (row.Tags && row.Tags.includes(filter)) return true;
-        if (!row.Timestamp) return false;
         
-        // Advanced Range Overlap Check
-        const itemRange = getDateRange(row.Timestamp);
-        return (itemRange.start <= range.end && itemRange.end >= range.start);
+        // 2. Advanced Range Overlap Check (Only if 'filter' was actually a date)
+        if (range && row.Timestamp) {
+            const itemRange = getDateRange(row.Timestamp);
+            if (itemRange && itemRange.start <= range.end && itemRange.end >= range.start) return true;
+        }
+        
+        return false;
     });
     
     renderRows(filtered, safeHTML(label), false, true, false, true);
@@ -2659,8 +2663,13 @@ function formatDate(e) {
  */
 function getDateRange(str) {
     if (!str) return { start: new Date(0), end: new Date(8640000000000000) };
-    const parts = str.split('-').map(p => p.trim());
     
+    // Heuristic: If it has no year, month, or season token, it's not a date.
+    // This prevents tags like "Fusion" or "SolidWorks" from triggering accidental 2026 range filters.
+    const isDateLike = /\d{2,4}|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC|SPRING|SUMMER|FALL|AUTUMN|WINTER|SPR|SUM|AUT|WIN|WTR/.test(str.toUpperCase());
+    if (!isDateLike) return null;
+
+    const parts = str.split('-').map(p => p.trim());
     const startObj = parseFlexibleDate(parts[0], true);
     const endObj = parts.length > 1 ? parseFlexibleDate(parts[1], false) : parseFlexibleDate(parts[0], false);
     
