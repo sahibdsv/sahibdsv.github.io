@@ -1664,7 +1664,27 @@
             overflow: hidden;
         }
 
+        .model-bg-watermark {
+            position: absolute;
+            inset: 18%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.12;
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+            transition: opacity 1.2s var(--ease);
+        }
+
+        .model-bg-watermark.theme-invert {
+            filter: invert(1) hue-rotate(180deg) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+        }
+
         .model-viewer-wrapper canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
             opacity: 0;
             transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }

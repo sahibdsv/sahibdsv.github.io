@@ -1435,30 +1435,29 @@ function renderCardHTML(entry, contextCategory = "") {
     const tEx = extractMediaFromContent(entry.Title);
     const cEx = extractMediaFromContent(content);
     const thumbUrl = getThumbnail(entry.Thumbnail);
-
-    const mediaBuilder = (type, src, id) => {
+    const mediaBuilder = (type, src, id, bgUrl = null) => {
         if (type === 'glb') {
             // Resolve path for internal models
             const glbPath = (src.startsWith('assets/') || src.startsWith('http')) ? src : `assets/models/${src}`;
-            return `<div class="row-media">${renderGLBViewer(glbPath, true)}</div>`;
+            return `<div class="row-media">${renderGLBViewer(glbPath, true, bgUrl)}</div>`;
         }
         if (type === 'map') {
             const mapPath = (src.startsWith('assets/') || src.startsWith('http')) ? src : `assets/GPX/${src}`;
             return `<div class="row-media">${renderMapBoxViewer(mapPath, true)}</div>`;
         }
         if (type === 'yt-embed') return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
-
+        
         if (type === 'video') {
             const p = processMediaUrl(src);
             return `<div class="row-media">
                         <div class="loader-overlay"><div class="spinner"></div></div>
                         <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''}" 
-                               data-src="${p.url}" 
-                               ${p.autoplay ? 'data-autoplay="true" muted' : ''} 
-                               ${p.loop ? 'loop' : ''} 
-                               ${p.controls ? 'controls' : ''} playsinline 
-                               onloadeddata="mediaLoaded(this)" 
-                               onerror="this.previousElementSibling?.remove()"></video>
+                                data-src="${p.url}" 
+                                ${p.autoplay ? 'data-autoplay="true" muted' : ''} 
+                                ${p.loop ? 'loop' : ''} 
+                                ${p.controls ? 'controls' : ''} playsinline 
+                                onloadeddata="mediaLoaded(this)" 
+                                onerror="this.previousElementSibling?.remove()"></video>
                     </div>`;
         }
 
@@ -1467,16 +1466,20 @@ function renderCardHTML(entry, contextCategory = "") {
     };
 
     const mediaSources = [
-        () => isTitleLink && !entry.Thumbnail && tEx ? mediaBuilder(tEx.type === 'yt' ? 'yt-embed' : tEx.type,
-            tEx.url, tEx.id) : "",
-        () => entry.Thumbnail && thumbUrl === 'GLB_VIEWER' ? mediaBuilder('glb', entry.Thumbnail) : "",
+        () => isTitleLink && !entry.Thumbnail && tEx ? mediaBuilder(tEx.type === 'yt' ? 'yt-embed' : tEx.type, tEx.url, tEx.id) : "",
+        () => entry.Thumbnail && (thumbUrl === 'GLB_VIEWER' || thumbUrl === 'GLB_WITH_BG') ? (() => {
+            if (thumbUrl === 'GLB_WITH_BG') {
+                const lines = entry.Thumbnail.split('\n').map(l => l.trim()).filter(Boolean);
+                const glb = lines.find(l => l.match(/\.glb/i));
+                const img = lines.find(l => l.match(/\.(png|jpg|jpeg|webp|svg)/i));
+                return mediaBuilder('glb', glb, null, img);
+            }
+            return mediaBuilder('glb', entry.Thumbnail);
+        })() : "",
         () => entry.Thumbnail && thumbUrl === 'MAP_VIEWER' ? mediaBuilder('map', entry.Thumbnail) : "",
-        () => entry.Thumbnail && thumbUrl?.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i) ?
-            mediaBuilder('video', thumbUrl) : "",
+        () => entry.Thumbnail && thumbUrl?.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i) ? mediaBuilder('video', thumbUrl) : "",
         () => entry.Thumbnail && thumbUrl ? mediaBuilder('img', thumbUrl) : "",
-        () => !isTitleLink ?
-            `<div class="row-media placeholder"><span>${(entry.Title || "").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1')}</span></div>` :
-            ""
+        () => !isTitleLink ? `<div class="row-media placeholder"><span>${(entry.Title || "").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1')}</span></div>` : ""
     ];
 
     const mediaHTML = mediaSources.reduce((html, fn) => html || fn(), "");
@@ -2352,15 +2355,19 @@ function extractMediaFromContent(content) {
 }
 function getThumbnail(media) {
     if (!media) return null;
-    // Catch GLB/3D models - support all behavioral suffixes including -fast, -hero, and -tilt
+
+    // Check for multi-line Thumbnail (special case: GLB model + background logo)
+    const lines = String(media).split('\n').map(l => l.trim()).filter(Boolean);
+    const hasGLB = lines.some(l => l.match(/\.glb(?:-[a-zA-Z0-9_-]+)*/i));
+    const hasIMG = lines.some(l => l.match(/\.(png|jpg|jpeg|webp|svg)(?:-[a-zA-Z0-9_-]+)*/i));
+    if (hasGLB && hasIMG) return 'GLB_WITH_BG';
+
     if (media.match(/\.glb(?:-[a-zA-Z0-9_-]+)*$/i)) return 'GLB_VIEWER';
-    // Catch GeoJSON maps
     if (media.match(/\.geojson(?:-[NSEW]{1,2})?(\?.*)?$/i)) return 'MAP_VIEWER';
-    // Catch YouTube
+    
     const ytId = getYouTubeID(media);
     if (ytId) return getYouTubeThumbnail(ytId);
 
-    // Catch Videos: Keep full raw string to preserve behavior markers for mediaBuilder
     if (media.match(/\.(mp4|webm|mov|ogg)/i)) {
         return media;
     }
@@ -2481,12 +2488,23 @@ _glbObserver = new IntersectionObserver((entries) => {
 }, { rootMargin: '50px' }); // Reduced pre-loading so models start building near view
 
 // GLB Viewer Renderer
-function renderGLBViewer(glbPath, isCardMode) {
+function renderGLBViewer(glbPath, isCardMode, bgUrl = null) {
     const uniqueId = 'viewer-' + Math.random().toString(36).substring(2, 11);
+
+    // Process optional background watermark
+    let bgHTML = '';
+    if (bgUrl) {
+        const p = processMediaUrl(bgUrl);
+        // Ensure background images from spreadsheet use the assets/images prefix if raw
+        const fullBgUrl = (p.url.startsWith('assets/') || p.url.startsWith('http')) ? p.url : `assets/images/${p.url}`;
+        bgHTML = `<div class="model-bg-watermark ${p.invert ? 'theme-invert' : ''}" style="background-image: url('${fullBgUrl}');"></div>`;
+    }
+
     const html = `
                 <div class="model-viewer-wrapper ${isCardMode ? 'card-preview' : ''}" 
                      id="${uniqueId}" 
                      data-glb-path="${glbPath}">
+                    ${bgHTML}
                     <div class="loader-overlay">
                         <div class="spinner"></div>
                     </div>
@@ -2584,7 +2602,7 @@ function toggleFullscreen(viewerId) {
                 viewer.canvas.style.setProperty('touch-action', 'none', 'important'); // Restore OrbitControls expectation
                 viewer.controls.minDistance = 0.2;
                 viewer.controls.maxDistance = 100; // Let her rip
-                viewer.controls.zoomSpeed = 0.6; // v=69.9
+                viewer.controls.zoomSpeed = 0.6; // v=69.11
             }
             if (screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(() => { });
