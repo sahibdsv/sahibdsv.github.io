@@ -1,5 +1,10 @@
 [
   {
+    "hash": "f556067cc7d4e3caec5ebdb48560edb99f1b26c5",
+    "date": "2026-03-25",
+    "message": "perf: resolve video playback stuttering and 3D rendering pipeline contention"
+  },
+  {
     "hash": "d15928d2ecc48ad81ebc806417f9c2ada24b6310",
     "date": "2026-03-24",
     "message": "Style: More robust footer home bar clearance [v69.27]"
