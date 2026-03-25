@@ -93,7 +93,9 @@
             window._glbLastFrameTime = now;
 
             // If we're dropping below 50fps (20ms), slash the 3D budget to 3ms
-            const budget = frameTime > 20 ? 3 : 6; 
+            // If a video is playing, slash it even further to 1ms (super tight)
+            let budget = frameTime > 20 ? 3 : 6; 
+            if (window._activeVideoCount > 0) budget = 1;
 
             const startTime = performance.now();
             const total = window._glbRegistry.length;
@@ -162,7 +164,7 @@
                 
                 // TIME-SLICING: Only render a fraction of background cards per frame.
                 // Because we keep quality (DPR) high so they look crisp,
-                // we drop their framerate to ~20fps to save GPU fill-rate.
+                // we drop their framerate to save GPU fill-rate.
                 _glbCircularIndex++;
                 
                 for (let i = 0; i < renderedVisible.length; i++) {
@@ -172,8 +174,9 @@
                     if (isHeavyInteraction && i % 2 === 0) continue; // Throttle background cards during drag
                     
                     // CARD THROTTLE: If it's a card, only update its render 1 out of every 4 frames (~15fps)
-                    // This dramatically reduces CPU/GPU overhead when multiple cards are scrolling.
-                    if (viewer.isCardMode && (i + _glbCircularIndex) % 4 !== 0) continue;
+                    // If a video is playing, drop to 1 out of every 8 frames (~7fps) to save GPU fill for playback
+                    const videoThrottle = (window._activeVideoCount > 0) ? 8 : 4;
+                    if (viewer.isCardMode && (i + _glbCircularIndex) % videoThrottle !== 0) continue;
                     
                     if (performance.now() - budgetStartTime > remainingBudget) break;
                     viewer.update(now);

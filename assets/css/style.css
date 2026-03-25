@@ -1201,10 +1201,6 @@
             height: 100%;
             object-fit: cover;
             transition: filter 0.6s var(--ease), opacity 0.4s var(--ease);
-            /* Keep on its own layer to prevent 'snapping' from soft to sharp on hover */
-            will-change: opacity, filter;
-            backface-visibility: hidden;
-            -webkit-font-smoothing: subpixel-antialiased;
         }
 
         /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */

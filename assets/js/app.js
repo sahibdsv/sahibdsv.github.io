@@ -35,6 +35,7 @@ window.mediaLoaded = function (el) {
 // === CORE APPLICATION (app.js inlined) ===
 let _activeRenderPath = null;
 let _renderRAF = null;
+window._activeVideoCount = 0; // Global counter for throttling 3D rendering during video playback
 
 // CSV Parser
 function parseCSV(text) {
@@ -2415,31 +2416,73 @@ _videoObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         const video = entry.target;
         if (entry.isIntersecting) {
+            video._isVisible = true;
+
+            // Phase 1: Assign source if not yet loaded (lazy-load)
             if (!video.src && video.dataset.src) {
                 video.src = video.dataset.src;
             }
-            if (video.dataset.autoplay === "true") {
-                const startPlay = () => video.play().catch(e => { });
-                if ('requestIdleCallback' in window) {
-                    requestIdleCallback(startPlay, { timeout: 1000 });
+
+            // Phase 2: Autoplay logic — only if not already playing and not ended
+            if (video.dataset.autoplay === "true" && !video.ended && video.paused) {
+                // CRITICAL: Wait for the browser to actually prepare the decoder
+                // before calling play(). Calling play() before canplay causes
+                // the browser to fight between decoder init and frame delivery.
+                const startWhenReady = () => {
+                    // Re-check visibility: user may have scrolled away during decode
+                    if (!video._isVisible) return;
+
+                    video.play().then(() => {
+                        if (!video._isVisible) {
+                            video.pause(); // Scrolled away during async play resolve
+                            return;
+                        }
+                        if (!video.dataset.isPlaying) {
+                            video.dataset.isPlaying = "true";
+                            window._activeVideoCount++;
+                        }
+                    }).catch(() => { });
+                };
+
+                if (video.readyState >= 3) {
+                    // HAVE_FUTURE_DATA or higher — already buffered, play immediately
+                    startWhenReady();
                 } else {
-                    setTimeout(startPlay, 50);
+                    // Not ready yet — wait for canplay event (fires once decoder is primed)
+                    video.addEventListener('canplay', startWhenReady, { once: true });
                 }
             }
         } else {
+            video._isVisible = false;
+            if (video.dataset.isPlaying) {
+                delete video.dataset.isPlaying;
+                window._activeVideoCount = Math.max(0, window._activeVideoCount - 1);
+            }
             if (!video.paused) {
                 video.pause();
             }
         }
     });
-}, { rootMargin: '0px', threshold: 0.15 });
+}, { rootMargin: '0px', threshold: 0.25 });
 
 // Observe newly added videos
 function observeVideos(container) {
     if (!container) return;
     // Delay observation slightly to let the browser settle after innerHTML
     setTimeout(() => {
-        container.querySelectorAll('.lazy-video').forEach(v => _videoObserver.observe(v));
+        container.querySelectorAll('.lazy-video').forEach(v => {
+            _videoObserver.observe(v);
+            // Ensure the counter is decremented when a video finishes naturally
+            if (!v._endedListenerAttached) {
+                v._endedListenerAttached = true;
+                v.addEventListener('ended', () => {
+                    if (v.dataset.isPlaying) {
+                        delete v.dataset.isPlaying;
+                        window._activeVideoCount = Math.max(0, window._activeVideoCount - 1);
+                    }
+                });
+            }
+        });
     }, 100);
 }
 
@@ -2489,8 +2532,10 @@ function processGlbQueue() {
     }
 
     // STAGGERED BATCHING: Only process one model per 150ms to keep main thread free for transitions
+    // If a video is playing, double the delay to preserve resources for smooth playback
+    const stepDelay = (window._activeVideoCount > 0) ? 500 : 150;
     if (_glbInitQueue.length > 0) {
-        setTimeout(() => processGlbQueue(), 150);
+        setTimeout(() => processGlbQueue(), stepDelay);
     } else {
         _isProcessingGlbQueue = false;
     }
@@ -2509,7 +2554,9 @@ _glbObserver = new IntersectionObserver((entries) => {
             if (!_isProcessingGlbQueue) {
                 _isProcessingGlbQueue = true;
                 // Start processing with a healthy delay to allow page transition to finish
-                setTimeout(processGlbQueue, 400);
+                // If a video is playing, triple the delay to avoid initial loading hitch
+                const initialDelay = (window._activeVideoCount > 0) ? 1200 : 400;
+                setTimeout(processGlbQueue, initialDelay);
             }
 
             // Stop observing once queued
