@@ -1919,10 +1919,19 @@ function renderRecentMusic(container) {
         if (count === 0) {
             const linkVal = (item.link || item.Link || "").trim();
             const ytId = linkVal ? getYouTubeID(linkVal) : null;
+            const trackNorm = fuzzyNorm_(track);
+            const artistNorm = fuzzyNorm_(artist);
+
             const matches = musicDb.filter(m => {
                 const mLink = (m.link || m.Link || "").trim();
+                // 1. Identify by YouTube ID (Primary)
                 if (ytId && getYouTubeID(mLink) === ytId) return true;
-                return mLink === linkVal;
+                // 2. Identify by exact link match (Only if link is not empty)
+                if (linkVal && mLink === linkVal) return true;
+                // 3. Fallback: Identify by Artist + Track (Safest for missing links)
+                const mTrack = fuzzyNorm_(m.track || m.Track || m.Song || "");
+                const mArtist = fuzzyNorm_(m.artist || m.Artist || "");
+                return mTrack === trackNorm && mArtist === artistNorm;
             });
             count = matches.length || 1; 
         }
