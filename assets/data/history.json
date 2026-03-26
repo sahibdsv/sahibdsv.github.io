@@ -1,5 +1,10 @@
 [
   {
+    "hash": "9fb8e6a59df96cde5bf6c7cccc642085db89ce4a",
+    "date": "2026-03-26",
+    "message": "fix: resolve play count aggregation bug for music cards with missing links"
+  },
+  {
     "hash": "f556067cc7d4e3caec5ebdb48560edb99f1b26c5",
     "date": "2026-03-25",
     "message": "perf: resolve video playback stuttering and 3D rendering pipeline contention"
