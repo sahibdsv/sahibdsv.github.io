@@ -1,5 +1,10 @@
 [
   {
+    "hash": "407beb7670f1490d3348e272324241f210bfc688",
+    "date": "2026-03-27",
+    "message": "design: neutralize hover/active typography and background colors for all components"
+  },
+  {
     "hash": "1517ce6e6d827dc126f53694aeade61334c9b21a",
     "date": "2026-03-27",
     "message": "design: unify chip sizing across contexts and enforce high-contrast 2px bloom"
