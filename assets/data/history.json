@@ -1,5 +1,15 @@
 [
   {
+    "hash": "1517ce6e6d827dc126f53694aeade61334c9b21a",
+    "date": "2026-03-27",
+    "message": "design: unify chip sizing across contexts and enforce high-contrast 2px bloom"
+  },
+  {
+    "hash": "8a4310fd9f30ef2c2479e2c8b51df1c4188bc25f",
+    "date": "2026-03-27",
+    "message": "design: restore original link styles, transition all highlights to sub-pixel smooth bloom system"
+  },
+  {
     "hash": "fbc1de8c65b1ee2f248460330072fc0f369bcafe",
     "date": "2026-03-27",
     "message": "design: restore original link styles, unify all highlights to simple border thickening"
