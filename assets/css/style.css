@@ -344,37 +344,20 @@
             transform: translateZ(0);
             line-height: 1;
             box-sizing: border-box;
-            max-width: 140px; 
+            max-width: 140px;
             flex-shrink: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             cursor: pointer;
-            position: relative; /* Anchor for outward highlight */
             transition: all var(--anim-quick) var(--ease);
         }
 
-        .chip::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border: 2px solid transparent; 
-            border-radius: inherit;
-            pointer-events: none;
-            z-index: 5;
-            transition: border-color var(--anim-quick) var(--ease), opacity var(--anim-quick) var(--ease);
-            opacity: 0;
-        }
-
         .chip:hover {
-            border-color: transparent;
+            border: 2px solid rgba(var(--bright-rgb), 0.8);
+            padding: 2px 7px; /* Compensate for thicker border to prevent layout shift */
             background: var(--surface-strong);
             color: var(--text-bright);
-        }
-
-        .chip:not(.no-hover):hover::before {
-            border-color: rgba(var(--bright-rgb), 0.85);
-            opacity: 1;
         }
 
         .chip.no-hover {
@@ -382,7 +365,8 @@
         }
 
         .chip.no-hover:hover {
-            border-color: var(--border-subtle);
+            border: 1px solid var(--border-subtle);
+            padding: 3px 8px;
             background: var(--surface-subtle);
             color: var(--text-muted);
         }
@@ -392,22 +376,17 @@
             text-decoration: underline;
             text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
             text-decoration-thickness: 1px;
-            text-underline-offset: 2px;
+            text-underline-offset: 3px;
             display: inline;
             vertical-align: baseline;
             font-weight: inherit;
-            transition: color var(--anim-quick) var(--ease),
-                        text-decoration-color var(--anim-quick) var(--ease),
-                        text-decoration-thickness var(--anim-quick) var(--ease),
-                        text-underline-offset var(--anim-quick) var(--ease);
+            transition: text-decoration-color var(--anim-quick) var(--ease), text-decoration-thickness var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease);
         }
 
         @media (hover: hover) {
             a:not(.chip):not(.btn-cta):not(.fill-anim):hover {
-                color: var(--text-bright);
-                text-decoration-color: rgba(var(--bright-rgb), 0.85);
+                text-decoration-color: rgba(var(--bright-rgb));
                 text-decoration-thickness: 2px;
-                text-underline-offset: 4px;
             }
         }
 
@@ -1804,7 +1783,6 @@
             cursor: pointer;
             overflow: visible;
             margin: 5px;
-            position: relative; /* Anchor for highlight */
             transition: all var(--anim-quick) var(--ease);
             height: auto;
             max-width: 100%;
@@ -1813,28 +1791,20 @@
             word-break: break-word;
         }
 
-        .btn-cta::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border: 2px solid transparent; 
-            border-radius: inherit;
-            pointer-events: none;
-            transition: border-color var(--anim-quick) var(--ease), opacity var(--anim-quick) var(--ease);
-            opacity: 0;
-            z-index: 5;
+        /* Centering fallback for buttons inside non-flex paragraphs */
+        p:has(> .btn-cta:only-child) {
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin: 16px 0;
         }
 
         .btn-cta:hover {
-            border-color: transparent;
+            border: 2px solid rgba(var(--bright-rgb), 0.8);
+            padding: 7px 23px; /* Compensate for thicker border */
             background: var(--card-bg-hover);
-            color: var(--text-bright);
             text-decoration: none !important;
-        }
-
-        .btn-cta:hover::before {
-            border-color: rgba(var(--bright-rgb), 0.85);
-            opacity: 1;
         }
 
         /* Standard Button Colors & States */
@@ -1846,8 +1816,8 @@
 
         .btn-cta.green:hover {
             background: #27ae60;
-            border-color: #219150 !important;
-            box-shadow: inset 0 0 0 1px #219150;
+            border: 2px solid #219150 !important;
+            padding: 7px 23px;
         }
 
         .btn-cta.red {
@@ -1858,8 +1828,8 @@
 
         .btn-cta.red:hover {
             background: #c0392b;
-            border-color: #a93226 !important;
-            box-shadow: inset 0 0 0 1px #a93226;
+            border: 2px solid #a93226 !important;
+            padding: 7px 23px;
         }
 
         .btn-cta.blue {
@@ -1870,8 +1840,8 @@
 
         .btn-cta.blue:hover {
             background: #2980b9;
-            border-color: #2471a3 !important;
-            box-shadow: inset 0 0 0 1px #2471a3;
+            border: 2px solid #2471a3 !important;
+            padding: 7px 23px;
         }
 
         .btn-cta.orange {
@@ -1882,8 +1852,8 @@
 
         .btn-cta.orange:hover {
             background: #d35400;
-            border-color: #ba4a00 !important;
-            box-shadow: inset 0 0 0 1px #ba4a00;
+            border: 2px solid #ba4a00 !important;
+            padding: 7px 23px;
         }
 
         .btn-cta.purple {
@@ -1894,8 +1864,8 @@
 
         .btn-cta.purple:hover {
             background: #8e44ad;
-            border-color: #7d3c98 !important;
-            box-shadow: inset 0 0 0 1px #7d3c98;
+            border: 2px solid #7d3c98 !important;
+            padding: 7px 23px;
         }
 
         .btn-cta.strava {
@@ -1906,16 +1876,8 @@
 
         .btn-cta.strava:hover {
             background: #e65800;
-            border-color: transparent !important;
-            position: relative;
-        }
-        .btn-cta.strava:hover::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border: 2px solid rgba(var(--bright-rgb), 0.85);
-            border-radius: inherit;
-            pointer-events: none;
+            border: 2px solid rgba(var(--bright-rgb), 0.8) !important;
+            padding: 7px 23px;
         }
 
         [data-theme="light"] .btn-cta.green {
@@ -2629,39 +2591,10 @@
             border-radius: var(--card-radius);
         }
 
-        /* 
-           DESIGN SYSTEM HIGHLIGHT:
-           We define the highlight on the base element (with 0 opacity/shadow) 
-           so it can smooth-transition using var(--anim-quick) when selected.
-        */
-        .layout-grid.cat-music::before {
-            content: '';
-            position: absolute;
-            inset: 0; 
-            border: 1px solid transparent; 
-            box-shadow: 0 0 0 0 transparent;
-            border-radius: inherit;
-            pointer-events: none;
-            z-index: 20;
-            /* Match the signature btn-cta animation timing and easing */
-            transition: border-color var(--anim-quick) var(--ease),
-                        box-shadow var(--anim-quick) var(--ease),
-                        opacity var(--anim-quick) var(--ease);
-            opacity: 0;
-        }
-
         .layout-grid.cat-music.is-playing {
-            border-color: transparent; 
+            border: 2px solid rgba(var(--bright-rgb), 0.8);
             background: var(--card-bg-hover);
             z-index: 10;
-            overflow: visible; /* Permit the highlight shadow to bloom outward */
-        }
-
-        .layout-grid.cat-music.is-playing::before {
-            border: 2px solid rgba(var(--bright-rgb), 0.85); /* Single, unified bold stroke */
-            box-shadow: none; /* Eliminate the 'seam' from the shadow layer */
-            inset: -1px; /* Grow outward by perfectly overlapping the 1px border zone */
-            opacity: 1;
         }
 
         .layout-grid.cat-music .row-media {
