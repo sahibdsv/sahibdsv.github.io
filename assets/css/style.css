@@ -329,7 +329,7 @@
         .chip.date {
             display: inline-flex;
             align-items: center;
-            padding: 3px 8px; /* Condensed internal padding to save horizontal space */
+            padding: 3px 8px;
             font-size: 11px;
             font-weight: 500;
             text-transform: uppercase;
@@ -344,19 +344,37 @@
             transform: translateZ(0);
             line-height: 1;
             box-sizing: border-box;
-            max-width: 140px; /* Allow slightly longer words before truncating */
+            max-width: 140px; 
             flex-shrink: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             cursor: pointer;
+            position: relative; /* Anchor for outward highlight */
             transition: all var(--anim-quick) var(--ease);
         }
 
+        .chip::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border: 2px solid transparent; 
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 5;
+            transition: border-color var(--anim-quick) var(--ease), opacity var(--anim-quick) var(--ease);
+            opacity: 0;
+        }
+
         .chip:hover {
-            border-color: rgba(var(--bright-rgb), 0.8);
-            box-shadow: 0 0 0 1px rgba(var(--bright-rgb), 0.8); /* Grow Outward */
+            border-color: transparent;
             background: var(--surface-strong);
+            color: var(--text-bright);
+        }
+
+        .chip:not(.no-hover):hover::before {
+            border-color: rgba(var(--bright-rgb), 0.85);
+            opacity: 1;
         }
 
         .chip.no-hover {
@@ -365,8 +383,8 @@
 
         .chip.no-hover:hover {
             border-color: var(--border-subtle);
-            box-shadow: none;
             background: var(--surface-subtle);
+            color: var(--text-muted);
         }
 
         a:not(.chip):not(.btn-cta):not(.fill-anim) {
@@ -374,17 +392,22 @@
             text-decoration: underline;
             text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
             text-decoration-thickness: 1px;
-            text-underline-offset: 3px;
+            text-underline-offset: 2px;
             display: inline;
             vertical-align: baseline;
             font-weight: inherit;
-            transition: text-decoration-color var(--anim-quick) var(--ease), text-decoration-thickness var(--anim-quick) var(--ease), color var(--anim-quick) var(--ease);
+            transition: color var(--anim-quick) var(--ease),
+                        text-decoration-color var(--anim-quick) var(--ease),
+                        text-decoration-thickness var(--anim-quick) var(--ease),
+                        text-underline-offset var(--anim-quick) var(--ease);
         }
 
         @media (hover: hover) {
             a:not(.chip):not(.btn-cta):not(.fill-anim):hover {
-                text-decoration-color: rgba(var(--bright-rgb));
+                color: var(--text-bright);
+                text-decoration-color: rgba(var(--bright-rgb), 0.85);
                 text-decoration-thickness: 2px;
+                text-underline-offset: 4px;
             }
         }
 
@@ -1780,29 +1803,38 @@
             text-decoration: none !important;
             cursor: pointer;
             overflow: visible;
-            margin: 5px; /* Minimum breathing room for wrapped buttons */
-            transition: color var(--anim-quick), border-color var(--anim-quick), background var(--anim-quick), box-shadow var(--anim-quick);
+            margin: 5px;
+            position: relative; /* Anchor for highlight */
+            transition: all var(--anim-quick) var(--ease);
             height: auto;
             max-width: 100%;
-            white-space: normal; /* Allow long text to wrap */
+            white-space: normal;
             text-align: center;
             word-break: break-word;
         }
 
-        /* Centering fallback for buttons inside non-flex paragraphs */
-        p:has(> .btn-cta:only-child) {
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            margin: 16px 0;
+        .btn-cta::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border: 2px solid transparent; 
+            border-radius: inherit;
+            pointer-events: none;
+            transition: border-color var(--anim-quick) var(--ease), opacity var(--anim-quick) var(--ease);
+            opacity: 0;
+            z-index: 5;
         }
 
         .btn-cta:hover {
-            border-color: rgba(var(--bright-rgb), 0.8);
-            box-shadow: 0 0 0 1px rgba(var(--bright-rgb), 0.8); /* Grow Outward */
+            border-color: transparent;
             background: var(--card-bg-hover);
+            color: var(--text-bright);
             text-decoration: none !important;
+        }
+
+        .btn-cta:hover::before {
+            border-color: rgba(var(--bright-rgb), 0.85);
+            opacity: 1;
         }
 
         /* Standard Button Colors & States */
@@ -1874,8 +1906,16 @@
 
         .btn-cta.strava:hover {
             background: #e65800;
-            border-color: rgba(var(--bright-rgb), 0.8) !important;
-            box-shadow: 0 0 0 1px rgba(var(--bright-rgb), 0.8); /* Grow Outward */
+            border-color: transparent !important;
+            position: relative;
+        }
+        .btn-cta.strava:hover::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border: 2px solid rgba(var(--bright-rgb), 0.85);
+            border-radius: inherit;
+            pointer-events: none;
         }
 
         [data-theme="light"] .btn-cta.green {
@@ -2589,23 +2629,39 @@
             border-radius: var(--card-radius);
         }
 
-        .layout-grid.cat-music.is-playing {
-            /* Hide the base border to prevent 'triple-stacking' with the pseudo-element */
-            border-color: transparent; 
-            background: var(--card-bg-hover);
-            z-index: 10;
-            overflow: visible; /* CRITICAL: Permit the outward shadow to bloom without clipping */
-        }
-
-        .layout-grid.cat-music.is-playing::before {
+        /* 
+           DESIGN SYSTEM HIGHLIGHT:
+           We define the highlight on the base element (with 0 opacity/shadow) 
+           so it can smooth-transition using var(--anim-quick) when selected.
+        */
+        .layout-grid.cat-music::before {
             content: '';
             position: absolute;
-            inset: 0; /* Align with border-box exactly */
-            border: 1px solid rgba(var(--bright-rgb), 0.8);
-            box-shadow: 0 0 0 1px rgba(var(--bright-rgb), 0.8); /* Grow Outward */
+            inset: 0; 
+            border: 1px solid transparent; 
+            box-shadow: 0 0 0 0 transparent;
             border-radius: inherit;
             pointer-events: none;
             z-index: 20;
+            /* Match the signature btn-cta animation timing and easing */
+            transition: border-color var(--anim-quick) var(--ease),
+                        box-shadow var(--anim-quick) var(--ease),
+                        opacity var(--anim-quick) var(--ease);
+            opacity: 0;
+        }
+
+        .layout-grid.cat-music.is-playing {
+            border-color: transparent; 
+            background: var(--card-bg-hover);
+            z-index: 10;
+            overflow: visible; /* Permit the highlight shadow to bloom outward */
+        }
+
+        .layout-grid.cat-music.is-playing::before {
+            border: 2px solid rgba(var(--bright-rgb), 0.85); /* Single, unified bold stroke */
+            box-shadow: none; /* Eliminate the 'seam' from the shadow layer */
+            inset: -1px; /* Grow outward by perfectly overlapping the 1px border zone */
+            opacity: 1;
         }
 
         .layout-grid.cat-music .row-media {
