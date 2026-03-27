@@ -1,5 +1,10 @@
 [
   {
+    "hash": "721f724bb7f3741fdac6fbb98e93ec187f14f181",
+    "date": "2026-03-27",
+    "message": "design: restore outward selection highlight system across all components"
+  },
+  {
     "hash": "9fb8e6a59df96cde5bf6c7cccc642085db89ce4a",
     "date": "2026-03-26",
     "message": "fix: resolve play count aggregation bug for music cards with missing links"
