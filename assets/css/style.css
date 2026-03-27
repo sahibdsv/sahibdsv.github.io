@@ -325,40 +325,33 @@
             transition: color 0.2s ease;
         }
 
-        .chip,
-        .chip.date {
+        .chip {
             display: inline-flex;
             align-items: center;
-            padding: 3px 8px;
-            font-size: 11px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: var(--text-muted);
+            justify-content: center;
+            padding: 3px 10px;
             border: 1px solid var(--border-subtle);
             border-radius: 50px;
-            background: var(--surface-subtle);
+            font-size: 11px;
+            color: var(--text-muted);
             text-decoration: none !important;
-            -webkit-text-fill-color: initial !important;
-            vertical-align: middle;
-            transform: translateZ(0);
-            line-height: 1;
-            box-sizing: border-box;
-            max-width: 140px;
-            flex-shrink: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            background: var(--surface-subtle);
             transition: all var(--anim-quick) var(--ease);
-            position: relative; /* Anchor for bloom highlight */
+            position: relative; /* Anchor for bloom */
+            cursor: pointer;
+            height: 20px; /* Force consistent height in all contexts */
+            box-sizing: border-box;
+            white-space: nowrap;
         }
 
         .chip::before {
             content: '';
             position: absolute;
             inset: -1px;
-            border: 2px solid rgba(var(--bright-rgb), 0.85);
+            border: 2px solid rgba(var(--bright-rgb), 0.95); /* High-contrast 2px ground truth */
             border-radius: inherit;
             pointer-events: none;
             transition: opacity var(--anim-quick) var(--ease);
@@ -366,12 +359,14 @@
             z-index: 5;
         }
 
-        .chip:hover {
+        .chip:hover,
+        .chip:active {
             background: var(--surface-strong);
             color: var(--text-bright);
         }
 
-        .chip:not(.no-hover):hover::before {
+        .chip:not(.no-hover):hover::before,
+        .chip:not(.no-hover):active::before {
             opacity: 1;
         }
 
@@ -1809,7 +1804,7 @@
             content: '';
             position: absolute;
             inset: -1px;
-            border: 2px solid rgba(var(--bright-rgb), 0.85);
+            border: 2px solid rgba(var(--bright-rgb), 0.95); /* High-contrast 2px ground truth */
             border-radius: inherit;
             pointer-events: none;
             transition: opacity var(--anim-quick) var(--ease);
@@ -1817,13 +1812,15 @@
             z-index: 5;
         }
 
-        .btn-cta:hover {
+        .btn-cta:hover,
+        .btn-cta:active {
             background: var(--card-bg-hover);
             color: var(--text-bright);
             text-decoration: none !important;
         }
 
-        .btn-cta:hover::before {
+        .btn-cta:not(.no-hover):hover::before,
+        .btn-cta:not(.no-hover):active::before {
             opacity: 1;
         }
 
@@ -2557,7 +2554,7 @@
             content: '';
             position: absolute;
             inset: -1px;
-            border: 2px solid rgba(var(--bright-rgb), 0.85); /* Smooth outward bloom */
+            border: 2px solid rgba(var(--bright-rgb), 0.95); /* High-contrast 2px ground truth */
             border-radius: inherit;
             pointer-events: none;
             transition: opacity var(--anim-quick) var(--ease);
@@ -2571,7 +2568,8 @@
             overflow: visible;
         }
 
-        .layout-grid.cat-music.is-playing::before {
+        .layout-grid.cat-music.is-playing::before,
+        .layout-grid.cat-music:active::before {
             opacity: 1;
         }
 
