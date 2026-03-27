@@ -1,5 +1,15 @@
 [
   {
+    "hash": "fbc1de8c65b1ee2f248460330072fc0f369bcafe",
+    "date": "2026-03-27",
+    "message": "design: restore original link styles, unify all highlights to simple border thickening"
+  },
+  {
+    "hash": "31c4d43b3db5107a9260c275f99c54b25a8738db",
+    "date": "2026-03-27",
+    "message": "design: unify 'outward bloom' system across tags, links, and chips"
+  },
+  {
     "hash": "721f724bb7f3741fdac6fbb98e93ec187f14f181",
     "date": "2026-03-27",
     "message": "design: restore outward selection highlight system across all components"
