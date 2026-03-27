@@ -361,8 +361,7 @@
 
         .chip:hover,
         .chip:active {
-            background: var(--surface-strong);
-            color: var(--text-bright);
+            text-decoration: none !important;
         }
 
         .chip:not(.no-hover):hover::before,
@@ -1814,8 +1813,6 @@
 
         .btn-cta:hover,
         .btn-cta:active {
-            background: var(--card-bg-hover);
-            color: var(--text-bright);
             text-decoration: none !important;
         }
 
