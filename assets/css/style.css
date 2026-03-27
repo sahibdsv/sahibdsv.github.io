@@ -351,13 +351,28 @@
             white-space: nowrap;
             cursor: pointer;
             transition: all var(--anim-quick) var(--ease);
+            position: relative; /* Anchor for bloom highlight */
+        }
+
+        .chip::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border: 2px solid rgba(var(--bright-rgb), 0.85);
+            border-radius: inherit;
+            pointer-events: none;
+            transition: opacity var(--anim-quick) var(--ease);
+            opacity: 0;
+            z-index: 5;
         }
 
         .chip:hover {
-            border: 2px solid rgba(var(--bright-rgb), 0.8);
-            padding: 2px 7px; /* Compensate for thicker border to prevent layout shift */
             background: var(--surface-strong);
             color: var(--text-bright);
+        }
+
+        .chip:not(.no-hover):hover::before {
+            opacity: 1;
         }
 
         .chip.no-hover {
@@ -365,8 +380,6 @@
         }
 
         .chip.no-hover:hover {
-            border: 1px solid var(--border-subtle);
-            padding: 3px 8px;
             background: var(--surface-subtle);
             color: var(--text-muted);
         }
@@ -1783,6 +1796,7 @@
             cursor: pointer;
             overflow: visible;
             margin: 5px;
+            position: relative;
             transition: all var(--anim-quick) var(--ease);
             height: auto;
             max-width: 100%;
@@ -1791,20 +1805,26 @@
             word-break: break-word;
         }
 
-        /* Centering fallback for buttons inside non-flex paragraphs */
-        p:has(> .btn-cta:only-child) {
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            margin: 16px 0;
+        .btn-cta::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border: 2px solid rgba(var(--bright-rgb), 0.85);
+            border-radius: inherit;
+            pointer-events: none;
+            transition: opacity var(--anim-quick) var(--ease);
+            opacity: 0;
+            z-index: 5;
         }
 
         .btn-cta:hover {
-            border: 2px solid rgba(var(--bright-rgb), 0.8);
-            padding: 7px 23px; /* Compensate for thicker border */
             background: var(--card-bg-hover);
+            color: var(--text-bright);
             text-decoration: none !important;
+        }
+
+        .btn-cta:hover::before {
+            opacity: 1;
         }
 
         /* Standard Button Colors & States */
@@ -1814,71 +1834,13 @@
             border-color: #27ae60 !important;
         }
 
-        .btn-cta.green:hover {
-            background: #27ae60;
-            border: 2px solid #219150 !important;
-            padding: 7px 23px;
-        }
-
-        .btn-cta.red {
-            background: #e74c3c;
-            color: #ffffff !important;
-            border-color: #c0392b !important;
-        }
-
-        .btn-cta.red:hover {
-            background: #c0392b;
-            border: 2px solid #a93226 !important;
-            padding: 7px 23px;
-        }
-
-        .btn-cta.blue {
-            background: #3498db;
-            color: #ffffff !important;
-            border-color: #2980b9 !important;
-        }
-
-        .btn-cta.blue:hover {
-            background: #2980b9;
-            border: 2px solid #2471a3 !important;
-            padding: 7px 23px;
-        }
-
-        .btn-cta.orange {
-            background: #f39c12;
-            color: #ffffff !important;
-            border-color: #d35400 !important;
-        }
-
-        .btn-cta.orange:hover {
-            background: #d35400;
-            border: 2px solid #ba4a00 !important;
-            padding: 7px 23px;
-        }
-
-        .btn-cta.purple {
-            background: #9b59b6;
-            color: #ffffff !important;
-            border-color: #8e44ad !important;
-        }
-
-        .btn-cta.purple:hover {
-            background: #8e44ad;
-            border: 2px solid #7d3c98 !important;
-            padding: 7px 23px;
-        }
-
-        .btn-cta.strava {
-            background: var(--accent-strava);
-            color: #ffffff !important;
-            border-color: #d85200 !important;
-        }
-
-        .btn-cta.strava:hover {
-            background: #e65800;
-            border: 2px solid rgba(var(--bright-rgb), 0.8) !important;
-            padding: 7px 23px;
-        }
+        .btn-cta.green:hover::before { border-color: #219150; opacity: 1; }
+        .btn-cta.red:hover::before { border-color: #a93226; opacity: 1; }
+        .btn-cta.blue:hover::before { border-color: #2471a3; opacity: 1; }
+        .btn-cta.orange:hover::before { border-color: #ba4a00; opacity: 1; }
+        .btn-cta.purple:hover::before { border-color: #7d3c98; opacity: 1; }
+        
+        .btn-cta.strava:hover::before { border-color: rgba(var(--bright-rgb), 0.8); opacity: 1; }
 
         [data-theme="light"] .btn-cta.green {
             background: #27ae60;
@@ -2591,10 +2553,26 @@
             border-radius: var(--card-radius);
         }
 
+        .layout-grid.cat-music::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border: 2px solid rgba(var(--bright-rgb), 0.85); /* Smooth outward bloom */
+            border-radius: inherit;
+            pointer-events: none;
+            transition: opacity var(--anim-quick) var(--ease);
+            opacity: 0;
+            z-index: 20;
+        }
+
         .layout-grid.cat-music.is-playing {
-            border: 2px solid rgba(var(--bright-rgb), 0.8);
             background: var(--card-bg-hover);
             z-index: 10;
+            overflow: visible;
+        }
+
+        .layout-grid.cat-music.is-playing::before {
+            opacity: 1;
         }
 
         .layout-grid.cat-music .row-media {
