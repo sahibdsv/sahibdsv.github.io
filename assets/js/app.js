@@ -1844,7 +1844,8 @@ function renderMusicCardHTML(item) {
     // SVG Guard: Never use the YT Music SVG as a full-bleed thumbnail (Case-Insensitive & Fuzzy)
     const isSVGLogo = item.thumb && (item.thumb.toLowerCase().includes("youtube_music_icon.svg") || item.thumb === ytLogo);
     const thumb = (item.thumb && !isSVGLogo) ? item.thumb.replace(/^http:\/\//i, "https://") : null;
-    const isYTMusic = (!item.source || item.source === "YT Music" || item.source === "YouTube Music" || item.source === "Music (Desktop)");
+    const sourceLabel = String(item.source || "");
+    const isYTMusic = (!item.source || sourceLabel.startsWith("YT Music") || sourceLabel === "YouTube Music" || sourceLabel === "Music (Desktop)");
     
     // Play Count Chip logic - Standardized with other unclickable chips
     const hasCount = item.count !== undefined && item.count !== null && String(item.count).trim() !== "";
