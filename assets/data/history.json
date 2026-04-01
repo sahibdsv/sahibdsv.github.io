@@ -1,5 +1,10 @@
 [
   {
+    "hash": "df12e7e0421a17d77ab626f9a1c2a557ebab0816",
+    "date": "2026-04-01",
+    "message": "Update YT Music source matching to use startsWith"
+  },
+  {
     "hash": "407beb7670f1490d3348e272324241f210bfc688",
     "date": "2026-03-27",
     "message": "design: neutralize hover/active typography and background colors for all components"
