@@ -9,81 +9,263 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
-    /* ─── Seamless Pure White Blend ─── */
+    /* ─── Light Mode Theme ─── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body { background: #ffffff !important; color: #3c4043 !important; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin:0; }
-    .app { display: flex; flex-direction: column; height: 100vh; background: #ffffff; }
-
-    .header { padding: 14px 24px; background: #ffffff; border-bottom: 1px solid #eeeeee; display: flex; justify-content: space-between; align-items: center; }
-    .header h1 { font-size: 15px; font-weight: 500; color: #202124; margin:0; }
-
-    .editor-wrap { flex: 1; position: relative; background: #ffffff; }
-
-    /* EasyMDE Pure White Background Overrides */
-    .EasyMDEContainer, .CodeMirror, .editor-toolbar, .editor-preview-side {
-      background: #ffffff !important;
-      color: #3c4043 !important;
-      border-color: #eeeeee !important;
+    :root {
+      --white: #ffffff;
+      --off-white: #f8f9fa;
+      --border-color: #eeeeee;
+      --text-main: #3c4043;
+      --text-dark: #202124;
+      --text-gray: #70757a;
+      --blue: #1a73e8;
+      --font-stack: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
-    .editor-toolbar { border-top: none !important; border-left: none !important; border-right: none !important; padding: 6px 14px !important; }
-    .CodeMirror { border: none !important; padding: 20px 32px !important; font-size: 14px !important; height: 100%; }
-    .editor-preview-side { border-top: none !important; border-bottom: none !important; }
+    body {
+      background-color: var(--white);
+      color: var(--text-main);
+      font-family: var(--font-stack);
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+    }
 
-    /* Highlights & Cursors */
-    .CodeMirror-selected { background: #e8f0fe !important; }
-    .CodeMirror-cursor { border-left: 2px solid #1a73e8 !important; }
+    .app { 
+      display: flex; 
+      flex-direction: column; 
+      height: 100vh; 
+      background-color: var(--white); 
+    }
 
-    .footer { padding: 14px 24px; border-top: 1px solid #eeeeee; background: #ffffff; display: flex; justify-content: space-between; align-items: center; }
-    
-    .status-text { font-size: 12px; color: #70757a; font-weight: 500; }
-    
-    .btn { padding: 8px 24px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; border:none; transition: .1s; }
-    .btn-secondary { background: transparent; color: #70757a; }
-    .btn-secondary:hover { background: #f8f9fa; color: #202124; }
-    .btn-primary { background: #1a73e8; color: white; margin-left: 8px; }
-    .btn-primary:hover { background: #1967d2; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* ─── Header ─── */
+    .header {
+      padding: 14px 24px;
+      background-color: var(--white);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
 
-    .loading-overlay { position: absolute; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 10; transition: opacity .3s; }
-    .loading-overlay.hide { opacity: 0; pointer-events: none; }
+    .header h1 {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin: 0;
+    }
+
+    #cellRef {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--text-gray);
+    }
+
+    /* ─── Editor Container ─── */
+    .editor-wrap {
+      flex: 1;
+      position: relative;
+      background-color: var(--white);
+    }
+
+    /* ─── EasyMDE Customizations (Targeted Specificity) ─── */
+    .EasyMDEContainer .CodeMirror {
+      background-color: var(--white);
+      color: var(--text-main);
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      padding: 20px 32px;
+      font-size: 14px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      line-height: 1.6;
+    }
+
+    .EasyMDEContainer .editor-toolbar {
+      background-color: var(--white);
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: 1px solid var(--border-color);
+      padding: 6px 14px;
+      opacity: 1;
+    }
+
+    .EasyMDEContainer .editor-toolbar button {
+      color: var(--text-gray);
+      transition: background-color 0.1s, color 0.1s;
+    }
+
+    .EasyMDEContainer .editor-toolbar button:hover,
+    .EasyMDEContainer .editor-toolbar button.active {
+      background-color: var(--off-white);
+      color: var(--text-dark);
+    }
+
+    .EasyMDEContainer .editor-preview-side {
+      background-color: var(--white);
+      border-left: 1px solid var(--border-color);
+      padding: 20px 32px;
+    }
+
+    /* Selection & Cursor */
+    .CodeMirror-selected { background-color: #e8f0fe; }
+    .CodeMirror-cursor { border-left: 2px solid var(--blue); }
+
+    /* ─── Footer ─── */
+    .footer {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--white);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .status-text {
+      font-size: 12px;
+      color: var(--text-gray);
+      font-weight: 500;
+    }
+
+    /* ─── Buttons ─── */
+    .footer-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 8px 24px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--font-stack);
+      transition: background-color 0.1s, box-shadow 0.1s;
+      border: 1px solid transparent;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-gray);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--off-white);
+      color: var(--text-dark);
+    }
+
+    .btn-primary {
+      background-color: var(--blue);
+      color: var(--white);
+      border-color: var(--blue);
+    }
+
+    .btn-primary:hover {
+      background-color: #1967d2;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ─── Loading Overlay ─── */
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background-color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--off-white);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="header">
+    <header class="header">
       <h1>Content Editor</h1>
-      <div id="cellRef" style="font-family: monospace; font-size: 11px; color: #70757a;">...</div>
-    </div>
-    <div class="editor-wrap">
-      <div id="loadingOverlay" class="loading-overlay"><div style="width:24px; height:24px; border:2px solid #eee; border-top-color:#1a73e8; border-radius:50%; animation:spin .8s linear infinite;"></div></div>
+      <div id="cellRef">LOADING...</div>
+    </header>
+
+    <main class="editor-wrap">
+      <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+      </div>
       <textarea id="editor"></textarea>
-    </div>
-    <div class="footer">
-      <div id="statusText">READY</div>
-      <div>
+    </main>
+
+    <footer class="footer">
+      <div id="statusText" class="status-text">READY</div>
+      <div class="footer-actions">
         <button class="btn btn-secondary" onclick="google.script.host.close()">Cancel</button>
         <button class="btn btn-primary" id="btnSave" onclick="save()">Save & Close</button>
       </div>
-    </div>
+    </footer>
   </div>
-  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
   <script>
     let mde = null;
-    google.script.run.withSuccessHandler(data => {
+
+    (function init() {
+      google.script.run
+        .withSuccessHandler(onDataLoaded)
+        .getActiveCellValue();
+    })();
+
+    function onDataLoaded(data) {
       document.getElementById('cellRef').textContent = (data.sheet + '!' + data.cell).toUpperCase();
+      
       mde = new EasyMDE({
         element: document.getElementById('editor'),
         initialValue: data.value || '',
-        autofocus: true, spellChecker: false, status: false, minHeight: '100%',
-        toolbar: ["bold", "italic", "strikethrough", "|", "heading-1", "heading-2", "|", "unordered-list", "ordered-list", "|", "link", "image", "|", "quote", "code", "|", "preview", "side-by-side"]
+        autofocus: true,
+        spellChecker: false,
+        status: false,
+        minHeight: '100%',
+        toolbar: [
+          "bold", "italic", "strikethrough", "|",
+          "heading-1", "heading-2", "|",
+          "unordered-list", "ordered-list", "|",
+          "link", "image", "|",
+          "quote", "code", "|",
+          "preview", "side-by-side"
+        ]
       });
+
       document.getElementById('loadingOverlay').classList.add('hide');
-    }).getActiveCellValue();
+    }
+
     function save() {
-      const btn = document.getElementById('btnSave'); btn.disabled = true; btn.textContent = 'Saving...';
-      google.script.run.withSuccessHandler(() => google.script.host.close()).saveToActiveCell(mde.value());
+      const btn = document.getElementById('btnSave');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      
+      google.script.run
+        .withSuccessHandler(() => google.script.host.close())
+        .saveToActiveCell(mde.value());
     }
   </script>
 </body>
