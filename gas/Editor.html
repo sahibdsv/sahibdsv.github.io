@@ -3,7 +3,7 @@
 <head>
   <base target="_top">
 
-  <!-- EasyMDE — CDN -->
+  <!-- EasyMDE — CDN JS/CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
   <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
 
@@ -31,33 +31,33 @@
     }
 
     body {
-      background: var(--bg) !important;
-      color: var(--text) !important;
+      background: #ffffff !important;
+      color: #3c4043 !important;
       font-family: var(--font);
       height: 100vh;
       overflow: hidden;
     }
 
-    .app { display: flex; flex-direction: column; height: 100%; }
+    .app { display: flex; flex-direction: column; height: 100%; background: #ffffff; }
 
     .header {
       padding: 12px 20px;
       background: #ffffff;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #eeeeee;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .header h1 { font-size: 15px; font-weight: 500; color: var(--text-bright); }
+    .header h1 { font-size: 15px; font-weight: 500; color: #202124; }
 
     .editor-wrap { flex: 1; position: relative; background: #ffffff; }
 
     /* EasyMDE Pure White Blend */
     .EasyMDEContainer, .CodeMirror, .editor-toolbar, .editor-preview-side {
       background: #ffffff !important;
-      color: var(--text) !important;
-      border-color: var(--border) !important;
+      color: #3c4043 !important;
+      border-color: #eeeeee !important;
     }
 
     .editor-toolbar { border-top: none !important; border-left: none !important; border-right: none !important; padding: 6px 12px !important; }
@@ -66,7 +66,7 @@
 
     .footer {
       padding: 12px 20px;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid #eeeeee;
       background: #ffffff;
       display: flex;
       justify-content: space-between;
@@ -74,8 +74,8 @@
     }
 
     .btn { padding: 8px 24px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font); }
-    .btn-secondary { background: transparent; color: var(--text-muted); border: none; margin-right: 8px; }
-    .btn-primary { background: var(--accent); color: white; border: 1px solid var(--accent); }
+    .btn-secondary { background: transparent; color: #70757a; border: none; margin-right: 8px; }
+    .btn-primary { background: #1a73e8; color: white; border: 1px solid #1a73e8; }
     
     .loading-overlay { position: absolute; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 10; transition: opacity 0.3s; }
     .loading-overlay.hide { opacity: 0; pointer-events: none; }
@@ -85,14 +85,14 @@
   <div class="app">
     <div class="header">
       <h1>Content Editor</h1>
-      <div id="cellRef" style="font-family: var(--mono); font-size: 11px; color: var(--text-muted);">LOADING...</div>
+      <div id="cellRef" style="font-family: var(--mono); font-size: 11px; color: #70757a;">LOADING...</div>
     </div>
     <div class="editor-wrap">
-      <div id="loadingOverlay" class="loading-overlay"><div style="width:24px; height:24px; border:2px solid #eee; border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite;"></div></div>
+      <div id="loadingOverlay" class="loading-overlay"><div style="width:24px; height:24px; border:2px solid #eee; border-top-color:#1a73e8; border-radius:50%; animation:spin .8s linear infinite;"></div></div>
       <textarea id="editor"></textarea>
     </div>
     <div class="footer">
-      <div id="statusText" style="font-size:12px; color:var(--text-muted);">READY</div>
+      <div id="statusText" style="font-size:12px; color:#70757a;">READY</div>
       <div>
         <button class="btn btn-secondary" onclick="google.script.host.close()">Cancel</button>
         <button class="btn btn-primary" id="btnSave" onclick="save()">Save & Close</button>
@@ -123,4 +123,5 @@
     }
   </script>
 </body>
+<!-- Sync Update: 2026-04-03 15:39 -->
 </html>
