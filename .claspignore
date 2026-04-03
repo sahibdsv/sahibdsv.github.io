@@ -1,7 +1,12 @@
+# Ignore everything by default
 **/**
-!gas/*.gs
-!gas/*.html
-!gas/appsscript.json
+
+# EXCEPT these file types (within the gas/ root)
+!*.gs
+!*.html
+!appsscript.json
+
+# Specifically ignore other project config
 .clasp.json
 .git/
 node_modules/
