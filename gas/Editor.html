@@ -7,392 +7,119 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
   <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
 
-  <!-- Google Fonts — Inter for a clean, modern look -->
+  <!-- Google Fonts — Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
-    /* ─── Reset & Base ─────────────────────────────────── */
+    /* ─── Light Mode Foundation ─── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #ffffff;
-      --bg-surface:  #ffffff; /* Match pure white */
+      --bg: #ffffff;
+      --bg-surface: #ffffff;
       --bg-elevated: #f8f9fa;
-      --border:      #e0e0e0; /* Subtle border */
-      --border-active:#1a73e8;
-      --text:        #3c4043;
+      --border: #dfdfdf;
+      --text: #3c4043;
       --text-bright: #202124;
-      --text-muted:  #70757a;
-      --accent:      #1a73e8;
-      --accent-glow: rgba(26, 115, 232, 0.04);
-      --green:       #1e8e3e;
-      --red:         #d93025;
-      --radius:      4px; /* Slightly sharper radius for the "Google UI" look */
-      --font:        'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --mono:        'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --text-muted: #70757a;
+      --accent: #1a73e8;
+      --radius: 4px;
+      --font: 'Inter', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
     }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 14px;
-      line-height: 1.5;
-      overflow: hidden;
-    }
-
-    /* ─── Layout ───────────────────────────────────────── */
-    .app {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-
-    /* ─── Header ───────────────────────────────────────── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 20px;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .header-icon {
-      width: 18px;
-      height: 18px;
-      fill: var(--accent);
-      flex-shrink: 0;
-    }
-
-    .header h1 {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text-bright);
-      letter-spacing: -0.01em;
-    }
-
-    .cell-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      font-family: var(--mono);
-      letter-spacing: 0.02em;
-    }
-
-    /* ─── Editor Area ──────────────────────────────────── */
-    .editor-wrap {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-      background: var(--bg);
-    }
-
-    /* ─── EasyMDE Overrides ────────────────────────────── */
-    .EasyMDEContainer {
-      height: 100% !important;
-      display: flex !important;
-      flex-direction: column !important;
-      background: var(--bg) !important;
-      border: none !important;
-    }
-
-    .EasyMDEContainer .editor-toolbar {
-      background: var(--bg) !important;
-      border: none !important;
-      border-bottom: 1px solid var(--border) !important;
-      padding: 8px 12px !important;
-      opacity: 1 !important;
-      flex-shrink: 0;
-    }
-
-    .EasyMDEContainer .editor-toolbar button {
-      color: var(--text-muted) !important;
-      border: none !important;
-      border-radius: 4px !important;
-      width: 32px !important;
-      height: 32px !important;
-      transition: all 0.1s ease;
-      margin-right: 2px !important;
-    }
-
-    .EasyMDEContainer .editor-toolbar button:hover {
-      background: var(--bg-elevated) !important;
-      color: var(--text-bright) !important;
-    }
-
-    .EasyMDEContainer .editor-toolbar button.active {
-      background: var(--bg-elevated) !important;
-      color: var(--accent) !important;
-    }
-
-    .EasyMDEContainer .editor-toolbar i.separator {
-      border-left: 1px solid var(--border) !important;
-      border-right: none !important;
-      margin: 0 8px !important;
-    }
-
-    .EasyMDEContainer .CodeMirror {
-      flex: 1 !important;
+    body {
       background: var(--bg) !important;
       color: var(--text) !important;
-      border: none !important;
-      font-family: var(--mono) !important;
-      font-size: 14px !important;
-      line-height: 1.6 !important;
-      padding: 24px 32px !important;
+      font-family: var(--font);
+      height: 100vh;
+      overflow: hidden;
     }
 
-    .EasyMDEContainer .CodeMirror-cursor {
-      border-left: 2px solid var(--accent) !important;
+    .app { display: flex; flex-direction: column; height: 100%; }
+
+    .header {
+      padding: 12px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .EasyMDEContainer .CodeMirror-selected {
-      background: #e8f0fe !important;
-    }
+    .header h1 { font-size: 15px; font-weight: 500; color: var(--text-bright); }
 
-    .EasyMDEContainer .CodeMirror-focused .CodeMirror-selected {
-      background: #d2e3fc !important;
-    }
+    .editor-wrap { flex: 1; position: relative; background: #ffffff; }
 
-    /* Syntax Highlighting */
-    .cm-header     { color: var(--text-bright) !important; font-weight: 700 !important; }
-    .cm-strong     { color: var(--text-bright) !important; font-weight: 700 !important; }
-    .cm-em         { color: var(--text-muted) !important; font-style: italic !important; }
-    .cm-link       { color: var(--accent) !important; text-decoration: none !important; }
-    .cm-url        { color: var(--text-muted) !important; }
-    .cm-comment    { color: #1e8e3e !important; }
-    .cm-quote      { color: #70757a !important; font-style: italic !important; }
-    .cm-keyword    { color: #d93025 !important; }
-
-    /* Side-by-Side Preview */
-    .EasyMDEContainer .editor-preview-side {
+    /* EasyMDE Pure White Blend */
+    .EasyMDEContainer, .CodeMirror, .editor-toolbar, .editor-preview-side {
       background: #ffffff !important;
       color: var(--text) !important;
-      border-left: 1px solid var(--border) !important;
-      padding: 24px 32px !important;
-      font-family: var(--font) !important;
-      font-size: 14px !important;
-      line-height: 1.8 !important;
+      border-color: var(--border) !important;
     }
 
-    /* Preview CSS styling */
-    .editor-preview h1, .editor-preview-side h1 { font-size: 1.8em; color: var(--text-bright); margin: 1em 0 0.5em; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
-    .editor-preview h2, .editor-preview-side h2 { font-size: 1.5em; color: var(--text-bright); margin: 0.9em 0 0.4em; }
-    .editor-preview a, .editor-preview-side a { color: var(--accent); }
-    .editor-preview blockquote, .editor-preview-side blockquote { border-left: 4px solid var(--border); color: var(--text-muted); padding-left: 16px; margin: 1.5em 0; }
+    .editor-toolbar { border-top: none !important; border-left: none !important; border-right: none !important; padding: 6px 12px !important; }
+    .CodeMirror { border: none !important; padding: 20px 30px !important; font-size: 14px !important; }
+    .editor-preview-side { border-top: none !important; border-bottom: none !important; }
 
-    /* ─── Footer ───────────────────────────────────────── */
     .footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       padding: 12px 20px;
-      background: var(--bg);
       border-top: 1px solid var(--border);
-      flex-shrink: 0;
-      gap: 12px;
-    }
-
-    .status-text {
-      font-size: 12px;
-      color: var(--text-muted);
-      min-width: 0;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 20px;
-      font-size: 14px;
-      font-weight: 500;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.1s ease;
-      font-family: var(--font);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: var(--text-muted);
-      border: 1px solid transparent;
-    }
-
-    .btn-secondary:hover {
-      background: var(--bg-elevated);
-      color: var(--text-bright);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #ffffff;
-      border: 1px solid var(--accent);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-
-    .btn-primary:hover {
-      background: #1967d2;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* ─── Loading Overlay ──────────────────────────────── */
-    .loading-overlay {
-      position: absolute;
-      inset: 0;
       background: #ffffff;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      gap: 20px;
-      z-index: 100;
-      transition: opacity 0.3s ease;
     }
 
-    .loading-overlay.hide {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .loading-spinner {
-      width: 28px;
-      height: 28px;
-      border: 2px solid var(--bg-elevated);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    .btn { padding: 8px 24px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font); }
+    .btn-secondary { background: transparent; color: var(--text-muted); border: none; margin-right: 8px; }
+    .btn-primary { background: var(--accent); color: white; border: 1px solid var(--accent); }
+    
+    .loading-overlay { position: absolute; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 10; transition: opacity 0.3s; }
+    .loading-overlay.hide { opacity: 0; pointer-events: none; }
   </style>
 </head>
 <body>
   <div class="app">
-
-    <!-- Header -->
     <div class="header">
-      <div class="header-left">
-        <svg class="header-icon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-        <h1>Content Editor</h1>
-      </div>
-      <div class="cell-badge" id="cellBadge">
-        <span id="cellRef">LOADING...</span>
-      </div>
+      <h1>Content Editor</h1>
+      <div id="cellRef" style="font-family: var(--mono); font-size: 11px; color: var(--text-muted);">LOADING...</div>
     </div>
-
-    <!-- Editor -->
     <div class="editor-wrap">
-      <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-      </div>
+      <div id="loadingOverlay" class="loading-overlay"><div style="width:24px; height:24px; border:2px solid #eee; border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite;"></div></div>
       <textarea id="editor"></textarea>
     </div>
-
-    <!-- Footer -->
     <div class="footer">
-      <div class="status-text" id="statusText">READY</div>
-      <div class="footer-actions">
-        <button class="btn btn-secondary" onclick="closeEditor()">Cancel</button>
-        <button class="btn btn-primary" id="btnSave" onclick="saveAndClose()">
-          <span id="btnSaveText">Save & Close</span>
-        </button>
+      <div id="statusText" style="font-size:12px; color:var(--text-muted);">READY</div>
+      <div>
+        <button class="btn btn-secondary" onclick="google.script.host.close()">Cancel</button>
+        <button class="btn btn-primary" id="btnSave" onclick="save()">Save & Close</button>
       </div>
     </div>
-
   </div>
+
+  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
   <script>
     let mde = null;
-    let isDirty = false;
-
-    (function init() {
-      google.script.run
-        .withSuccessHandler(onCellLoaded)
-        .getActiveCellValue();
-    })();
-
-    function onCellLoaded(data) {
+    google.script.run.withSuccessHandler(data => {
       document.getElementById('cellRef').textContent = (data.sheet + '!' + data.cell).toUpperCase();
-
       mde = new EasyMDE({
         element: document.getElementById('editor'),
         initialValue: data.value || '',
-        autofocus: true,
-        spellChecker: false,
-        status: false,
-        minHeight: '100%',
-        toolbar: [
-          'bold', 'italic', 'strikethrough', '|',
-          'heading-1', 'heading-2', 'heading-3', '|',
-          'unordered-list', 'ordered-list', '|',
-          'link', 'image', 'horizontal-rule', '|',
-          'quote', 'code', '|',
-          'preview', 'side-by-side', '|',
-          'undo', 'redo', '|',
-          {
-            name: 'wiki-link',
-            action: function(editor) {
-              const cm = editor.codemirror;
-              const selection = cm.getSelection();
-              const text = selection || 'Page Title';
-              cm.replaceSelection('[[' + text + ']]');
-            },
-            className: 'fa fa-bookmark',
-            title: 'Wiki Link [[Page]]'
-          }
-        ],
-        previewRender: function(plainText) {
-          return EasyMDE.prototype.markdown(plainText);
-        }
+        autofocus: true, spellChecker: false, status: false,
+        toolbar: ["bold", "italic", "strikethrough", "|", "heading-1", "heading-2", "|", "unordered-list", "ordered-list", "|", "link", "image", "|", "quote", "code", "|", "preview", "side-by-side"]
       });
+      document.getElementById('loadingOverlay').classList.add('hide');
+    }).getActiveCellValue();
 
-      mde.codemirror.on('change', () => { isDirty = true; document.getElementById('statusText').textContent = 'UNSAVED CHANGES'; });
-      
-      const overlay = document.getElementById('loadingOverlay');
-      overlay.classList.add('hide');
-    }
-
-    function saveAndClose() {
+    function save() {
       const btn = document.getElementById('btnSave');
-      const text = document.getElementById('btnSaveText');
       btn.disabled = true;
-      text.textContent = 'Saving...';
-      
-      google.script.run
-        .withSuccessHandler(() => google.script.host.close())
-        .saveToActiveCell(mde.value());
-    }
-
-    function closeEditor() {
-      if (isDirty && !confirm('Discard changes?')) return;
-      google.script.host.close();
+      btn.textContent = 'Saving...';
+      google.script.run.withSuccessHandler(() => google.script.host.close()).saveToActiveCell(mde.value());
     }
   </script>
 </body>
