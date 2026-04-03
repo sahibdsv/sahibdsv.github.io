@@ -1,5 +1,10 @@
 [
   {
+    "hash": "4c2d390c73e108fddfb49ae997b05c74d4e972ec",
+    "date": "2026-04-03",
+    "message": "feat: add AboutMe-thumbnail_6 image to assets"
+  },
+  {
     "hash": "c10b01026d476550fdf8bb9127c94a21600bd6b1",
     "date": "2026-04-03",
     "message": "feat: add AboutMe-thumbnail_5.jpg to assets directory"
