@@ -1,5 +1,10 @@
 [
   {
+    "hash": "bb3563921dbed51eae38bf737b07b614963c09c9",
+    "date": "2026-04-03",
+    "message": "feat: add AboutMe thumbnail image to assets"
+  },
+  {
     "hash": "ff798e7f6c6097f7fa0ae51979b3d05d80223d52",
     "date": "2026-04-03",
     "message": "chore: replace AboutMe-thumbnail.JPG with updated version"
