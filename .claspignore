@@ -1,0 +1,7 @@
+**/**
+!gas/*.gs
+!gas/*.html
+!gas/appsscript.json
+.clasp.json
+.git/
+node_modules/
