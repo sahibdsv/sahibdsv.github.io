@@ -615,3 +615,12 @@ function updateLibraryEntry_(libSheet, artist, track, link, thumb) {
   }
   libSheet.appendRow([artist, track, link, thumb]);
 }
+
+function findCol_(headers, list) {
+  const lowerH = headers.map(h => String(h || "").toLowerCase());
+  for (let k of list) {
+    let idx = lowerH.indexOf(k.toLowerCase());
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
