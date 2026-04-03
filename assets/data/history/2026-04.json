@@ -1,5 +1,10 @@
 [
   {
+    "hash": "d39151d0c7f3aadf07e48b975dad8a873102d4b6",
+    "date": "2026-04-03",
+    "message": "docs: update GUIDE.md with new engine features, path auto-resolution, and updated content formatting rules"
+  },
+  {
     "hash": "d159291631146fa4d1200f678f894967c3e9a089",
     "date": "2026-04-03",
     "message": "style: implement high-fidelity media fade-in and fix loader transitions"
