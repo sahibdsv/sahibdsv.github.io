@@ -48,6 +48,8 @@
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
+      z-index: 10; /* Ensure header stays above editor modes */
+      position: relative;
     }
 
     .header h1 {
@@ -68,10 +70,18 @@
       flex: 1;
       position: relative;
       background-color: var(--white);
+      overflow: hidden; /* Lock the editor within this space */
     }
 
     /* ─── EasyMDE Customizations (Targeted Specificity) ─── */
+    .EasyMDEContainer {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
     .EasyMDEContainer .CodeMirror {
+      flex: 1;
       background-color: var(--white);
       color: var(--text-main);
       border-left: none;
@@ -132,6 +142,8 @@
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
+      z-index: 10; /* Keep buttons above editor full-width modes */
+      position: relative;
     }
 
     .status-text {
