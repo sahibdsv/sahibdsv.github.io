@@ -2361,25 +2361,41 @@ function getYouTubeThumbnail(videoId) {
 function processMediaUrl(url) {
     if (!url) return { url: '', autoplay: false, loop: false, controls: true, invert: false };
 
-    // SECURITY: Force HTTPS to avoid 'Not Secure' Mixed Content warnings for external images
-    let processedUrl = url.replace(/^http:\/\//i, "https://");
-
-    const lower = processedUrl.toLowerCase();
+    // 1. Identify behavior markers before they get caught in path resolution
+    const lower = url.toLowerCase();
     const autoplay = lower.includes('-autoplay');
     const loop = lower.includes('-loop');
     const invert = lower.includes('-invert');
-    // Behavior for controls: generally on, but off for autoplay unless specified
     const controls = !lower.includes('-nocontrols') && !autoplay;
 
-    // Strip behavior markers.
-    // These can be appended after the extension (e.g. .jpg-invert)
-    let cleanUrl = processedUrl.replace(/-(?:autoplay|loop|noloop|nocontrols|invert)/gi, '');
-
+    // 2. Clean behavior markers from the URL string
+    let cleanUrl = url.replace(/-(?:autoplay|loop|noloop|nocontrols|invert)/gi, '');
+    
     // SPECIAL CASE: Only strip '-thumb' from videos, as some images (like resume-thumb.jpg)
     // legitimately use it in their real filename.
     if (lower.match(/\.(mp4|webm|mov|ogg)/i)) {
         cleanUrl = cleanUrl.replace(/-thumb/gi, '');
     }
+
+    // 3. Resolve Relative Paths for local assets
+    // If it doesn't have an explicit protocol or directory, we infer it based on extension
+    if (!cleanUrl.startsWith('http') && !cleanUrl.startsWith('assets/')) {
+        const extMatch = cleanUrl.match(/\.([a-z0-9]+)(?:$|\?)/i);
+        if (extMatch) {
+            const ext = extMatch[1].toLowerCase();
+            const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+            const videoExts = ['mp4', 'webm', 'mov', 'ogg'];
+            
+            if (imageExts.includes(ext)) {
+                cleanUrl = `assets/images/${cleanUrl}`;
+            } else if (videoExts.includes(ext)) {
+                cleanUrl = `assets/videos/${cleanUrl}`;
+            }
+        }
+    }
+
+    // 4. Force HTTPS for security
+    cleanUrl = cleanUrl.replace(/^http:\/\//i, "https://");
 
     return { url: cleanUrl, autoplay, loop, controls, invert };
 }
