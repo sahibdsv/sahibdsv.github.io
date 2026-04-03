@@ -2,31 +2,29 @@
 <html>
 <head>
   <base target="_top">
-  <!-- EasyMDE — JS/CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
   <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
-  <!-- Inter Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
-    /* ─── Light Mode Theme ─── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    /* ─── Variables ─── */
     :root {
       --white: #ffffff;
       --off-white: #f8f9fa;
-      --border-color: #eeeeee;
-      --text-main: #3c4043;
+      --border: #eeeeee;
+      --text: #3c4043;
       --text-dark: #202124;
       --text-gray: #70757a;
       --blue: #1a73e8;
-      --font-stack: 'Inter', system-ui, -apple-system, sans-serif;
+      --font: 'Inter', sans-serif;
     }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: var(--white);
-      color: var(--text-main);
-      font-family: var(--font-stack);
+      color: var(--text);
+      font-family: var(--font);
       height: 100vh;
       overflow: hidden;
       margin: 0;
@@ -39,41 +37,33 @@
       background-color: var(--white); 
     }
 
-    /* ─── Header ─── */
-    .header {
+    /* ─── Header & Footer (High Priority Layer) ─── */
+    .header, .footer {
       padding: 14px 24px;
       background-color: var(--white);
-      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
-      z-index: 10; /* Ensure header stays above editor modes */
       position: relative;
+      z-index: 1000; /* Stay above any editor panes */
     }
 
-    .header h1 {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text-dark);
-      margin: 0;
-    }
+    .header { border-bottom: 1px solid var(--border); }
+    .footer { border-top: 1px solid var(--border); }
 
-    #cellRef {
-      font-family: monospace;
-      font-size: 11px;
-      color: var(--text-gray);
-    }
+    .header h1 { font-size: 15px; font-weight: 500; color: var(--text-dark); margin: 0; }
+    #cellRef { font-family: monospace; font-size: 11px; color: var(--text-gray); }
 
     /* ─── Editor Container ─── */
     .editor-wrap {
       flex: 1;
       position: relative;
       background-color: var(--white);
-      overflow: hidden; /* Lock the editor within this space */
+      overflow: hidden;
     }
 
-    /* ─── EasyMDE Customizations (Targeted Specificity) ─── */
+    /* ─── EasyMDE Structure & Mode Fixes ─── */
     .EasyMDEContainer {
       height: 100%;
       display: flex;
@@ -83,20 +73,42 @@
     .EasyMDEContainer .CodeMirror {
       flex: 1;
       background-color: var(--white);
-      color: var(--text-main);
-      border-left: none;
-      border-right: none;
-      border-bottom: none;
+      color: var(--text);
+      border: none;
       padding: 24px 32px;
       font-size: 14px;
       font-family: 'JetBrains Mono', 'Fira Code', monospace;
       line-height: 1.7;
     }
 
-    /* Active Line Highlighting — Visual Context */
+    /* SURGICAL FIX: Prevent Preview Panes from covering Header/Footer */
+    .EasyMDEContainer .editor-preview,
+    .EasyMDEContainer .editor-preview-side {
+      background-color: var(--white);
+      color: var(--text);
+      padding: 24px 32px;
+      position: absolute !important; /* Lock to editor-wrap, NOT window */
+      top: 0 !important;
+      bottom: 0 !important;
+      right: 0 !important;
+      z-index: 9;
+      height: 100% !important;
+      border: none !important;
+    }
+
+    .EasyMDEContainer .editor-preview-side {
+      width: 50% !important;
+      border-left: 1px solid var(--border) !important;
+    }
+
+    .EasyMDEContainer .editor-preview {
+      width: 100% !important;
+      left: 0 !important;
+    }
+
+    /* Active Line Rendering */
     .EasyMDEContainer .CodeMirror-activeline-background {
-      background-color: #f1f3f4; /* Subtle Google-style gray highlight */
-      opacity: 0.5;
+      background-color: #f8f9fa;
     }
 
     .EasyMDEContainer .editor-toolbar {
@@ -104,123 +116,31 @@
       border-top: none;
       border-left: none;
       border-right: none;
-      border-bottom: 1px solid var(--border-color);
-      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 14px;
       opacity: 1;
     }
 
-    .EasyMDEContainer .editor-toolbar button {
-      color: var(--text-gray);
-      transition: background-color 0.1s, color 0.1s;
-    }
-
+    .EasyMDEContainer .editor-toolbar button { color: var(--text-gray); }
     .EasyMDEContainer .editor-toolbar button:hover,
-    .EasyMDEContainer .editor-toolbar button.active {
-      background-color: var(--off-white);
-      color: var(--text-dark);
-    }
+    .EasyMDEContainer .editor-toolbar button.active { background-color: var(--off-white); color: var(--text-dark); }
 
-    .EasyMDEContainer .editor-preview-side {
-      background-color: var(--white);
-      border-left: 1px solid var(--border-color);
-      padding: 24px 32px;
-    }
-
-    /* High-Visibility Cursor */
-    .CodeMirror-cursor { 
-      border-left: 3px solid var(--blue) !important; 
-      box-shadow: 0 0 4px rgba(26, 115, 232, 0.3);
-    }
+    /* Cursor & Highlights */
+    .CodeMirror-cursor { border-left: 3px solid var(--blue) !important; filter: drop-shadow(0 0 2px var(--blue)); }
     .CodeMirror-selected { background-color: #e8f0fe; }
 
-    /* ─── Footer ─── */
-    .footer {
-      padding: 14px 24px;
-      border-top: 1px solid var(--border-color);
-      background-color: var(--white);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-      z-index: 10; /* Keep buttons above editor full-width modes */
-      position: relative;
-    }
+    /* ─── UI Bits ─── */
+    .status-text { font-size: 12px; color: var(--text-gray); font-weight: 500; }
+    .btn { padding: 8px 24px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: .1s; }
+    .btn-secondary { background-color: transparent; color: var(--text-gray); }
+    .btn-secondary:hover { background-color: var(--off-white); color: var(--text-dark); }
+    .btn-primary { background-color: var(--blue); color: var(--white); border-color: var(--blue); margin-left: 8px; }
+    .btn-primary:hover { background-color: #1967d2; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .status-text {
-      font-size: 12px;
-      color: var(--text-gray);
-      font-weight: 500;
-    }
-
-    /* ─── Buttons ─── */
-    .footer-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn {
-      padding: 8px 24px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: var(--font-stack);
-      transition: background-color 0.1s, box-shadow 0.1s;
-      border: 1px solid transparent;
-    }
-
-    .btn-secondary {
-      background-color: transparent;
-      color: var(--text-gray);
-    }
-
-    .btn-secondary:hover {
-      background-color: var(--off-white);
-      color: var(--text-dark);
-    }
-
-    .btn-primary {
-      background-color: var(--blue);
-      color: var(--white);
-      border-color: var(--blue);
-    }
-
-    .btn-primary:hover {
-      background-color: #1967d2;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* ─── Loading Overlay ─── */
-    .loading-overlay {
-      position: absolute;
-      inset: 0;
-      background-color: var(--white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      transition: opacity 0.3s ease;
-    }
-
-    .loading-overlay.hide {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .spinner {
-      width: 24px;
-      height: 24px;
-      border: 2px solid var(--off-white);
-      border-top-color: var(--blue);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
+    .loading-overlay { position: absolute; inset: 0; background-color: var(--white); display: flex; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.3s ease; }
+    .loading-overlay.hide { opacity: 0; pointer-events: none; }
+    .spinner { width: 24px; height: 24px; border: 2px solid var(--off-white); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
@@ -232,9 +152,7 @@
     </header>
 
     <main class="editor-wrap">
-      <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner"></div>
-      </div>
+      <div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div></div>
       <textarea id="editor"></textarea>
     </main>
 
@@ -249,47 +167,27 @@
 
   <script>
     let mde = null;
-
     (function init() {
-      google.script.run
-        .withSuccessHandler(onDataLoaded)
-        .getActiveCellValue();
+      google.script.run.withSuccessHandler(onDataLoaded).getActiveCellValue();
     })();
 
     function onDataLoaded(data) {
       document.getElementById('cellRef').textContent = (data.sheet + '!' + data.cell).toUpperCase();
-      
       mde = new EasyMDE({
         element: document.getElementById('editor'),
         initialValue: data.value || '',
-        autofocus: true,
-        spellChecker: false,
-        status: false,
-        minHeight: '100%',
+        autofocus: true, spellChecker: false, status: false, minHeight: '100%',
         styleActiveLine: true,
-        toolbar: [
-          "bold", "italic", "strikethrough", "|",
-          "heading-1", "heading-2", "|",
-          "unordered-list", "ordered-list", "|",
-          "link", "image", "|",
-          "quote", "code", "|",
-          "preview", "side-by-side"
-        ]
+        toolbar: ["bold", "italic", "strikethrough", "|", "heading-1", "heading-2", "|", "unordered-list", "ordered-list", "|", "link", "image", "|", "quote", "code", "|", "preview", "side-by-side"]
       });
-
       document.getElementById('loadingOverlay').classList.add('hide');
     }
 
     function save() {
-      const btn = document.getElementById('btnSave');
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-      
-      google.script.run
-        .withSuccessHandler(() => google.script.host.close())
-        .saveToActiveCell(mde.value());
+      const btn = document.getElementById('btnSave'); btn.disabled = true; btn.textContent = 'Saving...';
+      google.script.run.withSuccessHandler(() => google.script.host.close()).saveToActiveCell(mde.value());
     }
   </script>
 </body>
-<!-- UX Update: 2026-04-03 15:48 -->
+<!-- Layout Stabilized: 2026-04-03 15:58 -->
 </html>
