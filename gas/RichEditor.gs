@@ -19,7 +19,7 @@ function onOpen() {
 
 // ─── Open the Editor Modal ───────────────────────────────────
 function openRichEditor() {
-  const html = HtmlService.createHtmlOutputFromFile('Editor_v2')
+  const html = HtmlService.createHtmlOutputFromFile('Editor')
     .setWidth(960)
     .setHeight(640)
     .setTitle('CMS — Markdown Editor');
