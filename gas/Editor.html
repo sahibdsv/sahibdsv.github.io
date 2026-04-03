@@ -77,10 +77,16 @@
       border-left: none;
       border-right: none;
       border-bottom: none;
-      padding: 20px 32px;
+      padding: 24px 32px;
       font-size: 14px;
       font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      line-height: 1.6;
+      line-height: 1.7;
+    }
+
+    /* Active Line Highlighting — Visual Context */
+    .EasyMDEContainer .CodeMirror-activeline-background {
+      background-color: #f1f3f4; /* Subtle Google-style gray highlight */
+      opacity: 0.5;
     }
 
     .EasyMDEContainer .editor-toolbar {
@@ -89,7 +95,7 @@
       border-left: none;
       border-right: none;
       border-bottom: 1px solid var(--border-color);
-      padding: 6px 14px;
+      padding: 8px 16px;
       opacity: 1;
     }
 
@@ -107,12 +113,15 @@
     .EasyMDEContainer .editor-preview-side {
       background-color: var(--white);
       border-left: 1px solid var(--border-color);
-      padding: 20px 32px;
+      padding: 24px 32px;
     }
 
-    /* Selection & Cursor */
+    /* High-Visibility Cursor */
+    .CodeMirror-cursor { 
+      border-left: 3px solid var(--blue) !important; 
+      box-shadow: 0 0 4px rgba(26, 115, 232, 0.3);
+    }
     .CodeMirror-selected { background-color: #e8f0fe; }
-    .CodeMirror-cursor { border-left: 2px solid var(--blue); }
 
     /* ─── Footer ─── */
     .footer {
@@ -245,6 +254,7 @@
         spellChecker: false,
         status: false,
         minHeight: '100%',
+        styleActiveLine: true,
         toolbar: [
           "bold", "italic", "strikethrough", "|",
           "heading-1", "heading-2", "|",
