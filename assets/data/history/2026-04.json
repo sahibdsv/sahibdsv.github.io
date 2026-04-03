@@ -1,5 +1,10 @@
 [
   {
+    "hash": "6eecd90adb4a854e389f0c48bceb1882a1a299a0",
+    "date": "2026-04-03",
+    "message": "feat: add thumbnail image for about me section"
+  },
+  {
     "hash": "d45208d24ca87fcb211df3defdc0273774c78242",
     "date": "2026-04-03",
     "message": "fix: resolve 404 for thumbnails by auto-prefixing local paths in processMediaUrl"
