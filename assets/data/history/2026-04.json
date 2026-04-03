@@ -1,0 +1,147 @@
+[
+  {
+    "hash": "bb3563921dbed51eae38bf737b07b614963c09c9",
+    "date": "2026-04-03",
+    "message": "feat: add AboutMe thumbnail image to assets"
+  },
+  {
+    "hash": "ff798e7f6c6097f7fa0ae51979b3d05d80223d52",
+    "date": "2026-04-03",
+    "message": "chore: replace AboutMe-thumbnail.JPG with updated version"
+  },
+  {
+    "hash": "1afa39d1fb8147d1d21ecd45cb61bf5867928f2a",
+    "date": "2026-04-03",
+    "message": "feat: add AboutMe-thumbnail_7 image to assets directory"
+  },
+  {
+    "hash": "4c2d390c73e108fddfb49ae997b05c74d4e972ec",
+    "date": "2026-04-03",
+    "message": "feat: add AboutMe-thumbnail_6 image to assets"
+  },
+  {
+    "hash": "c10b01026d476550fdf8bb9127c94a21600bd6b1",
+    "date": "2026-04-03",
+    "message": "feat: add AboutMe-thumbnail_5.jpg to assets directory"
+  },
+  {
+    "hash": "02430bdcd0f8db1d5477c9bfbc5477a71bebbaa9",
+    "date": "2026-04-03",
+    "message": "feat: Successful CMS consolidation and final sync restoration"
+  },
+  {
+    "hash": "41698734d43c93d57fc33c6fcf3f9711c6e9ae44",
+    "date": "2026-04-03",
+    "message": "chore: Add v2.1.0 truth tags for sync verification"
+  },
+  {
+    "hash": "6dff29428be2cd49e827bd09875dab0a55313cba",
+    "date": "2026-04-03",
+    "message": "fix: Final alignment of RichEditor.gs to Editor.html"
+  },
+  {
+    "hash": "23d69f7109b0cfe68a198dcbd44c253db0728a72",
+    "date": "2026-04-03",
+    "message": "fix: Final alignment of filenames to cloud project (Editor.html)"
+  },
+  {
+    "hash": "5e56d2ad3480785ea1a743459324037a389ca184",
+    "date": "2026-04-03",
+    "message": "feat: Final consolidated CMS and Rich Editor sync"
+  },
+  {
+    "hash": "a9247ae9efcdb4e3954250f6aa866a2293f645e1",
+    "date": "2026-04-03",
+    "message": "feat: Consolidate master CMS logic and editor into unified repo"
+  },
+  {
+    "hash": "c5ba51afa728a120750415442bdde82c69d8a66f",
+    "date": "2026-04-03",
+    "message": "feat: Remove side-by-side mode for UI stability"
+  },
+  {
+    "hash": "6a0b24e8bbc3e36b244b8ff9505be4e71a47a129",
+    "date": "2026-04-03",
+    "message": "fix: Neutralize EasyMDE fullscreen takeover to keep buttons sticky"
+  },
+  {
+    "hash": "bc7f42a9a98cb81eb1fe065d64b578b6638e29dc",
+    "date": "2026-04-03",
+    "message": "fix: Update launcher to point to Editor_v2 (forced sync)"
+  },
+  {
+    "hash": "fda5eb16d4fb909a99f5ce7388f6f5f5e2653536",
+    "date": "2026-04-03",
+    "message": "chore: Nuke and re-init clasp project for forced sync"
+  },
+  {
+    "hash": "085cf744ffdc61e10efed255870399d2f77b7589",
+    "date": "2026-04-03",
+    "message": "chore: Bypass clasp sync cache by versioning Editor.html"
+  },
+  {
+    "hash": "3f5561a13ae28c2dccd3df3697a1c7f019d4b283",
+    "date": "2026-04-03",
+    "message": "fix: Surgical CSS to prevent preview from covering footer"
+  },
+  {
+    "hash": "eb9db5add96cd1d8e00ec2b0eeb294dd248e9143",
+    "date": "2026-04-03",
+    "message": "fix: Ensure header/footer stay visible in all editor modes"
+  },
+  {
+    "hash": "37ea114bab14fc70319d978578664496940f9290",
+    "date": "2026-04-03",
+    "message": "ux: Force sync of enhanced cursor and active line"
+  },
+  {
+    "hash": "2745251314d5fd6e1cb4d301f56809caeb0f9ff2",
+    "date": "2026-04-03",
+    "message": "ux: Enhance cursor visibility and active line highlighting"
+  },
+  {
+    "hash": "432a8dcef1ea16bf2e6b9a08485f6dfab87ded21",
+    "date": "2026-04-03",
+    "message": "refactor: Clean CSS without !important clutter"
+  },
+  {
+    "hash": "2e088da7bca0e37411097b2c948b64024bdd7fc5",
+    "date": "2026-04-03",
+    "message": "chore: Remove redundant Code.gs duplicate"
+  },
+  {
+    "hash": "e58cfc21b3d43af9440dffa01676513cedb6e5e1",
+    "date": "2026-04-03",
+    "message": "style: Final light mode sync (no leaks)"
+  },
+  {
+    "hash": "012818bc9b5f4f9c4e4b8439037ff5b5fd5acd8d",
+    "date": "2026-04-03",
+    "message": "chore: Re-link clasp sync to force white theme update"
+  },
+  {
+    "hash": "a2c62c5a9f25b6bcde46d3b9e179fce0a4eb42ef",
+    "date": "2026-04-03",
+    "message": "style: Force light mode sync with timestamp"
+  },
+  {
+    "hash": "43fcec844e6afd03a0b631474ee6a9ae60ad4731",
+    "date": "2026-04-03",
+    "message": "style: Clean light mode sync"
+  },
+  {
+    "hash": "3744118bdec50d37b5946db2f3aa506c6788ecd4",
+    "date": "2026-04-03",
+    "message": "style: Force pure white editor aesthetic for seamless blending"
+  },
+  {
+    "hash": "d3af54be447b468194d0f985f65fa77c94bb85a4",
+    "date": "2026-04-03",
+    "message": "feat: Integrate CMS Rich Editor with clasp sync"
+  },
+  {
+    "hash": "df12e7e0421a17d77ab626f9a1c2a557ebab0816",
+    "date": "2026-04-01",
+    "message": "Update YT Music source matching to use startsWith"
+  }
+]

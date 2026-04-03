@@ -1275,10 +1275,26 @@ let _archiveSortAsc = false;
 async function renderSnapshots() {
     let history = [];
     try {
-        const res = await fetch('assets/data/history.json');
-        history = await res.json();
+        // Atomic Mode: Fetch manifest then load fragments in parallel
+        const manifestRes = await fetch('assets/data/history/manifest.json');
+        const manifest = await manifestRes.json();
+        
+        const fragments = await Promise.all(
+            manifest.map(month => 
+                fetch(`assets/data/history/${month}.json`).then(res => res.json())
+            )
+        );
+        
+        // Flatten the fragments into a single history array
+        history = fragments.flat();
     } catch (e) {
-        console.error('Failed to load history', e);
+        console.warn('Failed to load fragmented history, falling back to monolithic...', e);
+        try {
+            const res = await fetch('assets/data/history.json');
+            history = await res.json();
+        } catch (innerE) {
+            console.error('Total history load failure', innerE);
+        }
     }
 
     if (!history) history = [];
