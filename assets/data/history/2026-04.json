@@ -1,5 +1,10 @@
 [
   {
+    "hash": "d159291631146fa4d1200f678f894967c3e9a089",
+    "date": "2026-04-03",
+    "message": "style: implement high-fidelity media fade-in and fix loader transitions"
+  },
+  {
     "hash": "6eecd90adb4a854e389f0c48bceb1882a1a299a0",
     "date": "2026-04-03",
     "message": "feat: add thumbnail image for about me section"
