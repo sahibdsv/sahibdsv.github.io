@@ -151,20 +151,33 @@
         }
 
         .loader-overlay {
-            position: fixed;
+            position: absolute; /* Default to parent context */
             inset: 0;
             background: var(--bg);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 20000;
+            z-index: 10;
             pointer-events: none;
             transition: opacity 0.6s var(--ease), visibility 0.6s var(--ease);
             visibility: visible;
+            opacity: 1;
         }
 
+        /* Global boot loader override */
+        #boot-loader.loader-overlay {
+            position: fixed;
+            z-index: 20000;
+        }
+
+        .loader-overlay.hide,
         .loader-overlay.finished {
             opacity: 0;
+            visibility: hidden;
+        }
+
+        .row-media .loader-overlay {
+            background: var(--card-bg-dark); /* Match card interior for cleaner reveal */
         }
 
         .spinner {
@@ -2614,6 +2627,21 @@
             filter: grayscale(100%) brightness(0.7);
         }
 
+
+        /* --- UNIFIED MEDIA ENTER TRANSITIONS (High-Fidelity) --- */
+        /* This ensures that all images, videos, and embeds fade and slide into place gracefully. */
+        .media-enter {
+            opacity: 0;
+            transform: translateY(8px) scale(0.99); /* Subtle "rising into place" effect */
+            transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+            will-change: opacity, transform;
+            backface-visibility: hidden;
+        }
+
+        .media-enter.loaded {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
 
         /* The actual album art image (when loaded) */
         .layout-grid.cat-music .row-media img.media-enter {
