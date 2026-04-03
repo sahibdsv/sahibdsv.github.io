@@ -1,3 +1,4 @@
+// v2.1.0 (Master)
 const WEBSITE_CONFIG = {
   tabName: 'Music',
   libraryTabName: 'Library',

@@ -1,3 +1,4 @@
+// v2.1.0
 /**
  * CMS Rich Editor — Companion module for website.gs
  * 
