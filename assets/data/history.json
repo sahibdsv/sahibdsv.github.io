@@ -1,5 +1,10 @@
 [
   {
+    "hash": "d45208d24ca87fcb211df3defdc0273774c78242",
+    "date": "2026-04-03",
+    "message": "fix: resolve 404 for thumbnails by auto-prefixing local paths in processMediaUrl"
+  },
+  {
     "hash": "ae5c44c98ae534fd5c044a1ceddb8490fbc73422",
     "date": "2026-04-03",
     "message": "Rename AboutMe-thumbnail.JPG to AboutMe-thumbnail.jpg"
