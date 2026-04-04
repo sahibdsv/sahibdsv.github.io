@@ -1,5 +1,10 @@
 [
   {
+    "hash": "c9cccfc2cd727521e37cdabf97e3a84aa0eb895c",
+    "date": "2026-04-04",
+    "message": "UI: Add rounded corners to Markdown tables to match site surfaces"
+  },
+  {
     "hash": "b307a057a5d09922f59f3fd8a2cad79b9a27a981",
     "date": "2026-04-04",
     "message": "feat: implement GFM table support in content engine"
