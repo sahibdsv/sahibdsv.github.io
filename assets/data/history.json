@@ -1,5 +1,15 @@
 [
   {
+    "hash": "c9046f58f1793b220bd8dd4ba4fd0096e89be8cb",
+    "date": "2026-04-04",
+    "message": "fix: adjust chip height to 21px to resolve subpixel text-vs-outline misalignment"
+  },
+  {
+    "hash": "c1dfc30484931bb711100893cdf00906b1b83b89",
+    "date": "2026-04-04",
+    "message": "fix: restore perfect chip centering by excluding internal links from baseline alignment"
+  },
+  {
     "hash": "2260aba3035a775956010988c0e21373821bb1cb",
     "date": "2026-04-04",
     "message": "UI: Differentiate taxonomy tags (transparent) from timeline dates (surface-subtle)"
