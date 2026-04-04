@@ -480,7 +480,7 @@
         }
 
         thead th {
-            background: var(--surface-subtle);
+            background: rgba(var(--bright-rgb), 0.05);
             color: var(--text-bright);
             font-weight: 600;
             text-transform: uppercase;
