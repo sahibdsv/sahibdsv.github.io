@@ -1,5 +1,10 @@
 [
   {
+    "hash": "42ab1bc88ecfbd960286fa930950ad94236bd0c6",
+    "date": "2026-04-04",
+    "message": "Feature: move nav to fixed bottom bar (mirrored, column-reverse). Controls always visible. Search opens upward. ResizeObserver keeps padding-bottom in sync."
+  },
+  {
     "hash": "87611770a262d32e3c4b4248c989db88315e4ad0",
     "date": "2026-04-04",
     "message": "Fix: level-n nav links use .sub-link class, not .nav-link — was getting --text-dim fallback instead of --text-muted, causing shade mismatch"
