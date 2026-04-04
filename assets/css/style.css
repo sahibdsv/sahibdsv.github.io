@@ -349,11 +349,10 @@
         }
 
         .chip {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            display: inline-grid;
+            place-items: center;
             padding: 0 10px;
-            line-height: 1;
+            line-height: normal;
             border: 1px solid var(--border-subtle);
             border-radius: 50px;
             font-size: 11px;
@@ -361,7 +360,7 @@
             text-decoration: none !important;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            font-weight: 500;
+            font-weight: 501;
             background: transparent;
             transition: all var(--anim-quick) var(--ease);
             position: relative; /* Anchor for bloom */
@@ -373,6 +372,18 @@
 
         .chip.date {
             background: var(--surface-subtle);
+        }
+
+        /* Prevent links inside chips from inheriting global text styles or alignment */
+        .chip a,
+        .chip strong,
+        .chip em {
+            display: inline-block;
+            line-height: inherit;
+            vertical-align: middle;
+            text-decoration: none !important;
+            margin: 0;
+            padding: 0;
         }
 
         .chip::before {
@@ -406,7 +417,7 @@
             color: var(--text-muted);
         }
 
-        a:not(.chip):not(.btn-cta):not(.fill-anim) {
+        a:not(.chip):not(.btn-cta):not(.fill-anim):not(.chip *) {
             color: var(--text-muted);
             text-decoration: underline;
             text-decoration-color: rgba(var(--bright-rgb), var(--op-line));
