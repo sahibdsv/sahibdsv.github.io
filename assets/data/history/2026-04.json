@@ -1,5 +1,10 @@
 [
   {
+    "hash": "255cb402069eaab59ed3bc7eb04de1afb2991e35",
+    "date": "2026-04-04",
+    "message": "fix: WebGL context crash - add circuit breaker, context recovery, and deep disposal"
+  },
+  {
     "hash": "24feb3b8bb0190e9468df931859d3a55ff6adfb5",
     "date": "2026-04-04",
     "message": "UI: Final consistency for chip weights and table headers"
