@@ -287,7 +287,7 @@
             -webkit-tap-highlight-color: transparent;
             line-height: 1.15;
             margin: 0;
-            color: var(--text-bright);
+            color: var(--text-muted);
             scroll-margin-top: 120px;
         }
 
@@ -342,7 +342,7 @@
         }
 
         .header-fade-anim {
-            color: var(--text-bright);
+            color: var(--text-muted);
         }
 
         a {
@@ -521,8 +521,7 @@
         }
 
         h1.fill-anim,
-        h2.fill-anim,
-        h3.fill-anim {
+        h2.fill-anim {
             --text-base: var(--text-bright);
             --text-hover: var(--text-bright)
         }
@@ -1224,7 +1223,7 @@
             display: flex;
             align-items: center;
             gap: var(--space-xs);
-            --text-base: var(--text-bright);
+            --text-base: var(--text-muted);
             --text-hover: var(--cat-accent, var(--text-bright));
             font-weight: 600;
             line-height: 1.2;
@@ -2228,13 +2227,13 @@
         .resume-role {
             font-size: 16px;
             font-weight: 600;
-            color: var(--text-bright);
+            color: var(--text-dim);
         }
 
         .resume-company {
             font-size: 15px;
             font-weight: 400;
-            color: var(--text-bright);
+            color: var(--text-dim);
         }
 
         .resume-date-slot,
@@ -2272,7 +2271,7 @@
         .article-body h2,
         .article-body h3,
         .article-body h4 {
-            color: var(--text-bright);
+            color: var(--text-muted);
             font-weight: 600;
             line-height: 1.05;
             margin: 0; /* Stack system handles layout */
