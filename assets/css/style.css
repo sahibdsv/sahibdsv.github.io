@@ -372,7 +372,8 @@
         }
 
         .chip.date {
-            background: var(--surface-subtle);
+            background: transparent;
+            color: rgba(var(--bright-rgb), 0.45);
         }
 
         /* Prevent links inside chips from inheriting global text styles or alignment */
