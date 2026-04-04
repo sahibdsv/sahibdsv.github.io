@@ -42,8 +42,8 @@
             --placeholder-gradient: linear-gradient(135deg, #0a0a0a 0%, #0c0c0c 25%, #0f0f0f 50%, #131313 75%, #161616 100%);
             --placeholder-hover: linear-gradient(135deg, #1a1a1a 0%, #151515 50%, #111111 100%);
             --brand-row-h: 30px;
-            --main-row-h: 20px;
-            --sub-row-h: 20px;
+            --main-row-h: 25px;
+            --sub-row-h: 25px;
             --gap: 5px;
             --header-pad-top: 7px;
             --header-pad-bottom: 5px;
@@ -637,6 +637,12 @@
             scrollbar-width: none;
             transition: height var(--anim-layout) var(--ease), opacity var(--anim-layout) var(--ease), margin var(--anim-layout) var(--ease);
             opacity: 1;
+            cursor: grab;
+            user-select: none; /* Prevent accidental text selection while dragging */
+        }
+
+        .nav-row.grabbing {
+            cursor: grabbing;
         }
 
         .nav-row.level-1 {
@@ -911,8 +917,8 @@
         @media (max-width:768px) {
             :root {
                 --brand-row-h: 34px;
-                --main-row-h: 20px;
-                --sub-row-h: 20px;
+                --main-row-h: 25px;
+                --sub-row-h: 25px;
                 --gap: 1px;
                 --header-pad-top: 3.5px;
                 --header-pad-bottom: 3px;
