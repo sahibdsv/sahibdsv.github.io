@@ -555,6 +555,17 @@ function initApp() {
         const debouncedSearch = debounce((val) => handleSearch(val), 250);
         searchInput.addEventListener("input", (e) => debouncedSearch(e.target.value));
     }
+
+    // 6. Bottom nav: keep body padding-bottom in sync with the nav bar height
+    //    so content is never hidden behind the fixed bottom nav.
+    const headerEl = document.getElementById("main-header");
+    if (headerEl) {
+        const syncPadding = () => {
+            document.body.style.paddingBottom = headerEl.offsetHeight + "px";
+        };
+        syncPadding();
+        new ResizeObserver(syncPadding).observe(headerEl);
+    }
 }
 
 function renderNavigation(currentPath, forceSmoothNav = false) {

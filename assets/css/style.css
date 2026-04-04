@@ -527,19 +527,19 @@
         }
 
         #main-header {
-            position: sticky;
-            top: calc(-1 * (var(--brand-row-h) + var(--header-gap)));
+            position: fixed;
+            bottom: 0;
             left: 0;
             width: 100%;
             background: var(--bg-trans);
             z-index: 10000;
             display: flex;
-            flex-direction: column;
+            flex-direction: column-reverse;
             justify-content: flex-start;
             align-items: center;
             padding: var(--header-pad-top) 0 var(--header-pad-bottom) 0;
             gap: var(--header-gap);
-            border-bottom: 1px solid var(--border-header);
+            border-top: 1px solid var(--border-header);
             overflow: visible;
             isolation: isolate;
             -webkit-backface-visibility: hidden;
@@ -712,13 +712,13 @@
         #left-controls,
         #search-controls {
             position: absolute;
-            top: var(--header-pad-top);
+            bottom: var(--header-pad-bottom);
             height: var(--brand-row-h);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10002;
-            transition: transform .6s cubic-bezier(.2, 0, 0, 1), opacity var(--anim-layout) var(--ease), height .6s cubic-bezier(.2, 0, 0, 1);
+            transition: opacity var(--anim-layout) var(--ease);
         }
 
         #left-controls {
@@ -826,13 +826,13 @@
 
         #search-overlay {
             position: fixed;
-            top: 40px;
+            bottom: 70px; /* sits just above the nav bar */
             left: 50%;
             width: 400px;
             max-width: 90%;
             height: 50px;
-            transform-origin: center;
-            transform: translate3d(-50%, -40px, 0) scale(.9);
+            transform-origin: center bottom;
+            transform: translate3d(-50%, 40px, 0) scale(.9);
             background: var(--search-bg);
             z-index: 30000;
             border-radius: 999px;
