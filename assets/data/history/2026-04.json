@@ -1,5 +1,10 @@
 [
   {
+    "hash": "b307a057a5d09922f59f3fd8a2cad79b9a27a981",
+    "date": "2026-04-04",
+    "message": "feat: implement GFM table support in content engine"
+  },
+  {
     "hash": "5273e2b32dc24503ae85300648a3358530441eae",
     "date": "2026-04-04",
     "message": "UI: Final cleanup of hardcoded date chip colors"
