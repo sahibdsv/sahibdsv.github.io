@@ -16,6 +16,7 @@
             --bg-rgb: 5, 5, 5;
             --bg: rgb(var(--bg-rgb));
             --bg-trans: #050505;
+            --header-bg: #0f0f0f;
             --card-bg: #111111;
             --card-bg-hover: #1a1a1a;
             --code-bg: #1e1e1e;
@@ -97,6 +98,7 @@
             --bg-rgb: 238, 238, 242;
             --bg: #eeeef2;
             --bg-trans: #eeeef2;
+            --header-bg: #e6e6ea;
             --card-bg: #f7f7f9;
             --card-bg-hover: #e8e8ed;
             --code-bg: #eaeaef;
@@ -532,7 +534,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            background: var(--bg-trans);
+            background: var(--header-bg);
             z-index: 10000;
             display: flex;
             flex-direction: row;
@@ -553,7 +555,7 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background: var(--bg-trans);
+            background: var(--header-bg);
             z-index: 10000;
             display: flex;
             flex-direction: column;
