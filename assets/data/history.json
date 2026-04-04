@@ -1,5 +1,15 @@
 [
   {
+    "hash": "d27c5a4046b9219790c2893c258f074ea316cc8d",
+    "date": "2026-04-04",
+    "message": "Fix: .layout-grid h3.fill-anim was overriding --text-base back to --text-muted, making card titles grey in light mode"
+  },
+  {
+    "hash": "eaa3a01bbeb44d97345736096e1aab64aa66986f",
+    "date": "2026-04-04",
+    "message": "Standardize all heading colors to var(--text-bright) including h4 and article-body specific overrides"
+  },
+  {
     "hash": "cf4fee3947a277fc8866213d2a324171a611ea0b",
     "date": "2026-04-04",
     "message": "UI: Unify heading colors to brand title color (high contrast)"
