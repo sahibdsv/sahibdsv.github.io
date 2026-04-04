@@ -1,5 +1,15 @@
 [
   {
+    "hash": "5273e2b32dc24503ae85300648a3358530441eae",
+    "date": "2026-04-04",
+    "message": "UI: Final cleanup of hardcoded date chip colors"
+  },
+  {
+    "hash": "aabcd447b0320ee376c8615e9a6aeb53b5acc3a5",
+    "date": "2026-04-04",
+    "message": "UI: Differentiate taxonomy from timeline with muted metadata text"
+  },
+  {
     "hash": "c9046f58f1793b220bd8dd4ba4fd0096e89be8cb",
     "date": "2026-04-04",
     "message": "fix: adjust chip height to 21px to resolve subpixel text-vs-outline misalignment"
