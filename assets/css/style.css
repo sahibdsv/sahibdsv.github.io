@@ -1186,7 +1186,7 @@
             width: 100%;
             box-sizing: border-box;
             flex-grow: 1;
-            justify-content: center; /* PERFECT CENTER: Distributes space evenly above and below the content block */
+            justify-content: flex-start; /* LEAN LEAD: Content always stays a fixed distance from the thumbnail bottom */
         }
 
         .meta-row,
