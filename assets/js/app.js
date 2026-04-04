@@ -1521,7 +1521,7 @@ function renderCardHTML(entry, contextCategory = "") {
         () => entry.Thumbnail && thumbUrl === 'MAP_VIEWER' ? mediaBuilder('map', entry.Thumbnail) : "",
         () => entry.Thumbnail && thumbUrl?.match(/\.(mp4|webm|mov|ogg)(\?.*|-(?:autoplay|thumb|noloop|nocontrols))*/i) ? mediaBuilder('video', thumbUrl) : "",
         () => entry.Thumbnail && thumbUrl ? mediaBuilder('img', thumbUrl) : "",
-        () => !isTitleLink ? `<div class="row-media placeholder"><span>${(entry.Title || "").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1')}</span></div>` : ""
+        () => !isTitleLink ? `<div class="row-media placeholder"><span>${(entry.Title || "").split('\n')[0].replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1').replace(/\*\*(.*?)\*\*/g, '$1')}</span></div>` : ""
     ];
 
     const mediaHTML = mediaSources.reduce((html, fn) => html || fn(), "");
