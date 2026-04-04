@@ -116,9 +116,9 @@
             --accent-personal: #00d66b;
             --accent-prof: #00b4d8;
             --accent-projects: #ff8500;
-            --shadow-subtle: 0 2px 12px rgba(0, 0, 0, 0.04);
-            --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.06);
-            --shadow-heavy: 0 0 60px rgba(0, 0, 0, 0.12);
+            --shadow-subtle: none;
+            --shadow-medium: none;
+            --shadow-heavy: none;
             --placeholder-gradient: linear-gradient(135deg, #f0f0f0 0%, #ececec 25%, #e8e8e8 50%, #e4e4e4 75%, #e0e0e0 100%);
             --placeholder-hover: linear-gradient(135deg, #ffffff 0%, #fcfcfc 50%, #f9f9f9 100%);
             --border-hover: var(--border-strong);
@@ -341,7 +341,7 @@
         }
 
         .header-fade-anim {
-            color: var(--text-dim);
+            color: var(--text-main);
         }
 
         a {
@@ -371,6 +371,26 @@
             height: 21px; /* SUBPIXEL FIX: 21px height ensures equal distribution for 11px font on most screens */
             box-sizing: border-box;
             white-space: nowrap;
+        }
+
+        .chip-featured {
+            border-width: 1px;
+            font-weight: 500;
+        }
+
+        .cat-projects .chip-featured {
+            border-color: var(--accent-projects);
+            color: var(--accent-projects);
+        }
+
+        .cat-professional .chip-featured {
+            border-color: var(--accent-prof);
+            color: var(--accent-prof);
+        }
+
+        .cat-personal .chip-featured {
+            border-color: var(--accent-personal);
+            color: var(--accent-personal);
         }
 
         .chip.date {
@@ -1224,7 +1244,7 @@
 
         .layout-grid p {
             font-size: 14px;
-            color: var(--text-dim);
+            color: var(--text-main);
             font-weight: 400;
             line-height: 1.4;
             margin: 0;
@@ -1232,8 +1252,8 @@
 
         .card-description {
             font-size: 13.5px;
-            color: var(--text-dim);
-            opacity: 0.7;
+            color: var(--text-main);
+            opacity: 1;
             margin-top: -2px;
             line-height: 1.35;
             display: block;

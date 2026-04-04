@@ -1483,9 +1483,12 @@ function formatTitle(e, t) {
     return html;
 }
 // Chip rendering helper
-function renderChip(tag) {
+function renderChip(tag, cat = "") {
     if (!tag) return "";
-    return `<span class="chip" data-tag="${tag}">${processInlineMarkdown(tag)}</span>`;
+    const isFeatured = tag.toLowerCase() === 'featured';
+    const featuredClass = isFeatured ? 'chip-featured' : '';
+    const catClass = cat ? `cat-${cat.toLowerCase().replace(/\s+/g, '-')}` : '';
+    return `<span class="chip ${featuredClass} ${catClass}" data-tag="${tag}">${processInlineMarkdown(tag)}</span>`;
 }
 
 function renderCardHTML(entry, contextCategory = "") {
@@ -1547,8 +1550,9 @@ function renderCardHTML(entry, contextCategory = "") {
 
     let metaRowHTML = "";
     if (entry.Timestamp || tagsList.length > 0) {
+        const cat = contextCategory || (entry.Page ? entry.Page.split('/')[0] : "");
         metaRowHTML =
-            `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(renderChip).join("")}</div>`;
+            `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(t => renderChip(t, cat)).join("")}</div>`;
     }
 
     let titleHTML = "";
@@ -1578,7 +1582,7 @@ const SECTION_RENDERERS = {
             metaHTML +=
                 `<span class="chip date" data-val="${dateStr}" data-date="${monthKey}">${dateStr}</span>`;
         }
-        if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t));
+        if (entry.Tags) entry.Tags.split(",").map(t => t.trim()).forEach(t => metaHTML += renderChip(t, entry.Page));
         return `<div class="section layout-hero">\n${formatTitle(entry.Title, "h1")}${metaHTML ? `<div class="hero-meta">${metaHTML}</div>` : ""}${processContentWithBlocks(entry.Content || "")}\n</div>`;
     },
     text: (entry) =>
@@ -1599,7 +1603,7 @@ const SECTION_RENDERERS = {
                 
                 metaHTML += `<div class="article-tags">`;
                 if (dateStr) metaHTML += `<span class="chip date" data-val="${dateStr}" data-date="${monthKey}">${dateStr}</span>`;
-                tags.forEach(t => metaHTML += renderChip(t));
+                tags.forEach(t => metaHTML += renderChip(t, entry.Page));
                 if (readTime > 1) metaHTML += `<span class="chip no-hover" style="opacity:0.6; cursor:default;">${readTime} min read</span>`;
                 metaHTML += `</div></div>`;
             }
