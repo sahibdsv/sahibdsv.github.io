@@ -285,6 +285,7 @@
             -webkit-tap-highlight-color: transparent;
             line-height: 1.15;
             margin: 0;
+            scroll-margin-top: 120px;
         }
 
         del,
@@ -1755,6 +1756,7 @@
             display: flex;
             justify-content: center;
             margin-bottom: var(--site-gap);
+            scroll-margin-top: 120px;
         }
 
         .btn-cta-wrapper {
