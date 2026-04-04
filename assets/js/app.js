@@ -2546,6 +2546,13 @@ function observeVideos(container) {
 }
 
 function processGlbQueue() {
+    // CIRCUIT BREAKER: If WebGL context is dead, stop hammering and retry slowly
+    if (window._glbContextDead) {
+        console.warn("GLB Queue paused — WebGL context is dead. Retrying in 3s...");
+        setTimeout(processGlbQueue, 3000);
+        return;
+    }
+
     // ENGINE CHECK: If Three.js isn't ready, wait
     if (!window.initThreeJSViewer) {
         setTimeout(processGlbQueue, 200);
@@ -2583,6 +2590,10 @@ function processGlbQueue() {
                     }).observe(container);
                 } catch (e) {
                     console.error("GLB Init Warning:", e);
+                    // HALT: Don't keep processing if init itself is failing (context dead)
+                    _isProcessingGlbQueue = false;
+                    setTimeout(processGlbQueue, 2000);
+                    return;
                 }
             }
         }

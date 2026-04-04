@@ -9,6 +9,7 @@
         // Global Rendering Orchestrator
         window._glbLastFrameTime = 0;
         window._glbTimeBudget = 8; // ms per frame for rendering
+        window._glbContextDead = false; // CIRCUIT BREAKER: Stops queue processing when WebGL is unrecoverable
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(navigator.userAgent) || (window.innerWidth < 800 && window.matchMedia("(pointer: coarse)").matches);
         window.glbCache = new Map(); // Global parsed GLTF asset cache (Scene, Animations)
         const MAX_CACHE_SIZE = 10;
@@ -215,7 +216,17 @@
                 
                 offscreenCanvas.addEventListener('webglcontextlost', (e) => {
                     e.preventDefault();
-                    console.warn('Global WebGL context lost!');
+                    window._glbContextDead = true;
+                    console.warn('Global WebGL context lost — halting GLB queue.');
+                });
+                offscreenCanvas.addEventListener('webglcontextrestored', () => {
+                    console.info('Global WebGL context restored — resuming.');
+                    window._glbContextDead = false;
+                    // Re-setup tone mapping and color space (these are lost on restore)
+                    window._sharedWebGLRenderer.setClearColor(0x000000, 0);
+                    window._sharedWebGLRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+                    window._sharedWebGLRenderer.toneMappingExposure = 0.55;
+                    window._sharedWebGLRenderer.outputColorSpace = THREE.SRGBColorSpace;
                 });
             }
 
@@ -743,10 +754,29 @@
                 isVisible: () => isVisible,
                 cleanup: () => {
                     visibilityObserver.disconnect();
+                    if (autoRotateTimeout) clearTimeout(autoRotateTimeout);
+                    if (hibernateTimeout) clearTimeout(hibernateTimeout);
                     window._glbRegistry = window._glbRegistry.filter(v => v !== viewerInstance);
 
-                    // We no longer dispose the renderer or environment map here since they are globally shared.
+                    // DEEP DISPOSAL: Walk the scene graph and free cloned materials, geometries, textures
+                    scene.traverse(node => {
+                        if (node.isMesh) {
+                            if (node.geometry) node.geometry.dispose();
+                            if (node.material) {
+                                if (Array.isArray(node.material)) {
+                                    node.material.forEach(m => {
+                                        if (m.map) m.map.dispose();
+                                        m.dispose();
+                                    });
+                                } else {
+                                    if (node.material.map) node.material.map.dispose();
+                                    node.material.dispose();
+                                }
+                            }
+                        }
+                    });
                     scene.clear();
+                    if (controls) controls.dispose();
                 },
                 model: () => model,
                 spinGroup: () => spinGroup,
