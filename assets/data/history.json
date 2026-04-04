@@ -1,5 +1,15 @@
 [
   {
+    "hash": "80b0cc8a74ee01117f8219efcc60ff1552fff9ed",
+    "date": "2026-04-04",
+    "message": "Include index.html in split header commit"
+  },
+  {
+    "hash": "c32ff74832bf9437f63f037a1932b6f436d82c3a",
+    "date": "2026-04-04",
+    "message": "Fix: remove bad paddingTop sync, fix nav stacking order, add env(safe-area-inset-bottom) for home bar gutter"
+  },
+  {
     "hash": "42ab1bc88ecfbd960286fa930950ad94236bd0c6",
     "date": "2026-04-04",
     "message": "Feature: move nav to fixed bottom bar (mirrored, column-reverse). Controls always visible. Search opens upward. ResizeObserver keeps padding-bottom in sync."
