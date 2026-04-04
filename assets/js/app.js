@@ -1421,7 +1421,10 @@ function renderHome() {
     const activityMap = {};
     otherEntries.forEach(e => {
         const isFeatured = e.Tags && e.Tags.toLowerCase().includes("featured");
-        const hasTimestamp = e.Timestamp && !isNaN(new Date(e.Timestamp).getTime());
+        // Improved detection: Trust anything that isn't empty, even if JS Date doesn't like it (e.g. "FALL 2025")
+        // but still validate for Recent Activity to avoid complete junk
+        const hasTimestamp = e.Timestamp && String(e.Timestamp).trim().length > 0;
+        
         if ((e.Page.split("/").length <= 2 || isFeatured) && (isFeatured || hasTimestamp)) {
             activityMap[e.Page] = e;
         }
@@ -1431,7 +1434,21 @@ function renderHome() {
         const featA = a.Tags?.toLowerCase().includes("featured") ? 1 : 0;
         const featB = b.Tags?.toLowerCase().includes("featured") ? 1 : 0;
         if (featA !== featB) return featB - featA;
-        return new Date(b.Timestamp || 0) - new Date(a.Timestamp || 0);
+
+        // Sorting Resilience: Extract a year/month/day safely for comparison
+        const getTime = (val) => {
+            if (!val) return 0;
+            const d = new Date(val);
+            if (!isNaN(d.getTime())) return d.getTime();
+            
+            // Fallback for stuff like "FALL 2025" - try to find the year and sort by that
+            const yearMatch = String(val).match(/\d{4}/);
+            if (yearMatch) return new Date(yearMatch[0], 0, 1).getTime();
+            
+            return 0;
+        };
+
+        return getTime(b.Timestamp) - getTime(a.Timestamp);
     }).slice(0, 6);
 
     if (recentItems.length > 0) {
