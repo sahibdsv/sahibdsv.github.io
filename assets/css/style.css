@@ -130,6 +130,7 @@
         }
 
         #main-header,
+        #nav-bar,
         .layout-grid,
         .layout-quote,
         footer,
@@ -527,6 +528,27 @@
         }
 
         #main-header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--bg-trans);
+            z-index: 10000;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            padding: var(--header-pad-top) 0 var(--header-pad-bottom) 0;
+            min-height: calc(var(--brand-row-h) + var(--header-pad-top) + var(--header-pad-bottom));
+            border-bottom: 1px solid var(--border-header);
+            overflow: visible;
+            isolation: isolate;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+
+        /* Bottom nav bar — contains only the nav rows */
+        #nav-bar {
             position: fixed;
             bottom: 0;
             left: 0;
@@ -534,14 +556,15 @@
             background: var(--bg-trans);
             z-index: 10000;
             display: flex;
-            flex-direction: column-reverse;
-            justify-content: flex-start;
+            flex-direction: column;
             align-items: center;
             padding: var(--header-pad-top) 0 var(--header-pad-bottom) 0;
+            /* Safe area: respects iPhone home bar; is 0 when browser UI already covers it
+               (e.g. Safari bottom tabs) so no empty space is added unnecessarily */
+            padding-bottom: max(var(--header-pad-bottom), env(safe-area-inset-bottom));
             gap: var(--header-gap);
             border-top: 1px solid var(--border-header);
             overflow: visible;
-            isolation: isolate;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
         }
@@ -597,7 +620,7 @@
         }
 
         #nav-stack {
-            flex-direction: column;
+            flex-direction: column-reverse;
             gap: var(--site-gap-nav);
             transition: gap var(--anim-layout) var(--ease);
         }
@@ -712,7 +735,7 @@
         #left-controls,
         #search-controls {
             position: absolute;
-            bottom: var(--header-pad-bottom);
+            top: var(--header-pad-top);
             height: var(--brand-row-h);
             display: flex;
             align-items: center;
@@ -826,13 +849,13 @@
 
         #search-overlay {
             position: fixed;
-            bottom: 70px; /* sits just above the nav bar */
+            top: 60px;
             left: 50%;
             width: 400px;
             max-width: 90%;
             height: 50px;
-            transform-origin: center bottom;
-            transform: translate3d(-50%, 40px, 0) scale(.9);
+            transform-origin: center top;
+            transform: translate3d(-50%, -20px, 0) scale(.95);
             background: var(--search-bg);
             z-index: 30000;
             border-radius: 999px;
@@ -872,7 +895,8 @@
             font-weight: 500
         }
 
-        body.search-active footer {
+        body.search-active footer,
+        body.search-active #nav-bar {
             display: none !important;
         }
 

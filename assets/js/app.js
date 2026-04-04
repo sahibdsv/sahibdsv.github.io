@@ -556,15 +556,13 @@ function initApp() {
         searchInput.addEventListener("input", (e) => debouncedSearch(e.target.value));
     }
 
-    // 6. Bottom nav: keep body padding-bottom in sync with the nav bar height
-    //    so content is never hidden behind the fixed bottom nav.
-    const headerEl = document.getElementById("main-header");
-    if (headerEl) {
-        const syncPadding = () => {
-            document.body.style.paddingBottom = headerEl.offsetHeight + "px";
-        };
-        syncPadding();
-        new ResizeObserver(syncPadding).observe(headerEl);
+    // 6. Keep body padding-bottom in sync with #nav-bar (fixed, out of flow)
+    //    #main-header is sticky (in flow) so no paddingTop needed.
+    const navBarEl = document.getElementById("nav-bar");
+    if (navBarEl) {
+        const syncBottom = () => { document.body.style.paddingBottom = navBarEl.offsetHeight + "px"; };
+        syncBottom();
+        new ResizeObserver(syncBottom).observe(navBarEl);
     }
 }
 
