@@ -1,5 +1,20 @@
 [
   {
+    "hash": "315cb150d1c9116631eb1ee988b274b68d093d58",
+    "date": "2026-04-04",
+    "message": "Design: final site header and nav bar shade fix for both light and dark modes"
+  },
+  {
+    "hash": "94b23e81001451e9550d0648677a52742072881f",
+    "date": "2026-04-04",
+    "message": "Fix: final sync for desktop drag-to-scroll and haptic system"
+  },
+  {
+    "hash": "163cf4de12603be8c012cc6348423a684896c819",
+    "date": "2026-04-04",
+    "message": "Fix: synchronize desktop drag with haptic system for global mouse capture"
+  },
+  {
     "hash": "4a786fb7750be8af7f7ac654f6dc4f436d09d6db",
     "date": "2026-04-04",
     "message": "Fix: further tightening of footer padding and gaps to 1rem for tighter, consistent rhythm"
