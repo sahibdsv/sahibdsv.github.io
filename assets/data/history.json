@@ -1,5 +1,15 @@
 [
   {
+    "hash": "87611770a262d32e3c4b4248c989db88315e4ad0",
+    "date": "2026-04-04",
+    "message": "Fix: level-n nav links use .sub-link class, not .nav-link — was getting --text-dim fallback instead of --text-muted, causing shade mismatch"
+  },
+  {
+    "hash": "c95279d670455be2c370861a124c63c70dbd59cb",
+    "date": "2026-04-04",
+    "message": "Revert: restore h2/h3/h4 section headings to normal --text-muted color, separate from site header nav system"
+  },
+  {
     "hash": "d27c5a4046b9219790c2893c258f074ea316cc8d",
     "date": "2026-04-04",
     "message": "Fix: .layout-grid h3.fill-anim was overriding --text-base back to --text-muted, making card titles grey in light mode"
