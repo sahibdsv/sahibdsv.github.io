@@ -1,5 +1,10 @@
 [
   {
+    "hash": "2260aba3035a775956010988c0e21373821bb1cb",
+    "date": "2026-04-04",
+    "message": "UI: Differentiate taxonomy tags (transparent) from timeline dates (surface-subtle)"
+  },
+  {
     "hash": "b47d9713aa39ca6fcf67735c57bb2502a534a7db",
     "date": "2026-04-04",
     "message": "UI: Anchor card content to thumbnail bottom for vertical rhythm consistency"
