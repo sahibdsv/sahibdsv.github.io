@@ -1,5 +1,10 @@
 [
   {
+    "hash": "4a786fb7750be8af7f7ac654f6dc4f436d09d6db",
+    "date": "2026-04-04",
+    "message": "Fix: further tightening of footer padding and gaps to 1rem for tighter, consistent rhythm"
+  },
+  {
     "hash": "80b0cc8a74ee01117f8219efcc60ff1552fff9ed",
     "date": "2026-04-04",
     "message": "Include index.html in split header commit"
