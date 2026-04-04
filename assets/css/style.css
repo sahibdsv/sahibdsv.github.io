@@ -521,7 +521,8 @@
         }
 
         h1.fill-anim,
-        h2.fill-anim {
+        h2.fill-anim,
+        h3.fill-anim {
             --text-base: var(--text-bright);
             --text-hover: var(--text-bright)
         }
@@ -2271,7 +2272,7 @@
         .article-body h2,
         .article-body h3,
         .article-body h4 {
-            color: var(--text-muted);
+            color: var(--text-bright);
             font-weight: 600;
             line-height: 1.05;
             margin: 0; /* Stack system handles layout */
