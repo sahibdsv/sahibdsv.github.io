@@ -548,7 +548,8 @@
 
         #brand-name,
         .nav-row.level-1 .nav-link,
-        .nav-row.level-n .nav-link {
+        .nav-row.level-n .nav-link,
+        .nav-row.level-n .sub-link {
             font-weight: 700;
             text-transform: uppercase;
             user-select: text;
@@ -669,7 +670,8 @@
             scroll-snap-align: center;
         }
 
-        .nav-row.level-n .nav-link {
+        .nav-row.level-n .nav-link,
+        .nav-row.level-n .sub-link {
             --text-base: var(--text-muted);
             --text-hover: var(--text-bright)
         }
