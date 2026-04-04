@@ -287,6 +287,7 @@
             -webkit-tap-highlight-color: transparent;
             line-height: 1.15;
             margin: 0;
+            color: var(--text-bright);
             scroll-margin-top: 120px;
         }
 
@@ -341,7 +342,7 @@
         }
 
         .header-fade-anim {
-            color: var(--text-main);
+            color: var(--text-bright);
         }
 
         a {
@@ -521,7 +522,7 @@
 
         h1.fill-anim,
         h2.fill-anim {
-            --text-base: var(--text-muted);
+            --text-base: var(--text-bright);
             --text-hover: var(--text-bright)
         }
 
