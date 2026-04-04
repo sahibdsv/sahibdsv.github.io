@@ -1,5 +1,10 @@
 [
   {
+    "hash": "cf4fee3947a277fc8866213d2a324171a611ea0b",
+    "date": "2026-04-04",
+    "message": "UI: Unify heading colors to brand title color (high contrast)"
+  },
+  {
     "hash": "3a9af5fdf84ea9614b8ec80ca5de19f45191d5ae",
     "date": "2026-04-04",
     "message": "UI: Refine featured chips, remove light mode shadows, and boost description readability"
