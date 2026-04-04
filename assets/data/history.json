@@ -1,5 +1,15 @@
 [
   {
+    "hash": "24feb3b8bb0190e9468df931859d3a55ff6adfb5",
+    "date": "2026-04-04",
+    "message": "UI: Final consistency for chip weights and table headers"
+  },
+  {
+    "hash": "425609e54ee4967ec266280a407b4c461c8494f1",
+    "date": "2026-04-04",
+    "message": "fix: switch table header to neutral gray tint to resolve yellow hue in light mode"
+  },
+  {
     "hash": "c9cccfc2cd727521e37cdabf97e3a84aa0eb895c",
     "date": "2026-04-04",
     "message": "UI: Add rounded corners to Markdown tables to match site surfaces"
