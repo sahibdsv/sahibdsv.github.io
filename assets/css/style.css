@@ -376,7 +376,7 @@
         .chip.date {
             background: transparent;
             color: var(--text-low);
-            font-weight: 400;
+            font-weight: 500;
         }
 
         /* Prevent links inside chips from inheriting global text styles or alignment */
