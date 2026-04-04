@@ -67,13 +67,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sahibvirdee.com/#Professional/SARIT/Mirrors</loc>
-    <lastmod>2026-04-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://sahibvirdee.com/#Professional/SARIT/Heater</loc>
+    <loc>https://sahibvirdee.com/#Professional/SARIT/Hitch</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -85,25 +79,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://sahibvirdee.com/#Professional/SARIT/Climate</loc>
+    <lastmod>2026-04-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sahibvirdee.com/#Professional/SARIT/Power</loc>
+    <lastmod>2026-04-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://sahibvirdee.com/#Professional/SARIT/Camera</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sahibvirdee.com/#Professional/SARIT/Hitch</loc>
+    <loc>https://sahibvirdee.com/#Professional/SARIT/Mirrors</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://sahibvirdee.com/#Professional/SARIT/LiDAR</loc>
-    <lastmod>2026-04-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://sahibvirdee.com/#Professional/SARIT/Drain</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

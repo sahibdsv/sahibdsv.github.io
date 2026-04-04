@@ -1,5 +1,20 @@
 [
   {
+    "hash": "84d9246e95aa2b350fdd66388f5ca6dab00d43c1",
+    "date": "2026-04-04",
+    "message": "style: tone down hr brightness to match muted text"
+  },
+  {
+    "hash": "cb8d6c6c2b6929e5fa075e162358c2e2fb63d75f",
+    "date": "2026-04-04",
+    "message": "feat: allow activity feed to see all pages regardless of depth"
+  },
+  {
+    "hash": "ee699b02f02a7b9782ee0f342f52630c47edbac8",
+    "date": "2026-04-04",
+    "message": "feat: improve timestamp resilience in Recent Activity for non-standard date formats"
+  },
+  {
     "hash": "b1ef28daa1c74405ffa1e28803c61dd0ec6e2bdb",
     "date": "2026-04-03",
     "message": "style: allow full card subtitles by removing line-clamping"

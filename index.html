@@ -125,13 +125,13 @@
     <a href="#Professional/Honda">Professional/Honda</a>
     <a href="#Professional/Master">Professional/Master</a>
     <a href="#Professional/SARIT">Professional/SARIT</a>
-    <a href="#Professional/SARIT/Mirrors">Professional/SARIT/Mirrors</a>
-    <a href="#Professional/SARIT/Heater">Professional/SARIT/Heater</a>
-    <a href="#Professional/SARIT/Electrical">Professional/SARIT/Electrical</a>
-    <a href="#Professional/SARIT/Camera">Professional/SARIT/Camera</a>
     <a href="#Professional/SARIT/Hitch">Professional/SARIT/Hitch</a>
+    <a href="#Professional/SARIT/Electrical">Professional/SARIT/Electrical</a>
+    <a href="#Professional/SARIT/Climate">Professional/SARIT/Climate</a>
+    <a href="#Professional/SARIT/Power">Professional/SARIT/Power</a>
+    <a href="#Professional/SARIT/Camera">Professional/SARIT/Camera</a>
+    <a href="#Professional/SARIT/Mirrors">Professional/SARIT/Mirrors</a>
     <a href="#Professional/SARIT/LiDAR">Professional/SARIT/LiDAR</a>
-    <a href="#Professional/SARIT/Drain">Professional/SARIT/Drain</a>
     <a href="#Professional/SARIT/Heating">Professional/SARIT/Heating</a>
     <a href="#Professional/YorkU">Professional/YorkU</a>
     <a href="#Projects">Projects</a>
@@ -204,176 +204,221 @@ Most played songs.
 
   <article id="seo-content-Professional/SARIT">
     <h2>SARIT Research Project
-Two years on a campus electric three-wheeler. Eight projects. A few things shipped.</h2>
-    <p>I joined the SARIT research team in May 2024 through the LURA program at Lassonde. SARIT stands for Safe Affordable Reliable Innovative Transport — electric three-wheelers built for campus and urban mobility. The base vehicle comes with an aluminum safety cage, a 96Ah LiFePO4 battery, an ASI BAC2000 motor controller, and not much else. Everything beyond the drivetrain was ours to design and build.
-I came in as a third-year mechanical engineering student. Over two years I worked on eight projects across mechanical design, fabrication, electrical systems, and research. Some things shipped. Some were cancelled before they did. One project was set aside four versions in when the requirements changed.
-By the time I left, one car was running at Toronto Zoo with systems my team built. Another had a trailer hitch I designed from scratch, with a client standing on it to prove it held.
-The eight projects are below.</p>
-  </article>
-
-  <article id="seo-content-Professional/SARIT/Mirrors">
-    <h2>Side Mirror Mount
-Five versions. One Instagram reel of it getting stuck. Ended up a production recommendation.</h2>
-    <p>The SARITs come from the factory with KEMIMOTO magnetic tractor mirrors — the kind designed for forklifts, not enclosed three-wheelers. Rear visibility is limited, and for towing applications the team needed mirrors that could extend outward on demand and lock in position. The ask was a new bracket that kept the existing mirror hardware but added a one-handed extend-and-lock mechanism.
-Before designing anything I modelled the full mirror assembly from photos. My PM thought I was spending too long on something that didn't need to exist in CAD. It became a useful reference later.
-The first version used a flexible cantilever tab as its own return spring — flex it out, spring back. It worked mechanically but the feel was wrong. The return force was too low to give a satisfying lock.
-Version two dropped the clever approach. I ordered pen-clicker springs from Amazon and built a simple push button around them. Completely boxy, no curves, no fillets, built around how FDM printing actually works rather than how I wanted it to look. That version felt right.
-mirror-v2-button.jpg
-[Version 2. Boxy by design, optimised for print orientation and sliding surface quality.]
-The remaining versions were refinement. Version three had a bug where the button would stick under certain loads. Version three is also the one that ended up in the team's Instagram reel, me demonstrating the mechanism on camera while it gets stuck. That video exists somewhere on the internet.
-Five versions total. Each one taught me something specific: how layer orientation affects the feel of a sliding surface, why tolerances that look fine in CAD fail in printed plastic, how fillets behave differently depending on print direction.
-About a year after I finished, the interim CEO visited the garage and saw a weathered version on one of the older cars. She said she wanted it implemented on every vehicle at the factory.
-[[SARIT]]</p>
-  </article>
-
-  <article id="seo-content-Professional/SARIT/Heater">
-    <h2>Climate Caddy & Hood Scoop
-Modelled a heater from Amazon photos. Designed the intake off a scaled screenshot. Both shipped in a Toronto Zoo car.</h2>
-    <p>The Climate Caddy is a 12V fan heater designed for golf carts. The team sourced it as a cabin heating solution — these cars have no insulation and significant panel gaps, so any heat source helps. My job was the mount, the dashboard cutout interface, and the fresh air intake system.
-Before touching CAD I modelled the full Climate Caddy unit from photos, then did the same for the air filter going into the intake. My PM was frustrated by how long this took. Both models became references for everything downstream.
-The SARIT dashboard is two layers: an outer removable panel and a structural backing. You cut only the outer one. By the time I was ready to design the mount, my teammates had already cut the opening freehand with a saw. I measured their cut as accurately as I could, modelled it, and designed the mount around that geometry rather than a clean CAD edge. It worked.
-climate-caddy-mount.jpg
-[Heater mount, designed around an opening that existed before the CAD did.]
-For the hood scoop I had no accurate body CAD — just an unscaled reference mesh. I took screenshots of it, used the diameter of one of the side blinkers as a known reference dimension to establish scale in Fusion, and modelled the scoop on top of those images. The filter housing integrates a standard Amazon filter into the intake path. The full assembly clamps to the bonnet from both sides without any fasteners into the car body itself.
-hood-scoop-installed.jpg
-[Hood scoop installed. The filter housing sits inside; both pieces clamp to the bonnet panel together.]
-The full system went into a car delivered to Toronto Zoo. It has been running there since 2024.
-[[SARIT]]</p>
-  </article>
-
-  <article id="seo-content-Professional/SARIT/Electrical">
-    <h2>Electronics Enclosure
-A proper fuse box, three voltage rails, and an ABS enclosure that warped twice before it printed right.</h2>
-    <p>When I joined, the cars had no provision for auxiliary electronics. The ASI BAC2000 motor controller ran directly off the 48V battery and that was the whole system. Adding anything else meant building power distribution from scratch.
-My teammates handled the circuit design. They had stronger electrical instincts and I had some background from the robotics club, so they'd run ideas by me. I recommended the solenoid for independent switching. They figured out the rest and got it working on the first try.
-The architecture runs three rails. The 48V traction rail feeds the battery through a main solenoid — this lets all auxiliary systems switch on and off without touching the drivetrain. A step-down converter takes it to 12V for accessories like headlights and the horn. A second converter takes it to 5V for the logic stack — the ESP32 telemetry, Hall sensors, and GPS. The 5V rail has to stay stable at exactly 5.0V; even small deviations cause sensor drift. Every line runs through a fuse box before reaching its load, sized to each circuit's current draw with margin.
-One detail worth noting: the 12V buck converter is wired before the main solenoid, which means it's always on even when the key is off. That became a suspect in the [[SARIT/Parasitic Drain]] investigation later.
-power-system-diagram.png-invert
-[Three-rail architecture. 48V traction, 12V accessories, 5V logic. Every line fused.]
-The machinist in our building suggested approaching the fusing the way a real vehicle does — sized fuses for each circuit, all accessible in one place. That meant reading datasheets for current draw on every component and working out fuse ratings with proper margin. Good advice that took a few hours to actually implement.
-Designing the enclosure was my part. I chose ABS for heat resistance. ABS on a Bambu P1S warps overnight — corners lift off the bed and the whole print curves. Two failed attempts before I got the bed adhesion and cooling settings right on the third.
-The enclosure was too large for one print bed, so I split it into two halves and designed PLA connector tabs that slot into matching geometry on each piece. Glued together it becomes one rigid housing. Bolt it onto the electronics board, mount the board at the rear of the car.
-enclosure-final.jpg
-[Final enclosure. Two-piece ABS with PLA connector tabs joining the halves.]
-The full system shipped in a car delivered to Toronto Zoo. It has been running there since 2024.
-[[SARIT — Electrical]]
-[[SARIT]]</p>
-  </article>
-
-  <article id="seo-content-Professional/SARIT/Camera">
-    <h2>OAK-D Camera Mount
-Found frame CAD I'd forgotten I had. Used the proper mounting thread. Four versions. Still in use for testing.</h2>
-    <p>A new software team had moved to an OAK-D stereo camera for their perception work — significantly better hardware than what was in the cars before. They needed a mount.
-Around this time I went back through an old shared drive and found a full frame CAD model of the SARIT that had been sent to the team before I joined. I'd had access to it for over a year without using it. This was the first project where I actually built on top of it.
-For the joint mechanism I looked at ball joints, gimbals, and locking clamp designs before settling on a friction-lock clamp — simpler to print, easier to adjust in the field, and robust enough to hold position under vibration. I used the camera's standard quarter-inch UNC mounting thread throughout rather than adapting to incidental geometry on the housing.
-oakd-mount-v1-cad.jpg
-[Version 1. Static mount, uses the camera's proper 1/4" thread and the frame CAD for accurate positioning.]
-Versions 1 through 3 were the fixed static mount iterated for fit and printability. My PM wanted the final version to be adjustable for testing — tilt and pan control so the software team could iterate on camera angle without needing a new part. My instinct was that fixed is better for stereo vision in production. Consistent geometry across every car means the software doesn't need to recalibrate per vehicle. I made the adjustable v4 anyway. For a testing phase it made sense.
-oakd-mount-v4-installed.jpg
-[Version 4, the adjustable mount, installed on the car during a testing session.]
-The adjustable version is still in use for testing. A fixed version is the right call for any production deployment.
-[[SARIT]]</p>
+Electric micro-mobility vehicle research at York University</h2>
+    <p>[TOC]
+ What is SARIT?
+SARIT (Safe, Affordable, Reliable, Innovative Transport) is a fleet of enclosed electric three-wheelers developed by Elvy Mobility and deployed across institutional partners in the Toronto area. The vehicles are designed for short-range urban mobility — compact enough for pedestrian zones, enclosed for year-round use, and quiet enough to operate in environments where larger vehicles would be intrusive. Active deployments include the Toronto Zoo, York University's main campus, and several other pilot sites.
+The research program at York University's BEST Lab sits at the intersection of the hardware and the field. Vehicles are assigned to partners, used daily, repaired when things break, and progressively outfitted with technologies developed by the team — pedestrian detection, telemetry, reverse safety systems, and custom accessories. It is applied engineering work: real constraints, real users, real consequences when something fails in the field.
+ My Role
+I joined the SARIT project in May 2025 through York University's LURA (Lassonde Undergraduate Research Award) program, supervised by Professor Andrew Maxwell and day-to-day by Victoria, the project coordinator. I worked primarily on the mechanical side of the research fleet — designing, fabricating, and iterating on physical hardware that had to be functional, manufacturable, and field-ready.
+Over the course of the project I moved through several distinct work streams: camera mounts for the pedestrian detection system, trailer hitches for cargo deployment, a LiDAR sensor mount, and eventually the power delivery system underlying all of the vehicle's added electronics. The work was largely self-directed within each stream — I would identify the problem, research solutions, build and test, and hand off documentation to the team.
+The fleet lives outside. Vehicles get rained on, driven over curbs, and handed to users who do not read manuals. That context shapes every design decision.
+ The Team
+The BEST Lab SARIT team is split into mechanical and technology subgroups, with a separate team from Elvy handling manufacturing and fleet logistics. I worked most closely with Usman Ali (project lead, mechanical), the mechanical sub-team, and periodically with the technology team on integration work where the mechanical and electrical systems met.
+One thing that made the project interesting: because the vehicles were parked in the Bergeron Engineering courtyard and I spent a lot of time working on them in public view, people would stop and ask what I was doing. I ended up giving a lot of informal demonstrations — letting curious students and passersby take a SARIT for a short drive around the courtyard. One of those conversations turned into a recruitment: someone who drove it around asked if there were openings on the team, I saved their contact, and a few months later when the team expanded I reached out and they joined as a software member.
+ The Vehicles
+The SARIT is powered by a 48V LiFePO4 battery (96 Ah on most research units) driving a 3-phase BLDC motor controlled by an ASI BAC2000 motor controller. The enclosed aluminum frame includes doors, a locking trunk, a covered roof, and a small instrument cluster. Stock vehicles have essentially no accessory power infrastructure — every addition the research team makes has to be engineered from scratch.
+The fleet at York includes vehicles of varying ages and configurations. Some have the newer head-up display; others are older units without one. Some have the technology team's power distribution hardware installed; others run stock. Part of the mechanical team's job was maintaining continuity across this heterogeneous fleet — making sure parts, mounts, and fasteners were interchangeable wherever possible.
+---</p>
   </article>
 
   <article id="seo-content-Professional/SARIT/Hitch">
-    <h2>Impact Trailer Hitch
-The machinist said I'd never be an engineer. A client sent a photo of himself standing on it.</h2>
-    <p>This started as a different project. We had Wike cargo trailers — lightweight bicycle trailers — that the team wanted to adapt for towing behind the SARITs. I measured the full trailer with calipers, modelled it from scratch in Fusion, traced the manufacturer's component suppliers to find accurate CAD for the 80/20 aluminum extrusions it used, and went through four design iterations with full DFM reviews at the machine shop. V1 had sharp internal corners the machinists flagged on the first pass. By v3 I had a complete BOM with part numbers, materials, and masses for every component. V4 was in progress when the client updated their requirements.
-The Wike trailers weren't suitable for what they actually needed to carry. They'd sourced an Impact Trailer — an ATV trailer, significantly heavier and higher capacity. The Wike's maximum payload was roughly equal to the Impact's empty weight. Everything I'd designed was set aside.
-wike-vs-impact.jpg
-[The two trailers in CAD. Scale difference made the Wike design irrelevant for the new use case.]
-The Impact Trailer came with a 2-inch receiver tube built into its tongue, the standard interface for a ball hitch. My machinist, my PM, and my supervising professor all recommended a pin and eyebolt connection instead, citing a previous team's experience with a ball hitch that hadn't worked well. I thought a ball hitch was the right answer. The articulation matters when towing something that heavy on uneven terrain — a fixed pin connection on an overloaded trailer is where you get jackknifing and bent components. I ran FEA to justify it before anyone would approve material orders.
-hitch-fea.png-invert
-[FEA on the main load-bearing assembly under worst-case towing and braking loads.]
-He's run the university machine shop for as long as anyone can remember. I'd been going to him since first year, through robotics, rocketry, and now this. He required complete dimensioned drawings before I could touch a machine and a full plan of operations before I picked up a tool. He pushed back on everything.
-He told me during this project that I would never be an engineer. When I pushed back he said to wait until I got into industry. At one point he told me to stop coming to him for advice on the SARIT project entirely.
-He also, without being asked, lent me tools he'd brought from home. Personal fixtures. When he could see I needed them to do a job properly, he handed them over without making anything of it.
-I think both of those things are true at the same time.
-Previous hitch designs had bolted through both walls of the SARIT's rectangular aluminum frame tubes — one fastener spanning the full tube width, clamping both faces together. Tighten it and the tube collapses inward. I found the evidence on existing cars: bent frames with old fastener holes through them.
-My design contacts only one wall of each tube. A waterjet steel plate sits against the outside face. On the inside, a second plate with bonded nuts, made long enough to hold by hand inside the tube while you bolt from outside. Rivet nuts were unavailable given the delivery deadline. Bonded nuts were the solution. It assembled cleanly.
-hitch-cross-section.png-invert
-[Cross-section showing single-wall contact on each frame tube. Tube geometry stays intact under load.]
-The jig is one 3D printed piece with three usable faces. Each face locates a different part of the assembly against the frame, self-locating by geometry — hold it against the car, it settles, mark or drill. No measuring. The same piece oriented differently covers multiple steps in the assembly sequence. Pre-cut tubes, waterjet plates, one jig. Goes together like furniture.
-I also added the charging port to my CAD manually. It isn't in the frame model the company provided. A previous hitch design had to be repositioned late in development when that clearance issue was discovered, which left that trailer sitting nose-down. I measured the port location on every car, added it to my model, and designed around it from the start. My trailer sits level.
-hitch-final-installed.jpg
-[Installed on the test car. Trailer level. Full clearance at the charging port.]
-jig-in-use.jpg
-[The jig self-locating on the frame. One piece, three faces, covers the full assembly sequence.]
-The full design-to-fabrication cycle was one week. Design finalized, FEA run, shop reviewed, water jet cut, square tube machined, assembled, and tested — Monday to Friday. A company representative came to collect the assembly and install it at the client's site. I was still finishing parts the morning he arrived.
-After he installed it, I asked him to send a photo of himself standing on the hitch.
-client-standing.jpg
-[The rep standing on the installed hitch at the client site.]
-He did.
-[[Wike Trailer Hitch]]
-[[SARIT — Electrical]]
-[[SARIT]]</p>
+    <h2>Trailer Hitch
+Custom steel hitch fabricated for Wike and Impact trailers</h2>
+    <p>[TOC]
+ Background
+The SARIT fleet was identified early as a potential last-mile delivery platform. Getting a trailer behind a three-wheeled enclosed electric vehicle introduces genuine engineering challenges — hitch height, tongue weight, multi-axis articulation, and the constraint that you cannot significantly modify the SARIT's frame. A previous hitch design had been developed by an earlier team and used on some vehicles, but it had a known nose-down tilt issue and had never been documented in a way that made it easy to build or reproduce. My task starting in late May 2025 was to design a new one from scratch.
+ Wike Trailer — Design Process
+The cargo trailer selected for the York University use case was the Wike cargo trailer — a lightweight, open-frame unit rated for approximately 150 lbs (70 kg). Before designing the hitch I built a full 3D model of the Wike in SolidWorks from physical measurements, since no manufacturer CAD existed. This model became the reference for all subsequent hitch geometry.
+v1 was a first pass based on research into hitch types — pintle, lunette, and ball-mount. I selected ball-mount based on the project's need for multi-axis rotation (the SARIT turns sharply and the trailer needs to follow without binding). The v1 design went straight to the machine shop for a Design for Manufacturability review, which produced the most useful feedback of the entire process: sharp internal corners that looked fine in CAD would have required expensive secondary operations to produce. I incorporated that feedback into v2 the same week.
+v2 added FEA simulations in SolidWorks and a first Bill of Materials. The simulations flagged thin cross-sections near the frame attachment points that were not obvious by inspection.
+v3 was the version I would have been comfortable fabricating. I completed a comprehensive BOM at this stage — part numbers, quantities, material specifications, estimated masses, and supplier sources. The BOM discipline here was new to me; it is not just a parts list, it is a procurement and assembly document, and a small error propagates into the wrong parts arriving or budget overruns.
+v4 resolved remaining geometry issues and transitioned the SARIT-side bracket material from steel to 6061 aluminum. The weight savings were meaningful given the trailer's light load rating, and switching to aluminum also eliminated the galvanic corrosion risk between the steel tube and the SARIT's aluminum frame. The machine shop confirmed 6061 availability and cost through a local metal supplier (Mr. Metal, Etobicoke), and the final BOM was built around their pricing.
+ Fabrication
+The fabrication week (July 14–18, 2025) was the most satisfying stretch of the whole project. I machined the square tube components myself on the mill at the Bergeron machine shop, and cut the steel bracket plates on the water jet. The machinist on duty (Gurjit) belt-sanded the water jet edges and chamfered them — a finishing step I hadn't asked for but that made the assembly look considerably more professional.
+Drilling the mounting holes into the SARIT frame required a 3D-printed jig to locate the holes accurately. I also printed nut carriers to hold fasteners deep inside the hollow aluminum frame sections where a wrench couldn't reach — a constraint that only became clear during physical test-fitting, not in CAD.
+The finished hitch was assembled, mounted, and load-tested on the orange SARIT. It cleared all frame members with the trailer attached and tracked correctly through turns.
+ Impact Trailer — Second Hitch
+Shortly after the Wike hitch was complete, the team acquired a MotoAlliance Impact trailer — a heavier-duty unit rated at 1,500 lbs, roughly ten times the Wike's capacity. The design process for the Impact hitch was significantly faster because the workflow was already established: physical measurement, SolidWorks model, FEA, BOM, machine shop review, fabrication.
+The key difference was scale. The Impact trailer is substantially heavier empty, which required thicker tube walls in the SARIT-side bracket and larger fastener sizing (3/8" rather than 1/4"). The tow ball specification also changed — a 2" receiver versus the Wike's smaller coupling.
+Both hitches were completed and deployed. As of early 2026 the orange SARIT had a functional hitch and five assembled Wike trailers were staged in the Bergeron courtyard.
+ Build Quality Notes
+Working closely with these vehicles over several months meant encountering their imperfections firsthand. The panel gaps on some units are substantial enough that small objects can fall through — a fact I confirmed personally when my phone slipped out of my pocket, slid through a gap in a door panel while I was doing alignment work in the parking lot, and was run over by approximately ten cars before I found it. The Bluetooth headphones saved it — I wouldn't have noticed otherwise. The case was scuffed. The phone was fine. The gap is still there.
+This kind of observation is actually useful engineering information. It informed how I thought about weatherproofing for the electrical enclosures and why certain mounting solutions that looked adequate in a controlled environment needed to be more robustly constrained for field use.</p>
+  </article>
+
+  <article id="seo-content-Professional/SARIT/Electrical">
+    <h2>Electrical System
+Power architecture, reverse logic, and accessory integration</h2>
+    <p>[TOC]
+ Overview
+Every technology added to the SARIT — the reverse buzzer, cameras, display, telemetry, pedestrian detection system — requires power. The vehicle's stock electrical architecture provides nothing for accessories. All of it had to be designed and built by the research team, layered onto a 48V traction system that was never intended to support secondary loads.
+I worked on the electrical system starting in May 2025, initially as part of the trailer hitch and camera mount work (both of which required understanding what power was available and where), and increasingly as a primary focus through the fall as we moved toward a formal power delivery architecture and parasitic drain investigation.
+ System Architecture
+The SARIT's power distribution is organized around three voltage rails:
+Rail A — 48V Traction. The battery, main solenoid, and ASI BAC2000 motor controller. This rail sees large inrush currents (10–30A) when the battery is first connected — normal behavior from the controller's 1.64 mF input capacitance, not a fault. The solenoid acts as a master switch for the accessory system: it connects to the ignition so that added accessories only receive power when the vehicle is on.
+Rail B — 12V Accessories. Headlights, horn, relay coils, and most user-facing accessories. Converted from 48V via a DC-DC buck converter. One important architectural note: in earlier configurations this converter was wired before the solenoid, meaning it remained live even with the key off. This was identified as a primary suspect for the parasitic drain issue.
+Rail C — 5V Logic. The ESP32 telemetry module, hall sensors, GPS, and small signal electronics. Must remain stable at exactly 5.0V to prevent sensor drift. Converted from 48V via a dedicated step-down.
+ Reverse Detection Circuit
+The SARIT has no built-in way to signal that it is in reverse — no dedicated output, no indicator on the harness. The team needed a reverse signal to trigger the buzzer and switch the display to the rear camera view.
+The solution: we tap a wire on the signal path between the handlebar's forward/reverse switch and the ASI motor controller. The voltage on this wire changes slightly depending on direction. That change is too small to directly drive a relay, so a custom amplifier circuit boosts it to a level that can switch a relay. When the relay fires in reverse, it simultaneously activates the buzzer and sends a signal to the display to switch camera feeds.
+This is cleaner than the previous approach, which involved soldering directly onto the handlebar switch — a fragile modification that failed under vibration and caused the kind of intermittent wiring problems that are difficult to diagnose.
+ The ASI BAC2000 and Access Constraints
+The ASI BAC2000 is the motor controller at the heart of the SARIT's drivetrain. It is a capable unit, but getting any visibility into its operating state is not straightforward. The BACDoor app — ASI's tool for reading and adjusting controller parameters — requires an OEM or authorized dealer account. Accounts are explicitly not available to end users or research teams.
+This matters for development work. Without low-level access you cannot read the controller's internal state, adjust regenerative braking parameters, or confirm whether a behavior you're observing (high current spike on startup, for example) is normal or a fault condition. I eventually found a read-only monitoring app from ASI that provides enough visibility for diagnostic purposes without requiring the full OEM credentials, but the limitation is real and shapes what kinds of electrical investigations are practical.
+The reason for the restriction makes sense: at 48V with the inrush currents this controller handles, incorrect parameter adjustments can seriously damage the motor. The protection exists for good reason. It is just inconvenient.
+ Mid-2024 Context
+The project went through an uncertain period in mid-2024 following a legal development involving the company's primary financial backer. For several weeks the team's focus shifted to documenting all active projects and partnerships for York University, and some technical work was paused while the organizational situation was assessed. Contracts were eventually renewed and the project continued, but the disruption is visible in the timeline — a gap in active development that had nothing to do with the engineering.
+---
+See also: [[SARIT — Power Delivery System]] for the parasitic drain investigation and proposed monitoring hardware.
+See also: [[SARIT — Parasitic Power Drain Investigation]] for the full experimental report.</p>
+  </article>
+
+  <article id="seo-content-Professional/SARIT/Climate">
+    <h2>Climate Caddy
+Cabin heater prototype with hood scoop intake</h2>
+    <p>[TOC]
+ Background
+The heated accessories research established what could be done with off-the-shelf 12V products. The Climate Caddy project was a different question: could you mount a compact space heater inside the SARIT's cabin and connect it to an intake duct, creating something closer to an actual climate system? The answer was technically yes, practically marginal.
+This was an exploratory prototype — not a commissioned product, not something that went to any partner site. It ran in the orange SARIT (SARIT 8) and stayed there.
+ The Heater
+The heater unit was a compact 12V ceramic element designed to mount inside a cup holder — roughly the size of a large travel mug, with adjustable louvers on the output end. The model was identified from Amazon and the CAD was built from the product photos and listed dimensions, since no manufacturer files existed. This is a normal part of working with off-the-shelf components at this scale: the product page gives you enough to model around, even if the tolerances require a few print iterations to get right.
+The mount positioned the unit low on the dashboard, near knee level. This was a compromise driven by the SARIT's interior geometry — there isn't much flat, accessible surface in the cabin, and the area near the handlebar cluster was already occupied. Low mounting meant the heat output pointed roughly toward the occupant's legs rather than their chest or face, which limited its effectiveness. The louvers could be adjusted upward, but at that range the warm air mostly dissipated before reaching you.
+ The Hood Scoop
+The hood scoop was a 3D-printed intake duct designed to route outside air into the heater's intake port. The geometry was derived from a scaled screenshot of the SARIT's front hood panel — not ideal, but workable given the tolerances involved. The duct clipped onto the hood panel edge and connected to a flexible hose running to the heater intake inside the cabin.
+The purpose was to ensure the heater was drawing fresh outside air rather than recirculating cabin air — a basic requirement for any active ventilation system. In practice, the volume of air moved by this heater was small enough that the distinction between fresh and recirculated air was probably not meaningful, but it was the correct engineering decision and it made the system feel more complete.
+ Performance
+It worked, in a limited sense. On a cold winter morning you could feel the heat within a few minutes of driving. The cabin warmed noticeably compared to no heater. Whether it warranted a winter jacket depended on how cold it was — at -5°C it was a genuine improvement; at -15°C it was still a winter jacket situation. In summer it was just a fan blowing warm air, which was worse than useless, so the unit was simply left unplugged when not needed.
+The positioning was the main limitation. A heater mounted at knee level in a small cabin is always going to underperform versus one mounted at chest height with directed airflow. The interior geometry of the SARIT didn't offer a better option without a more significant installation.
+ What Came of It
+The prototype demonstrated that a 12V cabin heater is viable in the SARIT platform and that the hood scoop intake concept is printable and installable without permanent modification. It also established the failure modes: low mounting position, insufficient airflow volume for the cabin size, and no value in warm weather.
+The project informed the heated accessories research specification — particularly the conclusion that seat and handlebar heating are a more effective investment per dollar than a convective air heater at this power level. The Climate Caddy itself was not recommended for production.</p>
+  </article>
+
+  <article id="seo-content-Professional/SARIT/Power">
+    <h2>Power Delivery System
+Parasitic drain investigation and monitoring hardware design</h2>
+    <p>[TOC]
+ The Problem
+The SARIT fleet had a range problem that was not what it appeared to be. Vehicles were losing significant charge while parked — not from driving, not from leaving accessories on, but simply from sitting. A vehicle with a full charge after a 1-hour charge cycle would show dramatically reduced range after sitting for 72 hours with the charger physically connected to the battery but unplugged from the wall.
+This was confirmed through a controlled experiment:
+| Condition | Charge time | Idle time | Resulting range |
+|---|---|---|---|
+| Baseline | 1 hour | 0 hours (immediate drive) | ~15 km |
+| Drain test | 1 hour | 72 hours (charger connected, wall unplugged) | ~6 km |
+A 60% range loss from three days of parking. The drain was estimated at approximately 100–200 mA continuous — silent, persistent, and significant at 48V.
+ Investigation
+Diagnosing low-level parasitic draw on a 48V system is harder than it sounds. A handheld clamp meter (Klein Tools CL800) was the first tool tried — it produced wildly fluctuating readings between -0.1A and 0.2A and was useless for detecting milliamp-level leaks. This is a documented limitation of clamp meters for DC leakage below 1A; it is not a fault of the tool, but it is not the right tool for this task.
+The large inrush current spikes (10–30A) observed when connecting the battery manually were the second red herring. These look alarming but are normal — the ASI BAC2000 controller's input capacitance charges up rapidly on connection. The spikes settle to zero within milliseconds and are not the drain.
+The actual finding: when the on-board charger was disconnected from the battery terminals, the drain dropped to zero on subsequent measurements. The hypothesis is charger back-feed — the charger's internal circuitry lacks a blocking diode, allowing the battery to slowly discharge back through the charger's capacitors or status LEDs when wall power is absent.
+The full investigation is documented in [[SARIT — Parasitic Power Drain Investigation]].
+ Proposed Solution
+The architectural fix has two components:
+Immediate: Install an AEV250-G contactor (SPST-NO, 48–72VDC coil) in series with the charger connection. This industrial-grade component is rated for 500A to handle the BAC2000's capacitive inrush, and its coil economizer draws only 0.03A at 48V — it does not introduce a new parasitic load. This isolates the charger from the battery when the vehicle is parked.
+Longer term: A Digital Fuse Box — a set of current and voltage monitors across each power rail, communicating via I2C to the telemetry system — would allow the drain to be measured precisely and tracked over time. The selected components:
+| Component | Part | Purpose |
+|---|---|---|
+| I2C Power Monitor × 4 | Adafruit 5832 (INA228) | 85V-rated, 20-bit ADC; monitors Battery, 12V, 5V, and 48V rails |
+| Traction Current Sensor | Allegro ACS758-200B | Hall-effect isolation for the high-voltage, high-noise motor rail |
+| DC Shunt | FL-2-100A / 75mV | External shunt for main battery negative terminal (INA228 onboard resistor is only rated 10A) |
+| STEMMA QT Cables × 4 | Adafruit 4401 | Plug-and-play I2C daisy chain |
+Total estimated BOM cost: $124.02 CAD
+The I2C addresses were assigned as: 0x40 (main battery), 0x41 (12V rail), 0x44 (5V rail), 0x45 (48V rail). The software team was flagged to verify these do not conflict with existing modules before ordering.
+ KiCad Handoff
+In January 2026, the project was handed off to an incoming team member for formalization in KiCad. The deliverable was a hierarchical schematic with separate sheets for Traction (48V), Accessories (12V), and Logic (5V), plus footprint verification for the ACS758 and external shunt to confirm they fit in the battery compartment.
+The I2C addressing scheme, component datasheets, and full BOM were documented and archived. The next steps are hardware procurement and a second controlled drain test with the contactor installed to confirm the hypothesis before committing to the full monitoring build.</p>
+  </article>
+
+  <article id="seo-content-Professional/SARIT/Camera">
+    <h2>Camera Mount
+Iterative OAK-D mount designs for pedestrian detection</h2>
+    <p>[TOC]
+ Context
+The pedestrian detection system uses an OAK-D stereo camera (Luxonis) to track people and obstacles around the vehicle. Getting that camera mounted cleanly and rigidly to the SARIT's frame — without drilling into anything structural, without it shifting in the field — was the mechanical problem I was handed when I joined the project in May 2025.
+By the time I started, there had already been two previous mount iterations, both designed in Fusion 360. My work began with v3 and continued through v4.
+ Version 3 — Finalizing a Known Design
+The first week was a review of the existing v3 prototype. I checked fit, form, and function against the physical camera and the mounting point on the SARIT's interior frame. The changes from v2 to v3 had addressed most of the structural concerns, but there were small CAD details to clean up before the design could be considered final — unnecessary fillets that added print time without adding strength, and tolerances that needed to be tightened slightly for a snug fit without requiring force to assemble.
+I completed the final documentation package for v3 — detailed drawings and assembly instructions — and archived it. This was my first project in SolidWorks after the previous two versions had been done in Fusion 360, which required me to rebuild some of my modeling habits around SolidWorks' feature tree and assembly workflow.
+ Version 4 — Adjustable Mount
+The need for adjustability came from the detection team. A static mount works once the system is calibrated, but during development the team needed to physically reposition the camera to adjust its angle — both tilt (up/down) and swivel (left/right) — without reprinting or refastening. This drove the v4 specification.
+I spent a week researching multi-axis mounting mechanisms before committing to a design direction: mechanical fasteners with friction-fit adjustment joints, no servos. The goal was something a technician could loosen with a hex key, reposition by hand, and retighten — stable under vibration, simple to reproduce.
+The v4 CAD work centered on the adjustment joint. Designing a functional joint for 3D-printed parts is not straightforward: too little clamping force and the camera drifts; too much and the plastic deforms or the joint seizes. I went through several iterations on the geometry of the locking mechanism before settling on a design that balanced adjustment range against rigidity.
+Mounting holes for the OAK-D Pro's VESA M4 pattern were included as a fallback in case the primary retention method needed reinforcement. Print orientation was optimized to minimize required supports — all flat faces oriented to the print bed.
+Print spec: 20% infill, additional perimeter walls rather than higher infill density for bolt-clamping resistance.
+ Version 5 — Return to Static, OAK-D Pro
+Once the detection team had dialled in their calibration numbers, the requirement flipped back: a simpler, lighter, static mount optimized specifically for the OAK-D Pro (the previous static version had been designed for the OAK-D Lite). The v4 adjustable mechanism was no longer needed in daily use.
+The v5 mount was a clean-sheet design in SolidWorks, built around the Pro's physical envelope. Overhang was minimized in the print direction, unnecessary fillets were removed, and the assembly was designed to go together with standard ¼-20 hardware already stocked in the lab. The camera's VESA holes were retained as secondary attachment points.
+One detail that shaped the design: the SARIT frame has a mounting hole positioned very close to the roof — seemingly off-center and not part of any obvious pattern. It turned out to be exactly where the camera mount needed to go. It almost felt like it had been left there specifically.
+ Lessons
+Designing for 3D printing is not the same as designing for machining. The constraints — layer orientation, overhang limits, wall count vs. infill — are different enough that a feature that looks fine in CAD can fail in print or behave unexpectedly under load. Going from Fusion 360 to SolidWorks mid-project also surfaced some differences in how the two tools handle assembly files and version history; I ended up using Google Drive's file versioning as a lightweight workaround for the latter.</p>
+  </article>
+
+  <article id="seo-content-Professional/SARIT/Mirrors">
+    <h2>Side Mirror Mounts
+Extendable arm mounts for improved rear visibility</h2>
+    <p>[TOC]
+ Background
+The SARIT's stock side mirrors are small, fixed, and positioned low on the door panels. For a vehicle operating in pedestrian zones — around students, cyclists, and people on narrow paths — the sight lines they provide are marginal. The situation is worse for taller drivers, and worse again when the vehicle is being operated in reverse. The side mirror mount project started as a quality-of-life improvement and ended up as a production recommendation.
+The mirrors themselves are a specific part: a KEMIMOTO magnetic tractor mirror — a rubber-coated, 114 lb-hold magnetic mount originally designed for Kubota tractors and forklifts. They're cheap, broadly available on Amazon with same-day shipping, and mount without tools. This is relevant because the mirrors get stolen. I found out firsthand one afternoon when I came out to work on the trailer and someone had walked off with the maintenance SARIT's mirror. I ordered a replacement the same day.
+ The Design Problem
+The stock mirror position is the real issue. Mounted at door height, the mirrors give you a view of the ground about two meters behind the vehicle — useful for spotting dropped objects, less useful for seeing a cyclist coming up on your left. The goal of the mount was to raise and extend the mirrors outward, creating better rear coverage without requiring any permanent modification to the SARIT's body panels.
+The constraint: the SARIT's door frame is thin-walled aluminum. Any mount that clamps onto it needs to distribute load across a wide area or the clamping force deforms the panel. This ruled out a number of simpler bracket designs early.
+ Five Versions
+v1 established the basic geometry: an extendable arm that clamps to the door frame and positions the mirror head at approximately shoulder height on the outside of the vehicle. Printed in PLA as a proof of concept.
+v2 added a hinge point so the arm could fold flat when not in use — important because the mirrors extend past the vehicle's nominal width and would catch on tight gaps. The hinge introduced slop that made the extended position feel unstable.
+v3 replaced the hinge with a detent mechanism — a ball-and-socket that locked at 90° (deployed) and 0° (stowed). Cleaner, but the printed socket wore faster than expected under repeated cycling.
+v4 addressed the wear problem by replacing the 3D-printed socket with a metal insert. This required a redesign of the housing geometry to accommodate the insert and maintain printability. The locking force was adjusted by changing the ball's diameter relative to the socket — a tolerance problem that took a few prints to get right.
+v5 was the clean-up iteration: reduced material, refined clamping geometry, all faces oriented for clean printing without supports. This is the version that went into the recommendation to Elvy as a potential production accessory.
+ The Instagram Reel
+At some point during the v3–v4 transition, someone filmed the mount getting stuck in the deployed position on the orange SARIT and posted it to the team Instagram. The ball detent had seized — the ball had deformed slightly under temperature cycling and wouldn't release. This is the kind of failure that doesn't show up in a static load test and only surfaces with field use over time. It accelerated the decision to switch to the metal insert for v4.
+ Outcome
+The v5 mount is in use on the orange SARIT and has been recommended to the company for fleet-wide adoption. The mirrors themselves are already stocked and reordered as needed — their availability on Amazon same-day is genuinely part of why the design works at scale. A custom mirror that requires a two-week lead time is a problem. A mirror that can be replaced same-day is just a consumable.</p>
   </article>
 
   <article id="seo-content-Professional/SARIT/LiDAR">
     <h2>LiDAR Mount
-Different constraints than cameras. Bearing preload, vibration dampening, two versions. Cancelled before it shipped.</h2>
-    <p>Coming off the trailer hitch, the next project was a mount for a LiDAR sensor. LiDAR has different requirements than the cameras I'd designed for previously — it needs a stable, vibration-dampened platform to produce clean data. Any flex or resonance in the mount shows up directly in the point cloud.
-I spent the first week on research and BOM. LiDAR mounts in robotics applications typically use either soft-mount isolation (rubber grommets between the sensor and the bracket) or rigid mounts with mass-damped bases. Given the SARIT's relatively low-vibration drivetrain, a rigid mount with careful geometry was the right approach.
-lidar-mount-v1-cad.jpg
-[LiDAR Mount v1. First complete CAD model, designed for fit verification before committing to final geometry.]
-V1 was printed and physically tested for fit in early August. The print was useful — a few interference points showed up that weren't obvious in the CAD, which is exactly what a v1 prototype is for.
-V2 incorporated feedback from the physical test and introduced a bearing preload mechanism for rotational stability. Preloading a bearing — applying a controlled axial force to remove internal play — is a more precise constraint than anything I'd designed for before. The camera mounts had friction locks. This needed defined preload force applied through the geometry of the part itself.
-lidar-mount-v2-cad.jpg
-[LiDAR Mount v2. Revised geometry incorporating bearing preload for rotational stability.]
-V2 was in active development through September and into early October when team priorities shifted. The project was discontinued in the first week of October. I archived all design files and BOM documentation.
-Projects get cancelled. The v2 work is documented if anyone picks it up.
-[[SARIT]]</p>
-  </article>
-
-  <article id="seo-content-Professional/SARIT/Drain">
-    <h2>Parasitic Drain Investigation
-Drove a Toronto Zoo branded SARIT around campus for hours. 15km vs 6km. Here's what we found.</h2>
-    <p>A client's car came in for a door handle adjustment and a non-functional reverse beep. A battery drain complaint was included almost as an afterthought — the car seemed to lose range faster than expected when left sitting.
-The beep was quick. A wire in the harness behind the boot had been cut, probably snagged by cargo. Crimped it back and it worked.
-Diagnosing the drain took longer. I worked through the car with a multimeter, measuring current at different points with the vehicle fully off. Two things to know before doing this kind of work: handheld clamp meters — specifically the Klein Tools CL800 — are not reliable for DC leakage below 1A. The readings drifted between -0.1A and 0.2A and couldn't be trusted. Also, when you first connect the battery manually you'll see current spikes of 10 to 30A. That's capacitor inrush from the ASI BAC2000 controller filling its 1.64 mF input capacitance. It settles to zero in milliseconds. It's normal and it's not the drain.
-The readings I was getting were strange — small draws across almost every line, nothing obviously wrong, nothing obviously large. I wrote it up as inconclusive and flagged two suspects: the on-board charger, and the 12V buck converter (which is wired before the main solenoid, meaning it stays on even with the key off).
-To get a real number, we ran a controlled parking test.
-| Condition | Charge Time | Idle Time | Range |
-|---|---|---|---|
-| Control | 1 hour | 0 hours, drove immediately | ~15 km |
-| Drain test | 1 hour | 72 hours, charger leads connected | ~6 km |
-I drove both runs. We used the Toronto Zoo car — full zoo branding on the side. I spent an afternoon going back and forth across campus to map the range. It attracted attention.
-60% of usable range gone from three days of sitting with the charger physically connected but unplugged from the wall. Estimated continuous draw: 100 to 200mA.
-drain-test-setup.jpg
-[The test car during the drain measurement runs.]
-The charger connection was the variable. The hypothesis: the charger's internal circuitry may lack a blocking diode, allowing the battery to back-feed through the charger's capacitors when wall power is removed.
-We identified the variable, not the exact current path inside the charger. The report said so.
-The recommended fix was an AEV250-G contactor — a normally-open SPST solenoid with a 48-72V DC coil. Rated at 500A to handle the BAC2000's inrush current without issue. The coil draws 0.03A at 48V, so the contactor itself doesn't introduce a new parasitic load. It physically isolates the charger from the battery when not in active use.
-Whether it was ever ordered and installed, I don't know. I handed off the report and left the project shortly after.
-[[SARIT — Parasitic Power Drain Investigation]]
-[[SARIT — Electrical]]
-[[SARIT]]</p>
+Rotating sensor mount for autonomous navigation research</h2>
+    <p>[TOC]
+ Background
+In July 2025, after the trailer hitch project wrapped, I transitioned to designing a mount for the SARIT's LiDAR sensor — a Garmin LIDAR-Lite v3 (40m range) being integrated by the technology team for object detection and distance measurement. The mounting challenge was different from the camera work: LiDAR sensors are sensitive to vibration in a way cameras are not. Data quality degrades if the sensor platform is not rigid, and if the sensor needs to rotate (to get 360° coverage), the mechanism needs to be precise enough that the rotational position is repeatable.
+ BOM and Research Phase
+The first week was documentation and research — establishing a Bill of Materials for the mount and surveying how existing LiDAR installations handle the vibration and rotation problems. The key findings: vibration damping is typically handled either through compliant mounting materials (TPU pads, rubber grommets) or by isolating the sensor platform from the vehicle chassis mechanically. For rotation, a slip ring is required to pass signal and power through a continuously rotating joint without tangling cables.
+The sensor in question had six wires coming out — manageable for a slip ring design.
+ v1 — First Physical Prototype
+The v1 CAD model was completed in early August 2025 and printed immediately as a physical prototype. The print is not the final material — it is PLA, not the eventual PETG or nylon — but having something to hold, test-fit, and hand to the sensor operator surfaced problems that were not visible in the CAD model. This is the value of rapid prototyping: the iteration cycle between digital and physical is fast enough that printing a v1 is almost always worth doing before committing to final materials.
+ v2 — Bearing Preload and Rigidity
+Feedback from the v1 prototype drove the v2 specification. The main change: the rotation joint needed to incorporate bearing preload — a small axial load applied to the bearing to eliminate play. Without preload, even a well-fitted bearing will have measurable wobble, which in a rotating LiDAR mount becomes angular error in the distance data.
+Designing a bearing preload mechanism in a 3D-printed assembly is non-trivial. The forces involved are small but the tolerances need to be tight, and plastic parts creep under sustained load in a way metal parts do not. I spent the better part of three weeks iterating on the v2 geometry — making incremental improvements to rigidity, simplifying the assembly sequence, and refining the preload mechanism.
+The work was interrupted once by a CAD file corruption issue (the assembly had accumulated too many suppressed features and interdependent sketches to edit cleanly) which I resolved by rebuilding the assembly from scratch. Having a clear mental model of what the final design should look like made the rebuild faster than the original construction.
+ Discontinuation
+In early October 2025, the project was discontinued. Team priorities had shifted — the Power Delivery System work was more urgent — and the LiDAR integration timeline had slipped far enough that the mount was no longer on the critical path. All design files were archived.
+This was a useful lesson in the realities of research project management. A project being stopped is not the same as a project failing. The v1 prototype exists, the v2 CAD is documented, and the work can be resumed when the LiDAR integration becomes a priority again. The bearing preload problem is solved. The slip ring specification is identified. Whoever picks this up next has a substantially shorter path than I did.</p>
   </article>
 
   <article id="seo-content-Professional/SARIT/Heating">
-    <h2>Heated Accessories Research
-Seat heating, handlebar grips, Ontario legislation. 12V recommended. Nothing shipped, everything documented.</h2>
-    <p>This was a research project — no hardware shipped, no CAD produced. The ask was to determine whether heated seats and heated handlebar grips could be added to the SARIT fleet for winter operation, and if so, what the right approach was.
- Constraints
-The solution needed to work across multiple vehicles with minimal modification to each car. Seat heating had one hard constraint: it had to fit under the existing cushion cover without interfering with the sliding mechanism of the seat backrest. Handlebar heating had to be compatible with the SARIT's handlebar steering geometry, which is narrower than a standard motorcycle.
- Voltage selection
-The SARIT's electrical system runs three rails: 48V traction, 12V accessories, and 5V logic. The choice of voltage for heating elements came down to this:
-| Voltage | Verdict |
+    <h2>Heated Accessories
+Seat and handlebar heating research for all-season use</h2>
+    <p>[TOC]
+ Context
+The SARIT is enclosed but not insulated. In Toronto winters, "enclosed" means you're not being rained on, but you are sitting in what is effectively an aluminum box at ambient temperature. For users operating the vehicle outdoors in December — maintenance staff, security, zoo workers — this is genuinely uncomfortable. The company had a requirement to explore climate control options for fleet vehicles, and the mechanical team's answer was to start with the simplest viable intervention: off-the-shelf heated seat pads and handlebar grip heaters, powered from the vehicle's 12V accessory rail.
+ What We Evaluated
+The research covered two categories:
+Seat heating: USB-powered (5V/2A) heated cushions with adjustable temperature settings. Several options were evaluated — flat seat-only pads, full back-and-seat combos, and low-profile designs intended to be concealed under an existing cushion. The key constraint was the SARIT's sliding seat backrest: any heating element attached to the back panel had to allow the backrest to move without binding or pulling at wires. Most of the back-and-seat options failed this constraint. The flat seat-only pads that could be installed under the existing cushion cover were the best fit.
+Handlebar grip heaters: 12V DC units designed for motorcycle handlebars. The SARIT uses a 3-wheeler handlebar steering configuration, and standard motorcycle grip heaters fit the handlebar diameter with minor adapter considerations. These are available from $13 to $64 CAD with broadly similar performance.
+Voltage selection:
+| Voltage | Assessment |
 |---|---|
-| 5V DC | Not suitable. High current requirement makes it inefficient, and the product selection is limited. |
-| 12V DC | Recommended. Standard for vehicle accessories, wide product selection, efficient at typical heating power levels. |
-| 48V DC | Possible for air heaters but practically limited. Fewer COTS products available, more complex integration. |
-12V was the clear answer for both seats and handlebars.
+| 5V DC | Available via USB, very safe, but insufficient power for meaningful heat output in a small cabin |
+| 12V DC | Standard for vehicle accessories, many products available, recommended |
+| 48V DC | Efficient at high power but almost no COTS products designed for it; requires conversion |
+12V was the clear recommendation. The 12V accessory rail is already present on the research vehicle fleet, and the product ecosystem is vast.
  Legislation
-Before recommending any specific products, the compliance question needed answering. The SARIT operates under Ontario's eBike pilot project regulations (O. Reg. 210/141) and is treated as a low-speed motor vehicle equivalent under the HTA. Any heating elements needed to carry CSA or UL certification to satisfy the CCPSA federal electrical safety requirements and avoid triggering a registration or inspection requirement under O. Reg. 587.
-A 12V DC solution with certified components, adjustable heat levels, and a low-profile removable design meets all of those requirements without any significant changes to the existing platform.
- Product options
-For seat heating, the main tradeoff was between low-profile pads that can be concealed under the existing cushion cover versus higher-capacity units that include a heated backrest but can't be hidden. The low-profile 12V pads with a pressure-activated shutoff were the preferred direction given the seat backrest constraint.
-For handlebar grips, standard 12V motorcycle grip heaters are compatible with the SARIT's handlebar diameter. Several COTS options were compared on heat range, wiring complexity, and price.
- Status
-The research report was completed and handed off. Implementation would require a 12V circuit tap from the accessories rail and physical installation on each vehicle. Neither happened during my time on the project.
-[[SARIT — Electrical]]
-[[SARIT]]</p>
+Running 12V heated accessories on a SARIT in Ontario requires compliance with federal safety standards under the Canada Consumer Product Safety Act (CCPSA) and the Highway Traffic Act. The SARIT is treated equivalently to an eBike or low-speed motor vehicle (LSM) for regulatory purposes. Products with CSA/UL certification and built-in safety features (overheat shutoff, adjustable settings) satisfy these requirements without requiring modifications that would change the vehicle's regulatory classification.
+The full legislative analysis covers: CCPSA, Highway Traffic Act Ontario, Ontario Regulation 141/21 (eBike Pilot Project), Ontario Regulation 587 (Equipment Standards).
+ What Actually Happened
+The research covered all of this. The recommendation was 12V, scalable, removable, low-profile, CSA/UL certified, with adjustable heat levels. A shortlist of specific products was compiled with pricing (seat pads: $39–$130 CAD, handlebar grips: $14–$64 CAD).
+Nothing shipped. The project stayed in the documentation phase — no procurement, no installation, no field test. It remains a ready-to-execute specification if the priority comes back around.
+The practical reality of a heated seat in a SARIT cabin is probably modest anyway. The cabin volume is small, the vehicle is aluminum, and the seat heater is warming the occupant's lower body rather than the air. For short trips in moderate cold it would help noticeably. For a two-hour shift at -15°C, you'd still want a winter jacket.</p>
   </article>
 
   <article id="seo-content-Professional/YorkU">
