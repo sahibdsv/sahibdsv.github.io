@@ -21,8 +21,9 @@
             --code-bg: #1e1e1e;
             --text-bright: rgb(var(--bright-rgb));
             --text-main: #adadad;
-            --text-dim: #adadad;
+            --text-dim: #888888;
             --text-muted: #adadad;
+            --text-low: #777777;
             --text-inv: #000000;
             --code-fg: #e6cd69;
             --border-subtle: rgba(var(--bright-rgb), 0.08);
@@ -101,8 +102,9 @@
             --code-bg: #eaeaef;
             --text-bright: #000000;
             --text-main: #6b6b6b;
-            --text-dim: #6b6b6b;
+            --text-dim: #888888;
             --text-muted: #6b6b6b;
+            --text-low: #999999;
             --text-inv: #ffffff;
             --code-fg: #bf8d00;
             --border-subtle: rgba(0, 0, 0, 0.08);
@@ -373,7 +375,8 @@
 
         .chip.date {
             background: transparent;
-            color: rgba(var(--bright-rgb), 0.45);
+            color: var(--text-low);
+            font-weight: 400;
         }
 
         /* Prevent links inside chips from inheriting global text styles or alignment */
