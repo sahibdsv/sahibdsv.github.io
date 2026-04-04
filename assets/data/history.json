@@ -1,5 +1,15 @@
 [
   {
+    "hash": "b1ef28daa1c74405ffa1e28803c61dd0ec6e2bdb",
+    "date": "2026-04-03",
+    "message": "style: allow full card subtitles by removing line-clamping"
+  },
+  {
+    "hash": "ca880ce2105e4d73b84ff31e37686332d5bec06a",
+    "date": "2026-04-03",
+    "message": "fix: only show main title in placeholder card thumbnails"
+  },
+  {
     "hash": "d39151d0c7f3aadf07e48b975dad8a873102d4b6",
     "date": "2026-04-03",
     "message": "docs: update GUIDE.md with new engine features, path auto-resolution, and updated content formatting rules"
