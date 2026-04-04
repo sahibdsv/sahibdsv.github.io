@@ -1224,7 +1224,7 @@
             display: flex;
             align-items: center;
             gap: var(--space-xs);
-            --text-base: var(--text-muted);
+            --text-base: var(--text-bright);
             --text-hover: var(--cat-accent, var(--text-bright));
             font-weight: 600;
             line-height: 1.2;
@@ -2228,13 +2228,13 @@
         .resume-role {
             font-size: 16px;
             font-weight: 600;
-            color: var(--text-dim);
+            color: var(--text-bright);
         }
 
         .resume-company {
             font-size: 15px;
             font-weight: 400;
-            color: var(--text-dim);
+            color: var(--text-bright);
         }
 
         .resume-date-slot,
