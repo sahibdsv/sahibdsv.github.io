@@ -3728,6 +3728,40 @@ function processMarkdown(text) {
             continue;
         }
 
+        // Handle tables (GFM pipe syntax: | head | head |)
+        const isTableLine = trimmed.includes('|') && trimmed.startsWith('|') && trimmed.endsWith('|');
+        if (isTableLine && i + 1 < lines.length) {
+            const nextTrimmed = lines[i + 1].trim();
+            const isSeparator = nextTrimmed.match(/^\s*\|(?:\s*:?-+:?\s*\|)+\s*$/);
+            if (isSeparator) {
+                while (listStack.length > 0) { output.push('</ul>'); listStack.pop(); }
+                let tableHTML = '<div class="table-wrapper"><table><thead><tr>';
+                const headerCells = trimmed.split('|').slice(1, -1);
+                headerCells.forEach(cell => {
+                    tableHTML += `<th>${processInlineMarkdown(cell.trim())}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+                i++; // Skip separator
+                let nextRowIdx = i + 1;
+                while (nextRowIdx < lines.length) {
+                    const rowLine = lines[nextRowIdx].trim();
+                    if (rowLine.includes('|') && rowLine.startsWith('|') && rowLine.endsWith('|')) {
+                        tableHTML += '<tr>';
+                        const cells = rowLine.split('|').slice(1, -1);
+                        cells.forEach(cell => {
+                            tableHTML += `<td>${processInlineMarkdown(cell.trim())}</td>`;
+                        });
+                        tableHTML += '</tr>';
+                        i = nextRowIdx;
+                        nextRowIdx++;
+                    } else { break; }
+                }
+                tableHTML += '</tbody></table></div>';
+                output.push(tableHTML);
+                continue;
+            }
+        }
+
         // Check for headers (# to ####)
         const headerMatch = trimmed.match(/^(#{1,4})\s+(.*)$/);
         if (headerMatch) {
@@ -3747,9 +3781,7 @@ function processMarkdown(text) {
         if (listMatch) {
             const indent = listMatch[1].length;
             let itemContent = listMatch[2];
-            const currentLevel = Math.min(Math.floor(indent / 2), MAX_DEPTH); // 2 spaces = 1 level
-
-            // Check for checkbox syntax: [ ] or [x]
+            const currentLevel = Math.min(Math.floor(indent / 2), MAX_DEPTH);
             let checkboxHTML = '';
             let isCheckbox = false;
             const checkboxMatch = itemContent.match(/^\[([ xX])\]\s*(.*)$/);
@@ -3759,20 +3791,9 @@ function processMarkdown(text) {
                 checkboxHTML = `<span class="checkbox ${isChecked ? 'checked' : ''}"></span>`;
                 itemContent = checkboxMatch[2];
             }
-
             const content = processInlineMarkdown(itemContent);
-
-            // Adjust list stack to match current level
-            while (listStack.length > currentLevel + 1) {
-                output.push('</ul>');
-                listStack.pop();
-            }
-
-            while (listStack.length < currentLevel + 1) {
-                output.push('<ul>');
-                listStack.push(true);
-            }
-
+            while (listStack.length > currentLevel + 1) { output.push('</ul>'); listStack.pop(); }
+            while (listStack.length < currentLevel + 1) { output.push('<ul>'); listStack.push(true); }
             if (isCheckbox) {
                 output.push(`<li class="checkbox-item">${checkboxHTML}${content}</li>`);
             } else {
@@ -3793,7 +3814,7 @@ function processMarkdown(text) {
             continue;
         }
 
-        // Handle horizontal rules (matches --- or ***)
+        // Handle horizontal rules
         if (trimmed.match(/^(?:---|\*\*\*)$/)) {
             output.push('<hr>');
             continue;
