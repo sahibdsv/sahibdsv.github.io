@@ -362,13 +362,17 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 500;
-            background: var(--surface-subtle);
+            background: transparent;
             transition: all var(--anim-quick) var(--ease);
             position: relative; /* Anchor for bloom */
             cursor: pointer;
             height: 20px; /* Force consistent height in all contexts */
             box-sizing: border-box;
             white-space: nowrap;
+        }
+
+        .chip.date {
+            background: var(--surface-subtle);
         }
 
         .chip::before {
