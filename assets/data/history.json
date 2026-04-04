@@ -1,5 +1,20 @@
 [
   {
+    "hash": "b47d9713aa39ca6fcf67735c57bb2502a534a7db",
+    "date": "2026-04-04",
+    "message": "UI: Anchor card content to thumbnail bottom for vertical rhythm consistency"
+  },
+  {
+    "hash": "0b21fae2c2eef421fc5e1ad490deaad86ddd0c67",
+    "date": "2026-04-04",
+    "message": "fix: perfectly center text in tag chips by removing vertical padding and forcing line-height: 1"
+  },
+  {
+    "hash": "235807a2b138f3697b95926a3533ca9bb5e149d5",
+    "date": "2026-04-04",
+    "message": "fix: add scroll-margin-top to headings for TOC navigation"
+  },
+  {
     "hash": "84d9246e95aa2b350fdd66388f5ca6dab00d43c1",
     "date": "2026-04-04",
     "message": "style: tone down hr brightness to match muted text"
