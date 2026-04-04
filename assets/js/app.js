@@ -1425,7 +1425,7 @@ function renderHome() {
         // but still validate for Recent Activity to avoid complete junk
         const hasTimestamp = e.Timestamp && String(e.Timestamp).trim().length > 0;
         
-        if ((e.Page.split("/").length <= 2 || isFeatured) && (isFeatured || hasTimestamp)) {
+        if (isFeatured || hasTimestamp) {
             activityMap[e.Page] = e;
         }
     });
