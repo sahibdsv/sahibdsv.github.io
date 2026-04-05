@@ -642,8 +642,8 @@ function renderNavigation(currentPath, forceSmoothNav = false) {
 
             if (!isInteracting) {
                 setNavSnapping(row, (activeLink && row.scrollWidth > row.clientWidth + 5) ? 'proximity' : 'none');
-                // Only center if we're not touching/swiping the row
-                centerNavRow(row, level > 1, forceSmoothNav ? "smooth" : "auto");
+                // Center the active element for both desktop wheel and mobile touch
+                centerNavRow(row, true, forceSmoothNav ? "smooth" : "auto");
             }
         });
     }
@@ -824,6 +824,8 @@ function setupHapticScroll(row) {
             const href = nextLink.getAttribute("href")?.substring(1);
             if (href) {
                 haptic('tick');
+                // Force a clear interaction state so centerNavRow is allowed to fire
+                _activeNavControl = null;
                 navigateTo(href, true, true);
             }
         }
