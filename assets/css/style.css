@@ -1032,9 +1032,14 @@
         }
 
         @media (max-width:600px) {
-            .grid-container {
+            .grid-container, .markdown-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 10px;
+            }
+            /* Hide tokens to keep card height manageable in 2-column gallery */
+            .grid-container .meta-row, 
+            .markdown-grid .meta-row {
+                display: none;
             }
             .section {
                 margin-bottom: 2rem;
