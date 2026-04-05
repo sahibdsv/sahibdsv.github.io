@@ -1,5 +1,15 @@
 [
   {
+    "hash": "300ca9a5e764e7702dbfef0413a3dea8db36ba1a",
+    "date": "2026-04-04",
+    "message": "Fix: allow nav auto-centering on all screen widths (fixing landscape mobile)"
+  },
+  {
+    "hash": "82bb1c395746a7a602501a1f75dc0e9ff854fdf0",
+    "date": "2026-04-04",
+    "message": "Fix: enable left-scrolling on centered nav bars by using auto-marginal centering instead of justify-content"
+  },
+  {
     "hash": "315cb150d1c9116631eb1ee988b274b68d093d58",
     "date": "2026-04-04",
     "message": "Design: final site header and nav bar shade fix for both light and dark modes"
