@@ -808,7 +808,7 @@ function setupHapticScroll(row) {
         e.preventDefault();
         
         const now = Date.now();
-        if (now - (s.lastWheelNavTime || 0) < 200) return; 
+        if (now - (s.lastWheelNavTime || 0) < 50) return; 
         s.lastWheelNavTime = now;
 
         const links = Array.from(row.querySelectorAll(".nav-link, .sub-link"));
