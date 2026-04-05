@@ -638,26 +638,20 @@
             scrollbar-width: none;
             transition: height var(--anim-layout) var(--ease), opacity var(--anim-layout) var(--ease), margin var(--anim-layout) var(--ease);
             opacity: 1;
-            cursor: grab;
+            cursor: default;
             user-select: none; /* Prevent accidental text selection while dragging */
             display: flex;
             align-items: center;
             justify-content: flex-start; /* Flex-start allows scrolling to the left overflow */
         }
 
-        /* Centering technique that doesn't break overflow scrolling: 
-           auto margins on both ends will center the group if it can, 
-           but won't block access to negative scroll positions. */
+        /* Centering technique that doesn't break overflow scrolling */
         .nav-row > *:first-child {
             margin-left: auto;
         }
 
         .nav-row > *:last-child {
             margin-right: auto;
-        }
-
-        .nav-row.grabbing {
-            cursor: grabbing;
         }
 
         .nav-row.level-1 {

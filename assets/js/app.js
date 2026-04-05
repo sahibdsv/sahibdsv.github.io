@@ -607,7 +607,6 @@ function renderNavigation(currentPath, forceSmoothNav = false) {
             row.classList.add("slide-in-right");
             navStack.appendChild(row);
             setupHapticScroll(row);
-            setupNavDrag(row);
         }
 
         let html = "";
@@ -747,66 +746,6 @@ function centerNavRow(row, isSubNav, behavior = "auto") {
 // Navigation Dragging (Desktop Mouse Support)
 // -------------------------------------------------------------------------
 
-function setupNavDrag(row) {
-    if (!row) return;
-
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-    let moved = false;
-
-    const handleMouseMove = (e) => {
-        if (!isDown) return;
-        const x = e.pageX - row.offsetLeft;
-        const walk = (x - startX) * 2;
-        if (Math.abs(walk) > 2) moved = true;
-        row.scrollLeft = scrollLeft - walk;
-        
-        // Manual haptic system sync: keep the haptic picker "awake" while dragging
-        if (row._markNavInput) row._markNavInput();
-    };
-
-    const handleMouseUp = () => {
-        if (!isDown) return;
-        isDown = false;
-        row.classList.remove('grabbing');
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-        
-        // Let the haptic system settle naturally
-        if (row._releaseNavInput) row._releaseNavInput();
-
-        setTimeout(() => {
-            if (_activeNavControl === row) _activeNavControl = null;
-            setNavSnapping(row, 'proximity');
-        }, 50);
-    };
-
-    row.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
-        isDown = true;
-        moved = false;
-        row.classList.add('grabbing');
-        startX = e.pageX - row.offsetLeft;
-        scrollLeft = row.scrollLeft;
-        
-        _activeNavControl = row;
-        setNavSnapping(row, 'none');
-
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-    });
-
-    row.addEventListener('click', (e) => {
-        if (moved) {
-            e.preventDefault();
-            e.stopPropagation();
-            moved = false;
-        }
-    }, true);
-
-    row.addEventListener('dragstart', (e) => e.preventDefault());
-}
 
 /* 
  * Haptic System — Touch-gated, instant-navigate scroll picker 
@@ -864,9 +803,37 @@ function setupHapticScroll(row) {
     row.addEventListener("touchend", releaseInput, {
         passive: true
     });
-    row.addEventListener("wheel", markInput, {
-        passive: true
-    });
+    row.addEventListener("wheel", (e) => {
+        if (isTrueMobile) return; 
+        
+        // Discrete navigation on scroll wheel ticks
+        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        if (Math.abs(delta) < 10) return;
+
+        e.preventDefault();
+        
+        const now = Date.now();
+        if (now - (s.lastWheelNavTime || 0) < 200) return; 
+        s.lastWheelNavTime = now;
+
+        const links = Array.from(row.querySelectorAll(".nav-link, .sub-link"));
+        const currentActive = row.querySelector(".active");
+        if (!currentActive || !links.length) return;
+
+        const currentIndex = links.indexOf(currentActive);
+        const direction = delta > 0 ? 1 : -1;
+        const nextIndex = currentIndex + direction;
+
+        if (nextIndex >= 0 && nextIndex < links.length) {
+            const nextLink = links[nextIndex];
+            const href = nextLink.getAttribute("href")?.substring(1);
+            if (href) {
+                haptic('tick');
+                navigateTo(href, true, true);
+            }
+        }
+    }, { passive: false });
+
     row.addEventListener("mousedown", markInput, {
         passive: true
     });
