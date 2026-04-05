@@ -46,8 +46,8 @@
             --main-row-h: 25px;
             --sub-row-h: 25px;
             --gap: 5px;
-            --header-pad-top: 7px;
-            --header-pad-bottom: 5px;
+            --header-pad-top: 6px;
+            --header-pad-bottom: 6px;
             --header-gap: 5px;
             --brand-font-size: 28px;
             --brand-letter-spacing: 1.5px;
@@ -937,7 +937,7 @@
                 --main-row-h: 25px;
                 --sub-row-h: 25px;
                 --gap: 1px;
-                --header-pad-top: 3.5px;
+                --header-pad-top: 3px;
                 --header-pad-bottom: 3px;
                 --header-gap: 0px;
                 --nav-font-size: 16px;
