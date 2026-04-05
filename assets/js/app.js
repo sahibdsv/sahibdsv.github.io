@@ -421,11 +421,7 @@ function initApp() {
 
                 const isDesktop = currentWidth > 768;
                 document.querySelectorAll(".nav-row").forEach(row => {
-                    if (isDesktop) {
-                        row.scrollLeft = 0;
-                    } else {
-                        centerNavRow(row, true);
-                    }
+                    centerNavRow(row, true);
                 });
             });
         };
@@ -700,7 +696,6 @@ function setNavSnapping(row, mode = "none") {
 
 function centerNavRow(row, isSubNav, behavior = "auto") {
     if (!row || row === _activeNavControl) return;
-    if (window.innerWidth > 768) return;
 
     row._needsReset = false;
     // Only scroll if there is overflow
