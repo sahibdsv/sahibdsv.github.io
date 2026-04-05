@@ -1,5 +1,15 @@
 [
   {
+    "hash": "dda33e9474b6f1b53b0bc6556822ae93ff5e968b",
+    "date": "2026-04-04",
+    "message": "Layout: update mobile 2nd-column gallery to only show 'featured' tags"
+  },
+  {
+    "hash": "8d7ad08359d962f1a6bf75afa6c6a20a771264be",
+    "date": "2026-04-04",
+    "message": "Layout: hide card tags and dates on mobile 2-column gallery to save height"
+  },
+  {
     "hash": "61d019032b9ddfbc9d729426c17552829ef16e81",
     "date": "2026-04-04",
     "message": "Fix: correct CSS cascade for mobile 2nd column grid layout"
