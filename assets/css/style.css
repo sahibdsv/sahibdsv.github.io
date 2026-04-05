@@ -1036,10 +1036,15 @@
                 grid-template-columns: 1fr 1fr;
                 gap: 10px;
             }
-            /* Hide tokens to keep card height manageable in 2-column gallery */
+            /* Hide metadata except for 'Featured' tags to keep cards compact in gallery mode */
+            .grid-container .meta-row > *:not(.chip-featured), 
+            .markdown-grid .meta-row > *:not(.chip-featured) {
+                display: none;
+            }
+            /* Ensure the row is visible globally on mobile, the child-hiding logic above handles spacing */
             .grid-container .meta-row, 
             .markdown-grid .meta-row {
-                display: none;
+                display: flex;
             }
             .section {
                 margin-bottom: 2rem;
