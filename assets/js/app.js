@@ -1600,7 +1600,7 @@ function renderCardHTML(entry, contextCategory = "") {
         }
 
         const p = processMediaUrl(src);
-        return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" decoding="async" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()"></div>`;
+        return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" decoding="async" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="mediaError(this)"></div>`;
     };
 
     const mediaSources = [
@@ -3577,13 +3577,13 @@ function renderUnifiedMediaItem(item, isGallery = false) {
                                ${p.loop ? 'loop' : ''}
                                ${p.controls ? 'controls' : ''} playsinline
                                onloadeddata="mediaLoaded(this)"
-                               onerror="this.previousElementSibling?.remove()"></video>
+                               onerror="mediaError(this)"></video>
                     </div>`;
 
     } else if (item.type === 'image') {
         const style = isGallery ? 'style="height:100%; width:100%; object-fit:cover;"' : '';
         const p = processMediaUrl(item.url);
-        mediaHTML = `<div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="this.previousElementSibling?.remove()">`;
+        mediaHTML = `<div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="mediaError(this)">`;
         if (!isGallery) mediaHTML = `<div class="media-container">${mediaHTML}</div>`;
     } else if (item.type === 'youtube') {
         const ytId = item.id || getYouTubeID(item.url);
@@ -4338,3 +4338,24 @@ function showEasterEgg() {
 
 showEasterEgg();
 fetchDataAndCache();
+// Handle media loading errors gracefully
+function mediaError(el) {
+    if (!el) return;
+    const parent = el.parentNode;
+    const loader = el.previousElementSibling;
+    if (loader && loader.classList.contains('loader-overlay')) loader.remove();
+    
+    // Create a rich "Broken Media" placeholder
+    const placeholder = document.createElement('div');
+    placeholder.className = 'media-error-placeholder media-enter loaded';
+    placeholder.innerHTML = `
+        <div style="font-size: 38px; font-weight: 500; opacity: var(--music-fallback-opacity); color: var(--text-bright); letter-spacing: -1px; font-family: 'Jost', sans-serif;">404</div>
+    `;
+    
+    if (parent) {
+        parent.replaceChild(placeholder, el);
+    } else {
+        el.style.display = 'none';
+    }
+}
+
