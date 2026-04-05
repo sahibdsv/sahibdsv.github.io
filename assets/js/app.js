@@ -701,7 +701,6 @@ function setNavSnapping(row, mode = "none") {
 
 function centerNavRow(row, isSubNav, behavior = "auto") {
     if (!row || row === _activeNavControl) return;
-    if (window.innerWidth > 768) return;
 
     row._needsReset = false;
     // Only scroll if there is overflow
