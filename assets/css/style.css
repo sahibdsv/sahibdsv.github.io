@@ -629,7 +629,6 @@
 
         .nav-row {
             max-width: 900px;
-            justify-content: center;
             gap: 20px;
             overflow-x: auto;
             overflow-y: hidden;
@@ -641,6 +640,20 @@
             opacity: 1;
             cursor: grab;
             user-select: none; /* Prevent accidental text selection while dragging */
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Flex-start allows scrolling to the left overflow */
+        }
+
+        /* Centering technique that doesn't break overflow scrolling: 
+           auto margins on both ends will center the group if it can, 
+           but won't block access to negative scroll positions. */
+        .nav-row > *:first-child {
+            margin-left: auto;
+        }
+
+        .nav-row > *:last-child {
+            margin-right: auto;
         }
 
         .nav-row.grabbing {
