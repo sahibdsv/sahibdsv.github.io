@@ -1,5 +1,40 @@
 [
   {
+    "hash": "0487593201a31245a5757ec91a58a3c9b870c6cb",
+    "date": "2026-04-05",
+    "message": "Perf: reduce wheel-nav debounce to 50ms for rapid cycling on desktop"
+  },
+  {
+    "hash": "5704cc0e72390cbfeeeb3400a41fea649f4b6afd",
+    "date": "2026-04-05",
+    "message": "Fix: synchronize desktop nav row centering and optimize wheel interaction"
+  },
+  {
+    "hash": "03582a83f9a07734215c081a73d49fb647cba345",
+    "date": "2026-04-05",
+    "message": "Fix: enable auto-centering for navigation rows on desktop"
+  },
+  {
+    "hash": "f14996974fb8fb35b6b52df7be2a9f6e236e0762",
+    "date": "2026-04-05",
+    "message": "Feature: replace navigation dragging with discrete mouse wheel cycling for desktop"
+  },
+  {
+    "hash": "53857cf59a2f012d9f9ff2bd51e0c1dd6fcf557b",
+    "date": "2026-04-04",
+    "message": "chore: remove push trigger from SEO Sync workflow to reduce CI noise"
+  },
+  {
+    "hash": "a77d64489324c0a33ebec18b01737ce8b9f3d6f5",
+    "date": "2026-04-04",
+    "message": "chore: reduce SEO sync frequency to every 6 hours"
+  },
+  {
+    "hash": "82bb1c395746a7a602501a1f75dc0e9ff854fdf0",
+    "date": "2026-04-04",
+    "message": "Fix: enable left-scrolling on centered nav bars by using auto-marginal centering instead of justify-content"
+  },
+  {
     "hash": "315cb150d1c9116631eb1ee988b274b68d093d58",
     "date": "2026-04-04",
     "message": "Design: final site header and nav bar shade fix for both light and dark modes"
