@@ -264,6 +264,8 @@
             position: relative;
             /* clip ensures position: sticky works while preventing horizontal overshoot */
             overflow-x: clip; 
+            display: flex;
+            flex-direction: column;
         }
 
         a,
@@ -1079,7 +1081,7 @@
         footer {
             padding: 1rem;
             border-top: 1px solid var(--border-subtle);
-            margin-top: 2rem;
+            margin-top: auto;
             width: 100%;
             max-width: 1200px;
             margin-left: auto;
@@ -2560,7 +2562,14 @@
         }
 
         .nav-row.hidden {
-            display: none !important;
+            height: 0 !important;
+            opacity: 0 !important;
+            margin: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            overflow: hidden !important;
+            pointer-events: none !important;
+            visibility: hidden !important;
         }
 
         /* Music Component - Vinyl Sleeve Edition */
