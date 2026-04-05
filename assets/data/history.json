@@ -1,5 +1,10 @@
 [
   {
+    "hash": "61d019032b9ddfbc9d729426c17552829ef16e81",
+    "date": "2026-04-04",
+    "message": "Fix: correct CSS cascade for mobile 2nd column grid layout"
+  },
+  {
     "hash": "300ca9a5e764e7702dbfef0413a3dea8db36ba1a",
     "date": "2026-04-04",
     "message": "Fix: allow nav auto-centering on all screen widths (fixing landscape mobile)"
