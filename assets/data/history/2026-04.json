@@ -1,5 +1,15 @@
 [
   {
+    "hash": "b44a60c82ec8122be1e6997c17539f740c7dabf6",
+    "date": "2026-04-04",
+    "message": "Layout: equalize top/bottom header padding for perfect vertical centering"
+  },
+  {
+    "hash": "c3edaec9441c04694c78b06963744a596a1067fe",
+    "date": "2026-04-04",
+    "message": "Layout: implement flex sticky footer to prevent layout jumps on short pages"
+  },
+  {
     "hash": "dda33e9474b6f1b53b0bc6556822ae93ff5e968b",
     "date": "2026-04-04",
     "message": "Layout: update mobile 2nd-column gallery to only show 'featured' tags"
