@@ -1,5 +1,10 @@
 [
   {
+    "hash": "5924c92f0da71890840856b59a9b4d22d012acda",
+    "date": "2026-04-04",
+    "message": "Layout: implement high-fidelity minimalist 404 placeholder"
+  },
+  {
     "hash": "b44a60c82ec8122be1e6997c17539f740c7dabf6",
     "date": "2026-04-04",
     "message": "Layout: equalize top/bottom header padding for perfect vertical centering"
