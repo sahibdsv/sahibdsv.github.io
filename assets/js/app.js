@@ -2061,7 +2061,7 @@ function renderRecentMusic(container) {
 
     container.innerHTML = `
         <div class="music-sections-container">
-            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 5)}">
+            <div class="music-grid" style="--music-cols: ${Math.min(latestItems.length, 5)}">
                 ${cardsHTML}
             </div>
         </div>
@@ -2354,7 +2354,7 @@ async function renderMusicCluster(container) {
 
     container.innerHTML = `
         <div class="music-sections-container">
-            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 5)}">
+            <div class="music-grid" style="--music-cols: ${Math.min(cardsData.length, 5)}">
                 ${cardsHTML}
             </div>
         </div>
