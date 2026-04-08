@@ -1670,7 +1670,7 @@ const SECTION_RENDERERS = {
             const tags = entry.Tags ? entry.Tags.split(",").map(t => t.trim()) : [];
             const readTime = Math.ceil((entry.Content || "").trim().split(/\s+/).length / 200);
 
-            if (hasLink || dateStr || tags.length > 0 || readTime > 1) {
+            if (dateStr || tags.length > 0) {
                 metaHTML = `<div class="article-meta-row">`;
                 if (hasLink) metaHTML +=
                     `<a href="${entry.LinkURL}" target="_blank" class="article-link-btn"><svg viewBox="0 0 24 24" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`;
