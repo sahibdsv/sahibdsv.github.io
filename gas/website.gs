@@ -4,7 +4,8 @@ const WEBSITE_CONFIG = {
   sourceLabel: 'YT Music - ScriptCat',
   dedupeThresholdSeconds: 60,
   headers: ['Source', 'Artist', 'Track', 'Link', 'Thumbnail'],
-  sheetId: '1DD2Ax-XDGYBKuoe_ajqhIMUDBH0-pC2P4iHS_OpUDoQ'
+  sheetId: '1DD2Ax-XDGYBKuoe_ajqhIMUDBH0-pC2P4iHS_OpUDoQ',
+  apiToken: 'CHANGE_ME'
 };
 
 /**
@@ -13,6 +14,22 @@ const WEBSITE_CONFIG = {
 function doPost(e) {
   Logger.log("doPost received: " + JSON.stringify(e));
   try {
+    // --- AUTHENTICATION CHECK ---
+    let requestToken = e.parameter ? e.parameter.token : null;
+    if (!requestToken && e.postData && e.postData.contents) {
+      try {
+        const parsed = JSON.parse(e.postData.contents);
+        requestToken = parsed.token;
+      } catch (err) {
+        // Ignore parse error here
+      }
+    }
+
+    if (requestToken !== WEBSITE_CONFIG.apiToken) {
+      return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Unauthorized" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // --- Intercept Feedback Commands from Website ---
     if (e.parameter && (e.parameter.type === 'feedback' || e.parameter.category)) {
       Logger.log("Processing feedback: " + JSON.stringify(e.parameter));
