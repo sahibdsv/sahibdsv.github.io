@@ -15,8 +15,8 @@ function debounce(fn, delay) {
 window.mediaLoaded = function (el) {
     el.classList.add('loaded');
 
-    // Intelligent Theme Matching for tagged images
-    if (el.tagName === 'IMG' && el.classList.contains('theme-invert')) {
+    // Intelligent Theme Matching for tagged media
+    if ((el.tagName === 'IMG' || el.tagName === 'VIDEO') && el.classList.contains('theme-invert')) {
         applySmartInversion(el);
     }
 
@@ -4134,7 +4134,10 @@ window.__initMapbox = async function (containerId, geojsonUrl, isInteractive = t
 
 // Process content with block system - convenience function
 function applySmartInversion(img) {
-    if (!img.complete) return;
+    // Only skip if it's an image that hasn't finished loading yet
+    if (img.tagName === 'IMG' && !img.complete) return;
+    // For videos, make sure they have enough data to draw a frame
+    if (img.tagName === 'VIDEO' && img.readyState < 2) return;
 
     try {
         // Use a tiny 1x1 canvas to calculate average brightness efficiently
@@ -4143,8 +4146,11 @@ function applySmartInversion(img) {
         canvas.height = 1;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
+        // Get the source URL properly for both elements
+        const src = img.currentSrc || img.src || img.dataset.src || '';
+
         // Set crossOrigin if it's an external URL to avoid tainted canvas
-        if (img.src.startsWith('http') && !img.src.includes(window.location.hostname)) {
+        if (src.startsWith('http') && !src.includes(window.location.hostname)) {
             img.crossOrigin = "anonymous";
         }
 
