@@ -4100,7 +4100,7 @@ window.__initMapbox = async function (containerId, geojsonUrl, isInteractive = t
     } catch (e) {
         console.error("Mapbox load failed:", e);
         container.classList.remove('loader-overlay');
-        container.innerHTML = `<div style="padding: 20px; font-family: monospace; color: var(--text-dim); text-align: center;">GPS Route processing failed: ${e.message}</div>`;
+        container.innerHTML = `<div style="padding: 20px; font-family: monospace; color: var(--text-dim); text-align: center;">GPS Route processing failed: ${safeHTML(e.message)}</div>`;
     }
 };
 
