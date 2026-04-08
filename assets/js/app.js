@@ -2447,9 +2447,22 @@ function playMusicInCard(event) {
                 // Delay hiding the thumbnail to allow YT player to initialize its internal view
                 // This makes the transition into the video (which has the same art) feel seamless.
                 card._playTimer = setTimeout(() => {
-                    if (currentImg) currentImg.style.opacity = '0';
+                    if (currentImg) {
+                        currentImg.style.opacity = '0';
+                        currentImg.style.pointerEvents = 'none'; // Ensure it doesn't block clicks
+                        
+                        // Fully remove from DOM after fade finishes to be 100% sure
+                        setTimeout(() => {
+                            if (currentImg && currentImg.parentNode) {
+                                currentImg.remove();
+                            }
+                        }, 800); // Match CSS transition duration (0.8s)
+                    }
                     const fallback = mediaRow.querySelector('.music-card-fallback');
-                    if (fallback) fallback.style.opacity = '0';
+                    if (fallback) {
+                        fallback.style.opacity = '0';
+                        fallback.style.pointerEvents = 'none';
+                    }
                     card._playTimer = null;
                 }, 1500); // 1.5s buffer for high-fidelity handover
             };
