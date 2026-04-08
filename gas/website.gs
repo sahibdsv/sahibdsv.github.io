@@ -436,9 +436,9 @@ function getRewindDataFromRows_(rows, headers, recentLimit = 500) {
     .slice(0, 10);
 
   return {
-    topArtists: topArtists.slice(0, 3),
-    topSongs: topSongs.slice(0, 3),
-    freshFavorites: bestRecent.slice(0, 3),
+    topArtists: topArtists.slice(0, 5),
+    topSongs: topSongs.slice(0, 5),
+    freshFavorites: bestRecent.slice(0, 5),
     totalPlays: rows.length,
     allSongCounts: Object.fromEntries(Object.entries(songStats).map(([k, v]) => [k, v.count])),
     generatedAt: new Date().toISOString()
