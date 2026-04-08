@@ -2009,8 +2009,8 @@ function renderRecentMusic(container) {
     }
 
     // The music API returns tracks in newest-first order.
-    // We take the first 3 for the display.
-    const latestItems = musicDb.slice(0, 3);
+    // We take the first 5 for the display.
+    const latestItems = musicDb.slice(0, 5);
 
     // Prevent double-render stutter if local cache matches remote data perfectly
     const renderHash = JSON.stringify(latestItems);
@@ -2060,12 +2060,12 @@ function renderRecentMusic(container) {
     }).join("");
 
     container.innerHTML = `
-                <div class="music-sections-container">
-                    <div class="music-grid" style="--music-cols: ${latestItems.length}">
-                        ${cardsHTML}
-                    </div>
-                </div>
-            `;
+        <div class="music-sections-container">
+            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 5)}">
+                ${cardsHTML}
+            </div>
+        </div>
+    `;
 
     // Initialization for marquee - use RAF for buttery smooth transition
     requestAnimationFrame(() => initMusicMarquee(container));
@@ -2122,7 +2122,7 @@ async function renderRewindSection(container, type) {
         return;
     }
     const seenSongs = new Set();
-    const cardsHTML = items.slice(0, 3).map((item) => {
+    const cardsHTML = items.slice(0, 5).map((item) => {
         // Map to our unified structure with extreme resilience (Objects vs Strings)
         let track = "Unknown Track";
         let artistVal = "Unknown Artist";
@@ -2224,7 +2224,7 @@ async function renderRewindSection(container, type) {
 
     container.innerHTML = `
         <div class="music-sections-container">
-            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 3)}">
+            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 5)}">
                 ${cardsHTML}
             </div>
         </div>
@@ -2353,12 +2353,12 @@ async function renderMusicCluster(container) {
     }).join("");
 
     container.innerHTML = `
-                <div class="music-sections-container">
-                    <div class="music-grid" style="--music-cols: ${cardsData.length}">
-                        ${cardsHTML}
-                    </div>
-                </div>
-            `;
+        <div class="music-sections-container">
+            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 5)}">
+                ${cardsHTML}
+            </div>
+        </div>
+    `;
 
     // Initialization for marquee
     setTimeout(() => initMusicMarquee(container), 100);
