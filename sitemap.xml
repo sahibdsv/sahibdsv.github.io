@@ -25,24 +25,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sahibvirdee.com/#Personal/GPS_Art</loc>
-    <lastmod>2026-04-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://sahibvirdee.com/#Personal/GPS_Art/HELLO</loc>
-    <lastmod>2026-04-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://sahibvirdee.com/#Personal/Music</loc>
-    <lastmod>2026-04-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://sahibvirdee.com/#Professional/Coursework</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -170,6 +152,24 @@
   </url>
   <url>
     <loc>https://sahibvirdee.com/#Projects/Design/Siemens</loc>
+    <lastmod>2026-04-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sahibvirdee.com/#Personal/GPS_Art</loc>
+    <lastmod>2026-04-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sahibvirdee.com/#Personal/GPS_Art/HELLO</loc>
+    <lastmod>2026-04-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sahibvirdee.com/#Personal/Music</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

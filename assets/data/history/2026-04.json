@@ -1,5 +1,80 @@
 [
   {
+    "hash": "71ca744edb9dec34ed03362244e7cb3d53519fdd",
+    "date": "2026-04-08",
+    "message": "Revert \"[v2.2] feat: add -blend behavior marker for intelligent media background matching\""
+  },
+  {
+    "hash": "506391efd6132f8b891a0096314c57a6865a636d",
+    "date": "2026-04-08",
+    "message": "[v2.2] feat: add -blend behavior marker for intelligent media background matching"
+  },
+  {
+    "hash": "dfb1b82fe744823f735e2eb2b9442641863bb86e",
+    "date": "2026-04-08",
+    "message": "[v2.1] feat: support -invert behavior marker for video elements"
+  },
+  {
+    "hash": "1af700c946a4a3c31106418b3e917faab89c97f1",
+    "date": "2026-04-08",
+    "message": "feat: add music-thumbnail video asset"
+  },
+  {
+    "hash": "2e91852f7f1bde23d6540f0133178549a6e180e1",
+    "date": "2026-04-08",
+    "message": "[v2.0] Fix media URL behavior marker stripping and add music video"
+  },
+  {
+    "hash": "c6bb893d94ed4382bf703fb88a71293f660c1aa7",
+    "date": "2026-04-08",
+    "message": "Fix frontend limits to 4 cards for all music grids"
+  },
+  {
+    "hash": "ca9a5381c96fc4f8f54f2652d4c2fd68746f1adb",
+    "date": "2026-04-08",
+    "message": "Update frontend limit to 4 cards for music grids"
+  },
+  {
+    "hash": "5d6c4e347cb66fe940a97582591e82b03ab68a1b",
+    "date": "2026-04-08",
+    "message": "Update API endpoints to new deployment ID"
+  },
+  {
+    "hash": "9e49a18a26aad5e2b6a967b8422c423107ff000f",
+    "date": "2026-04-08",
+    "message": "Update website.gs limits to 5 items"
+  },
+  {
+    "hash": "f238f69c013162c2b3a1ce64996bfea0f4a7cee1",
+    "date": "2026-04-08",
+    "message": "Update API endpoints to new deployment ID to fetch 5 music cards"
+  },
+  {
+    "hash": "7f70a6e5fe2495d39a677431d7df5829be0a8141",
+    "date": "2026-04-08",
+    "message": "Fix items undefined error in music grid renderers"
+  },
+  {
+    "hash": "0fd147286f1d5f76843aa3efd2f8b515abb4c896",
+    "date": "2026-04-08",
+    "message": "Update music grids to show 5 cards on desktop and 4 on mobile [v2.0]"
+  },
+  {
+    "hash": "2c58f713b821aab80bcd1855b7ed08bf14c9d545",
+    "date": "2026-04-08",
+    "message": "Update recent activity logic to show all featured cards and 6 recent cards"
+  },
+  {
+    "hash": "fd8973d0106008bc494d63d60e9e3f09c275bbe1",
+    "date": "2026-04-08",
+    "message": "Update SEO sync workflow to run every 6 hours and remove push trigger"
+  },
+  {
+    "hash": "bace455766afa396353bdc7823453ba4b45dc5ba",
+    "date": "2026-04-08",
+    "message": "Fix nav drag issues and page minimum height"
+  },
+  {
     "hash": "ccfa46c40f6486cc54347eb2720848cdcf418fca",
     "date": "2026-04-08",
     "message": "Navigation: Fix adjacent link click bug and restore hover fill animations"
