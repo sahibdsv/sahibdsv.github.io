@@ -168,8 +168,8 @@ function handleQuotesRequest_() {
     const headers = data.shift();
     
     // Find column indices for Quote, Author, Source (resilient mapping)
+    const lowerH = headers.map(h => String(h || "").toLowerCase());
     const find = (list) => {
-      const lowerH = headers.map(h => String(h || "").toLowerCase());
       for (let k of list) {
         let idx = lowerH.indexOf(k.toLowerCase());
         if (idx !== -1) return idx;
@@ -310,11 +310,12 @@ function getRewindData(recentLimit = 500) {
 }
 
 function getRewindDataFromRows_(rows, headers, recentLimit = 500) {
+  const lowerH = headers.map(h => String(h || "").toLowerCase());
   const col = {
-    artist: findCol_(headers, ['Artist', 'artist']),
-    track: findCol_(headers, ['Track', 'track', 'Song', 'song']),
-    thumbnail: findCol_(headers, ['Thumbnail', 'thumbnail']),
-    link: findCol_(headers, ['Link', 'link', 'URL', 'url'])
+    artist: findCol_(lowerH, ['Artist', 'artist']),
+    track: findCol_(lowerH, ['Track', 'track', 'Song', 'song']),
+    thumbnail: findCol_(lowerH, ['Thumbnail', 'thumbnail']),
+    link: findCol_(lowerH, ['Link', 'link', 'URL', 'url'])
   };
 
   // FAILSENSOR: If crucial columns are missing, return early
@@ -616,8 +617,7 @@ function updateLibraryEntry_(libSheet, artist, track, link, thumb) {
   libSheet.appendRow([artist, track, link, thumb]);
 }
 
-function findCol_(headers, list) {
-  const lowerH = headers.map(h => String(h || "").toLowerCase());
+function findCol_(lowerH, list) {
   for (let k of list) {
     let idx = lowerH.indexOf(k.toLowerCase());
     if (idx !== -1) return idx;
