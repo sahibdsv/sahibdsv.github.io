@@ -2224,7 +2224,7 @@ async function renderRewindSection(container, type) {
 
     container.innerHTML = `
         <div class="music-sections-container">
-            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 5)}">
+            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 4)}">
                 ${cardsHTML}
             </div>
         </div>
