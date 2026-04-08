@@ -3160,43 +3160,57 @@
             border: none;
         }
 
-        /* Feedback Toast Notification */
+        /* Feedback Toast Notification - Modelled after .btn-cta */
         .feedback-toast {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 16px 32px;
-            border-radius: var(--card-radius);
-            font-weight: 600;
-            font-size: 16px;
+            padding: 10px 28px;
+            border-radius: 50px; /* Pill shape to match buttons */
+            font-weight: 500;
+            font-size: 17px;
             z-index: 10005;
             animation: toast-flash 2.5s var(--ease) forwards;
             white-space: normal;
             text-align: center;
-            max-width: 80%;
-            border: 1px solid transparent;
+            max-width: 85%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-strong);
             box-shadow: var(--shadow-medium);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+            pointer-events: none;
+        }
+
+        .feedback-toast::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border: 2px solid transparent;
+            border-radius: inherit;
+            pointer-events: none;
+            opacity: 0.8;
         }
 
         .feedback-toast.success {
-            background: rgba(0, 255, 163, 0.1);
             color: #00ffa3;
-            border-color: rgba(0, 255, 163, 0.3);
+        }
+        .feedback-toast.success::before {
+            border-color: rgba(0, 255, 163, 0.4);
         }
 
         .feedback-toast.error {
-            background: rgba(231, 76, 60, 0.1);
             color: #e74c3c;
-            border-color: rgba(231, 76, 60, 0.3);
+        }
+        .feedback-toast.error::before {
+            border-color: rgba(231, 76, 60, 0.4);
         }
 
         @keyframes toast-flash {
-            0% { opacity: 0; transform: translate(-50%, -40%); }
-            10% { opacity: 1; transform: translate(-50%, -50%); }
-            90% { opacity: 1; transform: translate(-50%, -50%); }
-            100% { opacity: 0; transform: translate(-50%, -60%); }
+            0% { opacity: 0; transform: translate(-50%, -45%) scale(0.95); }
+            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -55%) scale(0.98); }
         }
     }
