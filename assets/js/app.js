@@ -604,7 +604,7 @@ function renderNavigation(currentPath, forceSmoothNav = false) {
             row = document.createElement("nav");
             row.id = rowId;
             row.className = "nav-row level-" + (level > 1 ? "n" : "1");
-            row.classList.add("slide-in-right");
+            row.classList.add("slide-in-right", "settling"); // Added settling
             navStack.appendChild(row);
             setupHapticScroll(row);
             setupNavDrag(row);
@@ -703,48 +703,63 @@ function centerNavRow(row, isSubNav, behavior = "auto") {
     if (!row || row === _activeNavControl) return;
 
     row._needsReset = false;
-    // Only scroll if there is overflow
-    if (row.scrollWidth <= row.clientWidth + 5) {
-        setNavSnapping(row, "none");
-        return;
-    }
+    const isSettling = row.classList.contains("settling");
 
-    const activeLink = row.querySelector(".active");
-    setNavSnapping(row, "none"); // Always disable during programmatic glide
+    const performCenter = () => {
+        if (row.scrollWidth <= row.clientWidth + 5) {
+            setNavSnapping(row, "none");
+            if (row.scrollLeft !== 0) row.scrollTo({ left: 0, behavior: isSettling ? "auto" : behavior });
+            if (isSettling) row.classList.remove("settling");
+            return;
+        }
 
-    const restoreSnap = () => {
-        // After a programmatic center, we use proximity to allow some manual drift 
-        // while still encouraging the active link to stay in view.
-        if (row !== _activeNavControl) setNavSnapping(row, "proximity");
+        const activeLink = row.querySelector(".active");
+        setNavSnapping(row, "none"); 
+
+        if (activeLink) {
+            const rowRect = row.getBoundingClientRect();
+            const linkRect = activeLink.getBoundingClientRect();
+            const targetScroll = row.scrollLeft + (linkRect.left + linkRect.width / 2) - (rowRect.left + rowRect.width / 2);
+
+            // If we are just settling a new row, snap instantly and fade in
+            if (isSettling) {
+                row.scrollTo({ left: targetScroll, behavior: "auto" });
+                requestAnimationFrame(() => {
+                    row.classList.remove("settling");
+                    setNavSnapping(row, "proximity");
+                });
+                return;
+            }
+
+            // Normal smooth navigation
+            if (Math.abs(row.scrollLeft - targetScroll) < 1) {
+                setNavSnapping(row, "proximity");
+                return;
+            }
+
+            row.scrollTo({ left: targetScroll, behavior: behavior });
+
+            const onDone = () => {
+                row.removeEventListener('scrollend', onDone);
+                if (row !== _activeNavControl) setNavSnapping(row, "proximity");
+            };
+            if (behavior === "smooth") {
+                if ('onscrollend' in window) row.addEventListener('scrollend', onDone, { once: true });
+                else setTimeout(onDone, 500);
+            } else {
+                requestAnimationFrame(onDone);
+            }
+        } else {
+            const midpoint = (row.scrollWidth - row.clientWidth) / 2;
+            row.scrollTo({ left: midpoint, behavior: isSettling ? "auto" : behavior });
+            if (isSettling) {
+                requestAnimationFrame(() => row.classList.remove("settling"));
+            }
+        }
     };
 
-    if (activeLink) {
-        const targetScroll = activeLink.offsetLeft + activeLink.offsetWidth / 2 - row.clientWidth / 2;
-        row.scrollTo({
-            left: targetScroll,
-            behavior: behavior
-        });
-
-        if (behavior === "smooth") {
-            if ('onscrollend' in window) row.addEventListener('scrollend', restoreSnap, {
-                once: true
-            });
-            else setTimeout(restoreSnap, 500);
-        } else {
-            requestAnimationFrame(restoreSnap);
-        }
-    } else {
-        const midpoint = (row.scrollWidth - row.clientWidth) / 2;
-        row.scrollTo({
-            left: midpoint,
-            behavior: behavior
-        });
-    }
+    requestAnimationFrame(() => requestAnimationFrame(performCenter));
 }
-
-// -------------------------------------------------------------------------
-// Navigation Dragging (Desktop Mouse Support)
-// -------------------------------------------------------------------------
 
 function setupNavDrag(row) {
     if (!row) return;
@@ -827,12 +842,11 @@ function setupHapticScroll(row) {
         isValidInteraction: false
     };
 
-    const markInput = (e) => {
+    const markInput = (isPhysical = false) => {
         s.lastInputTime = Date.now();
-        s.isValidInteraction = true;
+        // Authority is only granted on true physical movement (drag/touch)
+        if (isPhysical) s.isValidInteraction = true;
         s.fingerDown = true;
-        _activeNavControl = row;
-        setNavSnapping(row, "none");
     };
 
     const releaseInput = () => {
@@ -840,54 +854,35 @@ function setupHapticScroll(row) {
     };
 
     // Public API for Global Swipe Proxy
-    row._markNavInput = markInput;
+    row._markNavInput = () => markInput(true);
     row._releaseNavInput = releaseInput;
 
     row.addEventListener("touchstart", (e) => {
-        markInput(e);
-        row.scrollTo({
-            left: row.scrollLeft,
-            behavior: 'auto'
-        });
-        Object.assign(s, {
-            hitStart: false,
-            hitEnd: false
-        });
-    }, {
-        passive: true
-    });
+        markInput(true);
+        row.scrollTo({ left: row.scrollLeft, behavior: 'auto' });
+        Object.assign(s, { hitStart: false, hitEnd: false });
+    }, { passive: true });
 
-    row.addEventListener("touchmove", markInput, {
-        passive: true
-    });
-    row.addEventListener("touchend", releaseInput, {
-        passive: true
-    });
-    row.addEventListener("wheel", markInput, {
-        passive: true
-    });
-    row.addEventListener("mousedown", markInput, {
-        passive: true
-    });
-    row.addEventListener("mouseup", releaseInput, {
-        passive: true
-    });
+    row.addEventListener("touchmove", () => markInput(true), { passive: true });
+    row.addEventListener("touchend", releaseInput, { passive: true });
+    
+    row.addEventListener("mousedown", () => markInput(false), { passive: true });
+    row.addEventListener("mouseup", releaseInput, { passive: true });
+    
     row.addEventListener("mouseleave", () => {
-        // Only release if we're not actively "dragging" via setupNavDrag
         if (!row.classList.contains('grabbing')) releaseInput();
-    }, {
-        passive: true
-    });
+    }, { passive: true });
 
     row.addEventListener("scroll", () => {
         const now = Date.now();
-        // Determine if this is a user-initiated interaction or a programmatic shift.
-        // We keep the interaction valid as long as we have recent touch input OR active scrolling.
+        
+        // INPUT GATE: If this scroll wasn't started by a physical touch/drag, ignore it.
+        // This prevents the picker from catching the "Glide" or "Wheel" movements.
+        if (!s.isValidInteraction) return;
+
+        // Determination of when to revoke authority
         if (now - s.lastInputTime > 500 && now - s.lastScrollTime > 150) {
             s.isValidInteraction = false;
-        }
-        if (!s.isValidInteraction) {
-            if (_activeNavControl === row) _activeNavControl = null;
             return;
         }
 
@@ -897,21 +892,11 @@ function setupHapticScroll(row) {
         const cur = row.scrollLeft;
         const max = row.scrollWidth - row.clientWidth;
 
-        // End-of-Chain Haptics (Production Polish)
         if (cur <= 0) {
-            if (!s.hitStart) {
-                haptic('bump');
-                s.hitStart = true;
-            }
+            if (!s.hitStart) { haptic('bump'); s.hitStart = true; }
         } else if (cur >= max - 1) {
-            if (!s.hitEnd) {
-                haptic('bump');
-                s.hitEnd = true;
-            }
-        } else Object.assign(s, {
-            hitStart: false,
-            hitEnd: false
-        });
+            if (!s.hitEnd) { haptic('bump'); s.hitEnd = true; }
+        } else Object.assign(s, { hitStart: false, hitEnd: false });
 
         if (!s.hTicking) {
             s.hTicking = true;
@@ -920,14 +905,10 @@ function setupHapticScroll(row) {
                 if (!links.length) return (s.hTicking = false);
 
                 const center = cur + row.clientWidth / 2;
-                let closest = null,
-                    minDist = Infinity;
+                let closest = null, minDist = Infinity;
                 links.forEach(link => {
                     const dist = Math.abs(link.offsetLeft + link.offsetWidth / 2 - center);
-                    if (dist < minDist) {
-                        minDist = dist;
-                        closest = link;
-                    }
+                    if (dist < minDist) { minDist = dist; closest = link; }
                 });
 
                 const href = closest?.getAttribute("href")?.substring(1);
@@ -949,12 +930,10 @@ function setupHapticScroll(row) {
             if (!s.fingerDown) {
                 _activeNavControl = null;
                 s.isValidInteraction = false;
-                setNavSnapping(row, "none");
+                setNavSnapping(row, "proximity");
             }
         }, 240);
-    }, {
-        passive: true
-    });
+    }, { passive: true });
 
     row._resetHaptic = () => {
         s.lastCenteredHref = null;

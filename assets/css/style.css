@@ -662,6 +662,12 @@
             cursor: grabbing;
         }
 
+        /* Suppress hover effects during wheel/drag transitions to prevent "ghost active" headers */
+        .nav-row.is-navigating .nav-link:hover,
+        .nav-row.is-navigating .sub-link:hover {
+            color: var(--text-muted) !important;
+        }
+
         .nav-row.level-1 {
             height: var(--main-row-h);
             min-height: var(--main-row-h);
@@ -2557,6 +2563,12 @@
 
         .nav-row.hidden {
             display: none !important;
+        }
+
+        /* Settlement Phase: Keep new rows invisible until perfectly centered */
+        .nav-row.settling {
+            opacity: 0 !important;
+            transition: none !important;
         }
 
         /* Music Component - Vinyl Sleeve Edition */
