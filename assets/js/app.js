@@ -171,6 +171,7 @@ function startApp() {
     requestAnimationFrame(() => {
         document.body.classList.remove('no-transition');
         document.getElementById('main-header')?.classList.remove('no-transition');
+        document.getElementById('nav-bar')?.classList.remove('no-transition');
         
         // Use ID for boot loader to avoid selecting card loaders
         const sk = document.getElementById('boot-loader');
@@ -1144,12 +1145,14 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
 
     const header = document.getElementById("main-header");
     if (header && !isSwipe) header.classList.remove("scrolled");
-    window.scrollTo({
-        top: 0,
-        behavior: 'instant'
-    });
-
-    clearTextSelection();
+    
+    if (!isSwipe) {
+        window.scrollTo({
+            top: 0,
+            behavior: 'instant'
+        });
+        clearTextSelection();
+    }
 
     const cleanPath = url2path(path || "Home");
     _activeRenderPath = cleanPath;
@@ -1194,9 +1197,11 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
         window.scrollTo(0, 0);
 
         // Reset all haptic row memories to ensure they sync with the new manual state
-        document.querySelectorAll('.nav-row').forEach(row => {
-            if (row._resetHaptic) row._resetHaptic();
-        });
+        if (!isSwipe) {
+            document.querySelectorAll('.nav-row').forEach(row => {
+                if (row._resetHaptic) row._resetHaptic();
+            });
+        }
 
         // STRAVA: Re-trigger embed bootstrap if content was added
         if (typeof window.__STRAVA_EMBED_BOOTSTRAP__ === 'function') {

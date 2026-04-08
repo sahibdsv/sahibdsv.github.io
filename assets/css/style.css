@@ -350,7 +350,7 @@
             color: var(--text-muted);
         }
 
-        a {
+        a:not(.fill-anim) {
             text-decoration: none;
             color: inherit;
             transition: color 0.2s ease;
@@ -579,7 +579,7 @@
         .nav-row.level-n .sub-link {
             font-weight: 700;
             text-transform: uppercase;
-            user-select: text;
+            user-select: none;
             -webkit-tap-highlight-color: transparent;
             --text-base: var(--text-muted);
         }
@@ -998,7 +998,7 @@
             margin: 0 auto;
             padding: var(--site-gap) 20px 0;
             flex: 1;
-            min-height: 80vh;
+            min-height: 111vh;
             position: relative;
             box-sizing: border-box;
         }
@@ -3149,3 +3149,4 @@
             border-radius: 0; 
             border: none;
         }
+    }
