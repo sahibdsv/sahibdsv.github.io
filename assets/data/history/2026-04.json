@@ -1,5 +1,65 @@
 [
   {
+    "hash": "2e02ee9436e1610eb9419c71fde55d8e98351c82",
+    "date": "2026-04-08",
+    "message": "[v3.5] fix: enable mobile interaction with music player by removing thumbnail overlay"
+  },
+  {
+    "hash": "efd2cfc61099e902998d32c54d7cf6f631c15242",
+    "date": "2026-04-08",
+    "message": "[v3.4] feat: implement seamless music card transitions by delaying thumbnail fade-out"
+  },
+  {
+    "hash": "8d8fe9ac0ef681ff28edad98ed5c016d7f2c5b72",
+    "date": "2026-04-08",
+    "message": "[v3.3] feat: add support for YouTube shortened links and standardize media types"
+  },
+  {
+    "hash": "30df9588d2f29261d3e8b834d9e3b71951f37fee",
+    "date": "2026-04-08",
+    "message": "feat: add music thumbnail video to assets directory"
+  },
+  {
+    "hash": "56b70edf9c268ebc2f01dd10e4b4c51eaa25df98",
+    "date": "2026-04-08",
+    "message": "[v3.2] asset: update music-thumbnail.mp4"
+  },
+  {
+    "hash": "4dc67aeabc92b8bfcb9e42b0b9d1f6a25832b52b",
+    "date": "2026-04-08",
+    "message": "[v3.1] fix: footer visibility on mobile by reducing min-height and removing redundant scroll reset"
+  },
+  {
+    "hash": "e458694318a6387c7ae6aba44db42df38d7ca50b",
+    "date": "2026-04-08",
+    "message": "[v3.0] style: match feedback toast to design system (pill shape and contrast borders)"
+  },
+  {
+    "hash": "e02e9113f7f291eaa8716e8d4b3a88a5b50441e5",
+    "date": "2026-04-08",
+    "message": "[v2.9] feat: add feedback toast notifications for search commands"
+  },
+  {
+    "hash": "9d3455ce3d77f778fabe793bd686aa686ab1fd70",
+    "date": "2026-04-08",
+    "message": "[v2.6] style: equalize hero padding for tighter vertical rhythm"
+  },
+  {
+    "hash": "8cae1f80020ba943964523c0122e3bdc4c0fed55",
+    "date": "2026-04-08",
+    "message": "[v2.5] style: unify card info padding for symmetrical nesting"
+  },
+  {
+    "hash": "369733366198321e57e840eaff729a5d66834686",
+    "date": "2026-04-08",
+    "message": "[v2.4] feat: move card tags to bottom and hide empty article meta"
+  },
+  {
+    "hash": "c25452f898d1be639fc6156e41fc2403a1d3db5f",
+    "date": "2026-04-08",
+    "message": "[v2.3] style: improve chip outline visibility in both themes"
+  },
+  {
     "hash": "71ca744edb9dec34ed03362244e7cb3d53519fdd",
     "date": "2026-04-08",
     "message": "Revert \"[v2.2] feat: add -blend behavior marker for intelligent media background matching\""
