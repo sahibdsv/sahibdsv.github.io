@@ -1589,7 +1589,6 @@ function renderCardHTML(entry, contextCategory = "") {
     const content = entry.Content || "";
     const isTitleLink = entry.Title ? /^https?:\/\/\S+$/.test(entry.Title) : false;
     const tEx = extractMediaFromContent(entry.Title);
-    const cEx = extractMediaFromContent(content);
     const thumbUrl = getThumbnail(entry.Thumbnail);
     const mediaBuilder = (type, src, id, bgUrl = null) => {
         if (type === 'glb') {
