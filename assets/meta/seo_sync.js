@@ -1,6 +1,7 @@
 const fs = require('fs');
 const https = require('https');
 const path = require('path');
+const { parseFullCSV } = require('../js/csv_parser.js');
 
 const CONFIG = {
     csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
@@ -27,34 +28,6 @@ function fetchCSV(url) {
         };
         fetch(url);
     });
-}
-
-/**
- * Full CSV parser that handles multi-line fields and escaped quotes
- */
-function parseFullCSV(text) {
-    const p = [[]];
-    let cur = '';
-    let inQuotes = false;
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const next = text[i + 1];
-        if (char === '"' && inQuotes && next === '"') {
-            cur += '"'; i++;
-        } else if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-            p[p.length - 1].push(cur.trim()); cur = '';
-        } else if ((char === '\n' || char === '\r') && !inQuotes) {
-            if (char === '\r' && next === '\n') i++;
-            p[p.length - 1].push(cur.trim()); cur = '';
-            p.push([]);
-        } else {
-            cur += char;
-        }
-    }
-    if (cur || p[p.length - 1].length) p[p.length - 1].push(cur.trim());
-    return p.filter(r => r.length > 1);
 }
 
 function cleanContent(text) {
