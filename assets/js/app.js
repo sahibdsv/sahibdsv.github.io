@@ -4027,9 +4027,6 @@ window.__initMapbox = async function (containerId, geojsonUrl, isInteractive = t
         const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
         const styleUrl = isLightMode ? 'mapbox://styles/mapbox/light-v11' : 'mapbox://styles/mapbox/dark-v11';
 
-        // Grab styling rules visually
-        const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-personal').trim() || '#00e676';
-
         const map = new mapboxgl.Map({
             container: containerId,
             style: styleUrl,
