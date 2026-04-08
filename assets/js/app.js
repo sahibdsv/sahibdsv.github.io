@@ -1601,7 +1601,9 @@ function renderCardHTML(entry, contextCategory = "") {
             const mapPath = (src.startsWith('assets/') || src.startsWith('http')) ? src : `assets/GPX/${src}`;
             return `<div class="row-media">${renderMapBoxViewer(mapPath, true)}</div>`;
         }
-        if (type === 'yt-embed') return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
+        if (type === 'youtube' || type === 'yt-embed' || type === 'music-card') {
+            return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
+        }
         
         if (type === 'video') {
             const p = processMediaUrl(src);
@@ -1622,7 +1624,7 @@ function renderCardHTML(entry, contextCategory = "") {
     };
 
     const mediaSources = [
-        () => isTitleLink && !entry.Thumbnail && tEx ? mediaBuilder(tEx.type === 'yt' ? 'yt-embed' : tEx.type, tEx.url, tEx.id) : "",
+        () => isTitleLink && !entry.Thumbnail && tEx ? mediaBuilder(tEx.type, tEx.url, tEx.id) : "",
         () => entry.Thumbnail && (thumbUrl === 'GLB_VIEWER' || thumbUrl === 'GLB_WITH_BG') ? (() => {
             if (thumbUrl === 'GLB_WITH_BG') {
                 const lines = entry.Thumbnail.split('\n').map(l => l.trim()).filter(Boolean);
@@ -2465,7 +2467,7 @@ function renderFooter() {
 // === MEDIA UTILITIES ===
 function getYouTubeID(url) {
     if (!url) return null;
-    const match = url.match(/(?:(?:music\.)?youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    const match = url.match(/(?:(?:music\.)?youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     return match ? match[1] : null;
 }
 
@@ -2515,7 +2517,7 @@ function extractMediaFromContent(content) {
 
     if (getYouTubeID(url)) {
         if (url.includes('music.youtube.com')) return { type: 'music-card', id: getYouTubeID(url), url };
-        return { type: 'yt', id: getYouTubeID(url), url };
+        return { type: 'youtube', id: getYouTubeID(url), url };
     }
     if (url.match(/\.glb(?:-[a-zA-Z0-9_-]+)*/i)) {
         const fullUrl = (url.startsWith('assets/') || url.startsWith('http')) ? url : `assets/models/${url}`;
