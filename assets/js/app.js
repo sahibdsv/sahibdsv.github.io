@@ -16,7 +16,7 @@ window.mediaLoaded = function (el) {
     el.classList.add('loaded');
 
     // Intelligent Theme Matching for tagged media
-    if ((el.tagName === 'IMG' || el.tagName === 'VIDEO') && (el.classList.contains('theme-invert') || el.classList.contains('theme-blend'))) {
+    if ((el.tagName === 'IMG' || el.tagName === 'VIDEO') && el.classList.contains('theme-invert')) {
         applySmartInversion(el);
     }
 
@@ -1587,7 +1587,7 @@ function renderCardHTML(entry, contextCategory = "") {
             const p = processMediaUrl(src);
             return `<div class="row-media">
                         <div class="loader-overlay"><div class="spinner"></div></div>
-                        <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''} ${p.blend ? 'theme-blend' : ''}" 
+                        <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''}" 
                                 data-src="${p.url}" 
                                 ${p.autoplay ? 'data-autoplay="true" muted' : ''} 
                                 ${p.loop ? 'loop' : ''} 
@@ -1598,7 +1598,7 @@ function renderCardHTML(entry, contextCategory = "") {
         }
 
         const p = processMediaUrl(src);
-        return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''} ${p.blend ? 'theme-blend' : ''}" src="${p.url}" loading="lazy" decoding="async" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="mediaError(this)"></div>`;
+        return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" decoding="async" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="mediaError(this)"></div>`;
     };
 
     const mediaSources = [
@@ -2454,19 +2454,18 @@ function getYouTubeThumbnail(videoId) {
 }
 
 function processMediaUrl(url) {
-    if (!url) return { url: '', autoplay: false, loop: false, controls: true, invert: false, blend: false };
+    if (!url) return { url: '', autoplay: false, loop: false, controls: true, invert: false };
 
     // 1. Identify behavior markers before they get caught in path resolution
     const lower = url.toLowerCase();
     const autoplay = lower.includes('-autoplay');
     const loop = lower.includes('-loop');
     const invert = lower.includes('-invert');
-    const blend = lower.includes('-blend');
     const controls = !lower.includes('-nocontrols') && !autoplay;
 
     // 2. Clean behavior markers from the URL string
     // Only strip markers if they appear AFTER the file extension (at the end of the string or before a query parameter)
-    let cleanUrl = url.replace(/(?:-(?:autoplay|loop|noloop|nocontrols|invert|blend|thumb))+(?=$|\?)/gi, '');
+    let cleanUrl = url.replace(/(?:-(?:autoplay|loop|noloop|nocontrols|invert|thumb))+(?=$|\?)/gi, '');
     // 3. Resolve Relative Paths for local assets
     // If it doesn't have an explicit protocol or directory, we infer it based on extension
     if (!cleanUrl.startsWith('http') && !cleanUrl.startsWith('assets/')) {
@@ -2487,7 +2486,7 @@ function processMediaUrl(url) {
     // 4. Force HTTPS for security
     cleanUrl = cleanUrl.replace(/^http:\/\//i, "https://");
 
-    return { url: cleanUrl, autoplay, loop, controls, invert, blend };
+    return { url: cleanUrl, autoplay, loop, controls, invert };
 }
 
 function extractMediaFromContent(content) {
@@ -3564,7 +3563,7 @@ function renderUnifiedMediaItem(item, isGallery = false) {
         const p = processMediaUrl(item.url);
         mediaHTML = `<div class="${embedClass}">
                         <div class="loader-overlay"><div class="spinner"></div></div>
-                        <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''} ${p.blend ? 'theme-blend' : ''}"
+                        <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''}"
                                data-src="${p.url}"
                                ${p.autoplay ? 'data-autoplay="true" muted' : ''}
                                ${p.loop ? 'loop' : ''}
@@ -3576,7 +3575,7 @@ function renderUnifiedMediaItem(item, isGallery = false) {
     } else if (item.type === 'image') {
         const style = isGallery ? 'style="height:100%; width:100%; object-fit:cover;"' : '';
         const p = processMediaUrl(item.url);
-        mediaHTML = `<div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''} ${p.blend ? 'theme-blend' : ''}" src="${p.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="mediaError(this)">`;
+        mediaHTML = `<div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" alt="${item.caption || 'Media'}" loading="lazy" ${style} onload="mediaLoaded(this)" onerror="mediaError(this)">`;
         if (!isGallery) mediaHTML = `<div class="media-container">${mediaHTML}</div>`;
     } else if (item.type === 'youtube') {
         const ytId = item.id || getYouTubeID(item.url);
