@@ -1159,17 +1159,13 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
     renderNavigation(cleanPath === "Home" ? null : cleanPath, forceSmoothNav);
 
     // 2. Optimization: If we're swiping and the content is already there, SKIP rendering.
+    // FORCE RENDER on clicks/direct actions even if path matches to fix the "neighbor click" bug.
     if (isSwipe && cleanPath === _lastRenderedPath) {
         return;
     }
 
     // 3. Debounced heavy rendering pipeline
     if (_renderRAF) cancelAnimationFrame(_renderRAF);
-
-    // Show skeleton for transitions to give immediate feedback
-    if (!isSwipe && cleanPath !== _lastRenderedPath) {
-        // showPageLoader(); // DISABLING GLOBAL LOADERS FOR HIGHER PERFORMANCE
-    }
 
     _renderRAF = requestAnimationFrame(() => {
         // Render Guard: Only build the page if this is still the final target
@@ -1194,8 +1190,13 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
         _lastRenderedPath = cleanPath;
         _renderRAF = null;
 
-        // Force scroll to top after rendering to prevent "scroll leakage" from search results or previous pages
+        // Force scroll to top after rendering
         window.scrollTo(0, 0);
+
+        // Reset all haptic row memories to ensure they sync with the new manual state
+        document.querySelectorAll('.nav-row').forEach(row => {
+            if (row._resetHaptic) row._resetHaptic();
+        });
 
         // STRAVA: Re-trigger embed bootstrap if content was added
         if (typeof window.__STRAVA_EMBED_BOOTSTRAP__ === 'function') {
