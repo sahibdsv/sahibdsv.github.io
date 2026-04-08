@@ -1216,9 +1216,6 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
         _lastRenderedPath = cleanPath;
         _renderRAF = null;
 
-        // Force scroll to top after rendering
-        window.scrollTo(0, 0);
-
         // Reset all haptic row memories to ensure they sync with the new manual state
         if (!isSwipe) {
             document.querySelectorAll('.nav-row').forEach(row => {

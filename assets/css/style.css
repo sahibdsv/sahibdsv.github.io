@@ -998,7 +998,7 @@
             margin: 0 auto;
             padding: var(--site-gap) 20px 0;
             flex: 1;
-            min-height: 111vh;
+            min-height: 100.1vh; /* Slight overflow to force scrollbar and push footer below fold without blocking visibility */
             position: relative;
             box-sizing: border-box;
         }
