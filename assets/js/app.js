@@ -408,9 +408,8 @@ function initApp() {
                 if (currentWidth === _lastWidth) return;
                 _lastWidth = currentWidth;
 
-                const isDesktop = currentWidth > 768;
                 document.querySelectorAll(".nav-row").forEach(row => {
-                    if (isDesktop) {
+                    if (currentWidth > 768) {
                         row.scrollLeft = 0;
                     } else {
                         centerNavRow(row, true);
