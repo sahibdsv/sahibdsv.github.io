@@ -2297,6 +2297,9 @@ async function renderRewindSection(container, type) {
     }
 })();
 
+const _noembedCache = new Map();
+const MAX_CACHE_SIZE = 100;
+
 async function renderMusicCluster(container) {
     const urlsRaw = container.getAttribute('data-urls') || "";
     const urls = urlsRaw.split(',').filter(Boolean);
@@ -2342,9 +2345,17 @@ async function renderMusicCluster(container) {
         if (needsScrape) {
             try {
                 const noembedUrl = `https://noembed.com/embed?url=${encodeURIComponent(bareURL)}`;
-                const res = await fetch(noembedUrl);
-                if (res.ok) {
-                    const data = await res.json();
+                let fetchPromise = _noembedCache.get(noembedUrl);
+                if (!fetchPromise) {
+                    if (_noembedCache.size >= MAX_CACHE_SIZE) {
+                        const firstKey = _noembedCache.keys().next().value;
+                        _noembedCache.delete(firstKey);
+                    }
+                    fetchPromise = fetch(noembedUrl).then(res => res.ok ? res.json() : null).catch(() => null);
+                    _noembedCache.set(noembedUrl, fetchPromise);
+                }
+                const data = await fetchPromise;
+                if (data) {
                     if (data.title && track === "Unknown Track") track = data.title;
                     if (data.author_name && artist === "Unknown Artist") artist = data.author_name.replace(" - Topic", "");
                 }
