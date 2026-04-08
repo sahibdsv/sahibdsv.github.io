@@ -507,7 +507,7 @@
 
         thead th {
             background: rgba(var(--bright-rgb), 0.05);
-            color: var(--text-bright);
+            color: var(--text-muted);
             font-weight: 600;
             text-transform: uppercase;
             font-size: 11px;
@@ -2349,23 +2349,20 @@
         .article-title,
         h1.header-fade-anim { font-size: 35px; }
         .article-body h1 { font-size: 34px; font-weight: 700; }
-        .article-body h2 { font-size: 30px; }
-        .article-body h3 { font-size: 25px; }
+        .article-body h2 { font-size: 28px; }
+        .article-body h3 { font-size: 24px; }
         .article-body h4 { font-size: 20px; }
 
         /* High-Visibility Hierarchy: 0-Based Baseline, 40px (2.5rem) steps */
         /* Note: Using positive opt-in child combinator to prevent indentation bleeding into nested components or embeds */
-        .article-view > h1, .article-view > h1 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
-        .article-body > h1, .article-body > h1 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 0 !important; }
-
-        .article-view > h2, .article-view > h2 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
-        .article-body > h2, .article-body > h2 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 40px !important; }
+        .article-view > :is(h1, h2), .article-view > :is(h1, h2) ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+        .article-body > :is(h1, h2), .article-body > :is(h1, h2) ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 0 !important; }
 
         .article-view > h3, .article-view > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
-        .article-body > h3, .article-body > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 80px !important; }
+        .article-body > h3, .article-body > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 40px !important; }
 
         .article-view > h4, .article-view > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
-        .article-body > h4, .article-body > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 120px !important; }
+        .article-body > h4, .article-body > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 80px !important; }
 
         /* Container Reset: Prevent the article-body div from compounding the margin of its previous header */
         .article-body { margin-left: 0 !important; }
@@ -2375,21 +2372,18 @@
             h1.header-fade-anim { font-size: 28px; }
             .article-body h1 { font-size: 28px; }
             .article-body h2 { font-size: 24px; }
-            .article-body h3 { font-size: 21px; }
+            .article-body h3 { font-size: 20px; }
             .article-body h4 { font-size: 18px; }
 
             /* Mobile: Steep 20px steps, 0-Based */
-            .article-view > h1, .article-view > h1 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
-            .article-body > h1, .article-body > h1 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 0 !important; }
-
-            .article-view > h2, .article-view > h2 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
-            .article-body > h2, .article-body > h2 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 20px !important; }
+            .article-view > :is(h1, h2), .article-view > :is(h1, h2) ~ :is(p, ul, ol, blockquote, .toc-container, hr),
+            .article-body > :is(h1, h2), .article-body > :is(h1, h2) ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 0 !important; }
 
             .article-view > h3, .article-view > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
-            .article-body > h3, .article-body > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 40px !important; }
+            .article-body > h3, .article-body > h3 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 20px !important; }
 
             .article-view > h4, .article-view > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr),
-            .article-body > h4, .article-body > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 60px !important; }
+            .article-body > h4, .article-body > h4 ~ :is(p, ul, ol, blockquote, .toc-container, hr) { margin-left: 40px !important; }
         }
 
         /* THE STACK SYSTEM: Declarative Vertical Rhythm */
@@ -2562,14 +2556,7 @@
         }
 
         .nav-row.hidden {
-            height: 0 !important;
-            opacity: 0 !important;
-            margin: 0 !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            overflow: hidden !important;
-            pointer-events: none !important;
-            visibility: hidden !important;
+            display: none !important;
         }
 
         /* Music Component - Vinyl Sleeve Edition */
