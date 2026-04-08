@@ -2,13 +2,7 @@ name: Sync SEO Data
 
 on:
   schedule:
-    - cron: '0 * * * *' # Run every hour
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'sitemap.xml'
-      - 'robots.txt'
+    - cron: '0 */6 * * *' # Run every 6 hours
   workflow_dispatch: # Allow manual trigger
 
 permissions:
