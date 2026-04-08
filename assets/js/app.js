@@ -2417,6 +2417,10 @@ function playMusicInCard(event) {
 
             // 2. Stop any other currently playing cards
             document.querySelectorAll('.layout-grid.cat-music.is-playing').forEach(pCard => {
+                if (pCard._playTimer) {
+                    clearTimeout(pCard._playTimer);
+                    pCard._playTimer = null;
+                }
                 const pMedia = pCard.querySelector('.row-media');
                 const originalHTML = pCard.getAttribute('data-original-media');
                 if (pMedia && originalHTML) {
@@ -2432,13 +2436,22 @@ function playMusicInCard(event) {
             iframe.allowFullscreen = true;
             iframe.style.opacity = '0'; // Hide initially
             
+            // Ensure the thumbnail stays ON TOP while the video loads in the background
+            const currentImg = mediaRow.querySelector('img.media-enter');
+            if (currentImg) currentImg.style.zIndex = '3';
+
             iframe.onload = () => {
-                // Instant switch: Show video, hide thumbnail/placeholders immediately
+                // Show iframe behind the thumbnail
                 iframe.style.opacity = '1';
-                const currentImg = mediaRow.querySelector('img.media-enter');
-                if (currentImg) currentImg.style.opacity = '0';
-                const fallback = mediaRow.querySelector('.music-card-fallback');
-                if (fallback) fallback.style.opacity = '0';
+                
+                // Delay hiding the thumbnail to allow YT player to initialize its internal view
+                // This makes the transition into the video (which has the same art) feel seamless.
+                card._playTimer = setTimeout(() => {
+                    if (currentImg) currentImg.style.opacity = '0';
+                    const fallback = mediaRow.querySelector('.music-card-fallback');
+                    if (fallback) fallback.style.opacity = '0';
+                    card._playTimer = null;
+                }, 1500); // 1.5s buffer for high-fidelity handover
             };
 
             // Append on top of existing content
