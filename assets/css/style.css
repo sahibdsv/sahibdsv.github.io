@@ -155,6 +155,27 @@
             filter: invert(1) hue-rotate(180deg);
         }
 
+        /* Intelligent Image Blending to match card background */
+        .theme-blend {
+            /* We use background: var(--card-bg) as a fallback for transparent elements
+               and mix-blend-mode to hide the solid backgrounds (white or black) */
+            background: var(--card-bg);
+            transition: mix-blend-mode var(--anim-quick) var(--ease), background var(--anim-quick) var(--ease);
+        }
+
+        /* Logic: If final state is bright (white bg), use multiply to make white match the background.
+           If final state is dark (black bg), use screen to make black match the background. */
+        
+        /* Non-inverted cases */
+        .theme-blend.is-bright { mix-blend-mode: multiply; }
+        .theme-blend.is-dark { mix-blend-mode: screen; }
+
+        /* Inverted overrides:
+           In dark mode, bright images are inverted (become dark), so they should screen.
+           In light mode, dark images are inverted (become bright), so they should multiply. */
+        [data-theme="dark"] .theme-invert.theme-blend.is-bright { mix-blend-mode: screen; }
+        [data-theme="light"] .theme-invert.theme-blend.is-dark { mix-blend-mode: multiply; }
+
         .loader-overlay {
             position: absolute; /* Default to parent context */
             inset: 0;
