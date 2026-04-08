@@ -2464,14 +2464,8 @@ function processMediaUrl(url) {
     const controls = !lower.includes('-nocontrols') && !autoplay;
 
     // 2. Clean behavior markers from the URL string
-    let cleanUrl = url.replace(/-(?:autoplay|loop|noloop|nocontrols|invert)/gi, '');
-    
-    // SPECIAL CASE: Only strip '-thumb' from videos, as some images (like resume-thumb.jpg)
-    // legitimately use it in their real filename.
-    if (lower.match(/\.(mp4|webm|mov|ogg)/i)) {
-        cleanUrl = cleanUrl.replace(/-thumb/gi, '');
-    }
-
+    // Only strip markers if they appear AFTER the file extension (at the end of the string or before a query parameter)
+    let cleanUrl = url.replace(/(?:-(?:autoplay|loop|noloop|nocontrols|invert|thumb))+(?=$|\?)/gi, '');
     // 3. Resolve Relative Paths for local assets
     // If it doesn't have an explicit protocol or directory, we infer it based on extension
     if (!cleanUrl.startsWith('http') && !cleanUrl.startsWith('assets/')) {
