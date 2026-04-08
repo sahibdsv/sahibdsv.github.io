@@ -85,6 +85,8 @@ let _lastQuoteIndex = -1;
 
 let _activeRandomQuote = null;
 
+const getQuoteContent = (q) => q ? (q.Quote || q.quote || q.content || "") : "";
+
 let isSearchActive = false;
 let _lastRenderedPath = null;
 
@@ -111,9 +113,24 @@ function refillQuoteBag() {
 
     // Boundary Fix: If the first quote in the NEW bag is the same as the LAST one from the old bag,
     // swap it with another random item in the bag to prevent consecutive repeats.
-    if (quotesDb.length > 2 && quoteBag[quoteBag.length - 1] === _lastQuoteIndex) {
-        const randomIndex = Math.floor(Math.random() * (quoteBag.length - 1));
-        [quoteBag[quoteBag.length - 1], quoteBag[randomIndex]] = [quoteBag[randomIndex], quoteBag[quoteBag.length - 1]];
+    if (_lastQuoteIndex !== -1 && quotesDb.length > 1) {
+        const lastContent = getQuoteContent(quotesDb[_lastQuoteIndex]);
+        const nextContent = getQuoteContent(quotesDb[quoteBag[quoteBag.length - 1]]);
+
+        if (nextContent === lastContent) {
+            // Find ALL indices in the remaining bag that don't match the last content
+            const validSwapIndices = [];
+            for (let i = 0; i < quoteBag.length - 1; i++) {
+                if (getQuoteContent(quotesDb[quoteBag[i]]) !== lastContent) {
+                    validSwapIndices.push(i);
+                }
+            }
+
+            if (validSwapIndices.length > 0) {
+                const randomIndex = validSwapIndices[Math.floor(Math.random() * validSwapIndices.length)];
+                [quoteBag[quoteBag.length - 1], quoteBag[randomIndex]] = [quoteBag[randomIndex], quoteBag[quoteBag.length - 1]];
+            }
+        }
     }
 }
 
@@ -127,14 +144,19 @@ function getNextQuote() {
     let nextIndex = quoteBag.pop();
 
     // Safety: If the randomly picked quote has identical text as the last one, try to skip it
-    if (_lastQuoteIndex !== -1 && quotesDb[nextIndex].Quote === quotesDb[_lastQuoteIndex].Quote && quotesDb.length > 1) {
-        if (quoteBag.length > 0) {
-            const swap = quoteBag.pop();
-            quoteBag.push(nextIndex);
-            nextIndex = swap;
-        } else {
-            refillQuoteBag();
-            nextIndex = quoteBag.pop();
+    if (_lastQuoteIndex !== -1 && quotesDb.length > 1) {
+        const lastContent = getQuoteContent(quotesDb[_lastQuoteIndex]);
+        const nextContent = getQuoteContent(quotesDb[nextIndex]);
+
+        if (nextContent === lastContent) {
+            if (quoteBag.length > 0) {
+                const swap = quoteBag.pop();
+                quoteBag.push(nextIndex);
+                nextIndex = swap;
+            } else {
+                refillQuoteBag();
+                nextIndex = quoteBag.pop();
+            }
         }
     }
 
@@ -142,7 +164,7 @@ function getNextQuote() {
     const selected = quotesDb[_lastQuoteIndex];
 
     return {
-        Quote: selected.Quote || selected.quote || selected.content || "",
+        Quote: getQuoteContent(selected),
         Author: selected.Author || selected.author || "Unknown",
         Source: selected.Source || selected.source || null
     };
