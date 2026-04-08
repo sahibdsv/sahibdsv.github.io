@@ -1340,7 +1340,7 @@
         }
 
         .card-info {
-            padding: 12px 15px; /* Symmetrical side padding, adjusted top/bottom for lead compensation */
+            padding: var(--card-padding); /* Symmetrical padding to nestle content into card radii */
             display: flex;
             flex-direction: column;
             gap: 8px; /* Unified gap for all card elements (title, text, metadata) */
