@@ -1,5 +1,15 @@
 [
   {
+    "hash": "ccfa46c40f6486cc54347eb2720848cdcf418fca",
+    "date": "2026-04-08",
+    "message": "Navigation: Fix adjacent link click bug and restore hover fill animations"
+  },
+  {
+    "hash": "967f7e3f427a6338df138899a458b0ee21578dc4",
+    "date": "2026-04-08",
+    "message": "Navigation: Implement Jump-Free Settlement and Input Gating for precise centering"
+  },
+  {
     "hash": "07924004033e3e4ac185757fb1c555295526d78a",
     "date": "2026-04-08",
     "message": "UI: Refine table headers, heading indentation, and fix nav padding"
