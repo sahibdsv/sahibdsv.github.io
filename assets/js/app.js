@@ -71,6 +71,8 @@ let _lastQuoteIndex = -1;
 
 let _activeRandomQuote = null;
 
+const getQuoteContent = (q) => q ? (q.Quote || q.quote || q.content || "") : "";
+
 let isSearchActive = false;
 let _lastRenderedPath = null;
 
