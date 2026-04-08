@@ -1,5 +1,10 @@
 [
   {
+    "hash": "07924004033e3e4ac185757fb1c555295526d78a",
+    "date": "2026-04-08",
+    "message": "UI: Refine table headers, heading indentation, and fix nav padding"
+  },
+  {
     "hash": "5924c92f0da71890840856b59a9b4d22d012acda",
     "date": "2026-04-04",
     "message": "Layout: implement high-fidelity minimalist 404 placeholder"
