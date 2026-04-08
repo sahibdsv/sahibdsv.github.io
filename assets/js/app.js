@@ -11,6 +11,13 @@ function debounce(fn, delay) {
     };
 }
 
+// Security: Encode HTML to prevent XSS
+function safeHTML(str) {
+    if (!str) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(str).replace(/[&<>"']/g, m => map[m]);
+}
+
 // Shared Media Entrance Handler
 window.mediaLoaded = function (el) {
     el.classList.add('loaded');
@@ -4154,7 +4161,7 @@ window.__initMapbox = async function (containerId, geojsonUrl, isInteractive = t
     } catch (e) {
         console.error("Mapbox load failed:", e);
         container.classList.remove('loader-overlay');
-        container.innerHTML = `<div style="padding: 20px; font-family: monospace; color: var(--text-dim); text-align: center;">GPS Route processing failed: ${e.message}</div>`;
+        container.innerHTML = `<div style="padding: 20px; font-family: monospace; color: var(--text-dim); text-align: center;">GPS Route processing failed: ${safeHTML(e.message)}</div>`;
     }
 };
 
