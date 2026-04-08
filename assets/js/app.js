@@ -2009,8 +2009,8 @@ function renderRecentMusic(container) {
     }
 
     // The music API returns tracks in newest-first order.
-    // We take the first 5 for the display.
-    const latestItems = musicDb.slice(0, 5);
+    // We take the first 4 for the display.
+    const latestItems = musicDb.slice(0, 4);
 
     // Prevent double-render stutter if local cache matches remote data perfectly
     const renderHash = JSON.stringify(latestItems);
@@ -2061,7 +2061,7 @@ function renderRecentMusic(container) {
 
     container.innerHTML = `
         <div class="music-sections-container">
-            <div class="music-grid" style="--music-cols: ${Math.min(latestItems.length, 5)}">
+            <div class="music-grid" style="--music-cols: ${Math.min(latestItems.length, 4)}">
                 ${cardsHTML}
             </div>
         </div>
@@ -2122,7 +2122,7 @@ async function renderRewindSection(container, type) {
         return;
     }
     const seenSongs = new Set();
-    const cardsHTML = items.slice(0, 5).map((item) => {
+    const cardsHTML = items.slice(0, 4).map((item) => {
         // Map to our unified structure with extreme resilience (Objects vs Strings)
         let track = "Unknown Track";
         let artistVal = "Unknown Artist";
@@ -2354,7 +2354,7 @@ async function renderMusicCluster(container) {
 
     container.innerHTML = `
         <div class="music-sections-container">
-            <div class="music-grid" style="--music-cols: ${Math.min(cardsData.length, 5)}">
+            <div class="music-grid" style="--music-cols: ${Math.min(cardsData.length, 4)}">
                 ${cardsHTML}
             </div>
         </div>
