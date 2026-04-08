@@ -4070,11 +4070,22 @@ window.__initMapbox = async function (containerId, geojsonUrl, isInteractive = t
     }
 
     try {
-        // Fetch GeoJSON directly to evaluate bounds before loading
-        const geoReq = await fetch(realUrl);
-        if (!geoReq.ok) throw new Error(`Failed to fetch GeoJSON: ${geoReq.status} ${geoReq.statusText}`);
+        if (!window._geoJsonCache) {
+            window._geoJsonCache = new Map();
+        }
 
-        const geoData = await geoReq.json();
+        // Fetch GeoJSON directly to evaluate bounds before loading
+        let geoData;
+        if (window._geoJsonCache.has(realUrl)) {
+            geoData = await window._geoJsonCache.get(realUrl);
+        } else {
+            const fetchPromise = fetch(realUrl).then(async (geoReq) => {
+                if (!geoReq.ok) throw new Error(`Failed to fetch GeoJSON: ${geoReq.status} ${geoReq.statusText}`);
+                return await geoReq.json();
+            });
+            window._geoJsonCache.set(realUrl, fetchPromise);
+            geoData = await fetchPromise;
+        }
 
         const bounds = new mapboxgl.LngLatBounds();
         let hasCoords = false;
