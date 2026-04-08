@@ -1823,13 +1823,23 @@ function showPageLoader() {
             `;
 }
 
+let _liveQuotesCache = null;
+
 window.rollQuote = function (btn) {
     trackEvent('quote-roll', 'Rolling a new quote');
-    const allQuotes = document.querySelectorAll('.layout-quote');
-    const randomQuotes = Array.from(allQuotes).filter(q => {
+
+    if (!_liveQuotesCache) {
+        _liveQuotesCache = document.getElementsByClassName('layout-quote');
+    }
+
+    const randomQuotes = [];
+    for (let i = 0; i < _liveQuotesCache.length; i++) {
+        const q = _liveQuotesCache[i];
         const title = (q.getAttribute('data-title') || '').toLowerCase();
-        return title === '{random quote}' || title === 'random quote';
-    });
+        if (title === '{random quote}' || title === 'random quote') {
+            randomQuotes.push(q);
+        }
+    }
 
     if (randomQuotes.some(q => q.classList.contains("loading"))) return;
 
