@@ -1353,11 +1353,12 @@
         .meta-row {
             display: flex;
             gap: 6px;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Standard wrap maintains order: Tags -> Date */
             align-items: center;
+            justify-content: flex-start;
             padding: 0;
             margin: 0;
-            margin-top: auto; /* Push tags to the bottom of the card content */
+            margin-top: auto; /* Pins the entire row assembly to the bottom of the card */
         }
 
         .article-meta-row {
@@ -3157,5 +3158,45 @@
         .gallery-item .media-error-placeholder {
             border-radius: 0; 
             border: none;
+        }
+
+        /* Feedback Toast Notification */
+        .feedback-toast {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 16px 32px;
+            border-radius: var(--card-radius);
+            font-weight: 600;
+            font-size: 16px;
+            z-index: 10005;
+            animation: toast-flash 2.5s var(--ease) forwards;
+            white-space: normal;
+            text-align: center;
+            max-width: 80%;
+            border: 1px solid transparent;
+            box-shadow: var(--shadow-medium);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .feedback-toast.success {
+            background: rgba(0, 255, 163, 0.1);
+            color: #00ffa3;
+            border-color: rgba(0, 255, 163, 0.3);
+        }
+
+        .feedback-toast.error {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border-color: rgba(231, 76, 60, 0.3);
+        }
+
+        @keyframes toast-flash {
+            0% { opacity: 0; transform: translate(-50%, -40%); }
+            10% { opacity: 1; transform: translate(-50%, -50%); }
+            90% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -60%); }
         }
     }

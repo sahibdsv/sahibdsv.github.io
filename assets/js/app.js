@@ -1008,7 +1008,6 @@ window.submitFeedback = async function(type, text) {
         searchInput.disabled = true;
     }
 
-    
     const now = new Date();
     const pad = (n) => String(n).padStart(2, '0');
     const formattedTimestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
@@ -1029,6 +1028,7 @@ window.submitFeedback = async function(type, text) {
         const result = await response.json();
         
         if (result.status === "success" || result.result === "success") {
+            showFeedbackToast(`Success: submitted ${type} - ${text}`, true);
             if (searchInput) {
                 searchInput.style.color = "#00ffa3"; // SUCCESS GREEN
                 haptic('pulse');
@@ -1037,9 +1037,11 @@ window.submitFeedback = async function(type, text) {
                     searchInput.value = '';
                     searchInput.disabled = false;
                     searchInput.style.color = "";
-                }, 1000);
+                }, 2000);
             }
         } else {
+            const errorMsg = `Failed: ${result.code || 'ERR'} - ${result.message || 'Submission Error'}`;
+            showFeedbackToast(errorMsg, false);
             if (searchInput) {
                 searchInput.style.color = "#e74c3c"; // ERROR RED
                 searchInput.disabled = false;
@@ -1048,6 +1050,7 @@ window.submitFeedback = async function(type, text) {
             console.error("Failed to submit feedback:", result);
         }
     } catch (err) {
+        showFeedbackToast(`Failed: Network or Parse Error`, false);
         if (searchInput) {
             searchInput.style.color = "#e74c3c"; // ERROR RED
             searchInput.disabled = false;
@@ -1056,6 +1059,26 @@ window.submitFeedback = async function(type, text) {
         console.error("Error during feedback submission:", err);
     }
 };
+
+function showFeedbackToast(message, isSuccess) {
+    const resultsContainer = document.getElementById("search-results");
+    if (!resultsContainer) return;
+
+    // Remove any existing toasts first
+    const existing = resultsContainer.querySelector('.feedback-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.className = `feedback-toast ${isSuccess ? 'success' : 'error'}`;
+    toast.textContent = message;
+    
+    resultsContainer.appendChild(toast);
+    
+    // Auto-remove from DOM after animation completes
+    setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+    }, 2500);
+}
 
 function handleSearch(e) {
     if (!document.getElementById("search-overlay").classList.contains("active")) return;
