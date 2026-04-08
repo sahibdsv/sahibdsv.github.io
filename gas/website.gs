@@ -611,7 +611,11 @@ function canonical_(s) {
   clean = clean.replace(/\s+(?:feat|ft|with)\.?\s+.*$/gi, "");
   
   // 3. Remove "The " at the start
-  if (clean.startsWith("the ")) clean = clean.substring(4);
+  if (clean === "the") {
+    clean = "";
+  } else if (clean.startsWith("the ")) {
+    clean = clean.substring(4);
+  }
 
   // 4. Remove punctuation
   clean = clean.replace(/[^\w\s]/gi, "");
