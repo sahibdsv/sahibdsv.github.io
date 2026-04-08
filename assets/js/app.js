@@ -1491,7 +1491,7 @@ function renderHome() {
         }
     });
 
-    const recentItems = Object.values(activityMap).sort((a, b) => {
+    const sortedActivity = Object.values(activityMap).sort((a, b) => {
         const featA = a.Tags?.toLowerCase().includes("featured") ? 1 : 0;
         const featB = b.Tags?.toLowerCase().includes("featured") ? 1 : 0;
         if (featA !== featB) return featB - featA;
@@ -1510,7 +1510,20 @@ function renderHome() {
         };
 
         return getTime(b.Timestamp) - getTime(a.Timestamp);
-    }).slice(0, 6);
+    });
+
+    const recentItems = [];
+    let recentCount = 0;
+
+    for (const item of sortedActivity) {
+        const isFeatured = item.Tags?.toLowerCase().includes("featured");
+        if (isFeatured) {
+            recentItems.push(item);
+        } else if (recentCount < 6) {
+            recentItems.push(item);
+            recentCount++;
+        }
+    }
 
     if (recentItems.length > 0) {
         finalHTML += buildRowsHTML(recentItems, "Recent Activity", true, false, true);
