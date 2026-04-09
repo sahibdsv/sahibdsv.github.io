@@ -470,26 +470,34 @@ function initApp() {
         passive: false
     });
 
-    // 4. Global Music Dismissal (Stop player when clicking outside)
+    // 4. Global Player Control (Auto-pause when clicking outside)
     document.addEventListener("click", e => {
+        // A. Handle Music Cards (cat-music)
         const activePlayingCard = document.querySelector('.layout-grid.cat-music.is-playing');
-        if (!activePlayingCard) return;
-
-        // If click is NOT inside the active card
-        if (!activePlayingCard.contains(e.target)) {
-            // Cancel any pending transitions to avoid blanking out the restored image
-            if (activePlayingCard._playTimer) {
-                clearTimeout(activePlayingCard._playTimer);
-                activePlayingCard._playTimer = null;
+        if (activePlayingCard && !activePlayingCard.contains(e.target)) {
+            const iframe = activePlayingCard.querySelector('iframe');
+            if (iframe) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
             }
-
-            const mediaRow = activePlayingCard.querySelector('.row-media');
-            const originalHTML = activePlayingCard.getAttribute('data-original-media');
-            if (mediaRow && originalHTML) {
-                mediaRow.innerHTML = originalHTML;
-                activePlayingCard.classList.remove('is-playing');
-            }
+            // Note: We no longer remove 'is-playing' or reset HTML here to allow resuming.
         }
+
+        // B. Handle General YouTube Embeds (Unified Media)
+        document.querySelectorAll('iframe[src*="enablejsapi=1"]').forEach(iframe => {
+            // Find the closest logical container for this media
+            const container = iframe.closest('.row-media, .embed-wrapper, .unified-media-wrapper, .layout-grid');
+            if (container && !container.contains(e.target)) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            }
+        });
+
+        // C. Handle Native Video elements
+        document.querySelectorAll('video').forEach(video => {
+            const container = video.closest('.row-media, .unified-media-wrapper, .layout-grid');
+            if (container && !container.contains(e.target) && !video.paused) {
+                video.pause();
+            }
+        });
     });
 
     document.addEventListener("keydown", e => {
@@ -1588,7 +1596,7 @@ function renderCardHTML(entry, contextCategory = "", isRecentActivity = false) {
             return `<div class="row-media">${renderMapBoxViewer(mapPath, true)}</div>`;
         }
         if (type === 'youtube' || type === 'yt-embed' || type === 'music-card') {
-            return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
+            return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0&enablejsapi=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
         }
         
         if (type === 'video') {
@@ -2422,7 +2430,12 @@ function playMusicInCard(event) {
         event.stopPropagation();
     }
 
-    if (card.querySelector('iframe')) return false;
+    // RESUME LOGIC: If already playing (has iframe), just send play command
+    const existingIframe = card.querySelector('iframe');
+    if (existingIframe) {
+        existingIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        return false;
+    }
 
     if (ytId) {
         const mediaRow = card.querySelector('.row-media');
@@ -2448,7 +2461,7 @@ function playMusicInCard(event) {
 
             const iframe = document.createElement('iframe');
             const origin = window.location.origin;
-            iframe.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&origin=${encodeURIComponent(origin)}`;
+            iframe.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&origin=${encodeURIComponent(origin)}`;
             iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
             iframe.allowFullscreen = true;
             iframe.style.opacity = '0'; // Hide initially
@@ -3657,7 +3670,7 @@ function renderUnifiedMediaItem(item, isGallery = false) {
                         </div>
                     </div>`;
 
-        const iframeHTML = `<iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${ytId}?modestbranding=1&rel=0&autoplay=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width: 100%; height: 100%; position: absolute; top:0; left:0; border-radius: inherit;"></iframe>`;
+        const iframeHTML = `<iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${ytId}?modestbranding=1&rel=0&autoplay=1&enablejsapi=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width: 100%; height: 100%; position: absolute; top:0; left:0; border-radius: inherit;"></iframe>`;
 
         // Properly escape double quotes so we can store it in a data attribute
         const encodedIframe = iframeHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
