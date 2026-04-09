@@ -1,5 +1,15 @@
 [
   {
+    "hash": "1c68efcf2f490d404ad9744953c7b1dba148e077",
+    "date": "2026-04-09",
+    "message": "[v3.6] hotfix: revert accidental obsidian logic leak on main branch"
+  },
+  {
+    "hash": "9336ab880ab7290c27a20230de7a756df0a12da2",
+    "date": "2026-04-09",
+    "message": "[v3.6] bugfix: robust detection of data-autoplay videos to prevent global pause on mobile"
+  },
+  {
     "hash": "809c53ff76fab87552c4a9f4ce98e0ced9830406",
     "date": "2026-04-09",
     "message": "[v3.6] bugfix: ensure autoplay/looping videos are not paused by global click listener"
