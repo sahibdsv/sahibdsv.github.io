@@ -1,5 +1,75 @@
 [
   {
+    "hash": "809c53ff76fab87552c4a9f4ce98e0ced9830406",
+    "date": "2026-04-09",
+    "message": "[v3.6] bugfix: ensure autoplay/looping videos are not paused by global click listener"
+  },
+  {
+    "hash": "53c419f627324e265a548a61447fcc4ffa901201",
+    "date": "2026-04-09",
+    "message": "[v3.6] CHECKPOINT: Pre-Obsidian Architecture Migration"
+  },
+  {
+    "hash": "7c1cac92b47b89da5ace5edcedb7bc57ee5e23d2",
+    "date": "2026-04-09",
+    "message": "[v3.6] style: unify breadcrumb and date chip colors by removing breadcrumb opacity"
+  },
+  {
+    "hash": "6f92d9725aeccab551342dc132612cabf43113cc",
+    "date": "2026-04-09",
+    "message": "[v3.6] Revert music card resume logic to full stop/reset for unified media exclusivity"
+  },
+  {
+    "hash": "f68ab8873ca44bd05ec3d1f12643f66750ebb3fc",
+    "date": "2026-04-09",
+    "message": "[v3.6] cleanup: remove legacy versioning query strings from static assets"
+  },
+  {
+    "hash": "c0dafa5fbf4d6a5ac63703a97df291e60a48567c",
+    "date": "2026-04-09",
+    "message": "[v3.6] bugfix: ensure pauseAllMedia is globally accessible"
+  },
+  {
+    "hash": "04e587f4f068245eb340edbcb3fee9ec86dd1526",
+    "date": "2026-04-09",
+    "message": "[v3.6] bugfix: ensure exclusive media playback by centralizing pause logic"
+  },
+  {
+    "hash": "0af661e4abe3793925594736db6529acc65268d3",
+    "date": "2026-04-09",
+    "message": "[v3.6] style: achieve mathematical symmetry in card rhythm and breadcrumb spacing"
+  },
+  {
+    "hash": "c03e0fe5bda22e6a7998641e9406684d339e379d",
+    "date": "2026-04-09",
+    "message": "[v3.6] style: unify card rhythm and standardize breadcrumb spacing"
+  },
+  {
+    "hash": "592322ad86dcadfdcb83fe869f39e9c86342e5a1",
+    "date": "2026-04-09",
+    "message": "[v3.6] feat: implement global player auto-pause and music card resume logic"
+  },
+  {
+    "hash": "bcfcf8d13fbb49bbc155e591e41e7a34fea55410",
+    "date": "2026-04-09",
+    "message": "style: match parent context breadcrumb to chip typography and color"
+  },
+  {
+    "hash": "6755b6912f6da3d3ffac5272d565a13d55010f99",
+    "date": "2026-04-09",
+    "message": "feat: tighten spacing and style of parent context breadcrumbs"
+  },
+  {
+    "hash": "1e0dccc41162385ff60727e7cd1a323dab7deff1",
+    "date": "2026-04-09",
+    "message": "feat: refine parent context breadcrumb to be inline with tags"
+  },
+  {
+    "hash": "80fa3d3a43c6ba0afd58b20a70a66811cd86af4c",
+    "date": "2026-04-09",
+    "message": "feat: add immediate parent context breadcrumbs to Recent Activity cards"
+  },
+  {
     "hash": "c5038fefce753551345276210f23d3c15706e790",
     "date": "2026-04-08",
     "message": "Add Node.js test script for findCol_ in Google Apps Script"
