@@ -470,23 +470,22 @@ function initApp() {
         passive: false
     });
 
-    // 4. Global Player Control (Auto-pause when clicking outside)
-    document.addEventListener("click", e => {
+    // 4. Global Player Control (Auto-pause logic)
+    function pauseAllMedia(exceptElement = null) {
         // A. Handle Music Cards (cat-music)
-        const activePlayingCard = document.querySelector('.layout-grid.cat-music.is-playing');
-        if (activePlayingCard && !activePlayingCard.contains(e.target)) {
+        document.querySelectorAll('.layout-grid.cat-music.is-playing').forEach(activePlayingCard => {
+            if (exceptElement && (activePlayingCard === exceptElement || activePlayingCard.contains(exceptElement))) return;
             const iframe = activePlayingCard.querySelector('iframe');
             if (iframe) {
                 iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
             }
-            // Note: We no longer remove 'is-playing' or reset HTML here to allow resuming.
-        }
+        });
 
         // B. Handle General YouTube Embeds (Unified Media)
         document.querySelectorAll('iframe[src*="enablejsapi=1"]').forEach(iframe => {
-            // Find the closest logical container for this media
             const container = iframe.closest('.row-media, .embed-wrapper, .unified-media-wrapper, .layout-grid');
-            if (container && !container.contains(e.target)) {
+            if (container) {
+                if (exceptElement && (container === exceptElement || container.contains(exceptElement))) return;
                 iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
             }
         });
@@ -494,10 +493,15 @@ function initApp() {
         // C. Handle Native Video elements
         document.querySelectorAll('video').forEach(video => {
             const container = video.closest('.row-media, .unified-media-wrapper, .layout-grid');
-            if (container && !container.contains(e.target) && !video.paused) {
-                video.pause();
+            if (container) {
+                if (exceptElement && (container === exceptElement || container.contains(exceptElement))) return;
+                if (!video.paused) video.pause();
             }
         });
+    }
+
+    document.addEventListener("click", e => {
+        pauseAllMedia(e.target);
     });
 
     document.addEventListener("keydown", e => {
@@ -2433,6 +2437,7 @@ function playMusicInCard(event) {
     // RESUME LOGIC: If already playing (has iframe), just send play command
     const existingIframe = card.querySelector('iframe');
     if (existingIframe) {
+        pauseAllMedia(card);
         existingIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
         return false;
     }
@@ -2446,18 +2451,7 @@ function playMusicInCard(event) {
             }
 
             // 2. Stop any other currently playing cards
-            document.querySelectorAll('.layout-grid.cat-music.is-playing').forEach(pCard => {
-                if (pCard._playTimer) {
-                    clearTimeout(pCard._playTimer);
-                    pCard._playTimer = null;
-                }
-                const pMedia = pCard.querySelector('.row-media');
-                const originalHTML = pCard.getAttribute('data-original-media');
-                if (pMedia && originalHTML) {
-                    pMedia.innerHTML = originalHTML;
-                    pCard.classList.remove('is-playing');
-                }
-            });
+            pauseAllMedia(card);
 
             const iframe = document.createElement('iframe');
             const origin = window.location.origin;
@@ -3679,7 +3673,7 @@ function renderUnifiedMediaItem(item, isGallery = false) {
 
         // CHAINED FALLBACK: MaxRes -> HQ -> MQ -> Generic
         // This prevents 404s from showing broken images and handles videos without high-res thumbs.
-        mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="if(!this.dataset.playing){this.dataset.playing='1'; this.style.aspectRatio = (this.offsetWidth / this.offsetHeight); this.innerHTML = this.dataset.iframe;}">
+        mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="if(!this.dataset.playing){pauseAllMedia(this); this.dataset.playing='1'; this.style.aspectRatio = (this.offsetWidth / this.offsetHeight); this.innerHTML = this.dataset.iframe;}">
                         <div class="sk-img loader-overlay" style="z-index: 0;"></div>
                         <img class="media-enter" src="${thumbUrl}" alt="Video thumbnail" ${thumbStyle} 
                              onload="mediaLoaded(this)" 
