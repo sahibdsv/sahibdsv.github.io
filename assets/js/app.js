@@ -1633,8 +1633,18 @@ function renderCardHTML(entry, contextCategory = "", isRecentActivity = false) {
     let metaRowHTML = "";
     if (entry.Timestamp || tagsList.length > 0) {
         const cat = contextCategory || (entry.Page ? entry.Page.split('/')[0] : "");
+        
+        let parentText = "";
+        if (isRecentActivity && entry.Page) {
+            const parts = entry.Page.split('/');
+            if (parts.length > 1) {
+                const parent = parts[parts.length - 2];
+                parentText = `<span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; color: var(--text-low); opacity: 0.8; margin-right: 8px;">${parent} /</span>`;
+            }
+        }
+
         metaRowHTML =
-            `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(t => renderChip(t, cat)).join("")}</div>`;
+            `<div class="meta-row">${parentText}${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(t => renderChip(t, cat)).join("")}</div>`;
     }
 
     let titleHTML = "";
@@ -1643,16 +1653,7 @@ function renderCardHTML(entry, contextCategory = "", isRecentActivity = false) {
         const mainTitle = lines[0] || "";
         const descText = lines.slice(1).join(' ');
         
-        let parentContextHTML = "";
-        if (isRecentActivity && entry.Page) {
-            const parts = entry.Page.split('/');
-            if (parts.length > 1) {
-                const parent = parts[parts.length - 2];
-                parentContextHTML = `<span style="display:block; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-low); margin-bottom:2px; font-weight:500;">${parent}</span>`;
-            }
-        }
-
-        titleHTML = `${parentContextHTML}<h3 class="fill-anim">${processSingleLine(mainTitle)}</h3>`;
+        titleHTML = `<h3 class="fill-anim">${processSingleLine(mainTitle)}</h3>`;
         if (descText) {
             titleHTML += `<p class="card-description">${processSingleLine(descText)}</p>`;
         }
