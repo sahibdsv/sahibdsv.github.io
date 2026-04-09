@@ -1648,8 +1648,8 @@ function renderCardHTML(entry, contextCategory = "", isRecentActivity = false) {
             const parts = entry.Page.split('/');
             if (parts.length > 1) {
                 const parent = parts[parts.length - 2];
-                // Subtly styled breadcrumb above title with tight 1px margin
-                parentContextHTML = `<span style="display:block; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-low); margin-bottom:1px; font-weight:500; opacity:0.8;">${parent}</span>`;
+                // Subtly styled breadcrumb above title matching chip typography and date color
+                parentContextHTML = `<span style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-low); margin-bottom:1px; font-weight:500; opacity:0.8;">${parent}</span>`;
             }
         }
 
