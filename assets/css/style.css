@@ -1340,10 +1340,10 @@
         }
 
         .card-info {
-            padding: var(--space-sm); /* Unified padding for a tighter, more cohesive look */
+            padding: var(--card-padding); /* Standardized card-wide padding */
             display: flex;
             flex-direction: column;
-            gap: var(--space-sm); /* Consistent rhythm: gaps exactly match outer padding */
+            gap: var(--card-padding); /* Unified rhythm: gaps match outer padding exactly */
             width: 100%;
             box-sizing: border-box;
             flex-grow: 1;
@@ -1360,7 +1360,7 @@
             opacity: 0.8;
             margin: 0;
             padding: 0;
-            line-height: 1;
+            line-height: 1.2; /* Match title line-height to ensure equal visual footprint */
         }
 
         .meta-row {
