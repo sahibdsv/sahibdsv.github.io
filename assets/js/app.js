@@ -1572,7 +1572,7 @@ function renderChip(tag, cat = "") {
     return `<span class="chip ${featuredClass} ${catClass}" data-tag="${tag}">${processInlineMarkdown(tag)}</span>`;
 }
 
-function renderCardHTML(entry, contextCategory = "") {
+function renderCardHTML(entry, contextCategory = "", isRecentActivity = false) {
     const content = entry.Content || "";
     const isTitleLink = entry.Title ? /^https?:\/\/\S+$/.test(entry.Title) : false;
     const tEx = extractMediaFromContent(entry.Title);
@@ -1643,7 +1643,16 @@ function renderCardHTML(entry, contextCategory = "") {
         const mainTitle = lines[0] || "";
         const descText = lines.slice(1).join(' ');
         
-        titleHTML = `<h3 class="fill-anim">${processSingleLine(mainTitle)}</h3>`;
+        let parentContextHTML = "";
+        if (isRecentActivity && entry.Page) {
+            const parts = entry.Page.split('/');
+            if (parts.length > 1) {
+                const parent = parts[parts.length - 2];
+                parentContextHTML = `<span style="display:block; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-low); margin-bottom:2px; font-weight:500;">${parent}</span>`;
+            }
+        }
+
+        titleHTML = `${parentContextHTML}<h3 class="fill-anim">${processSingleLine(mainTitle)}</h3>`;
         if (descText) {
             titleHTML += `<p class="card-description">${processSingleLine(descText)}</p>`;
         }
@@ -1734,7 +1743,7 @@ function buildRowsHTML(data, title, isSubPage, isHeroOnly = false, isRecentActiv
         } else if (!entryIsSubPage && isTopLevel && !isSubPage) {
             htmlBuffer += SECTION_RENDERERS.hero(entry, index);
         } else {
-            gridBuffer += renderCardHTML(entry, getCategoryClass(entry.Page));
+            gridBuffer += renderCardHTML(entry, getCategoryClass(entry.Page), isRecentActivity);
         }
     });
 
