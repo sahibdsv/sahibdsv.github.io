@@ -79,6 +79,36 @@ let _lastRenderedPath = null;
 // Unified Mobile Detection
 const isTrueMobile = window.matchMedia("(pointer: coarse) and (hover: none)").matches;
 
+// Global Player Control (Auto-pause logic)
+window.pauseAllMedia = function(exceptElement = null) {
+    // A. Handle Music Cards (cat-music)
+    document.querySelectorAll('.layout-grid.cat-music.is-playing').forEach(activePlayingCard => {
+        if (exceptElement && (activePlayingCard === exceptElement || activePlayingCard.contains(exceptElement))) return;
+        const iframe = activePlayingCard.querySelector('iframe');
+        if (iframe) {
+            iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        }
+    });
+
+    // B. Handle General YouTube Embeds (Unified Media)
+    document.querySelectorAll('iframe[src*="enablejsapi=1"]').forEach(iframe => {
+        const container = iframe.closest('.row-media, .embed-wrapper, .unified-media-wrapper, .layout-grid');
+        if (container) {
+            if (exceptElement && (container === exceptElement || container.contains(exceptElement))) return;
+            iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        }
+    });
+
+    // C. Handle Native Video elements
+    document.querySelectorAll('video').forEach(video => {
+        const container = video.closest('.row-media, .unified-media-wrapper, .layout-grid');
+        if (container) {
+            if (exceptElement && (container === exceptElement || container.contains(exceptElement))) return;
+            if (!video.paused) video.pause();
+        }
+    });
+};
+
 const CONFIG = {
     main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
     resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv',
@@ -469,36 +499,6 @@ function initApp() {
         capture: true,
         passive: false
     });
-
-    // 4. Global Player Control (Auto-pause logic)
-    function pauseAllMedia(exceptElement = null) {
-        // A. Handle Music Cards (cat-music)
-        document.querySelectorAll('.layout-grid.cat-music.is-playing').forEach(activePlayingCard => {
-            if (exceptElement && (activePlayingCard === exceptElement || activePlayingCard.contains(exceptElement))) return;
-            const iframe = activePlayingCard.querySelector('iframe');
-            if (iframe) {
-                iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-            }
-        });
-
-        // B. Handle General YouTube Embeds (Unified Media)
-        document.querySelectorAll('iframe[src*="enablejsapi=1"]').forEach(iframe => {
-            const container = iframe.closest('.row-media, .embed-wrapper, .unified-media-wrapper, .layout-grid');
-            if (container) {
-                if (exceptElement && (container === exceptElement || container.contains(exceptElement))) return;
-                iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-            }
-        });
-
-        // C. Handle Native Video elements
-        document.querySelectorAll('video').forEach(video => {
-            const container = video.closest('.row-media, .unified-media-wrapper, .layout-grid');
-            if (container) {
-                if (exceptElement && (container === exceptElement || container.contains(exceptElement))) return;
-                if (!video.paused) video.pause();
-            }
-        });
-    }
 
     document.addEventListener("click", e => {
         pauseAllMedia(e.target);
