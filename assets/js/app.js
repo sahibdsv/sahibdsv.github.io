@@ -111,7 +111,8 @@ window.pauseAllMedia = function(exceptElement = null) {
     });
 
     // C. Handle Native Video elements
-    document.querySelectorAll('video').forEach(video => {
+    // We only pause videos that are NOT set to autoplay/loop (e.g. main content videos)
+    document.querySelectorAll('video:not([autoplay]):not([loop])').forEach(video => {
         const container = video.closest('.row-media, .unified-media-wrapper, .layout-grid');
         if (container) {
             if (exceptElement && (container === exceptElement || container.contains(exceptElement))) return;
@@ -121,6 +122,7 @@ window.pauseAllMedia = function(exceptElement = null) {
 };
 
 const CONFIG = {
+    local_db: 'assets/data/db.json',
     main_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=0&single=true&output=csv',
     resume_sheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT7HtdJsNwYO8TkB4mem_IKZ-D8xNZ9DTAi-jgxpDM2HScpp9Tlz5DGFuBPd9TuMRwP16vUd-5h47Yz/pub?gid=1812444133&single=true&output=csv',
     music_api: 'https://script.google.com/macros/s/AKfycbysKYdGj9EwY9c9U77QtepItMVfLVjXT74xlmTZtwH6xAzPut2TSpHjYOUISwoMPtUwuQ/exec',
@@ -251,19 +253,40 @@ async function fetchDataAndCache() {
         }
 
         // Phase 1: CRITICAL PATH AGGREGATION (Main Data & Resume)
-        // We only wait for the core database to show the first-time user the site.
-        const [mainRaw, resumeRaw] = await Promise.all([
-            fetch(CONFIG.main_sheet).then(res => res.text()),
-            fetch(CONFIG.resume_sheet).then(res => res.text()).catch(e => {
-                console.warn('Resume fetch failed', e);
-                return "";
-            })
-        ]);
+        // We prioritize local_db (Obsidian) if it exists, otherwise fall back to Google Sheets.
+        let mainRaw = "";
+        let resumeRaw = "";
+        let isLocalDB = false;
 
-        // Process Main DB & Resume
-        const mainData = parseCSV(mainRaw);
+        try {
+            const localRes = await fetch(CONFIG.local_db);
+            if (localRes.ok) {
+                const localData = await localRes.json();
+                db = localData;
+                isLocalDB = true;
+                // Still fetch resume from sheet for now, or we can move it to obsidian later
+                resumeRaw = await fetch(CONFIG.resume_sheet).then(res => res.text()).catch(() => "");
+            }
+        } catch (e) {
+            console.log("Local DB not found, falling back to Google Sheets");
+        }
+
+        if (!isLocalDB) {
+            const [mRaw, rRaw] = await Promise.all([
+                fetch(CONFIG.main_sheet).then(res => res.text()),
+                fetch(CONFIG.resume_sheet).then(res => res.text()).catch(e => {
+                    console.warn('Resume fetch failed', e);
+                    return "";
+                })
+            ]);
+            mainRaw = mRaw;
+            resumeRaw = rRaw;
+            db = parseCSV(mainRaw);
+        }
+
+        // Process Resume
         const resumeDbLocal = parseCSV(resumeRaw);
-        const filtered = mainData.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
+        const filtered = db.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
 
         // Inject hidden snapshots page for search discoverability
         filtered.push({
