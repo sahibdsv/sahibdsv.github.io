@@ -112,7 +112,13 @@ window.pauseAllMedia = function(exceptElement = null) {
 
     // C. Handle Native Video elements
     // We only pause videos that are NOT set to autoplay/loop (e.g. main content videos)
-    document.querySelectorAll('video:not([autoplay]):not([loop])').forEach(video => {
+    // We check for both standard [autoplay] and our custom [data-autoplay="true"]
+    document.querySelectorAll('video').forEach(video => {
+        const isAutoplay = video.hasAttribute('autoplay') || video.getAttribute('data-autoplay') === 'true';
+        const isLoop = video.hasAttribute('loop');
+
+        if (isAutoplay || isLoop) return;
+
         const container = video.closest('.row-media, .unified-media-wrapper, .layout-grid');
         if (container) {
             if (exceptElement && (container === exceptElement || container.contains(exceptElement))) return;
