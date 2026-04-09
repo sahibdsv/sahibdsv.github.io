@@ -1357,7 +1357,6 @@
             letter-spacing: 0.5px;
             color: var(--text-low);
             font-weight: 500;
-            opacity: 0.8;
             margin: 0;
             padding: 0;
             line-height: 1.2; /* Match title line-height to ensure equal visual footprint */
