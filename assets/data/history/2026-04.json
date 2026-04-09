@@ -1,5 +1,115 @@
 [
   {
+    "hash": "c5038fefce753551345276210f23d3c15706e790",
+    "date": "2026-04-08",
+    "message": "Add Node.js test script for findCol_ in Google Apps Script"
+  },
+  {
+    "hash": "ab3e67dd1e25e9798632cba12d1cd409b418bdd1",
+    "date": "2026-04-08",
+    "message": "test: add edge case tests for fuzzyNorm_ utility"
+  },
+  {
+    "hash": "539e4020310208ba9539e56fa1c044de8f23106b",
+    "date": "2026-04-08",
+    "message": "🧪 [testing improvement] Add comprehensive edge case tests for canonical_ string processing"
+  },
+  {
+    "hash": "8d716d6bd5116ee6e90a7d34d5d521a279023181",
+    "date": "2026-04-08",
+    "message": "🧪 Add unit tests for saveToActiveCell in RichEditor.gs"
+  },
+  {
+    "hash": "2b5b0e12247fa18ebf70e879e6025290c736d2a2",
+    "date": "2026-04-08",
+    "message": "Add tests for getRewindDataFromRows_ error handling"
+  },
+  {
+    "hash": "bc899b3044eeb7107798e6c830b11036a64a1880",
+    "date": "2026-04-08",
+    "message": "test: Add tests for getRecentMusic_ in Google Apps Script"
+  },
+  {
+    "hash": "5a0fadec272b7607947b1c3a27136ca7c110d34c",
+    "date": "2026-04-08",
+    "message": "Refactor window resize listener: Inline unused isDesktop variable"
+  },
+  {
+    "hash": "79348a01e2eaf980626ef5225db12a214d5c64df",
+    "date": "2026-04-08",
+    "message": "perf: Optimize DOM querying in quote roll handler"
+  },
+  {
+    "hash": "4120121c43b09f43e956d2e76e6bb93b1417c0a8",
+    "date": "2026-04-08",
+    "message": "feat: implement client-side cache for GeoJSON fetch requests"
+  },
+  {
+    "hash": "675d4256906ee35dd7de51575679777f31c71646",
+    "date": "2026-04-08",
+    "message": "perf: add bounded cache to deduplicate noembed API requests"
+  },
+  {
+    "hash": "c180e7cc293d56e438c884d1ee1538bc907ded22",
+    "date": "2026-04-08",
+    "message": "refactor: remove unused extracted media variable 'cEx' in renderCardHTML"
+  },
+  {
+    "hash": "4de52420966630748855b321d49b6f152f9705f0",
+    "date": "2026-04-08",
+    "message": "Hi, Jules here! I've implemented token authentication in the Apps Script webhook to secure your endpoints."
+  },
+  {
+    "hash": "50fe17038456e055918a7db957d1d6a4501e0289",
+    "date": "2026-04-08",
+    "message": "fix: improved quote repetition logic and helper"
+  },
+  {
+    "hash": "abeb52610bc217556fd1a79fcdc968acc609622f",
+    "date": "2026-04-08",
+    "message": "security: add safeHTML and fix Mapbox XSS vulnerability"
+  },
+  {
+    "hash": "8b226f8384633c8d795806bbfbb263e66fce06d3",
+    "date": "2026-04-08",
+    "message": "Merge remote-tracking branch 'origin/add-test-handleQuotesRequest-7935772735774238966' # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit."
+  },
+  {
+    "hash": "17f1d6c20b265082596256ae944c844ea5586299",
+    "date": "2026-04-08",
+    "message": "Merge remote-tracking branch 'origin/fix-duplicate-csv-parsing-15690743153800045735' # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit."
+  },
+  {
+    "hash": "5167201be3155de24e1672e08e033d22870b24c4",
+    "date": "2026-04-08",
+    "message": "Merge remote-tracking branch 'origin/perf-optimize-findcol-5724944589107917207' # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit."
+  },
+  {
+    "hash": "333fdb0a251e5341f96855d8235d3c8885a8cbea",
+    "date": "2026-04-08",
+    "message": "Refactor: Extract duplicated CSV parsing logic to a shared utility"
+  },
+  {
+    "hash": "194279d3c17d16dbee8fb5d2275ef1e7688f1008",
+    "date": "2026-04-08",
+    "message": "perf: Optimize findCol_ to use precomputed lowercased headers"
+  },
+  {
+    "hash": "795a289ce1045eb664a0628ea4e209bfdc6b148e",
+    "date": "2026-04-08",
+    "message": "test: add error handling test for handleQuotesRequest_"
+  },
+  {
+    "hash": "f107436bd80d24489cfcf92c9900abaef08472b5",
+    "date": "2026-04-08",
+    "message": "Merge pull request #7 from sahibdsv/fix-subpixel-15509271768664996019"
+  },
+  {
+    "hash": "e44f96b345bbe5da3ab1b40919fc1a1009d4464a",
+    "date": "2026-04-08",
+    "message": "chore: No changes required for SUBPIXEL FIX comment"
+  },
+  {
     "hash": "2e02ee9436e1610eb9419c71fde55d8e98351c82",
     "date": "2026-04-08",
     "message": "[v3.5] fix: enable mobile interaction with music player by removing thumbnail overlay"
