@@ -80,14 +80,25 @@ let _lastRenderedPath = null;
 const isTrueMobile = window.matchMedia("(pointer: coarse) and (hover: none)").matches;
 
 // Global Player Control (Auto-pause logic)
+window.stopMusicCard = function(card) {
+    const mediaRow = card.querySelector('.row-media');
+    const originalMedia = card.getAttribute('data-original-media');
+    if (mediaRow && originalMedia) {
+        mediaRow.innerHTML = originalMedia;
+        card.removeAttribute('data-original-media');
+    }
+    card.classList.remove('is-playing');
+    if (card._playTimer) {
+        clearTimeout(card._playTimer);
+        card._playTimer = null;
+    }
+};
+
 window.pauseAllMedia = function(exceptElement = null) {
     // A. Handle Music Cards (cat-music)
     document.querySelectorAll('.layout-grid.cat-music.is-playing').forEach(activePlayingCard => {
         if (exceptElement && (activePlayingCard === exceptElement || activePlayingCard.contains(exceptElement))) return;
-        const iframe = activePlayingCard.querySelector('iframe');
-        if (iframe) {
-            iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-        }
+        window.stopMusicCard(activePlayingCard);
     });
 
     // B. Handle General YouTube Embeds (Unified Media)
@@ -2434,11 +2445,9 @@ function playMusicInCard(event) {
         event.stopPropagation();
     }
 
-    // RESUME LOGIC: If already playing (has iframe), just send play command
-    const existingIframe = card.querySelector('iframe');
-    if (existingIframe) {
-        pauseAllMedia(card);
-        existingIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+    // TOGGLE/STOP LOGIC: If already playing, stop it and return
+    if (card.classList.contains('is-playing')) {
+        window.stopMusicCard(card);
         return false;
     }
 
@@ -3664,7 +3673,7 @@ function renderUnifiedMediaItem(item, isGallery = false) {
                         </div>
                     </div>`;
 
-        const iframeHTML = `<iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${ytId}?modestbranding=1&rel=0&autoplay=1&enablejsapi=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width: 100%; height: 100%; position: absolute; top:0; left:0; border-radius: inherit;"></iframe>`;
+        const iframeHTML = `<iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${ytId}?modestbranding=1&rel=0&autoplay=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width: 100%; height: 100%; position: absolute; top:0; left:0; border-radius: inherit;"></iframe>`;
 
         // Properly escape double quotes so we can store it in a data attribute
         const encodedIframe = iframeHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -3673,7 +3682,7 @@ function renderUnifiedMediaItem(item, isGallery = false) {
 
         // CHAINED FALLBACK: MaxRes -> HQ -> MQ -> Generic
         // This prevents 404s from showing broken images and handles videos without high-res thumbs.
-        mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="if(!this.dataset.playing){pauseAllMedia(this); this.dataset.playing='1'; this.style.aspectRatio = (this.offsetWidth / this.offsetHeight); this.innerHTML = this.dataset.iframe;}">
+        mediaHTML = `<div class="${embedClass}" style="position: relative; overflow: hidden; display: block; border-radius: var(--card-radius);" data-iframe="${encodedIframe}" onclick="pauseAllMedia(this); if(!this.dataset.playing){this.dataset.playing='1'; this.style.aspectRatio = (this.offsetWidth / this.offsetHeight); this.innerHTML = this.dataset.iframe;}">
                         <div class="sk-img loader-overlay" style="z-index: 0;"></div>
                         <img class="media-enter" src="${thumbUrl}" alt="Video thumbnail" ${thumbStyle} 
                              onload="mediaLoaded(this)" 
