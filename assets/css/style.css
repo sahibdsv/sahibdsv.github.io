@@ -1340,14 +1340,27 @@
         }
 
         .card-info {
-            padding: var(--card-padding); /* Symmetrical padding to nestle content into card radii */
+            padding: var(--space-sm); /* Unified padding for a tighter, more cohesive look */
             display: flex;
             flex-direction: column;
-            gap: 8px; /* Unified gap for all card elements (title, text, metadata) */
+            gap: var(--space-sm); /* Consistent rhythm: gaps exactly match outer padding */
             width: 100%;
             box-sizing: border-box;
             flex-grow: 1;
-            justify-content: flex-start; /* LEAN LEAD: Content always stays a fixed distance from the thumbnail bottom */
+            justify-content: flex-start;
+        }
+
+        .card-breadcrumb {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-low);
+            font-weight: 500;
+            opacity: 0.8;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
         }
 
         .meta-row {
@@ -2919,8 +2932,8 @@
         }
 
         .cat-music .card-info {
-            gap: 0px;
-            padding: 10px 14px;
+            gap: 2px; /* Tight vertical rhythm for music metadata */
+            padding: var(--card-padding);
             padding-right: 45px;
             min-height: 60px;
             display: flex;
