@@ -1028,7 +1028,9 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            justify-content: center;
+            justify-items: center;
             gap: 16px;
             margin-bottom: 16px;
         }
@@ -1268,6 +1270,8 @@
             border-radius: var(--card-radius);
             border: 1px solid var(--border-subtle);
             height: 100%;
+            width: 100%;
+            max-width: 320px;
             justify-content: flex-start;
             position: relative;
             cursor: pointer;
@@ -2088,7 +2092,9 @@
 
         .markdown-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            justify-content: center;
+            justify-items: center;
             gap: 16px;
             margin: 12px 0;
             width: 100%;
@@ -3095,7 +3101,9 @@
         /* Site Archive / Time Machine Styles */
         .archive-list-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            justify-content: center;
+            justify-items: center;
             gap: 20px;
             padding: 20px 0 60px;
         }
