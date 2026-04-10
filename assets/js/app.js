@@ -1661,8 +1661,10 @@ function renderCardHTML(entry, contextCategory = "", isRecentActivity = false) {
     let metaRowHTML = "";
     if (entry.Timestamp || tagsList.length > 0) {
         const cat = contextCategory || (entry.Page ? entry.Page.split('/')[0] : "");
+        const hasFeatured = tagsList.some(t => t.toLowerCase() === 'featured');
+        const metaRowClass = hasFeatured ? 'meta-row has-featured' : 'meta-row';
         metaRowHTML =
-            `<div class="meta-row">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(t => renderChip(t, cat)).join("")}</div>`;
+            `<div class="${metaRowClass}">${entry.Timestamp ? `<span class="chip date" data-date="${entry.Timestamp}" data-val="${formatDate(entry.Timestamp)}">${formatDate(entry.Timestamp)}</span>` : ""}${tagsList.map(t => renderChip(t, cat)).join("")}</div>`;
     }
 
     let titleHTML = "";

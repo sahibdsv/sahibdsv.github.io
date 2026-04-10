@@ -1043,9 +1043,13 @@
             .markdown-grid .meta-row > *:not(.chip-featured) {
                 display: none;
             }
-            /* Ensure the row is visible globally on mobile, the child-hiding logic above handles spacing */
+            /* Only show metadata row if it contains a featured chip to prevent phantom padding */
             .grid-container .meta-row, 
             .markdown-grid .meta-row {
+                display: none;
+            }
+            .grid-container .meta-row.has-featured, 
+            .markdown-grid .meta-row.has-featured {
                 display: flex;
             }
             .section {
