@@ -1,5 +1,25 @@
 [
   {
+    "hash": "69fbe18efdd600a91f989f5205ff092600e1a412",
+    "date": "2026-04-10",
+    "message": "[v3.7] Re-enable featured chips and music play counts on mobile cards"
+  },
+  {
+    "hash": "10dde80ad1122eceb7ba33d6b41dd8b97e984dac",
+    "date": "2026-04-10",
+    "message": "[v3.7] Hide tag and date chips on mobile cards for density"
+  },
+  {
+    "hash": "0f305c6d3aa36191d2d1615e24ebac4cb4581a7b",
+    "date": "2026-04-10",
+    "message": "[v3.7] Refine site layout widths, optimize music card grids, and fix desktop nav dragging"
+  },
+  {
+    "hash": "3346e03c8e9c4d8aeb80fadf55826119d9779b3e",
+    "date": "2026-04-10",
+    "message": "ui: center-align sparse card grids while maintaining column stability"
+  },
+  {
     "hash": "9ddb564401e1ca574fdb3f28620265b3d011916a",
     "date": "2026-04-10",
     "message": "fix: unify card internal spacing and refine mobile section titles"
