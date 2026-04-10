@@ -1,5 +1,25 @@
 [
   {
+    "hash": "9ddb564401e1ca574fdb3f28620265b3d011916a",
+    "date": "2026-04-10",
+    "message": "fix: unify card internal spacing and refine mobile section titles"
+  },
+  {
+    "hash": "d591d4190969b39a6debb8d5542e5ce06196c558",
+    "date": "2026-04-10",
+    "message": "fix: prevent phantom padding on mobile for cards without featured chips"
+  },
+  {
+    "hash": "a23981aee6d838593ab5ee0700504ae2fbe569ad",
+    "date": "2026-04-10",
+    "message": "fix: maintain navigation row centering on window resize"
+  },
+  {
+    "hash": "5aa9b2d6ea1dfb64c0ace8ddf92ff88a8a969679",
+    "date": "2026-04-10",
+    "message": "feat: refine desktop layout for 4-card grid and 900px article width"
+  },
+  {
     "hash": "1c68efcf2f490d404ad9744953c7b1dba148e077",
     "date": "2026-04-09",
     "message": "[v3.6] hotfix: revert accidental obsidian logic leak on main branch"
