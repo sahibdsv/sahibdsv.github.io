@@ -78,6 +78,7 @@
             --card-bg-dark: #0a0a0a;
             --border-hover: var(--border-strong);
             --accent-strava: #FC6100;
+            --nav-bar-h: 0px;
             /* GLOBAL SPACING SYSTEM (8px Multiplier Rule) */
             --site-gap: 1rem;           /* 16px: Standard distance */
             --site-gap-nav: 3px;        /* 3px: Header navigation */
@@ -263,11 +264,11 @@
             width: 100%;
             position: relative;
             /* clip ensures position: sticky works while preventing horizontal overshoot */
-            overflow-x: clip; 
+            overflow-x: clip;
             display: flex;
             flex-direction: column;
+            padding-bottom: var(--nav-bar-h, 0);
         }
-
         a,
         h1,
         h2,
@@ -998,7 +999,6 @@
             margin: 0 auto;
             padding: var(--site-gap) 20px 0;
             flex: 1;
-            min-height: 100.1vh;
             position: relative;
             box-sizing: border-box;
         }
@@ -3293,4 +3293,3 @@
             90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             100% { opacity: 0; transform: translate(-50%, -55%) scale(0.98); }
         }
-    }

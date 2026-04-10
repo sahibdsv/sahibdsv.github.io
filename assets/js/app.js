@@ -417,8 +417,8 @@ function initApp() {
         
         // If we are at the bottom and pulling up (scrolling down), prevent bounce
         if (isScrollingDown) {
-            const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
-            if (window.scrollY >= scrollableHeight - 2) {
+            const scrollableHeight = Math.ceil(document.documentElement.scrollHeight - window.innerHeight);
+            if (window.scrollY >= scrollableHeight - 1) {
                 // Prevent bottom bounce (which causes Chrome browser bar glitches)
                 if (e.cancelable) e.preventDefault();
             }
@@ -574,9 +574,14 @@ function initApp() {
     //    #main-header is sticky (in flow) so no paddingTop needed.
     const navBarEl = document.getElementById("nav-bar");
     if (navBarEl) {
-        const syncBottom = () => { document.body.style.paddingBottom = navBarEl.offsetHeight + "px"; };
+        const syncBottom = () => { 
+            const h = navBarEl.offsetHeight;
+            document.documentElement.style.setProperty("--nav-bar-h", (h + 1) + "px"); 
+        };
         syncBottom();
         new ResizeObserver(syncBottom).observe(navBarEl);
+        // Safety: re-sync once more after initial rendering settles
+        setTimeout(syncBottom, 500);
     }
 }
 
