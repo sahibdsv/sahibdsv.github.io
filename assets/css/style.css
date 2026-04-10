@@ -1772,10 +1772,10 @@
         }
 
         @media (max-width: 767px) {
-            /* Mobile Card Density - Hide metadata chips to keep layout compact */
-            .meta-row,
-            .music-stat-chip {
-                display: none !important;
+            /* Mobile Card Density - Hide non-essential metadata chips */
+            .meta-row .chip:not(.chip-featured),
+            .meta-row:not(.has-featured) {
+                display: none;
             }
 
             .card-info {
