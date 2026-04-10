@@ -1772,6 +1772,21 @@
         }
 
         @media (max-width: 767px) {
+            /* Mobile Card Density - Hide metadata chips to keep layout compact */
+            .meta-row,
+            .music-stat-chip {
+                display: none !important;
+            }
+
+            .card-info {
+                padding: 10px;
+                gap: 6px;
+            }
+
+            .cat-music .card-info {
+                padding-right: 35px; /* Adjust for smaller YT overlay footprint on mobile */
+                min-height: 0;
+            }
 
             .layout-text,
             .layout-hero {
