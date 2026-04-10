@@ -993,70 +993,29 @@
         }
 
         .content-container {
-            max-width: 1200px;
+            max-width: 1200px; /* Capped at 1200px to strictly allow max 4 cards per row (4x275px + gaps) */
             width: 100%;
             margin: 0 auto;
             padding: var(--site-gap) 20px 0;
             flex: 1;
-            min-height: 100.1vh; /* Slight overflow to force scrollbar and push footer below fold without blocking visibility */
+            min-height: 100.1vh;
             position: relative;
             box-sizing: border-box;
         }
 
         @media (max-width:768px) {
             .content-container {
-                padding: var(--site-gap) 10px 0
+                padding: var(--site-gap) 10px 0;
             }
         }
-
-
 
         .section {
             margin-bottom: var(--site-gap);
             opacity: 0;
             animation: fadeIn .4s forwards;
             position: relative;
-            /* Performance: Skip rendering of off-screen sections */
             content-visibility: auto;
-            contain-intrinsic-size: 1px 500px; /* Placeholder height while off-screen */
-        }
-
-        .skeleton-visible {
-            opacity: 1;
-            animation: none
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            justify-content: center;
-            justify-items: center;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        @media (max-width:600px) {
-            .grid-container, .markdown-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-            /* Hide metadata except for 'Featured' tags to keep cards compact in gallery mode */
-            .grid-container .meta-row > *:not(.chip-featured), 
-            .markdown-grid .meta-row > *:not(.chip-featured) {
-                display: none;
-            }
-            /* Only show metadata row if it contains a featured chip to prevent phantom padding */
-            .grid-container .meta-row, 
-            .markdown-grid .meta-row {
-                display: none;
-            }
-            .grid-container .meta-row.has-featured, 
-            .markdown-grid .meta-row.has-featured {
-                display: flex;
-            }
-            .section {
-                margin-bottom: 2rem;
-            }
+            contain-intrinsic-size: 1px 500px;
         }
 
         .layout-hero {
@@ -1069,8 +1028,7 @@
             flex-direction: column;
             gap: 16px;
             align-items: center;
-            padding-top: 16px;
-            padding-bottom: 16px;
+            padding: 0;
         }
 
         .layout-text {
@@ -1082,6 +1040,32 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            padding: 0;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 275px));
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        .markdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 275px));
+            justify-content: center;
+            gap: 16px;
+            margin: 12px 0;
+            width: 100%;
+        }
+
+        @media (max-width:600px) {
+            .grid-container, .markdown-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
         }
 
         footer {
@@ -1271,7 +1255,7 @@
             border: 1px solid var(--border-subtle);
             height: 100%;
             width: 100%;
-            max-width: 320px;
+            min-width: 0; /* CRITICAL: Allows grid items to shrink below content size (like nowrap text) */
             justify-content: flex-start;
             position: relative;
             cursor: pointer;
@@ -1408,6 +1392,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 0; /* CRITICAL: Prevent intrinsic flex sizing from breaking grid width via aspect-ratio */
+            min-width: 0;
         }
 
         /* Square Guard: Music Album Art must remain 1/1 to prevent distortion */
@@ -1948,7 +1934,7 @@
             display: flex;
             justify-content: center;
             margin-bottom: var(--site-gap);
-            margin-top: calc(var(--site-gap) * 2); /* Standard separation from previous section */
+            margin-top: var(--site-gap);
             scroll-margin-top: 120px;
         }
 
@@ -2092,9 +2078,8 @@
 
         .markdown-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 275px));
             justify-content: center;
-            justify-items: center;
             gap: 16px;
             margin: 12px 0;
             width: 100%;
@@ -2383,9 +2368,15 @@
         }
 
         .article-view {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 0 40px 20px 40px;
+            content-visibility: visible; /* CRITICAL: Override .section's content-visibility: auto to prevent clipping of breakout elements */
+        }
+
+        /* Hide trailing dividers above sub-page cards or at end of content */
+        .article-body > hr:last-child {
+            display: none;
         }
 
         .article-title,
@@ -2746,23 +2737,51 @@
             margin: 12px auto;
             max-width: 1200px;
             width: 100%;
-            align-items: center;
+            align-items: stretch;
+        }
+
+        /* Breakout for articles: Let music grids expand beyond 800px to act like standard 1200px grids */
+        .article-view .music-sections-container {
+            width: 100vw;
+            max-width: 1200px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1220px) {
+            .article-view .music-sections-container {
+                width: calc(100vw - 20px); /* Safely account for scrollbars */
+            }
         }
 
         @media (max-width: 767px) {
-            .music-sections-container {
-                margin: 8px auto;
+            .music-sections-container,
+            .article-view .music-sections-container {
+                margin: 20px auto;
+                width: 100%;
+                left: 0;
+                transform: none;
             }
         }
 
         .music-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 275px));
+            gap: var(--card-padding, 12px);
             width: 100%;
             max-width: 1200px;
             justify-content: center;
-            justify-items: center;
+        }
+
+        /* Allow music cards placed in markdown grid cells to span the full width of the article */
+        .markdown-grid > .markdown-single-card:has(.music-sections-container),
+        .markdown-grid > .markdown-single-card:has(.music-embed-container) {
+            grid-column: 1 / -1;
+            width: 100%;
         }
 
         @media (max-width: 767px) {
@@ -2776,7 +2795,6 @@
             position: relative;
             overflow: hidden;
             width: 100%;
-            max-width: 300px;
             margin: 0 auto;
             box-sizing: border-box;
             transition: all var(--anim-quick) var(--ease);
@@ -2928,6 +2946,7 @@
             overflow: hidden;
             white-space: nowrap;
             position: relative;
+            min-width: 0; /* CRITICAL: Prevent nested flex items from forcing width */
         }
 
         /* Show both fades only during actual scroll animation on hover */
@@ -2974,6 +2993,7 @@
             position: relative;
             z-index: 2;
             background: transparent;
+            min-width: 0;
         }
 
         .cat-music h3 {
@@ -3101,9 +3121,8 @@
         /* Site Archive / Time Machine Styles */
         .archive-list-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
             justify-content: center;
-            justify-items: center;
             gap: 20px;
             padding: 20px 0 60px;
         }

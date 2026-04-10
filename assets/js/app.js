@@ -923,8 +923,21 @@ function setupHapticScroll(row) {
                 const center = cur + row.clientWidth / 2;
                 let closest = null, minDist = Infinity;
                 links.forEach(link => {
-                    const dist = Math.abs(link.offsetLeft + link.offsetWidth / 2 - center);
-                    if (dist < minDist) { minDist = dist; closest = link; }
+                    // Use getBoundingClientRect or relative offset calculation to avoid bias from parent offsets
+                    const linkCenterRel = (link.offsetLeft - row.offsetLeft) + link.offsetWidth / 2;
+                    const dist = Math.abs(linkCenterRel - (cur + row.clientWidth / 2));
+                    // Alternatively, a simpler relative check if row is the offsetParent:
+                    // const dist = Math.abs(link.offsetLeft + link.offsetWidth / 2 - center);
+                    // Actually, offsetLeft is relative to offsetParent. If row is the offsetParent, link.offsetLeft is correct.
+                    // But if it's NOT, we need link.getBoundingClientRect() relative to row.getBoundingClientRect()
+                    
+                    const rRect = row.getBoundingClientRect();
+                    const lRect = link.getBoundingClientRect();
+                    const lCenter = lRect.left + lRect.width / 2;
+                    const rCenter = rRect.left + rRect.width / 2;
+                    const d = Math.abs(lCenter - rCenter);
+                    
+                    if (d < minDist) { minDist = d; closest = link; }
                 });
 
                 const href = closest?.getAttribute("href")?.substring(1);
@@ -1730,7 +1743,7 @@ const SECTION_RENDERERS = {
                 metaHTML += `</div></div>`;
             }
         }
-        return `<div class="section layout-text">${entry.Title ? formatTitle(entry.Title, index === 0 ? "h1" : "h2") : ""}${metaHTML}<div class="article-body">${processContentWithBlocks(entry.Content || "")}</div></div>`;
+        return `<div class="section layout-text article-view">${entry.Title ? formatTitle(entry.Title, index === 0 ? "h1" : "h2") : ""}${metaHTML}<div class="article-body">${processContentWithBlocks(entry.Content || "")}</div></div>`;
     }
 
 };
@@ -2119,7 +2132,7 @@ function renderRecentMusic(container) {
 
     container.innerHTML = `
         <div class="music-sections-container">
-            <div class="music-grid" style="--music-cols: ${Math.min(latestItems.length, 4)}">
+            <div class="music-grid">
                 ${cardsHTML}
             </div>
         </div>
@@ -2282,7 +2295,7 @@ async function renderRewindSection(container, type) {
 
     container.innerHTML = `
         <div class="music-sections-container">
-            <div class="music-grid" style="--music-cols: ${Math.min(items.length, 4)}">
+            <div class="music-grid">
                 ${cardsHTML}
             </div>
         </div>
@@ -2423,7 +2436,7 @@ async function renderMusicCluster(container) {
 
     container.innerHTML = `
         <div class="music-sections-container">
-            <div class="music-grid" style="--music-cols: ${Math.min(cardsData.length, 4)}">
+            <div class="music-grid">
                 ${cardsHTML}
             </div>
         </div>
