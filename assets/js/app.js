@@ -361,22 +361,20 @@ async function fetchDataAndCache() {
 function initFuse(data) {
     window.fuse = new Fuse(data, {
         keys: [
-            { name: 'Title', weight: 0.7 },
-            { name: 'Content', weight: 0.5 },
+            { name: 'Title', weight: 0.8 },
+            { name: 'Content', weight: 0.4 },
             { name: 'Tags', weight: 0.5 },
-            { name: 'Page', weight: 0.3 },
-            { name: 'Author', weight: 0.1 }
+            { name: 'Page', weight: 0.3 }
         ],
-        threshold: 0.4, 
+        threshold: 0.25,
         location: 0,
         distance: 100,
-        minMatchCharLength: 2,
+        minMatchCharLength: 3,
         includeScore: true,
         useExtendedSearch: true,
-        ignoreLocation: true
+        ignoreLocation: false
     });
 }
-
 function fetchCSV(url) {
     // Enabled browser caching for CSV data. 
     // This allows the site to feel "instant" on repeat visits while the background 
@@ -2168,7 +2166,7 @@ function cleanMusicLabel(val) {
 
 function fuzzyNorm_(str) {
     if (typeof str !== 'string') str = String(str || "");
-    return str.toLowerCase().replace(/[^\w\d]/g, "");
+    return str.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
 async function renderRewindSection(container, type) {
