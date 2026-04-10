@@ -1746,7 +1746,7 @@ function buildRowsHTML(data, title, isSubPage, isHeroOnly = false, isRecentActiv
     }
 
     let htmlBuffer = title ?
-        `<div class="section-title-wrapper"><h2 class="header-fade-anim" style="display:inline-block; font-weight:600; font-size:24px; --text-base:var(--text-dim); --text-hover:var(--text-bright);">${title}</h2></div>` :
+        `<div class="section-title-wrapper"><h2 class="header-fade-anim">${title}</h2></div>` :
         "";
 
     if (data.length === 0) {

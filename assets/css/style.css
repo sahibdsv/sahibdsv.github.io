@@ -1944,7 +1944,29 @@
             display: flex;
             justify-content: center;
             margin-bottom: var(--site-gap);
+            margin-top: calc(var(--site-gap) * 2); /* Standard separation from previous section */
             scroll-margin-top: 120px;
+        }
+
+        .section-title-wrapper h2 {
+            display: inline-block;
+            font-weight: 600;
+            font-size: 24px;
+            --text-base: var(--text-dim);
+            --text-hover: var(--text-bright);
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .section-title-wrapper {
+                margin-top: 2rem; /* Match .section margin-bottom for perfect rhythm */
+                margin-bottom: 1rem;
+            }
+            .section-title-wrapper h2 {
+                font-size: 20px;
+                line-height: 1.2;
+                max-width: 90%; /* Prevent long titles from hitting edges */
+            }
         }
 
         .btn-cta-wrapper {
