@@ -1,5 +1,15 @@
 [
   {
+    "hash": "69527224838a8b1380a95669def337cfe145ca44",
+    "date": "2026-04-10",
+    "message": "[v3.8] fix: mobile footer clipping by removing 100.1vh hack and using CSS variable for nav bar height synchronization"
+  },
+  {
+    "hash": "f368e27d9d5b2fc6ddfd2b19450c2bdf3ef9f6d3",
+    "date": "2026-04-10",
+    "message": "[v3.7] Refine fuzzy search precision and hide redundant YouTube Music corner icons"
+  },
+  {
     "hash": "69fbe18efdd600a91f989f5205ff092600e1a412",
     "date": "2026-04-10",
     "message": "[v3.7] Re-enable featured chips and music play counts on mobile cards"
