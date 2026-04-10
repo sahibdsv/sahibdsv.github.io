@@ -457,12 +457,10 @@ function initApp() {
                 _lastWidth = currentWidth;
 
                 document.querySelectorAll(".nav-row").forEach(row => {
-                    if (currentWidth > 768) {
-                        row.scrollLeft = 0;
-                    } else {
-                        centerNavRow(row, true);
-                    }
+                    // Always try to re-center on resize to maintain context
+                    centerNavRow(row, row.classList.contains("level-n"), "auto");
                 });
+
             });
         };
     })());
