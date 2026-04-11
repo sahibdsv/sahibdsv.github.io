@@ -1,9 +1,10 @@
 const fs = require('fs');
+const path = require('path');
 const vm = require('vm');
 const assert = require('assert');
 
 // Read the Google Apps Script file
-const code = fs.readFileSync(__dirname + '/website.gs', 'utf8');
+const code = fs.readFileSync(path.join(__dirname, '../../gas/website.gs'), 'utf8');
 
 // Set up the mock environment
 const sandbox = {

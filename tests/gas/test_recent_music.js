@@ -1,8 +1,9 @@
 const fs = require('fs');
+const path = require('path');
 const assert = require('assert');
 
 // 1. Read and Evaluate the target file
-const fileContent = fs.readFileSync('gas/website.gs', 'utf8');
+const fileContent = fs.readFileSync(path.join(__dirname, '../../gas/website.gs'), 'utf8');
 
 // Global mock variables
 global.WEBSITE_CONFIG = {

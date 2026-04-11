@@ -72,10 +72,6 @@ function run() {
     // Manifest lists which months exist. Conflicts only happen here when a new month starts.
     fs.writeFileSync(path.join(CONFIG.historyFragmentDir, 'manifest.json'), JSON.stringify(manifest.sort().reverse(), null, 2));
 
-    // 4. Legacy fallback: STILL write history.json but maybe just the latest entries?
-    // User: "Address merge conflict... then push". Let's keep history.json for now to not break the site.
-    fs.writeFileSync(CONFIG.historyDataPath, JSON.stringify(history, null, 2));
-
     console.log(`History fragments saved: ${manifest.length} segments with ${history.length} notable entries total.`);
 }
 

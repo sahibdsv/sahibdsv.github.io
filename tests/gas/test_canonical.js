@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Extract the canonical_ function from gas/website.gs
-const websiteGsPath = path.join(__dirname, 'website.gs');
+const websiteGsPath = path.join(__dirname, '../../gas/website.gs');
 const websiteGsContent = fs.readFileSync(websiteGsPath, 'utf8');
 
 // Simple extraction using regex (matches the function block)

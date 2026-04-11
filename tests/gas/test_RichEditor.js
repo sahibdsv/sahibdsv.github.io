@@ -2,7 +2,8 @@ const fs = require('fs');
 const assert = require('assert');
 
 // Read and evaluate the Apps Script file
-const code = fs.readFileSync('gas/RichEditor.gs', 'utf8');
+const path = require('path');
+const code = fs.readFileSync(path.join(__dirname, '../../gas/RichEditor.gs'), 'utf8');
 
 // Global scope injection to avoid ReferenceError
 global.SpreadsheetApp = {};

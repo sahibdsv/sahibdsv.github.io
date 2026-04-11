@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 1. Read the Google Apps Script file
-const gsCode = fs.readFileSync(path.join(__dirname, 'website.gs'), 'utf8');
+const gsCode = fs.readFileSync(path.join(__dirname, '../../gas/website.gs'), 'utf8');
 
 // 2. Setup mock environment
 const Logger = { log: console.log };

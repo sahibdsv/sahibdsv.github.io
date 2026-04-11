@@ -1,7 +1,8 @@
 const fs = require('fs');
+const path = require('path');
 const assert = require('assert');
 
-const gasCode = fs.readFileSync(__dirname + '/website.gs', 'utf8');
+const gasCode = fs.readFileSync(path.join(__dirname, '../../gas/website.gs'), 'utf8');
 
 // Extract findCol_ function specifically to avoid GAS dependencies
 const match = gasCode.match(/function findCol_\(headers, list\) \{[\s\S]*?\n\}/);

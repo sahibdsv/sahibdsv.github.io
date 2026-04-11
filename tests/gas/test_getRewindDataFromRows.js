@@ -3,7 +3,7 @@ const path = require('path');
 const assert = require('assert');
 
 // Read the website.gs file
-const code = fs.readFileSync(path.join(__dirname, 'website.gs'), 'utf8');
+const code = fs.readFileSync(path.join(__dirname, '../../gas/website.gs'), 'utf8');
 
 // Evaluate it in the current context to make functions available
 eval(code);

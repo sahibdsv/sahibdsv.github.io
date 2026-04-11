@@ -1,8 +1,9 @@
 const fs = require('fs');
+const path = require('path');
 const assert = require('assert');
 
 // Read website.gs and extract the fuzzyNorm_ function
-const gsContent = fs.readFileSync('gas/website.gs', 'utf8');
+const gsContent = fs.readFileSync(path.join(__dirname, '../../gas/website.gs'), 'utf8');
 
 const script = `
 ${gsContent}
