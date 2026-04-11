@@ -1,3 +1,0 @@
-# Gemini CLI Preferences
-- DO NOT use !important in CSS unless absolutely unavoidable (e.g., overriding 3rd party inline styles that can't be touched).
-- Prefer using JS-based cursor management for 3D viewers to avoid style conflicts.
