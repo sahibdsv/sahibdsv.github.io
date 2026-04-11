@@ -272,14 +272,7 @@ async function fetchDataAndCache() {
         const resumeDbLocal = parseCSV(resumeRaw);
         const filtered = mainData.filter(e => e.Title || e.Content || e.Page === 'Professional/Resume');
 
-        // Inject hidden snapshots page for search discoverability
-        filtered.push({
-            Page: "Snapshots",
-            Title: "Snapshots",
-            Content: "Explore the development history and version snapshots of this website.",
-            Tags: "",
-            Thumbnail: ""
-        });
+
 
         const currentMainRaw = localStorage.getItem('db_raw_cache');
         const currentResumeRaw = localStorage.getItem('resume_raw_cache');
@@ -599,7 +592,7 @@ function renderNavigation(currentPath, forceSmoothNav = false) {
         let items = [];
         if (level === 1) {
             items = [...new Set([
-                ...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page && "Snapshots" !== e.Page)
+                ...db.filter(e => e.Page && "Footer" !== e.Page && "Home" !== e.Page)
                     .map(e => e.Page.split("/")[0])
                     .filter(e => e),
                 quotesDb.length > 0 ? "Personal" : null
@@ -1230,7 +1223,7 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
 
         const route = {
             "Index": renderIndex,
-            "Snapshots": renderSnapshots,
+
             "Professional/Resume": renderResume
         };
         (route[cleanPath] ?? (cleanPath.startsWith("Filter:") ? () => renderFiltered(decodeURIComponent(
@@ -1383,147 +1376,7 @@ function renderIndex() {
     updateContainer(document.getElementById("app"), finalHTML);
 }
 
-let _archiveSortAsc = false;
-async function renderSnapshots() {
-    let history = [];
-    try {
-        // Atomic Mode: Fetch manifest then load fragments in parallel
-        const manifestRes = await fetch('assets/data/history/manifest.json');
-        const manifest = await manifestRes.json();
-        
-        const fragments = await Promise.all(
-            manifest.map(month => 
-                fetch(`assets/data/history/${month}.json`).then(res => res.json())
-            )
-        );
-        
-        // Flatten the fragments into a single history array
-        history = fragments.flat();
-    } catch (e) {
-        console.warn('Failed to load fragmented history, falling back to monolithic...', e);
-        try {
-            const res = await fetch('assets/data/history.json');
-            history = await res.json();
-        } catch (innerE) {
-            console.error('Total history load failure', innerE);
-        }
-    }
 
-    if (!history) history = [];
-
-    // Apply sorting (default newest first)
-    const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    // Distill v0 history: only show the final commit of each week for the legacy era.
-    // v1+ Milestones are always shown.
-    // Spree Detection: Group v0 commits into "coding sessions" separated by 4-hour gaps.
-    // We only show the latest (highest) commit from each spree. v1+ milestones are always shown.
-    const distilledHistory = [];
-    const SPREE_GAP_MS = 4 * 60 * 60 * 1000; // 4 hours
-
-    sortedHistory.forEach((item, index) => {
-        // First commit is always the start of its spree
-        if (index === 0) {
-            distilledHistory.push(item);
-        } else {
-            const prevTime = new Date(sortedHistory[index - 1].date).getTime();
-            const currTime = new Date(item.date).getTime();
-            const gap = Math.abs(prevTime - currTime);
-            
-            // If the gap between THIS and the PREVIOUS (newer) commit is > 4h, this is a new spree
-            if (gap > SPREE_GAP_MS) {
-                distilledHistory.push(item);
-            }
-        }
-    });
-
-    const distilledCount = distilledHistory.length; 
-    
-    // Grouping logic (Distilled)
-    const groups = {};
-    distilledHistory.forEach(item => {
-        const monthKey = item.date.substring(0, 7);
-        if (!groups[monthKey]) groups[monthKey] = [];
-        groups[monthKey].push(item);
-    });
-
-    const monthKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
-    
-    // Total commits mentioned in hero will be the count before distillation?
-    // User: "evolution of this site through 808 commits"... I'll show the total history.length
-    
-    const tocLinks = monthKeys.map(key => {
-        const [y, m] = key.split('-');
-        const name = new Date(y, parseInt(m)-1).toLocaleString('default', {month:'long'});
-        return `<div class="toc-item depth-2">
-            <a href="javascript:void(0)" onclick="document.getElementById('month-${key}')?.scrollIntoView({behavior:'smooth'}); haptic('tick');" style="font-size: 15px; font-weight: 600; line-height: 1.2; display: inline-block; font-family:'Jost', sans-serif;">${name} ${y}</a>
-        </div>`;
-    }).join('');
-
-    let finalHTML = `<div class="section layout-hero">
-        <h1 class="fill-anim">Snapshots</h1>
-        <p style="color:var(--text-dim); max-width:600px; font-family:'Jost', sans-serif;">Exploring the evolution of this site through <b>${history.length} commits</b> across <b>${distilledCount}</b> coding sessions.</p>
-        
-        <div class="toc-container" style="margin: 1.5rem 0; text-align: center;">
-            <h2 id="contents" style="margin-bottom: 8px; font-size: 18px; font-weight: 700; font-family:'Jost', sans-serif;">Chronology</h2>
-            <div class="toc-list" style="padding-left: 0; display: flex; flex-direction: column; gap: 8px; align-items: center;">
-                ${tocLinks}
-            </div>
-        </div>
-    </div>`;
-
-    if (history.length === 0) {
-        finalHTML += `<div class="section layout-text"><p>No version history available yet.</p></div>`;
-    } else {
-        monthKeys.forEach(monthKey => {
-            const [year, month] = monthKey.split('-');
-            const monthName = new Date(year, parseInt(month) - 1).toLocaleString('default', { month: 'long' });
-            
-            finalHTML += `<div id="month-${monthKey}" class="section-title-wrapper" style="margin-top: 40px; margin-bottom: 20px;">
-                <h2 class="header-fade-anim" style="font-size: 18px; font-weight: 600; opacity: 0.9; font-family:'Jost', sans-serif;">${monthName} ${year}</h2>
-            </div>`;
-            
-            finalHTML += '<div class="section archive-list-grid" style="padding-top: 0; padding-bottom: 20px;">';
-            // Assign stable, distinct colors to version tags
-            const getVersionColor = (tag) => {
-                if (tag === 'v0') return { bg: 'var(--border-subtle)', text: 'var(--text-dim)', border: 'none' };
-                let hash = 0;
-                for (let i = 0; i < tag.length; i++) {
-                    hash = tag.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                const h = Math.abs(hash % 360);
-                return { 
-                    bg: `hsla(${h}, 70%, 45%, 0.15)`, 
-                    text: `hsl(${h}, 80%, 75%)`,
-                    border: `1px solid hsla(${h}, 70%, 45%, 0.3)`
-                };
-            };
-
-            groups[monthKey].forEach(item => {
-                const visitUrl = `https://raw.githack.com/sahibdsv/sahibdsv.github.io/${item.hash}/index.html`;
-                const versionMatch = item.message.match(/\[v(\d+\.\d+)\]/i);
-                const versionTag = versionMatch ? `v${versionMatch[1]}` : 'v0';
-                const vColor = getVersionColor(versionTag);
-
-                finalHTML += `
-                    <div class="archive-item-card" onclick="window.open('${visitUrl}', '_blank')">
-                        <div class="archive-card-header">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                ${versionMatch ? `<span class="chip stat version-chip" style="margin:0; pointer-events:none; cursor:default; background:${vColor.bg}; color:${vColor.text}; border:${vColor.border}; font-size:9px; height:auto; padding:3px 6px; opacity:1;">${versionTag}</span>` : ''}
-                                <span class="date">${item.date}</span>
-                            </div>
-                            <span class="hash" style="color:var(--accent-projects);">${item.hash.substring(0, 7)}</span>
-                        </div>
-                        <h3 class="message" style="font-family:'Jost', sans-serif;">${safeHTML(item.message.replace(/\[v\d+\.\d+\]/i, '').trim())}</h3>
-                    </div>
-                `;
-            });
-            finalHTML += '</div>';
-        });
-    }
-
-    updateContainer(document.getElementById("app"), finalHTML);
-}
 
 function renderHome() {
     const heroEntries = db.filter(e => "Home" === e.Page);

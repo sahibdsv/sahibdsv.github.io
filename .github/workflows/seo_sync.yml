@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Ensure full history for the Snapshots engine
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,14 +24,11 @@ jobs:
       - name: Sync SEO Metadata & Sitemap
         run: node assets/meta/seo_sync.js
 
-      - name: Sync Website History Snapshot
-        run: node assets/meta/history_sync.js
-
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
             commit_message: "chore: auto-sync SEO"
-            file_pattern: "index.html sitemap.xml robots.txt assets/data/history.json assets/data/history/*.json"
+            file_pattern: "index.html sitemap.xml robots.txt"
             push_options: '--force'
             branch: main
             skip_fetch: true
