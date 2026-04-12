@@ -191,7 +191,7 @@ function startApp() {
         // Refresh existing UI with new data
         updateSEO();
         renderFooter();
-        handleRouting();
+        handleRouting(true); // SILENT: Don't jump to top on data refresh
         return;
     }
     _appInitialized = true;
@@ -319,28 +319,39 @@ async function fetchDataAndCache() {
         // Process Quotes
         if (quotesRes) {
             const quotesRaw = quotesRes.quotes || quotesRes.data || quotesRes.items || quotesRes.rows || quotesRes.content || quotesRes;
-            quotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
-            localStorage.setItem('quotes_cache', JSON.stringify(quotesDb));
+            const newQuotesDb = Array.isArray(quotesRaw) ? quotesRaw : [];
             
-            // Only re-render UI if we are on a page that actually shows quotes (Personal or Home)
-            if (currentPath === "Home" || currentPath.startsWith("Personal")) {
-                document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
+            // Only update and re-render if the data actually changed
+            if (JSON.stringify(newQuotesDb) !== JSON.stringify(quotesDb)) {
+                quotesDb = newQuotesDb;
+                localStorage.setItem('quotes_cache', JSON.stringify(quotesDb));
+                
+                if (currentPath === "Home" || currentPath.startsWith("Personal")) {
+                    document.querySelectorAll('.layout-quote').forEach(el => renderQuoteCard(el));
+                }
             }
         }
 
         // Process Music
         if (musicRes && !musicRes.error) {
-            musicDb = musicRes.recent || [];
-            _rewindData = musicRes.rewind || null;
-            localStorage.setItem('music_cache', JSON.stringify(musicDb));
-            if (_rewindData) localStorage.setItem('rewind_cache', JSON.stringify(_rewindData));
+            const newMusic = musicRes.recent || [];
+            const newRewind = musicRes.rewind || null;
             
-            // Only re-render UI if we are on the Home page or Personal/Music subpages
-            if (currentPath === "Home" || currentPath.startsWith("Personal")) {
-                document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
-                document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
-                document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
-                document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
+            const musicChanged = JSON.stringify(newMusic) !== JSON.stringify(musicDb);
+            const rewindChanged = JSON.stringify(newRewind) !== JSON.stringify(_rewindData);
+
+            if (musicChanged || rewindChanged) {
+                musicDb = newMusic;
+                _rewindData = newRewind;
+                localStorage.setItem('music_cache', JSON.stringify(musicDb));
+                if (_rewindData) localStorage.setItem('rewind_cache', JSON.stringify(_rewindData));
+                
+                if (currentPath === "Home" || currentPath.startsWith("Personal")) {
+                    document.querySelectorAll('[data-type="recent-music"]').forEach(el => renderRecentMusic(el));
+                    document.querySelectorAll('[data-type="top-artists"]').forEach(el => renderRewindSection(el, 'top-artists'));
+                    document.querySelectorAll('[data-type="top-songs"]').forEach(el => renderRewindSection(el, 'top-songs'));
+                    document.querySelectorAll('[data-type="fresh-favorites"]').forEach(el => renderRewindSection(el, 'fresh-favorites'));
+                }
             }
         }
 
@@ -1172,13 +1183,14 @@ function handleSearch(e) {
 const path2url = p => p?.replace(/ /g, '_') ?? '';
 const url2path = u => u?.replace(/_/g, ' ') ?? '';
 
-function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
+function navigateTo(path, isSwipe = false, forceSmoothNav = false, isSilent = false) {
     if (window.closeSearch && !isSwipe) closeSearch();
 
     const header = document.getElementById("main-header");
     if (header && !isSwipe) header.classList.remove("scrolled");
     
-    if (!isSwipe) {
+    // ⚡ PREVENT FLASH: Do not jump to top or clear selection during a silent background data sync
+    if (!isSwipe && !isSilent) {
         window.scrollTo({
             top: 0,
             behavior: 'instant'
@@ -1240,10 +1252,10 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false) {
     });
 }
 
-function handleRouting() {
+function handleRouting(isSilent = false) {
     const path = window.location.hash.substring(1) || "Home";
     // Routing via hashchange (clicks, back button) should always be smooth
-    navigateTo(path, false, true);
+    navigateTo(path, false, true, isSilent);
 }
 
 const getCategoryClass = page => {
@@ -1648,40 +1660,39 @@ function updateContainer(container, html, append = false) {
             postRender(container);
         }
     } else {
-        // ATOMIC SOFT UPDATE
-        // We use a temporary element to normalize the HTML for a reliable comparison
         const temp = document.createElement('div');
         temp.innerHTML = html;
-        const normalizedHTML = temp.innerHTML;
 
-        if (container.innerHTML !== normalizedHTML) {
-            // PRESERVATION LAYER: Prevent flickering of dynamic components (Music, Quotes)
-            const dynamicState = new Map();
-            container.querySelectorAll('[data-type], .layout-quote').forEach(el => {
-                const key = el.getAttribute('data-type') || el.getAttribute('data-title') || el.className;
-                if (el.innerHTML.trim() && !el.getAttribute('data-needs-init')) {
-                    dynamicState.set(key, {
-                        content: el.innerHTML,
-                        hash: el.getAttribute('data-last-render') || el.getAttribute('data-last-id'),
-                        attrs: Array.from(el.attributes)
-                            .filter(a => !['data-needs-init', 'id', 'class'].includes(a.name))
-                            .map(a => ({n: a.name, v: a.value}))
-                    });
-                }
-            });
+        // 1. PRESERVATION LAYER: Capture dynamic states from existing DOM
+        const dynamicState = new Map();
+        container.querySelectorAll('[data-type], .layout-quote').forEach(el => {
+            const key = el.getAttribute('data-type') || el.getAttribute('data-title') || el.className;
+            if (el.innerHTML.trim() && !el.getAttribute('data-needs-init')) {
+                dynamicState.set(key, {
+                    content: el.innerHTML,
+                    hash: el.getAttribute('data-last-render') || el.getAttribute('data-last-id'),
+                    attrs: Array.from(el.attributes)
+                        .filter(a => !['id', 'class'].includes(a.name))
+                        .map(a => ({n: a.name, v: a.value}))
+                });
+            }
+        });
 
-            // RESTORATION LAYER: Inject preserved content ATOMICALLY before rendering to DOM
-            temp.querySelectorAll('[data-needs-init="true"]').forEach(el => {
-                const key = el.getAttribute('data-type') || el.getAttribute('data-title') || el.className;
-                const state = dynamicState.get(key);
-                if (state) {
-                    el.innerHTML = state.content;
-                    state.attrs.forEach(a => el.setAttribute(a.n, a.v));
-                    if (state.hash) el.setAttribute('data-last-render', state.hash);
-                    el.removeAttribute('data-needs-init'); // Skip re-initialization in postRender
-                }
-            });
+        // 2. RESTORATION LAYER: Inject preserved content into the template ATOMICALLY
+        temp.querySelectorAll('[data-needs-init="true"]').forEach(el => {
+            const key = el.getAttribute('data-type') || el.getAttribute('data-title') || el.className;
+            const state = dynamicState.get(key);
+            if (state) {
+                el.innerHTML = state.content;
+                state.attrs.forEach(a => el.setAttribute(a.n, a.v));
+                if (state.hash) el.setAttribute('data-last-render', state.hash);
+                el.removeAttribute('data-needs-init'); 
+            }
+        });
 
+        // 3. FINAL IDENTITY CHECK: Only commit to the DOM if something actually changed.
+        // This prevents "Double-Sync Flash" where the cache and live data are identical.
+        if (container.innerHTML !== temp.innerHTML) {
             container.innerHTML = temp.innerHTML;
             postRender(container);
         }
