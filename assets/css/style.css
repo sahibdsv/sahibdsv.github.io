@@ -291,8 +291,9 @@
             -webkit-user-select: text;
             -webkit-touch-callout: none;
             -webkit-tap-highlight-color: transparent;
-            line-height: 1.15;
-            margin: 0;
+            line-height: 1.25;
+            padding-bottom: 0.05em;
+            margin: 0 0 -0.05em 0;
             color: var(--text-muted);
             scroll-margin-top: 120px;
         }
@@ -332,6 +333,8 @@
             transition: background-position var(--anim-primary) var(--ease), color var(--anim-primary) var(--ease), border-color var(--anim-instant);
             text-decoration: none;
             display: inline-block;
+            padding-bottom: 0.05em;
+            margin-bottom: -0.05em;
             color: var(--text-base, var(--text-dim))
         }
 
@@ -2402,8 +2405,9 @@
         .article-body h4 {
             color: var(--text-muted);
             font-weight: 600;
-            line-height: 1.05;
-            margin: 0; /* Stack system handles layout */
+            line-height: 1.25;
+            padding-bottom: 0.05em;
+            margin: 0 0 -0.05em 0; /* Stack system handles layout */
         }
 
         .article-title,

@@ -1189,12 +1189,8 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false, isSilent = fa
     const header = document.getElementById("main-header");
     if (header && !isSwipe) header.classList.remove("scrolled");
     
-    // ⚡ PREVENT FLASH: Do not jump to top or clear selection during a silent background data sync
+    // ⚡ PREVENT FLASH: Do not clear selection during a silent background data sync
     if (!isSwipe && !isSilent) {
-        window.scrollTo({
-            top: 0,
-            behavior: 'instant'
-        });
         clearTextSelection();
     }
 
@@ -1226,6 +1222,11 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false, isSilent = fa
         (route[cleanPath] ?? (cleanPath.startsWith("Filter:") ? () => renderFiltered(decodeURIComponent(
             cleanPath.split(":")[1].replace(/_/g, " "))) : () => renderPage(cleanPath)))();
 
+        // 3.5 Reset scroll position ONLY for manual navigation (clicks)
+        if (!isSwipe && !isSilent) {
+            window.scrollTo(0, 0);
+        }
+
         // Clean up any stale 3D viewers from the old page
         if (window.cleanupStale3DViewers) window.cleanupStale3DViewers();
 
@@ -1253,9 +1254,12 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false, isSilent = fa
 }
 
 function handleRouting(isSilent = false) {
+    // Event listener calls pass the event object as the first argument.
+    // We must ensure this isn't treated as 'isSilent = true'.
+    const silent = (isSilent === true);
     const path = window.location.hash.substring(1) || "Home";
     // Routing via hashchange (clicks, back button) should always be smooth
-    navigateTo(path, false, true, isSilent);
+    navigateTo(path, false, true, silent);
 }
 
 const getCategoryClass = page => {
