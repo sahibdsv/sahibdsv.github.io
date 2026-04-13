@@ -3151,6 +3151,29 @@ function renderResume() {
 function RenderResumeEntry(entry) {
     let role = entry.Title || "";
     let company = "";
+    let logoHTML = "";
+
+    // Extract logo if present as the last segment separated by "|"
+    if (role.includes("|")) {
+        const parts = role.split("|");
+        const potentialLogo = parts[parts.length - 1].trim();
+        // Check if it's a file path or URL (e.g. assets/images/honda.png)    
+        if (potentialLogo.startsWith('assets/') || potentialLogo.startsWith('http') || /\.(png|jpe?g|svg|webp)(?:-theme)?$/i.test(potentialLogo)) {
+            const logoPath = parts.pop().trim();
+            if (/\.(png|jpe?g|svg|webp)-theme$/i.test(logoPath)) {
+                const lightPath = logoPath.replace(/\.(\w+)-theme$/i, '-light.$1');
+                const darkPath = logoPath.replace(/\.(\w+)-theme$/i, '-dark.$1');
+                // Themed logos do not use theme-invert because they are pre-themed files.
+                logoHTML = `
+                    <div class="resume-logo-wrapper" style="width: 44px; height: 44px; margin-right: var(--space-md); flex-shrink: 0; display: flex;">
+                        <img src="${lightPath}" alt="Logo" class="resume-logo themed-logo-light" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.style.display='none'" />
+                        <img src="${darkPath}" alt="Logo" class="resume-logo themed-logo-dark" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.style.display='none'" />
+                    </div>`;
+            } else {
+                logoHTML = `<img src="${logoPath}" alt="Logo" class="resume-logo theme-invert" style="width: 44px; height: 44px; object-fit: contain; margin-right: var(--space-md); flex-shrink: 0;" onload="mediaLoaded(this)" onerror="this.style.display='none'" />`;
+            }
+            role = parts.join("|"); // Rejoin the rest for parsing
+        }    }
 
     // Natural Language Parsing for Title: "Role @ Company" or "Role at Company"
     const companyMatch = role.match(/^(.*?)\s+(@|at)\s+(.*)$/i);
@@ -3208,14 +3231,17 @@ function RenderResumeEntry(entry) {
 
     return `
                 <div class="resume-entry" id="res-${entry.ID || Math.random().toString(36).substring(2, 11)}">
-                    <div class="resume-entry-header">
-                        <div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">
-                            <div class="resume-role">${role}</div>
-                            <div class="resume-date-slot">${dateHTML}</div>
-                        </div>
-                        <div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">
-                            ${company ? `<div class="resume-company">${company}</div>` : "<div></div>"}
-                            <div class="resume-loc-slot">${metaHTML}</div>
+                    <div class="resume-entry-header" style="${logoHTML ? 'display:flex; align-items:center;' : ''}">
+                        ${logoHTML}
+                        <div style="flex-grow:1; min-width:0;">
+                            <div class="resume-row-main" style="display:flex; justify-content:space-between; align-items:baseline;">
+                                <div class="resume-role">${role}</div>
+                                <div class="resume-date-slot">${dateHTML}</div>
+                            </div>
+                            <div class="resume-row-sub" style="display:flex; justify-content:space-between; align-items:baseline;">
+                                ${company ? `<div class="resume-company">${company}</div>` : "<div></div>"}
+                                <div class="resume-loc-slot">${metaHTML}</div>
+                            </div>
                         </div>
                     </div>
                     <div class="resume-list text-content">${processedContent}</div>
@@ -4123,10 +4149,10 @@ function applySmartInversion(img) {
     if (img.tagName === 'VIDEO' && img.readyState < 2) return;
 
     try {
-        // Use a tiny 1x1 canvas to calculate average brightness efficiently
         const canvas = document.createElement('canvas');
-        canvas.width = 1;
-        canvas.height = 1;
+        const size = 32; // Use a decent sample size
+        canvas.width = size;
+        canvas.height = size;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         // Get the source URL properly for both elements
@@ -4137,21 +4163,53 @@ function applySmartInversion(img) {
             img.crossOrigin = "anonymous";
         }
 
-        ctx.drawImage(img, 0, 0, 1, 1);
-        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        ctx.drawImage(img, 0, 0, size, size);
+        const data = ctx.getImageData(0, 0, size, size).data;
 
-        // Perceptual brightness formula
-        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        let lightCount = 0;
+        let darkCount = 0;
+        let midCount = 0;
+        let transparentCount = 0;
 
-        // Mark the image based on its natural state
-        if (brightness > 128) {
-            img.classList.add('is-bright');
-        } else {
-            img.classList.add('is-dark');
+        for (let i = 0; i < data.length; i += 4) {
+            const alpha = data[i+3];
+            if (alpha < 50) {
+                transparentCount++;
+                continue;
+            }
+            const r = data[i], g = data[i+1], b = data[i+2];
+            const bness = (r * 299 + g * 587 + b * 114) / 1000;
+            
+            if (bness > 200) lightCount++;
+            else if (bness < 60) darkCount++;
+            else midCount++;
+        }
+
+        const totalPixels = data.length / 4;
+        const totalVisible = lightCount + darkCount + midCount;
+        const isTransparent = transparentCount > (totalPixels * 0.1); // More than 10% transparent
+
+        img.classList.remove('is-bright', 'is-dark', 'is-transparent');
+
+        if (isTransparent) {
+            img.classList.add('is-transparent');
+        }
+
+        if (totalVisible > 0) {
+            // If an image has almost no white but has noticeable black (like black text + red icon), mark it dark
+            const lightRatio = lightCount / totalVisible;
+            const darkRatio = darkCount / totalVisible;
+
+            if (lightRatio > darkRatio && lightRatio > 0.15) {
+                img.classList.add('is-bright');
+            } else if (darkRatio > lightRatio && darkRatio > 0.05) {
+                // Lower threshold (5%) for dark pixels since black text in a logo often occupies very little area
+                // compared to a chunky colored icon (like YorkU's red U).
+                img.classList.add('is-dark');
+            }
         }
     } catch (e) {
-        // Fallback: If CORS blocks us, assume it's a Light-themed image 
-        // (safe bet for most logos/diagrams)
+        // Fallback: If CORS blocks us, assume it's a Light-themed solid image 
         img.classList.add('is-bright');
     }
 }

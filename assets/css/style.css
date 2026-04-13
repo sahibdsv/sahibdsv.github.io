@@ -146,14 +146,36 @@
             transition: filter var(--anim-quick) var(--ease);
         }
 
+        /* SOLID IMAGES (No transparency) */
         /* If the image was detected as Bright (white background), invert it ONLY in Dark mode */
-        [data-theme="dark"] .theme-invert.is-bright {
+        [data-theme="dark"] .theme-invert.is-bright:not(.is-transparent) {
             filter: invert(1) hue-rotate(180deg);
         }
 
         /* If the image was detected as Dark (dark background), invert it ONLY in Light mode */
-        [data-theme="light"] .theme-invert.is-dark {
+        [data-theme="light"] .theme-invert.is-dark:not(.is-transparent) {
             filter: invert(1) hue-rotate(180deg);
+        }
+
+        /* TRANSPARENT IMAGES */
+        /* If a transparent image is mostly white/bright, invert it in Light mode so it's visible on white BG */
+        [data-theme="light"] .theme-invert.is-bright.is-transparent {
+            /* The brightness and contrast boost mathematically repairs the "washed out" or pale effect 
+               that invert() causes on mid-tone colors like Red, keeping them vibrant while ensuring black turns white. */
+            filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.5);
+        }
+
+        /* If a transparent image is mostly black/dark, invert it in Dark mode so it's visible on dark BG */
+        [data-theme="dark"] .theme-invert.is-dark.is-transparent {
+            filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.5);
+        }
+
+        /* THEMED LOGO TOGGLE */
+        [data-theme="dark"] .themed-logo-light {
+            display: none !important;
+        }
+        [data-theme="light"] .themed-logo-dark {
+            display: none !important;
         }
 
         .loader-overlay {
