@@ -1373,16 +1373,12 @@ function renderIndex() {
 
 
 
-function renderHome() {
-    const heroEntries = db.filter(e => "Home" === e.Page);
-    let finalHTML = buildRowsHTML(heroEntries, null, false);
-
+function buildActivityFeedHTML(customTitle) {
     const otherEntries = db.filter(e => e.Page && "Home" !== e.Page && "Footer" !== e.Page);
     const activityMap = {};
+    
     otherEntries.forEach(e => {
         const isFeatured = e.Tags && e.Tags.toLowerCase().includes("featured");
-        // Improved detection: Trust anything that isn't empty, even if JS Date doesn't like it (e.g. "FALL 2025")
-        // but still validate for Recent Activity to avoid complete junk
         const hasTimestamp = e.Timestamp && String(e.Timestamp).trim().length > 0;
         
         if (isFeatured || hasTimestamp) {
@@ -1395,13 +1391,11 @@ function renderHome() {
         const featB = b.Tags?.toLowerCase().includes("featured") ? 1 : 0;
         if (featA !== featB) return featB - featA;
 
-        // Sorting Resilience: Extract a year/month/day safely for comparison
         const getTime = (val) => {
             if (!val) return 0;
             const d = new Date(val);
             if (!isNaN(d.getTime())) return d.getTime();
             
-            // Fallback for stuff like "FALL 2025" - try to find the year and sort by that
             const yearMatch = String(val).match(/\d{4}/);
             if (yearMatch) return new Date(yearMatch[0], 0, 1).getTime();
             
@@ -1415,8 +1409,7 @@ function renderHome() {
     let recentCount = 0;
 
     for (const item of sortedActivity) {
-        const isFeatured = item.Tags?.toLowerCase().includes("featured");
-        if (isFeatured) {
+        if (item.Tags?.toLowerCase().includes("featured")) {
             recentItems.push(item);
         } else if (recentCount < 6) {
             recentItems.push(item);
@@ -1424,8 +1417,18 @@ function renderHome() {
         }
     }
 
-    if (recentItems.length > 0) {
-        finalHTML += buildRowsHTML(recentItems, "Recent Activity", true, false, true);
+    if (recentItems.length === 0) return "";
+    return buildRowsHTML(recentItems, customTitle || "Activity", true, false, true);
+}
+
+function renderHome() {
+    const heroEntries = db.filter(e => "Home" === e.Page);
+    const hasExplicitFeed = heroEntries.some(e => e.Tags && e.Tags.toLowerCase().includes("feed"));
+
+    let finalHTML = buildRowsHTML(heroEntries, null, false);
+
+    if (!hasExplicitFeed) {
+        finalHTML += buildActivityFeedHTML("Activity");
     }
 
     updateContainer(document.getElementById("app"), finalHTML);
@@ -1626,6 +1629,11 @@ function buildRowsHTML(data, title, isSubPage, isHeroOnly = false, isRecentActiv
 
         if ((entry.Title || "").toLowerCase().match(/\{?random quote\}?/)) {
             htmlBuffer += SECTION_RENDERERS.quote(entry, index);
+            return;
+        }
+
+        if (entry.Tags && entry.Tags.toLowerCase().includes("feed")) {
+            htmlBuffer += buildActivityFeedHTML(entry.Title);
             return;
         }
 
