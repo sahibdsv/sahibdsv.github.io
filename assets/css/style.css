@@ -1470,15 +1470,9 @@
 
         /* Unified media-to-info blend - for images/videos */
         .row-media.media-fade {
-            /* 
-               Anchored "Scrim" Easing:
-               Stays solid black until the last 64px (8x8 rhythm), 
-               then uses a 70% midpoint hint to create a smooth, organic falloff.
-               This prevents the "straight line" effect while ensuring the fade 
-               doesn't encroach too far into the content, especially in light mode.
-            */
-            mask-image: linear-gradient(to bottom, black 0, black calc(100% - 64px), 70%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - 64px), 70%, transparent 100%);
+            /* Simple 32px mask (4x8px multiplier) for a clean, non-intrusive blend */
+            mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 32px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 32px), transparent 100%);
         }
 
         /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */
