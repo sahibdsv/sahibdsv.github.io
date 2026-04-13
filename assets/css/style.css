@@ -1470,9 +1470,32 @@
 
         /* Unified media-to-info blend - for images/videos */
         .row-media.media-fade {
-            /* Simple 32px mask (4x8px multiplier) for a clean, non-intrusive blend */
-            mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 32px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 32px), transparent 100%);
+            /* 
+               "The Drywaller's Feather" (High-Fidelity Organic Scrim)
+               Uses a 6-stop mathematical easing curve over 40px (5x8 rhythm) 
+               to eliminate the "hinge" line. This creates a perfectly seamless 
+               transition where the eye cannot detect where the transparency starts.
+            */
+            -webkit-mask-image: linear-gradient(to bottom, 
+                black 0%, 
+                black calc(100% - 40px), 
+                rgba(0,0,0, 0.98) calc(100% - 33px), 
+                rgba(0,0,0, 0.88) calc(100% - 25px), 
+                rgba(0,0,0, 0.65) calc(100% - 18px), 
+                rgba(0,0,0, 0.35) calc(100% - 10px), 
+                rgba(0,0,0, 0.12) calc(100% - 5px), 
+                transparent 100%
+            );
+            mask-image: linear-gradient(to bottom, 
+                black 0%, 
+                black calc(100% - 40px), 
+                rgba(0,0,0, 0.98) calc(100% - 33px), 
+                rgba(0,0,0, 0.88) calc(100% - 25px), 
+                rgba(0,0,0, 0.65) calc(100% - 18px), 
+                rgba(0,0,0, 0.35) calc(100% - 10px), 
+                rgba(0,0,0, 0.12) calc(100% - 5px), 
+                transparent 100%
+            );
         }
 
         /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */
