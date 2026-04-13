@@ -2125,40 +2125,7 @@
             opacity: 1;
         }
 
-        /* Standard Button Colors & States */
-        .btn-cta.green {
-            background: #2ecc71;
-            color: #ffffff !important;
-            border-color: #27ae60 !important;
-        }
-
-        .btn-cta.green:hover::before { border-color: #219150; opacity: 1; }
-        .btn-cta.red:hover::before { border-color: #a93226; opacity: 1; }
-        .btn-cta.blue:hover::before { border-color: #2471a3; opacity: 1; }
-        .btn-cta.orange:hover::before { border-color: #ba4a00; opacity: 1; }
-        .btn-cta.purple:hover::before { border-color: #7d3c98; opacity: 1; }
-        
-        .btn-cta.strava:hover::before { border-color: rgba(var(--bright-rgb), 0.8); opacity: 1; }
-
-        [data-theme="light"] .btn-cta.green {
-            background: #27ae60;
-        }
-
-        [data-theme="light"] .btn-cta.red {
-            background: #c0392b;
-        }
-
-        [data-theme="light"] .btn-cta.blue {
-            background: #2980b9;
-        }
-
-        [data-theme="light"] .btn-cta.orange {
-            background: #d35400;
-        }
-
-        [data-theme="light"] .btn-cta.purple {
-            background: #8e44ad;
-        }
+        /* Standard Button Colors & States: Neutrals only */
 
         .markdown-grid {
             display: grid;

@@ -3752,20 +3752,14 @@ function renderContentBlock(block, index, allBlocks) {
 // Centralized Toolset for Markdown Elements
 function renderButtonHTML(text, url, color = null, isInline = false) {
     const finalURL = (url || "").trim().replace(/^\(|\)$/g, "").trim(); 
-    let colorClass = (color || "").toLowerCase().trim();
     let cleanText = (text || "").trim();
-
-    // Auto-Branding for Strava (if no explicit color provided)
-    if (!colorClass && (cleanText.toLowerCase().includes("strava") || finalURL.includes("strava.com"))) {
-        colorClass = "strava";
-    }
 
     const target = finalURL.startsWith('#') || finalURL.startsWith('javascript:') ? '' : 'target="_blank"';
 
     // Recursively process markdown inside the button text
     let formattedText = processInlineMarkdown(cleanText, 1);
 
-    const btnHTML = `<a href="${finalURL}" class="btn-cta ${colorClass}" ${target} rel="noopener">${formattedText}</a>`;
+    const btnHTML = `<a href="${finalURL}" class="btn-cta" ${target} rel="noopener">${formattedText}</a>`;
     if (isInline) return btnHTML;
     return `<div class="btn-cta-wrapper">${btnHTML}</div>`;
 };
