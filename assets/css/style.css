@@ -1470,9 +1470,25 @@
 
         /* Unified media-to-info blend - for images/videos */
         .row-media.media-fade {
-            /* Mask the bottom 60px of the media to show the underlying layout-grid background */
-            mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 60px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 60px), transparent 100%);
+            /* Multi-stop easing gradient for a softer, more natural transition */
+            mask-image: linear-gradient(
+                to bottom,
+                black 0%,
+                black 50%,
+                rgba(0, 0, 0, 0.95) 65%,
+                rgba(0, 0, 0, 0.8) 75%,
+                rgba(0, 0, 0, 0.4) 90%,
+                transparent 100%
+            );
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                black 0%,
+                black 50%,
+                rgba(0, 0, 0, 0.95) 65%,
+                rgba(0, 0, 0, 0.8) 75%,
+                rgba(0, 0, 0, 0.4) 90%,
+                transparent 100%
+            );
         }
 
         /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */
