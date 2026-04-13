@@ -175,8 +175,7 @@
   </article>
 
   <article id="seo-content-Professional/SARIT">
-    <h2>SARIT Research Project
-Electric micro-mobility vehicle research at York University</h2>
+    <h2>SARIT Research Project</h2>
     <p>[TOC]
  What is SARIT?
 SARIT (Safe, Affordable, Reliable, Innovative Transport) is a fleet of enclosed electric three-wheelers developed by Elvy Mobility and deployed across institutional partners in the Toronto area. The vehicles are designed for short-range urban mobility — compact enough for pedestrian zones, enclosed for year-round use, and quiet enough to operate in environments where larger vehicles would be intrusive. Active deployments include the Toronto Zoo, York University's main campus, and several other pilot sites.
@@ -195,8 +194,7 @@ The fleet at York includes vehicles of varying ages and configurations. Some hav
   </article>
 
   <article id="seo-content-Professional/SARIT/Hitch">
-    <h2>Trailer Hitch
-Custom steel hitch fabricated for Wike and Impact trailers</h2>
+    <h2>Trailer Hitch</h2>
     <p>[TOC]
  Background
 The SARIT fleet was identified early as a potential last-mile delivery platform. Getting a trailer behind a three-wheeled enclosed electric vehicle introduces genuine engineering challenges — hitch height, tongue weight, multi-axis articulation, and the constraint that you cannot significantly modify the SARIT's frame. A previous hitch design had been developed by an earlier team and used on some vehicles, but it had a known nose-down tilt issue and had never been documented in a way that made it easy to build or reproduce. My task starting in late May 2025 was to design a new one from scratch.
@@ -220,8 +218,7 @@ This kind of observation is actually useful engineering information. It informed
   </article>
 
   <article id="seo-content-Professional/SARIT/Electrical">
-    <h2>Electrical System
-Power architecture, reverse logic, and accessory integration</h2>
+    <h2>Electrical System</h2>
     <p>[TOC]
  Overview
 Every technology added to the SARIT — the reverse buzzer, cameras, display, telemetry, pedestrian detection system — requires power. The vehicle's stock electrical architecture provides nothing for accessories. All of it had to be designed and built by the research team, layered onto a 48V traction system that was never intended to support secondary loads.
@@ -247,8 +244,7 @@ See also: [[SARIT — Parasitic Power Drain Investigation]] for the full experim
   </article>
 
   <article id="seo-content-Professional/SARIT/Climate">
-    <h2>Climate Caddy
-Cabin heater prototype with hood scoop intake</h2>
+    <h2>Climate Caddy</h2>
     <p>[TOC]
  Background
 The heated accessories research established what could be done with off-the-shelf 12V products. The Climate Caddy project was a different question: could you mount a compact space heater inside the SARIT's cabin and connect it to an intake duct, creating something closer to an actual climate system? The answer was technically yes, practically marginal.
@@ -268,8 +264,7 @@ The project informed the heated accessories research specification — particula
   </article>
 
   <article id="seo-content-Professional/SARIT/Power">
-    <h2>Power Delivery System
-Parasitic drain investigation and monitoring hardware design</h2>
+    <h2>Power Delivery System</h2>
     <p>[TOC]
  The Problem
 The SARIT fleet had a range problem that was not what it appeared to be. Vehicles were losing significant charge while parked — not from driving, not from leaving accessories on, but simply from sitting. A vehicle with a full charge after a 1-hour charge cycle would show dramatically reduced range after sitting for 72 hours with the charger physically connected to the battery but unplugged from the wall.
@@ -302,11 +297,10 @@ The I2C addressing scheme, component datasheets, and full BOM were documented an
   </article>
 
   <article id="seo-content-Professional/SARIT/Camera">
-    <h2>Camera Mount
-Iterative OAK-D mount designs for pedestrian detection</h2>
+    <h2>Camera Mount</h2>
     <p>[TOC]
  Context
-The pedestrian detection system uses an OAK-D stereo camera (Luxonis) to track people and obstacles around the vehicle. Getting that camera mounted cleanly and rigidly to the SARIT's frame  without drilling into anything structural, without it shifting in the field — was the mechanical problem I was handed when I joined the project in May 2025.
+The pedestrian detection system uses an OAK-D stereo camera (Luxonis) to track people and obstacles around the vehicle. Getting that camera mounted cleanly and rigidly to the SARIT's frame — without drilling into anything structural, without it shifting in the field — was the mechanical problem I was handed when I joined the project in May 2025.
 By the time I started, there had already been two previous mount iterations, both designed in Fusion 360. My work began with v3 and continued through v4.
  Version 3 — Finalizing a Known Design
 The first week was a review of the existing v3 prototype. I checked fit, form, and function against the physical camera and the mounting point on the SARIT's interior frame. The changes from v2 to v3 had addressed most of the structural concerns, but there were small CAD details to clean up before the design could be considered final — unnecessary fillets that added print time without adding strength, and tolerances that needed to be tightened slightly for a snug fit without requiring force to assemble.
@@ -326,8 +320,7 @@ Designing for 3D printing is not the same as designing for machining. The constr
   </article>
 
   <article id="seo-content-Professional/SARIT/Mirrors">
-    <h2>Side Mirror Mounts
-Extendable arm mounts for improved rear visibility</h2>
+    <h2>Side Mirror Mounts</h2>
     <p>[TOC]
  Background
 The SARIT's stock side mirrors are small, fixed, and positioned low on the door panels. For a vehicle operating in pedestrian zones — around students, cyclists, and people on narrow paths — the sight lines they provide are marginal. The situation is worse for taller drivers, and worse again when the vehicle is being operated in reverse. The side mirror mount project started as a quality-of-life improvement and ended up as a production recommendation.
@@ -348,8 +341,7 @@ The v5 mount is in use on the orange SARIT and has been recommended to the compa
   </article>
 
   <article id="seo-content-Professional/SARIT/LiDAR">
-    <h2>LiDAR Mount
-Rotating sensor mount for autonomous navigation research</h2>
+    <h2>LiDAR Mount</h2>
     <p>[TOC]
  Background
 In July 2025, after the trailer hitch project wrapped, I transitioned to designing a mount for the SARIT's LiDAR sensor — a Garmin LIDAR-Lite v3 (40m range) being integrated by the technology team for object detection and distance measurement. The mounting challenge was different from the camera work: LiDAR sensors are sensitive to vibration in a way cameras are not. Data quality degrades if the sensor platform is not rigid, and if the sensor needs to rotate (to get 360° coverage), the mechanism needs to be precise enough that the rotational position is repeatable.
@@ -368,8 +360,7 @@ This was a useful lesson in the realities of research project management. A proj
   </article>
 
   <article id="seo-content-Professional/SARIT/Heating">
-    <h2>Heated Accessories
-Seat and handlebar heating research for all-season use</h2>
+    <h2>Heated Accessories</h2>
     <p>[TOC]
  Context
 The SARIT is enclosed but not insulated. In Toronto winters, "enclosed" means you're not being rained on, but you are sitting in what is effectively an aluminum box at ambient temperature. For users operating the vehicle outdoors in December — maintenance staff, security, zoo workers — this is genuinely uncomfortable. The company had a requirement to explore climate control options for fleet vehicles, and the mechanical team's answer was to start with the simplest viable intervention: off-the-shelf heated seat pads and handlebar grip heaters, powered from the vehicle's 12V accessory rail.
@@ -409,8 +400,7 @@ The practical reality of a heated seat in a SARIT cabin is probably modest anywa
   </article>
 
   <article id="seo-content-Projects/Design/CubeSat">
-    <h2>FRONTIER CubeSat
-A research satellite.</h2>
+    <h2>FRONTIER CubeSat</h2>
     <p>FRONTIER_CubeSat_v1.4.1.glb-scale125</p>
   </article>
 
