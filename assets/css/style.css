@@ -1470,34 +1470,15 @@
 
         /* Unified media-to-info blend - for images/videos */
         .row-media.media-fade {
-            /* Organic 64px easing mask (8x8 multiplier) */
-            /* Using a multi-stop quintic-like curve to eliminate the "straight line" at the start of the fade */
-            mask-image: linear-gradient(
-                to bottom,
-                black 0,
-                black calc(100% - 64px),
-                rgba(0, 0, 0, 0.981) calc(100% - 53.6px),
-                rgba(0, 0, 0, 0.925) calc(100% - 43.5px),
-                rgba(0, 0, 0, 0.831) calc(100% - 33.9px),
-                rgba(0, 0, 0, 0.696) calc(100% - 25.1px),
-                rgba(0, 0, 0, 0.522) calc(100% - 16.9px),
-                rgba(0, 0, 0, 0.311) calc(100% - 9.7px),
-                rgba(0, 0, 0, 0.081) calc(100% - 3.7px),
-                transparent 100%
-            );
-            -webkit-mask-image: linear-gradient(
-                to bottom,
-                black 0,
-                black calc(100% - 64px),
-                rgba(0, 0, 0, 0.981) calc(100% - 53.6px),
-                rgba(0, 0, 0, 0.925) calc(100% - 43.5px),
-                rgba(0, 0, 0, 0.831) calc(100% - 33.9px),
-                rgba(0, 0, 0, 0.696) calc(100% - 25.1px),
-                rgba(0, 0, 0, 0.522) calc(100% - 16.9px),
-                rgba(0, 0, 0, 0.311) calc(100% - 9.7px),
-                rgba(0, 0, 0, 0.081) calc(100% - 3.7px),
-                transparent 100%
-            );
+            /* 
+               Anchored "Scrim" Easing:
+               Stays solid black until the last 64px (8x8 rhythm), 
+               then uses a 70% midpoint hint to create a smooth, organic falloff.
+               This prevents the "straight line" effect while ensuring the fade 
+               doesn't encroach too far into the content, especially in light mode.
+            */
+            mask-image: linear-gradient(to bottom, black 0, black calc(100% - 64px), 70%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - 64px), 70%, transparent 100%);
         }
 
         /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */
