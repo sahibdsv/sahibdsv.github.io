@@ -3581,10 +3581,8 @@ function renderUnifiedMediaItem(item, isGallery = false) {
         const fallbackThumb2 = `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`;
 
         const playIconHTML = `
-                    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: transparent; cursor: pointer; z-index: 2;" 
-                         onmouseover="const btn=this.querySelector('.yt-glass-btn'); btn.style.background='var(--card-bg-hover)'; btn.style.borderColor='var(--text-bright)'; btn.style.boxShadow='0 4px 12px rgba(0,0,0,0.2), inset 0 0 0 1px var(--text-bright)';" 
-                         onmouseout="const btn=this.querySelector('.yt-glass-btn'); btn.style.background='var(--bg-trans)'; btn.style.borderColor='var(--border-header)'; btn.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';">
-                        <div class="yt-glass-btn" style="width: 72px; height: 72px; border-radius: 50%; background: var(--bg-trans); border: 1px solid var(--border-header); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: transparent; cursor: pointer; z-index: 2;">
+                        <div class="yt-glass-btn">
                             <svg viewBox="0 0 24 24" fill="var(--text-bright)" style="width: 34px; height: 34px;"><path d="M8 5v14l11-7z"/></svg>
                         </div>
                     </div>`;
