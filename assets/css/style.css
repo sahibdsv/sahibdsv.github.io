@@ -79,6 +79,9 @@
             --border-hover: var(--border-strong);
             --accent-strava: #FC6100;
             --nav-bar-h: 0px;
+            --glass-blur: 12px;
+            --glass-saturate: 180%;
+            --header-glass: rgba(15, 15, 15, 0.7);
             /* GLOBAL SPACING SYSTEM (8px Multiplier Rule) */
             --site-gap: 1rem;           /* 16px: Standard distance */
             --site-gap-nav: 3px;        /* 3px: Header navigation */
@@ -128,6 +131,7 @@
             --surface-subtle: #eeeeee;
             --surface-strong: #dddddd;
             --card-bg-dark: #e8e8ed;
+            --header-glass: rgba(230, 230, 234, 0.7);
             --music-fallback-opacity: 0.18;
             --music-fallback-inv: 0;
         }
@@ -562,7 +566,9 @@
             top: 0;
             left: 0;
             width: 100%;
-            background: var(--header-bg);
+            background: var(--header-glass);
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
             z-index: 10000;
             display: flex;
             flex-direction: row;
@@ -583,7 +589,9 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background: var(--header-bg);
+            background: var(--header-glass);
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
             z-index: 10000;
             display: flex;
             flex-direction: column;
@@ -1365,6 +1373,32 @@
             box-sizing: border-box;
             flex-grow: 1;
             justify-content: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Tighter falloff (35%) and anchored bottom-right to keep it far from the thumbnail */
+            background: radial-gradient(circle at 90% 90%, var(--cat-accent), transparent 35%);
+            opacity: 0;
+            transition: opacity var(--anim-quick) var(--ease);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .layout-grid:hover .card-info::before {
+            opacity: 0.05;
+        }
+
+        .card-info > * {
+            position: relative;
+            z-index: 1;
         }
 
         .card-breadcrumb {
@@ -1432,6 +1466,13 @@
             height: 100%;
             object-fit: cover;
             transition: filter 0.6s var(--ease), opacity 0.4s var(--ease);
+        }
+
+        /* Unified media-to-info blend - for images/videos */
+        .row-media.media-fade {
+            /* Mask the bottom 60px of the media to show the underlying layout-grid background */
+            mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 60px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 60px), transparent 100%);
         }
 
         /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */

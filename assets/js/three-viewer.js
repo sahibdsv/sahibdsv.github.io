@@ -357,7 +357,7 @@
             
             // CARD HOVER: Bind hover to the entire card element (if available) so it triggers
             // when the mouse enters anywhere on the card, not just the tiny canvas area.
-            const hoverTarget = isCardMode ? (container.closest('.card') || container) : container;
+            const hoverTarget = isCardMode ? (container.closest('.layout-grid') || container) : container;
             hoverTarget.addEventListener('mouseenter', () => { isHovered = true; });
             hoverTarget.addEventListener('mouseleave', () => { isHovered = false; });
             // Setup controls (only for interactive mode)
