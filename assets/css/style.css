@@ -1470,9 +1470,34 @@
 
         /* Unified media-to-info blend - for images/videos */
         .row-media.media-fade {
-            /* Subtle 32px mask (4x8px multiplier) for a tighter, more cohesive blend */
-            mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 32px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 32px), transparent 100%);
+            /* Organic 64px easing mask (8x8 multiplier) */
+            /* Using a multi-stop quintic-like curve to eliminate the "straight line" at the start of the fade */
+            mask-image: linear-gradient(
+                to bottom,
+                black 0,
+                black calc(100% - 64px),
+                rgba(0, 0, 0, 0.981) calc(100% - 53.6px),
+                rgba(0, 0, 0, 0.925) calc(100% - 43.5px),
+                rgba(0, 0, 0, 0.831) calc(100% - 33.9px),
+                rgba(0, 0, 0, 0.696) calc(100% - 25.1px),
+                rgba(0, 0, 0, 0.522) calc(100% - 16.9px),
+                rgba(0, 0, 0, 0.311) calc(100% - 9.7px),
+                rgba(0, 0, 0, 0.081) calc(100% - 3.7px),
+                transparent 100%
+            );
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                black 0,
+                black calc(100% - 64px),
+                rgba(0, 0, 0, 0.981) calc(100% - 53.6px),
+                rgba(0, 0, 0, 0.925) calc(100% - 43.5px),
+                rgba(0, 0, 0, 0.831) calc(100% - 33.9px),
+                rgba(0, 0, 0, 0.696) calc(100% - 25.1px),
+                rgba(0, 0, 0, 0.522) calc(100% - 16.9px),
+                rgba(0, 0, 0, 0.311) calc(100% - 9.7px),
+                rgba(0, 0, 0, 0.081) calc(100% - 3.7px),
+                transparent 100%
+            );
         }
 
         /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */
