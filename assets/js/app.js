@@ -1480,12 +1480,12 @@ function renderCardHTML(entry, contextCategory = "", isRecentActivity = false) {
             return `<div class="row-media">${renderMapBoxViewer(mapPath, true)}</div>`;
         }
         if (type === 'youtube' || type === 'yt-embed' || type === 'music-card') {
-            return `<div class="row-media media-fade"><div class="loader-overlay"><div class="spinner"></div></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0&enablejsapi=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
+            return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><div class="embed-wrapper video"><iframe class="media-enter" onload="mediaLoaded(this)" src="https://www.youtube-nocookie.com/embed/${id}?modestbranding=1&rel=0&enablejsapi=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
         }
 
         if (type === 'video') {
             const p = processMediaUrl(src);
-            return `<div class="row-media media-fade">
+            return `<div class="row-media">
                         <div class="loader-overlay"><div class="spinner"></div></div>
                         <video class="media-enter lazy-video ${p.invert ? 'theme-invert' : ''}"
                                 data-src="${p.url}"
@@ -1498,7 +1498,7 @@ function renderCardHTML(entry, contextCategory = "", isRecentActivity = false) {
         }
 
         const p = processMediaUrl(src);
-        return `<div class="row-media media-fade"><div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" decoding="async" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="mediaError(this)"></div>`;
+        return `<div class="row-media"><div class="loader-overlay"><div class="spinner"></div></div><img class="media-enter ${p.invert ? 'theme-invert' : ''}" src="${p.url}" loading="lazy" decoding="async" crossorigin="anonymous" onload="mediaLoaded(this)" onerror="mediaError(this)"></div>`;
         };
     const mediaSources = [
         () => isTitleLink && !entry.Thumbnail && tEx ? mediaBuilder(tEx.type, tEx.url, tEx.id) : "",

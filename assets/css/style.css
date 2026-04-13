@@ -1471,38 +1471,9 @@
         /* Unified media-to-info blend - for images/videos */
         .row-media.media-fade {
             /* 
-               "The Master Drywaller's Dither" (Noise-Infused Organic Scrim)
-               Combines a 6-stop mathematical easing curve with a high-frequency 
-               SVG noise dither. This breaks up digital "banding" and "fogging," 
-               creating an organic, physical falloff that is especially effective 
-               in Light Mode where smooth gradients can look "muddy."
+               The dither and blur effects have been removed to restore 
+               a clean, hard edge between media and card information.
             */
-            -webkit-mask-image: 
-                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
-                linear-gradient(to bottom, 
-                    black 0%, 
-                    black calc(100% - 48px), 
-                    rgba(0,0,0, 0.98) calc(100% - 40px), 
-                    rgba(0,0,0, 0.88) calc(100% - 30px), 
-                    rgba(0,0,0, 0.65) calc(100% - 22px), 
-                    rgba(0,0,0, 0.35) calc(100% - 12px), 
-                    rgba(0,0,0, 0.12) calc(100% - 6px), 
-                    transparent 100%
-                );
-            mask-image: 
-                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
-                linear-gradient(to bottom, 
-                    black 0%, 
-                    black calc(100% - 48px), 
-                    rgba(0,0,0, 0.98) calc(100% - 40px), 
-                    rgba(0,0,0, 0.88) calc(100% - 30px), 
-                    rgba(0,0,0, 0.65) calc(100% - 22px), 
-                    rgba(0,0,0, 0.35) calc(100% - 12px), 
-                    rgba(0,0,0, 0.12) calc(100% - 6px), 
-                    transparent 100%
-                );
-            mask-composite: source-over;
-            -webkit-mask-composite: source-over;
         }
 
         /* 1. The CAD Graph Paper Background - UNIFIED BLOCK */
