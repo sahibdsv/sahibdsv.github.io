@@ -163,22 +163,28 @@
                 // If we are interacting, we might want to skip background cards to keep interaction buttery
                 const isHeavyInteraction = interactingViewer && !isMobile;
                 
-                // TIME-SLICING: Only render a fraction of background cards per frame.
-                // Because we keep quality (DPR) high so they look crisp,
-                // we drop their framerate to save GPU fill-rate.
                 _glbCircularIndex++;
-                
                 for (let i = 0; i < renderedVisible.length; i++) {
                     const viewer = renderedVisible[i];
                     if (viewer === interactingViewer) continue; // Already rendered
                     
                     if (isHeavyInteraction && i % 2 === 0) continue; // Throttle background cards during drag
                     
-                    // CARD THROTTLE: If it's a card, only update its render 1 out of every 4 frames (~15fps)
-                    // If a video is playing, drop to 1 out of every 8 frames (~7fps) to save GPU fill for playback
-                    const videoThrottle = (window._activeVideoCount > 0) ? 8 : 4;
-                    if (viewer.isCardMode && (i + _glbCircularIndex) % videoThrottle !== 0) continue;
+                    const hovered = viewer.isHovered();
                     
+                    if (isMobile) {
+                        // MOBILE AMBIENT MOTION: Since there's no hover on mobile, we spin 
+                        // visible models to show they are 3D. 
+                        // In Card mode we throttle them to ~30fps (1 out of 2 frames) to save battery while being smoother.
+                        // In Article mode (not card mode), we render at full 60fps for maximum smoothness.
+                        if (viewer.isCardMode && (i + _glbCircularIndex) % 2 !== 0) continue;
+                    } else if (!hovered) {
+                        // DESKTOP ZERO-COST IDLE: If the model is not hovered and not interacting, 
+                        // it is not rotating. We completely freeze its render loop to save battery.
+                        continue;
+                    }
+                    
+                    // Hovered models render at full smooth framerate to prevent the stuttering
                     if (performance.now() - budgetStartTime > remainingBudget) break;
                     viewer.update(now);
                 }
@@ -347,6 +353,13 @@
 
             // LOCAL INTERACTION STATE: Track interaction per-viewer to pause efficiently
             let isInteracting = false;
+            let isHovered = false;
+            
+            // CARD HOVER: Bind hover to the entire card element (if available) so it triggers
+            // when the mouse enters anywhere on the card, not just the tiny canvas area.
+            const hoverTarget = isCardMode ? (container.closest('.card') || container) : container;
+            hoverTarget.addEventListener('mouseenter', () => { isHovered = true; });
+            hoverTarget.addEventListener('mouseleave', () => { isHovered = false; });
             // Setup controls (only for interactive mode)
             let controls = null;
             let autoRotateTimeout = null;
@@ -376,11 +389,12 @@
                     // Kill the browser menu on the canvas so it doesn't block the pan
                     canvas.addEventListener('contextmenu', e => e.preventDefault(), false);
                 } else {
-                    controls.enableRotate = false;
-                    controls.enablePan = false;
-                    controls.enabled = false; // Prevents generic event.preventDefault() hooks
-                    canvas.style.setProperty('touch-action', 'auto'); // Fixes pull-to-refresh
-                    canvas.style.cursor = 'auto';
+                    controls.enableRotate = true; // allow rotation on mobile article
+                    controls.enablePan = false;   // keep pan disabled to avoid getting lost
+                    controls.enabled = true;      // enable interaction
+                    // Fixes pull-to-refresh and allows vertical scrolling over the model, while passing horizontal swipes to OrbitControls
+                    canvas.style.setProperty('touch-action', 'pan-y', 'important'); 
+                    canvas.style.cursor = 'grab';
                 }
 
                 controls.autoRotate = false;
@@ -537,7 +551,13 @@
 
                         if (viewerInstance) viewerInstance.fitStage();
                         isModelReady = true;
-                        triggerEntrance();
+                        
+                        // FORCE RENDER AFTER LOAD: 
+                        // Send back to unrenderedVisible for one frame so it actually draws the geometry 
+                        // before going to sleep in Zero-Cost Idle mode.
+                        hasRendered = false;
+                        if (viewerInstance) viewerInstance.hasRenderedState = false;
+                        
                         resolve();
                     };
 
@@ -614,6 +634,7 @@
                 controls,
                 canvas,
                 isInteracting: () => isInteracting,
+                isHovered: () => isHovered,
                 fitStage: () => {
                     // Root Fix: Use Bounding Sphere instead of Box3 (AABB)
                     // Bounding Sphere radius is rotationally invariant, eliminating "breathing".
@@ -688,11 +709,19 @@
                     if (isModelFaster) baseSpeed *= 4.0;
                     else if (isModelFast) baseSpeed *= 3.0;
                     
+                    if (isHovered) {
+                        baseSpeed *= 3.0; // Spin faster on hover
+                    }
+
                     const rotationStep = (Math.min(delta, 128) / 16.6) * baseSpeed;
 
                     if (model && spinGroup) {
-                        if (isCardMode || !isInteracting) {
-                            autoRotateAngle += rotationStep;
+                        // On desktop, only rotate if hovered. On mobile, always rotate ambiently.
+                        const shouldRotate = (isHovered || isMobile) && (!controls || !isInteracting);
+                        if (shouldRotate) {
+                            // Boost ambient speed on mobile to make motion more apparent since there's no hover state
+                            const mobileBoost = (isMobile && !isHovered) ? 2.0 : 1.0;
+                            autoRotateAngle += rotationStep * mobileBoost;
                             spinGroup.rotation.y = autoRotateAngle;
                         }
                     }

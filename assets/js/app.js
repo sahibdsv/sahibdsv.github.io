@@ -2497,42 +2497,52 @@ _videoObserver = new IntersectionObserver((entries) => {
         if (entry.isIntersecting) {
             video._isVisible = true;
 
-            // Phase 1: Assign source if not yet loaded (lazy-load)
-            if (!video.src && video.dataset.src) {
-                video.src = video.dataset.src;
-            }
+            // Scroll Stop Debouncing: Wait before fetching/playing
+            if (video._scrollTimeout) clearTimeout(video._scrollTimeout);
+            video._scrollTimeout = setTimeout(() => {
+                if (!video._isVisible) return; // double check
 
-            // Phase 2: Autoplay logic — only if not already playing and not ended
-            if (video.dataset.autoplay === "true" && !video.ended && video.paused) {
-                // CRITICAL: Wait for the browser to actually prepare the decoder
-                // before calling play(). Calling play() before canplay causes
-                // the browser to fight between decoder init and frame delivery.
-                const startWhenReady = () => {
-                    // Re-check visibility: user may have scrolled away during decode
-                    if (!video._isVisible) return;
-
-                    video.play().then(() => {
-                        if (!video._isVisible) {
-                            video.pause(); // Scrolled away during async play resolve
-                            return;
-                        }
-                        if (!video.dataset.isPlaying) {
-                            video.dataset.isPlaying = "true";
-                            window._activeVideoCount++;
-                        }
-                    }).catch(() => { });
-                };
-
-                if (video.readyState >= 3) {
-                    // HAVE_FUTURE_DATA or higher — already buffered, play immediately
-                    startWhenReady();
-                } else {
-                    // Not ready yet — wait for canplay event (fires once decoder is primed)
-                    video.addEventListener('canplay', startWhenReady, { once: true });
+                // Phase 1: Assign source if not yet loaded (lazy-load)
+                if (!video.src && video.dataset.src) {
+                    video.src = video.dataset.src;
                 }
-            }
+
+                // Phase 2: Autoplay logic — only if not already playing and not ended
+                if (video.dataset.autoplay === "true" && !video.ended && video.paused) {
+                    // CRITICAL: Wait for the browser to actually prepare the decoder
+                    // before calling play(). Calling play() before canplay causes
+                    // the browser to fight between decoder init and frame delivery.
+                    const startWhenReady = () => {
+                        // Re-check visibility: user may have scrolled away during decode
+                        if (!video._isVisible) return;
+
+                        video.play().then(() => {
+                            if (!video._isVisible) {
+                                video.pause(); // Scrolled away during async play resolve
+                                return;
+                            }
+                            if (!video.dataset.isPlaying) {
+                                video.dataset.isPlaying = "true";
+                                window._activeVideoCount++;
+                            }
+                        }).catch(() => { });
+                    };
+
+                    if (video.readyState >= 3) {
+                        // HAVE_FUTURE_DATA or higher — already buffered, play immediately
+                        startWhenReady();
+                    } else {
+                        // Not ready yet — wait for canplay event (fires once decoder is primed)
+                        video.addEventListener('canplay', startWhenReady, { once: true });
+                    }
+                }
+            }, 300); // 300ms debounce
         } else {
             video._isVisible = false;
+            if (video._scrollTimeout) {
+                clearTimeout(video._scrollTimeout);
+                video._scrollTimeout = null;
+            }
             if (video.dataset.isPlaying) {
                 delete video.dataset.isPlaying;
                 window._activeVideoCount = Math.max(0, window._activeVideoCount - 1);
@@ -2634,23 +2644,37 @@ function processGlbQueue() {
 // Initialize the IntersectionObserver for lazy loading
 _glbObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
+        const target = entry.target;
         if (entry.isIntersecting) {
-            const uniqueId = entry.target.id;
-            const glbPath = entry.target.dataset.glbPath;
-            const isCardMode = entry.target.classList.contains('card-preview');
+            target._isVisible = true;
 
-            // Queue the initialization
-            _glbInitQueue.push({ uniqueId, glbPath, isCardMode });
-            if (!_isProcessingGlbQueue) {
-                _isProcessingGlbQueue = true;
-                // Start processing with a healthy delay to allow page transition to finish
-                // If a video is playing, triple the delay to avoid initial loading hitch
-                const initialDelay = (window._activeVideoCount > 0) ? 1200 : 400;
-                setTimeout(processGlbQueue, initialDelay);
+            if (target._scrollTimeout) clearTimeout(target._scrollTimeout);
+            target._scrollTimeout = setTimeout(() => {
+                if (!target._isVisible) return; // double check
+
+                const uniqueId = target.id;
+                const glbPath = target.dataset.glbPath;
+                const isCardMode = target.classList.contains('card-preview');
+
+                // Queue the initialization
+                _glbInitQueue.push({ uniqueId, glbPath, isCardMode });
+                if (!_isProcessingGlbQueue) {
+                    _isProcessingGlbQueue = true;
+                    // Start processing with a healthy delay to allow page transition to finish
+                    // If a video is playing, triple the delay to avoid initial loading hitch
+                    const initialDelay = (window._activeVideoCount > 0) ? 1200 : 400;
+                    setTimeout(processGlbQueue, initialDelay);
+                }
+
+                // Stop observing once queued
+                _glbObserver.unobserve(target);
+            }, 300); // 300ms debounce
+        } else {
+            target._isVisible = false;
+            if (target._scrollTimeout) {
+                clearTimeout(target._scrollTimeout);
+                target._scrollTimeout = null;
             }
-
-            // Stop observing once queued
-            _glbObserver.unobserve(entry.target);
         }
     });
 }, { rootMargin: '50px' }); // Reduced pre-loading so models start building near view
@@ -2803,10 +2827,10 @@ document.addEventListener('fullscreenchange', () => {
                 if (viewer.controls) {
                     viewer.controls.enableZoom = false;
                     if (isTrueMobile) {
-                        viewer.controls.enabled = false; // disable event hijacking
-                        viewer.controls.enablePan = false;
-                        viewer.controls.enableRotate = false;
-                        viewer.canvas.style.setProperty('touch-action', 'auto', 'important'); // Allow pull-to-refresh
+                        viewer.controls.enabled = true; // allow interaction
+                        viewer.controls.enablePan = false; // still disable pan so they don't get lost
+                        viewer.controls.enableRotate = true; // allow rotation
+                        viewer.canvas.style.setProperty('touch-action', 'pan-y', 'important'); // Allow vertical scrolling, intercept horizontal for rotate
                     } else {
                         viewer.controls.enablePan = true;
                         viewer.controls.enableRotate = true;
