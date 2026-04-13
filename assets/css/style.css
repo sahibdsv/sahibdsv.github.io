@@ -3289,8 +3289,8 @@
             gap: 12px;
             padding: 20px;
             box-sizing: border-box;
-            border-radius: var(--card-radius);
-            border: 1px solid var(--border-subtle);
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
+            border: none;
             text-align: center;
             user-select: none;
         }
