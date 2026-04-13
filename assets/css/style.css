@@ -1967,8 +1967,8 @@
 
         @media (max-width: 600px) {
             .section-title-wrapper {
-                margin-top: 2rem; /* Match .section margin-bottom for perfect rhythm */
-                margin-bottom: 1rem;
+                margin-top: var(--site-gap); /* Match .section margin-bottom for perfect rhythm */
+                margin-bottom: var(--site-gap);
             }
             .section-title-wrapper h2 {
                 font-size: 20px;
