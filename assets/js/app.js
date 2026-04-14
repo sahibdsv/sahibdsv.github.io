@@ -4397,3 +4397,7 @@ function mediaError(el) {
     }
 }
 
+// Export for Node.js testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { parseCSV };
+}
