@@ -1344,31 +1344,40 @@ function childrenPagesCheck(e) {
 }
 
 function renderIndex() {
-    const allPages = [...new Set(
-        db.map(e => e.Page).filter(e => e && "Home" !== e && "Footer" !== e)
-    )];
+    const allPages = [];
+    const pageMap = new Map();
+    db.forEach(e => {
+        if (e && e.Page && "Home" !== e.Page && "Footer" !== e.Page) {
+            allPages.push(e.Page);
+            if (!pageMap.has(e.Page)) {
+                pageMap.set(e.Page, e);
+            }
+        }
+    });
+    const uniquePages = [...new Set(allPages)];
 
     const groups = {};
-    allPages.forEach(page => {
+    uniquePages.forEach(page => {
         const category = page.split("/")[0];
         if (!groups[category]) groups[category] = [];
         groups[category].push(page);
     });
 
-    let finalHTML = '<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list">';
+    const htmlParts = ['<div class="section layout-hero"><h1 class="fill-anim">Index</h1></div><div class="section index-list">'];
+
     for (const [category, pages] of Object.entries(groups)) {
         const catClass = getCategoryClass(category);
-        finalHTML += `<div class="index-group ${catClass}"><h3>${category}</h3>`;
+        htmlParts.push(`<div class="index-group ${catClass}"><h3>${category}</h3>`);
         pages.forEach(page => {
-            const entry = db.find(e => e.Page === page);
+            const entry = pageMap.get(page);
             const title = entry ? entry.Title : page.split("/").pop();
             const depth = page.split("/").length;
-            finalHTML += `<a href="#${path2url(page)}" class="index-link fill-anim ${depth > 1 ? `depth-${depth}` : ""}">${title}</a>`;
+            htmlParts.push(`<a href="#${path2url(page)}" class="index-link fill-anim ${depth > 1 ? `depth-${depth}` : ""}">${title}</a>`);
         });
-        finalHTML += "</div>";
+        htmlParts.push("</div>");
     }
-    finalHTML += '</div>';
-    updateContainer(document.getElementById("app"), finalHTML);
+    htmlParts.push('</div>');
+    updateContainer(document.getElementById("app"), htmlParts.join(''));
 }
 
 
