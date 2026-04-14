@@ -3538,7 +3538,7 @@ function detectBasicUrlType(text) {
 // Check if a string is an image URL
 function isImageURL(str) {
     // Check for explicit image extensions (allowing behavior markers)
-    if (str.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols))*/i)) {
+    if (str.match(/\.(jpg|jpeg|png|gif|webp|svg)(-(?:autoplay|thumb|loop|noloop|nocontrols))?([?#].*)?$/i)) {
         return true;
     }
 
@@ -4397,3 +4397,6 @@ function mediaError(el) {
     }
 }
 
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { isImageURL };
+}
