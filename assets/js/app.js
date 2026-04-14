@@ -3538,12 +3538,12 @@ function detectBasicUrlType(text) {
 // Check if a string is an image URL
 function isImageURL(str) {
     // Check for explicit image extensions (allowing behavior markers)
-    if (str.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*|-(?:autoplay|thumb|loop|noloop|nocontrols))*/i)) {
+    if (str.match(/^[^?#]+\.(jpg|jpeg|png|gif|webp|svg)(?:-(?:autoplay|thumb|loop|noloop|nocontrols))?(?:[?#].*)?$/i)) {
         return true;
     }
 
     // Check for common image CDN patterns (Picsum, Unsplash, etc.)
-    if (str.match(/^https?:\/\/(picsum\.photos|images\.unsplash\.com|source\.unsplash\.com|placehold\.it|placeholder\.com|via\.placeholder\.com)/i)) {
+    if (str.match(/^https?:\/\/(picsum\.photos|images\.unsplash\.com|source\.unsplash\.com|placehold\.it|placeholder\.com|via\.placeholder\.com)(?:\/|$)/i)) {
         return true;
     }
 
