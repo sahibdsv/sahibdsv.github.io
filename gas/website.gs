@@ -4,8 +4,7 @@ const WEBSITE_CONFIG = {
   sourceLabel: 'YT Music - ScriptCat',
   dedupeThresholdSeconds: 60,
   headers: ['Source', 'Artist', 'Track', 'Link', 'Thumbnail'],
-  sheetId: '1DD2Ax-XDGYBKuoe_ajqhIMUDBH0-pC2P4iHS_OpUDoQ',
-  apiToken: 'CHANGE_ME'
+  sheetId: '1DD2Ax-XDGYBKuoe_ajqhIMUDBH0-pC2P4iHS_OpUDoQ'
 };
 
 /**
@@ -25,7 +24,8 @@ function doPost(e) {
       }
     }
 
-    if (requestToken !== WEBSITE_CONFIG.apiToken) {
+    const expectedToken = PropertiesService.getScriptProperties().getProperty('API_TOKEN');
+    if (!expectedToken || requestToken !== expectedToken) {
       return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Unauthorized" }))
         .setMimeType(ContentService.MimeType.JSON);
     }
