@@ -147,7 +147,7 @@ function refillQuoteBag() {
 
     // Boundary Fix: If the first quote in the NEW bag is the same as the LAST one from the old bag,
     // swap it with another random item in the bag to prevent consecutive repeats.
-    if (quotesDb.length > 2 && quoteBag[quoteBag.length - 1] === _lastQuoteIndex) {
+    if (quotesDb.length > 2 && _lastQuoteIndex !== -1 && getQuoteContent(quotesDb[quoteBag[quoteBag.length - 1]]) === getQuoteContent(quotesDb[_lastQuoteIndex])) {
         const randomIndex = Math.floor(Math.random() * (quoteBag.length - 1));
         [quoteBag[quoteBag.length - 1], quoteBag[randomIndex]] = [quoteBag[randomIndex], quoteBag[quoteBag.length - 1]];
     }
@@ -163,7 +163,7 @@ function getNextQuote() {
     let nextIndex = quoteBag.pop();
 
     // Safety: If the randomly picked quote has identical text as the last one, try to skip it
-    if (_lastQuoteIndex !== -1 && quotesDb[nextIndex].Quote === quotesDb[_lastQuoteIndex].Quote && quotesDb.length > 1) {
+    if (_lastQuoteIndex !== -1 && getQuoteContent(quotesDb[nextIndex]) === getQuoteContent(quotesDb[_lastQuoteIndex]) && quotesDb.length > 1) {
         if (quoteBag.length > 0) {
             const swap = quoteBag.pop();
             quoteBag.push(nextIndex);
