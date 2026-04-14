@@ -2205,6 +2205,8 @@ async function renderRewindSection(container, type) {
 const _noembedCache = new Map();
 const MAX_CACHE_SIZE = 100;
 
+let _musicDbUrlIndex = null;
+
 async function renderMusicCluster(container) {
     const urlsRaw = container.getAttribute('data-urls') || "";
     const urls = urlsRaw.split(',').filter(Boolean);
@@ -2214,6 +2216,24 @@ async function renderMusicCluster(container) {
     container.innerHTML = renderEmptyStateHTML("", true);
 
     const ytLogo = "https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg";
+
+    if (typeof musicDb !== 'undefined' && !_musicDbUrlIndex) {
+        _musicDbUrlIndex = new Map();
+        for (const m of musicDb) {
+            if (!m.Link) continue;
+            const mId = getYouTubeID(m.Link);
+
+            const keys = [m.Link];
+            if (mId) keys.push(mId);
+
+            for (const key of keys) {
+                if (!_musicDbUrlIndex.has(key)) {
+                    _musicDbUrlIndex.set(key, { dbMatch: m, allPlays: 0 });
+                }
+                _musicDbUrlIndex.get(key).allPlays += (m.PlayCount || 1);
+            }
+        }
+    }
 
     // Fetch details for each independently 
     const cardsData = await Promise.all(urls.map(async (rawLink, index) => {
@@ -2228,9 +2248,12 @@ async function renderMusicCluster(container) {
         let count = null;
 
         // 1. Cross-reference with our Music Logger DB for high-fidelity square album art & PLAY COUNTS
-        if (typeof musicDb !== 'undefined') {
-            const dbMatch = musicDb.find(item => item.Link && (item.Link.includes(ytId) || item.Link === bareURL));
-            if (dbMatch) {
+        if (typeof musicDb !== 'undefined' && _musicDbUrlIndex) {
+            const lookupKey = ytId || bareURL;
+            const indexData = _musicDbUrlIndex.get(lookupKey);
+
+            if (indexData) {
+                const dbMatch = indexData.dbMatch;
                 if (dbMatch.Thumbnail) {
                     thumb = dbMatch.Thumbnail;
                     fromDb = true;
@@ -2238,10 +2261,7 @@ async function renderMusicCluster(container) {
                 if (dbMatch.Artist) artist = dbMatch.Artist;
                 if (dbMatch.Song || dbMatch.Track) track = dbMatch.Song || dbMatch.Track;
 
-                // QUANTIFIED SELF: If it's in our DB, find the real play count
-                // (Looking for any row that matches this Link or ID)
-                const allPlays = musicDb.filter(m => m.Link && (m.Link.includes(ytId) || m.Link === bareURL));
-                count = dbMatch.PlayCount || allPlays.length || 0;
+                count = dbMatch.PlayCount || indexData.allPlays || 0;
             }
         }
 
