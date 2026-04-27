@@ -189,7 +189,7 @@ let _appInitialized = false;
 function startApp() {
     if (_appInitialized) {
         // Refresh existing UI with new data
-        updateSEO();
+
         renderFooter();
         handleRouting(true); // SILENT: Don't jump to top on data refresh
         return;
@@ -197,7 +197,7 @@ function startApp() {
     _appInitialized = true;
 
     initApp();
-    updateSEO();
+
     renderFooter();
 
     if (window.location.search) {
@@ -382,7 +382,7 @@ function initFuse(data) {
 function fetchCSV(url) {
     // Enabled browser caching for CSV data. 
     // This allows the site to feel "instant" on repeat visits while the background 
-    // update logic (SEO sync or manual refresh) ensures data stays fresh eventually.
+    // update logic ensures data stays fresh eventually.
     return fetch(url)
         .then(res => res.text())
         .then(text => parseCSV(text));
@@ -1230,8 +1230,7 @@ function navigateTo(path, isSwipe = false, forceSmoothNav = false, isSilent = fa
         // Clean up any stale 3D viewers from the old page
         if (window.cleanupStale3DViewers) window.cleanupStale3DViewers();
 
-        // 4. Update SEO based on the newly rendered page
-        updateSEO(cleanPath);
+
 
 
         // Mark this path as rendered so subsequent identical swipes don't trigger re-renders
@@ -2974,126 +2973,7 @@ function parseFlexibleDate(token, isStart) {
 
 
 
-function updateSEO(path = "") {
-    const cleanPath = url2path(path || window.location.hash.substring(1) || "Home");
 
-    // 1. Data Retrieval
-    const pageData = db.filter(e => e.Page === cleanPath);
-    const entry = pageData[0] || {};
-
-    // 2. Title & Description Logic
-    const baseTitle = "Sahib Virdee";
-    let pageTitle = entry.Title || "";
-
-    // Strip dynamic tags like {Random Quote} from the tab title first
-    pageTitle = pageTitle.replace(/\{?random quote\}?/gi, '').trim();
-
-    if (!pageTitle) {
-        if (cleanPath === "Home") {
-            pageTitle = "Mechanical Design Engineer Portfolio";
-        } else {
-            // Use only the last part of the path (e.g., "Personal/Hobbies" -> "Hobbies")
-            // to keep the tab titles concise and consistent.
-            pageTitle = cleanPath.split("/").pop();
-        }
-    }
-
-    const fullTitle = (cleanPath === "Home" || !pageTitle) ? baseTitle : `${pageTitle} | ${baseTitle}`;
-
-    // Strip markdown and HTML for meta-description
-    const description = entry.Description || (entry.Content ? entry.Content.substring(0, 160).replace(/[#*`]/g, '').replace(/<[^>]*>/g, '').trim() : "Portfolio of Sahib Virdee, a Mechanical Engineering graduate specializing in detailed CAD design, manufacturing processes, and technical documentation.");
-
-    // 3. Update DOM Title
-    document.title = fullTitle;
-
-    // 4. Update Meta Tags
-    const setMeta = (query, content) => {
-        const el = document.querySelector(query);
-        if (el) el.setAttribute('content', content);
-    };
-
-    setMeta('meta[name="description"]', description);
-    setMeta('meta[property="og:title"]', fullTitle);
-    setMeta('meta[property="og:description"]', description);
-    setMeta('meta[property="og:url"]', `https://sahibvirdee.com/#${path2url(cleanPath)}`);
-    setMeta('meta[name="twitter:title"]', fullTitle);
-    setMeta('meta[name="twitter:description"]', description);
-
-    // Thumbnail vs CoverImage vs Default
-    let image = entry.Thumbnail || entry.CoverImage || "https://sahibvirdee.com/assets/images/social.jpg";
-    if (image && !image.includes('.glb')) {
-        if (!image.startsWith('http')) {
-            image = `https://sahibvirdee.com/${image.startsWith('/') ? image.substring(1) : image}`;
-        }
-        setMeta('meta[property="og:image"]', image);
-        setMeta('meta[name="twitter:image"]', image);
-    }
-
-    // 5. Update Canonical URL
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) canonical.setAttribute('href', `https://sahibvirdee.com/#${path2url(cleanPath)}`);
-
-    // 6. Update JSON-LD (Dynamic Graph)
-    const oldLD = document.getElementById("json-ld-script");
-    if (oldLD) oldLD.remove();
-
-    const jsonLD = {
-        "@context": "https://schema.org",
-        "@type": cleanPath === "Home" ? "WebSite" : "WebPage",
-        "name": fullTitle,
-        "description": description,
-        "url": `https://sahibvirdee.com/#${path2url(cleanPath)}`,
-        "author": {
-            "@type": "Person",
-            "name": "Sahib Virdee"
-        }
-    };
-
-    if (cleanPath === "Home") {
-        jsonLD["mainEntity"] = {
-            "@type": "Person",
-            "name": "Sahib Virdee",
-            "jobTitle": "Mechanical Design Engineer",
-            "description": "Specializing in detailed CAD design, manufacturing processes, and technical documentation.",
-            "url": "https://sahibvirdee.com/",
-            "sameAs": ["https://github.com/sahibdsv", "https://www.linkedin.com/in/sahibdsv/"]
-        };
-    }
-
-    const script = document.createElement("script");
-    script.id = "json-ld-script";
-    script.type = "application/ld+json";
-    script.textContent = JSON.stringify(jsonLD);
-    document.head.appendChild(script);
-
-    // 7. Context-Specific JSON-LD (Resume)
-    if (cleanPath === "Professional/Resume") {
-        generateResumeJSONLD();
-    } else {
-        const resumeLD = document.getElementById("json-ld-resume");
-        if (resumeLD) resumeLD.remove();
-    }
-}
-
-function generateResumeJSONLD() {
-    const e = document.getElementById("json-ld-resume");
-    if (e) e.remove();
-    const t = resumeDb;
-    if (0 === t.length) return;
-    const o = t[0], r = o.Title.split("|")[0].trim(), i = o.Title.split("|")[1] ? o.Title.split("|")[1].trim() : "Engineer",
-        s = {
-            "@context": "https://schema.org",
-            "@type": "Person",
-            name: r,
-            jobTitle: i,
-            url: "https://sahibvirdee.com/resume",
-            description: `Resume of ${r}, ${i}.`,
-        };
-    const a = document.createElement("script");
-    a.id = "json-ld-resume", a.type = "application/ld+json";
-    a.textContent = JSON.stringify(s);
-    document.head.appendChild(a);
-}
 
 const formatSectionTitle = type => (!type || type.toLowerCase().replace(/^#/, '').replace(/_/g, '-') === 'header') ? null
     : type.replace(/^#/, '').replace(/_/g, '-').split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
